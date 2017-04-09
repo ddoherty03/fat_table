@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-module FatCore
+module FatTable
   describe AoaFormatter do
     describe 'table output' do
       before :each do

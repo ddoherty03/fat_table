@@ -1,4 +1,4 @@
-module FatCore
+module FatTable
   # Output the table as plain text. This is almost identical to OrgFormatter
   # except that dates do not get formatted as inactive timestamps and the
   # connector at the beginning of hlines is a '+' rather than a '|' as for org

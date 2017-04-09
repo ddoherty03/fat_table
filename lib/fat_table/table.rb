@@ -1,27 +1,53 @@
-module FatCore
+module FatTable
   # A container for a two-dimensional table. All cells in the table must be a
   # String, a DateTime (or Date), a Numeric (Bignum, Integer, or BigDecimal), or
   # a Boolean (TrueClass or FalseClass). All columns must be of one of those
   # types or be a string convertible into one of them. It is considered an error
   # if a single column contains cells of different types. Any cell that cannot
   # be parsed as one of the Numeric, DateTime, or Boolean types will be treated
-  # as a String and have to_s applied.  Until the column type is determined, it
+  # as a String and have #to_s applied. Until the column type is determined, it
   # will have the type NilClass.
   #
   # You can initialize a Table in several ways:
   #
-  # 1. with a Nil, which will return an empty table to which rows or columns can
-  #    be added later, 2. with the name of a .csv file, 3. with the name of an
-  #    .org file, 4. with an IO or StringIO object for either type of file, but
-  #    in that case, you need to specify 'csv' or 'org' as the second argument
-  #    to tell it what kind of file format to expect, 5. with an Array of
-  #    Arrays, 6. with an Array of Hashes, all having the same keys, which
-  #    become the names of the column heads, 7. with an Array of any objects
-  #    that respond to .keys and .values methods, 8. with another Table object.
+  # 1. ~FatTable::Table.new~, which will return an empty table to which rows or
+  #    columns can be added later,
+  #
+  # 2. ~FatTable::Table.from_csv_file('table.csv')~, where the argument is the
+  #    name of a .csv file, in which case, the headers will be taken from the
+  #    first row of the data.
+  #
+  # 3. ~FatTable::Table.from_org_file('table.org')~, where the argument is the
+  #    name of an .org file and the first Emacs org mode table found in the file
+  #    will be read. The headers will be taken from the first row of the table
+  #    if it is followed by an hrule, otherwise the headers will be synthesized
+  #    as ~:col_1~, ~:col_2~, etc.
+  #
+  # 4. ~FatTable::Table.from_csv_string(csv_string)~, where ~csv_string~ is a
+  #    string in the same form as a .csv file, and it will be parsed in the same
+  #    way.
+  #
+  # 5. ~FatTable::Table.from_org_string(org_string)~, where ~org_string~ is a
+  #    string in the same form as an Emacs org mode table, and it will be parsed
+  #    in the same way.
+  #
+  # 6. ~FatTable::Table.from_aoa(aoa)~, where ~aoa~ is an Array of elements that
+  #    are either Arrays or nil. The headers will be taken from the first Array
+  #    if it is followed by a nil, otherwise the headers will be synthesized as
+  #    ~:col_1~, ~:col_2~, etc. Each inner Array will be read as a row of the
+  #    table and each nil, after the first will be take as a group boundary.
+  #
+  # 7. ~FatTable::Table.from_aoh(aoh)~, where ~aoh~ is an Array of elements each
+  #    of which is either (1) a Hash (or any object that responds to #to_h) or
+  #    (2) a nil. All Hashes must have the same keys, which become the headers
+  #    for the table. Each nil will be taken as marking a group boundary.
+  #
+  # 9. ~FatTable::Table.from_table~, where ~table~ is another FatTable::Table
+  #    object.
   #
   # In the resulting Table, the headers are converted into symbols, with all
   # spaces converted to underscore and everything down-cased. So, the heading,
-  # 'Two Words' becomes the hash header :two_words.
+  # ~'Two Words'~ becomes the header ~:two_words~.
   class Table
     attr_reader :columns
 
@@ -47,8 +73,9 @@ module FatCore
       from_csv_io(StringIO.new(str))
     end
 
-    # Construct a Table from the first table found in the given org-mode file.
-    # Headers are taken from the first row if the second row is an hrule.``
+    # Construct a Table from the first table found in the given Emacs org-mode
+    # file. Headers are taken from the first row if the second row is an hrule.
+    # Otherwise, synthetic headers of the form :col_1, :col_2, etc. are created.
     def self.from_org_file(fname)
       File.open(fname, 'r') do |io|
         from_org_io(io)
@@ -117,7 +144,7 @@ module FatCore
       # the array is a nil, a string that looks like an hrule, or an array whose
       # first element is a string that looks like an hrule, interpret the first
       # element of the array as a row of headers. Otherwise, synthesize headers of
-      # the form "col1", "col2", ... and so forth. The remaining elements are
+      # the form :col_1, :col_2, ... and so forth. The remaining elements are
       # taken as the body of the table, except that if an element of the outer
       # array is a nil or a string that looks like an hrule, mark the preceding
       # row as a boundary.
@@ -131,7 +158,7 @@ module FatCore
           first_data_row = 2
         else
           # Synthesize headers
-          headers = (1..rows[0].size).to_a.map { |k| "col#{k}".as_sym }
+          headers = (1..rows[0].size).to_a.map { |k| "col_#{k}".as_sym }
           first_data_row = 0
         end
         rows[first_data_row..-1].each do |row|
@@ -626,6 +653,8 @@ module FatCore
 
     public
 
+    JOIN_TYPES = [:inner, :left, :right, :full, :cross].freeze
+
     # Return a table that joins this table to another based on one or more join
     # expressions. There are several possibilities for the join expressions:
     #
@@ -688,7 +717,6 @@ module FatCore
     #      have N and M rows respectively, the joined table will have N * M
     #      rows.
     # Resets groups.
-    JOIN_TYPES = [:inner, :left, :right, :full, :cross].freeze
 
     def join(other, *exps, join_type: :inner)
       unless other.is_a?(Table)

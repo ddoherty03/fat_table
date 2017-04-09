@@ -1,4 +1,4 @@
-module FatCore
+module FatTable
   ## A formatter is for use in Table output routines, and provides instructions
   ## for how the table ought to be formatted. The goal is to make subclasses of
   ## this class to handle different output targets, such as aoa for org tables,

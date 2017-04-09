@@ -2,7 +2,7 @@
 
 require 'rainbow'
 
-module FatCore
+module FatTable
   # Output the table as for a unicode-enabled terminal.  This makes table
   # gridlines drawable with unicode characters, as well as supporting colored
   # text and backgrounds.plain text.

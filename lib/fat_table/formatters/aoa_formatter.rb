@@ -1,4 +1,4 @@
-module FatCore
+module FatTable
   class AoaFormatter < Formatter
     def evaluate?
       true

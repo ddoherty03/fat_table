@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-module FatCore
+module FatTable
   describe Formatter do
     before :all do
       aoa =

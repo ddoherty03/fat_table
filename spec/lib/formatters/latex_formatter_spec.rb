@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'tempfile'
 
-module FatCore
+module FatTable
   describe LaTeXFormatter do
     describe 'table output' do
       before :all do

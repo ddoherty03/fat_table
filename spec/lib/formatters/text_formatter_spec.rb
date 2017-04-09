@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-module FatCore
+module FatTable
   describe TextFormatter do
     describe 'table output' do
       before :each do

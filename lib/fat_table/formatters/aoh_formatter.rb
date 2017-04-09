@@ -1,4 +1,4 @@
-module FatCore
+module FatTable
   class AohFormatter < Formatter
     def evaluate?
       true

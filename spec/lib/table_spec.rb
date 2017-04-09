@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-module FatCore
+module FatTable
   describe Table do
     before :all do
       @csv_file_body = <<-EOS
