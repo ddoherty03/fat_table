@@ -1,7 +1,6 @@
 require "fat_table/version"
 
 module FatTable
-  # Your code goes here...
   require 'fat_core'
   require 'active_support'
   require 'active_support/core_ext'
