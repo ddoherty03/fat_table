@@ -324,14 +324,14 @@ EOS
         tab = Table.from_aoa(aoa)
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to eq(4)
-        expect(tab.headers.sort).to eq [:col1, :col2, :col3]
+        expect(tab.headers.sort).to eq [:col_1, :col_2, :col_3]
         tab.rows.each do |row|
           row.each_pair do |k, _v|
             expect(k.class).to eq Symbol
           end
-          expect(row[:col1].is_a?(Numeric)).to be true
-          expect(row[:col2].is_a?(Numeric)).to be true
-          expect(row[:col3].is_a?(BigDecimal)).to be true
+          expect(row[:col_1].is_a?(Numeric)).to be true
+          expect(row[:col_2].is_a?(Numeric)).to be true
+          expect(row[:col_3].is_a?(BigDecimal)).to be true
         end
       end
 
