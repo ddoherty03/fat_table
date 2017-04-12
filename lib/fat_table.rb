@@ -2,6 +2,7 @@ require "fat_table/version"
 
 module FatTable
   require 'fat_core'
+  require 'dbi'
   require 'active_support'
   require 'active_support/core_ext'
   require 'active_support/number_helper'

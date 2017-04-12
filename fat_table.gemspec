@@ -42,4 +42,8 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'fat_core', '~> 2.0'
   spec.add_runtime_dependency 'activesupport'
   spec.add_runtime_dependency 'rainbow'
+  spec.add_runtime_dependency 'dbi'
+  spec.add_runtime_dependency 'dbd-pg'
+  spec.add_runtime_dependency 'dbd-mysql'
+  spec.add_runtime_dependency 'dbd-sqlite3'
 end
