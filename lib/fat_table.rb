@@ -11,4 +11,5 @@ module FatTable
   require 'fat_table/column'
   require 'fat_table/table'
   require 'fat_table/formatters'
+  require 'fat_table/db_handle'
 end

@@ -3,6 +3,9 @@ require 'spec_helper'
 module FatTable
   describe Table do
     before :all do
+      FatTable.set_db(database: 'S16oR_production', host: 'db1.lan',
+                      user: 'vagrant', password: 'fysycb')
+
       @csv_file_body = <<-EOS
 Ref,Date,Code,RawShares,Shares,Price,Info
 1,2006-05-02,P,5000,5000,8.6000,2006-08-09-1-I
@@ -354,6 +357,17 @@ EOS
           expect(row[:two_words].is_a?(Numeric)).to be true
           expect(row[:c].is_a?(BigDecimal)).to be true
         end
+      end
+
+      it 'should be create-able from a SQL query' do
+        query = <<EOQ
+              SELECT id, cik, name
+              FROM filers
+              WHERE name ~* \'malone\'
+EOQ
+        tab = Table.from_sql(query)
+        expect(tab.class).to eq(Table)
+        expect(tab.rows.size).to be > 0
       end
 
       it 'should set T F columns to Boolean' do

@@ -118,6 +118,19 @@ module FatTable
       @boundaries = table.boundaries
     end
 
+    # Construct a Table by running a SQL query against the database set up with
+    # FatTable.set_db.  Return the Table with the query results as rows.
+    def self.from_sql(query)
+      raise 'FatTable.db must be set with FatTable.set_db' if FatTable.db.nil?
+      result = Table.new
+      sth = FatTable.db.prepare(query)
+      sth.execute
+      sth.fetch_hash do |h|
+        result << h
+      end
+      result
+    end
+
     ############################################################################
     # Class-level constructor helpers
     ############################################################################
