@@ -3,8 +3,6 @@ require 'spec_helper'
 module FatTable
   describe Table do
     before :all do
-      FatTable.set_db(database: 'S16oR_production', host: 'db1.lan',
-                      user: 'vagrant', password: 'fysycb')
 
       @csv_file_body = <<-EOS
 Ref,Date,Code,RawShares,Shares,Price,Info
@@ -359,15 +357,23 @@ EOS
         end
       end
 
-      it 'should be create-able from a SQL query' do
-        query = <<EOQ
-              SELECT id, cik, name
-              FROM filers
-              WHERE name ~* \'malone\'
+      it 'should be create-able from a SQL query', :db do
+        ok = system("psql -q -c 'drop database if exists fat_table_spec' 2>/dev/null")
+        expect(ok).to be_truthy
+        ok = system("psql -q -c 'create database fat_table_spec' 2>/dev/null")
+        expect(ok).to be_truthy
+        sql_file = "#{__dir__}/../example_files/trades.sql"
+        if ok && system("psql -q -d fat_table_spec -f #{sql_file} 2>/dev/null")
+          FatTable.set_db(database: 'fat_table_spec', host: 'localhost')
+          query = <<EOQ
+              SELECT ref, date, code, price, shares
+              FROM trades
+              WHERE shares > 1000;
 EOQ
-        tab = Table.from_sql(query)
-        expect(tab.class).to eq(Table)
-        expect(tab.rows.size).to be > 0
+          tab = Table.from_sql(query)
+          expect(tab.class).to eq(Table)
+          expect(tab.rows.size).to be > 100
+        end
       end
 
       it 'should set T F columns to Boolean' do
@@ -388,6 +394,12 @@ EOQ
                                { a: '1', 'Two words' => '2', c: '3,123', d: 'apple' },
                                { a: '4', 'Two words' => '5', c: '6,412', d: 'orange' },
                                { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }])
+      end
+
+      it 'should act as an Enumerable' do
+        @tab.each do |r|
+          expect(r.class).to eq(Hash)
+        end
       end
 
       it 'should be able to index by column head' do
