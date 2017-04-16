@@ -3,14 +3,12 @@ module FatTable
 
   def self.set_db(driver: 'Pg',
                   database:,
-                  user:,
-                  password:,
+                  user: nil,
+                  password: nil,
                   host: 'localhost',
                   port: '5432',
                   socket: '/tmp/.s.PGSQL.5432')
     raise ArgumentError, 'must supply database name to set_db' unless database
-    raise ArgumentError, 'must supply user to set_db' unless user
-    raise ArgumentError, 'must supply password to set_db' unless password
 
     valid_drivers = ['Pg', 'Mysql', 'SQLite3']
     unless valid_drivers.include?(driver)
