@@ -344,7 +344,21 @@ module FatTable
       rows
     end
 
-    ## ###########################################################################
+    #############################################################################
+    # Enumerable
+    #############################################################################
+
+    public
+
+    include Enumerable
+
+    def each
+      rows.each do |row|
+        yield row
+      end
+    end
+
+    #############################################################################
     ##  Group Boundaries
     ##
     ##  Boundaries mark the last row in each "group" within the table. The last
