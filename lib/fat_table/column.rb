@@ -14,7 +14,7 @@ module FatTable
         if @raw_header.is_a?(Symbol)
           @raw_header
         else
-          @raw_header.gsub(/[^A-Za-z0-9 ]/, '').as_sym
+          @raw_header.as_sym
         end
       @type = 'NilClass'
       raise "Unknown column type '#{type}" unless TYPES.include?(@type.to_s)
