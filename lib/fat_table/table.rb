@@ -95,8 +95,8 @@ module FatTable
     # following such rows mark a group boundary.  Note that this is the form of
     # a table used by org-mode src blocks, so it is useful for building Tables
     # from the result of a src block.
-    def self.from_aoa(aoa)
-      from_array_of_arrays(aoa)
+    def self.from_aoa(aoa, hlines = false)
+      from_array_of_arrays(aoa, hlines)
     end
 
     # Construct a Table from an array of hashes, or any objects that respond to
@@ -153,24 +153,36 @@ module FatTable
         result
       end
 
-      # Construct a new table from an array of arrays. If the second element of
-      # the array is a nil, a string that looks like an hrule, or an array whose
-      # first element is a string that looks like an hrule, interpret the first
-      # element of the array as a row of headers. Otherwise, synthesize headers of
-      # the form :col_1, :col_2, ... and so forth. The remaining elements are
-      # taken as the body of the table, except that if an element of the outer
-      # array is a nil or a string that looks like an hrule, mark the preceding
-      # row as a boundary.
-      def from_array_of_arrays(rows)
+      # Construct a new table from an array of arrays. By default, hline false,
+      # do not look for separators, i.e. nil or a string of dashes, just treat
+      # the first row as headers. With hline true, expect separators to mark the
+      # header row and any boundaries. If the second element of the array is a
+      # nil, a string that looks like an hrule, or an array whose first element
+      # is a string that looks like an hrule, interpret the first element of the
+      # array as a row of headers. Otherwise, synthesize headers of the form
+      # :col_1, :col_2, ... and so forth. The remaining elements are taken as
+      # the body of the table, except that if an element of the outer array is a
+      # nil or a string that looks like an hrule, mark the preceding row as a
+      # boundary. In org mode tables, by default, with :hlines no, all hlines
+      # are stripped from the table, otherwise they are indicated with nil
+      # elements in the outer array.
+      def from_array_of_arrays(rows, hlines = false)
         result = new
         headers = []
-        if looks_like_boundary?(rows[1])
+        if !hlines
           # Take the first row as headers
+          # Second row et seq as data
+          headers = rows[0].map(&:to_s).map(&:as_sym)
+          first_data_row = 1
+        elsif looks_like_boundary?(rows[1])
           # Use first row 0 as headers
-          headers = rows[0].map(&:as_sym)
+          # Row 1 is an hline
+          # Row 2 et seq are data
+          headers = rows[0].map(&:to_s).map(&:as_sym)
           first_data_row = 2
         else
           # Synthesize headers
+          # Row 0 et seq are data
           headers = (1..rows[0].size).to_a.map { |k| "col_#{k}".as_sym }
           first_data_row = 0
         end
@@ -243,7 +255,7 @@ module FatTable
             rows << line.split('|').map(&:clean)
           end
         end
-        from_array_of_arrays(rows)
+        from_array_of_arrays(rows, true)
       end
     end
 
