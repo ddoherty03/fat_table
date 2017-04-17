@@ -302,6 +302,7 @@ module FatTable
       [:header, :bfirst, :gfirst, :body, :footer, :gfooter].each do |loc|
         format_for(loc, fmts)
       end
+      self
     end
 
     # Define a format for the given location, :header, :body, :footer, :gfooter
