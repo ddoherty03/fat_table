@@ -417,6 +417,14 @@ module FatTable
 
     public
 
+    # Return this table with all groups removed. Useful after something like
+    # Table#order_by, which adds groups as a side-effect. This modifies the
+    # input table, so it a departure from the otherwise immutability of Tables.
+    def nogroups
+      @boundaries = []
+      self
+    end
+
     # Return an array of an array of row hashes for the groups in this Table.
     def groups
       normalize_boundaries
