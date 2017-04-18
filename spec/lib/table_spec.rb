@@ -708,14 +708,19 @@ EOQ
            [16, '2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'ZMEAC', 'T']]
         tab = Table.from_aoa(aoa)
         tab2 = tab.where('!bool || code == "P"')
+        expect(tab2.columns.size).to eq(8)
         expect(tab2.rows.size).to eq(5)
         tab2 = tab.where('code == "S" && raw < 10_000')
+        expect(tab2.columns.size).to eq(8)
         expect(tab2.rows.size).to eq(2)
         tab2 = tab.where('@row > 10')
+        expect(tab2.columns.size).to eq(8)
         expect(tab2.rows.size).to eq(2)
         tab2 = tab.where('info =~ /zmeac/i')
+        expect(tab2.columns.size).to eq(8)
         expect(tab2.rows.size).to eq(10)
         tab2 = tab.where('info =~ /xxxx/')
+        expect(tab2.columns.size).to eq(8)
         expect(tab2.rows.size).to eq(0)
       end
 

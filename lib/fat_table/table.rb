@@ -575,13 +575,17 @@ module FatTable
     def where(expr)
       expr = expr.to_s
       result = Table.new
+      headers.each do |h|
+        col = Column.new(header: h)
+        result.add_column(col)
+      end
       ev = Evaluator.new(vars: { row: 0 },
                          before: '@row = __row; @group = __group')
       rows.each_with_index do |row, k|
-        vars = row
+        vars = row.dup
         vars[:__row] = k + 1
         vars[:__group] = row_index_to_group_index(k)
-        result << row if ev.evaluate(expr, vars: row)
+        result << row if ev.evaluate(expr, vars: vars)
       end
       result.normalize_boundaries
       result
