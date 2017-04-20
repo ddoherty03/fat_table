@@ -95,8 +95,8 @@ module FatTable
     # following such rows mark a group boundary.  Note that this is the form of
     # a table used by org-mode src blocks, so it is useful for building Tables
     # from the result of a src block.
-    def self.from_aoa(aoa, hlines = false)
-      from_array_of_arrays(aoa, hlines)
+    def self.from_aoa(aoa, hlines: false)
+      from_array_of_arrays(aoa, hlines: hlines)
     end
 
     # Construct a Table from an array of hashes, or any objects that respond to
@@ -166,7 +166,7 @@ module FatTable
       # boundary. In org mode tables, by default, with :hlines no, all hlines
       # are stripped from the table, otherwise they are indicated with nil
       # elements in the outer array.
-      def from_array_of_arrays(rows, hlines = false)
+      def from_array_of_arrays(rows, hlines: false)
         result = new
         headers = []
         if !hlines
@@ -255,7 +255,7 @@ module FatTable
             rows << line.split('|').map(&:clean)
           end
         end
-        from_array_of_arrays(rows, true)
+        from_array_of_arrays(rows, hlines: true)
       end
     end
 

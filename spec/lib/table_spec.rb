@@ -325,7 +325,7 @@ EOS
 
         # Set second param to true to say headers must be marked by an hline,
         # otherwise headers will be synthesized.
-        tab = Table.from_aoa(aoa, true)
+        tab = Table.from_aoa(aoa, hlines: true)
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to eq(4)
         expect(tab.headers.sort).to eq [:col_1, :col_2, :col_3]
@@ -943,7 +943,7 @@ EOQ
       end
 
       it 'add group boundaries on reading from aoa' do
-        tab = Table.from_aoa(@aoa, true)
+        tab = Table.from_aoa(@aoa, hlines: true)
         expect(tab.groups.size).to eq(4)
         expect(tab.groups[0].size).to eq(1)
         expect(tab.groups[1].size).to eq(3)
