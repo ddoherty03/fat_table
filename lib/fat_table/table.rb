@@ -88,13 +88,19 @@ module FatTable
       from_org_io(StringIO.new(str))
     end
 
-    # Construct a Table from an array of arrays.  If the second element is a nil
-    # or is an array whose first element is a string that looks like a rule
-    # separator, '|-----------', '+----------', etc., the headers will be taken
-    # from the first array converted to strings and then to symbols.  Any
-    # following such rows mark a group boundary.  Note that this is the form of
-    # a table used by org-mode src blocks, so it is useful for building Tables
-    # from the result of a src block.
+    # Construct a new table from an array of arrays. By default, with hlines
+    # false, do not look for separators, i.e. nil or a string of dashes, just
+    # treat the first row as headers. With hlines true, expect separators to
+    # mark the header row and any boundaries. If the second element of the array
+    # is a nil, or an array whose first element is a string that looks like an
+    # hrule, '|-----------', '+----------', etc., interpret the first element of
+    # the array as a row of headers. Otherwise, synthesize headers of the form
+    # :col_1, :col_2, ... and so forth. The remaining elements are taken as the
+    # body of the table, except that if an element of the outer array is a nil
+    # or an array whose first element is a string that looks like an hrule, mark
+    # the preceding row as a boundary. In org mode code blocks, by default
+    # (:hlines no) all hlines are stripped from the table, otherwise (:hlines
+    # yes) they are indicated with nil elements in the outer array.
     def self.from_aoa(aoa, hlines: false)
       from_array_of_arrays(aoa, hlines: hlines)
     end
@@ -152,19 +158,20 @@ module FatTable
         result
       end
 
-      # Construct a new table from an array of arrays. By default, hline false,
-      # do not look for separators, i.e. nil or a string of dashes, just treat
-      # the first row as headers. With hline true, expect separators to mark the
-      # header row and any boundaries. If the second element of the array is a
-      # nil, a string that looks like an hrule, or an array whose first element
-      # is a string that looks like an hrule, interpret the first element of the
-      # array as a row of headers. Otherwise, synthesize headers of the form
-      # :col_1, :col_2, ... and so forth. The remaining elements are taken as
-      # the body of the table, except that if an element of the outer array is a
-      # nil or a string that looks like an hrule, mark the preceding row as a
-      # boundary. In org mode tables, by default, with :hlines no, all hlines
-      # are stripped from the table, otherwise they are indicated with nil
-      # elements in the outer array.
+      # Construct a new table from an array of arrays. By default, with hlines
+      # false, do not look for separators, i.e. nil or a string of dashes, just
+      # treat the first row as headers. With hlines true, expect separators to
+      # mark the header row and any boundaries. If the second element of the
+      # array is a nil, or an array whose first element is a string that looks
+      # like an hrule, '|-----------', '+----------', etc., interpret the first
+      # element of the array as a row of headers. Otherwise, synthesize headers
+      # of the form :col_1, :col_2, ... and so forth. The remaining elements are
+      # taken as the body of the table, except that if an element of the outer
+      # array is a nil or an array whose first element is a string that looks
+      # like an hrule, mark the preceding row as a boundary. In org mode code
+      # blocks, by default (:hlines no) all hlines are stripped from the table,
+      # otherwise (:hlines yes) they are indicated with nil elements in the
+      # outer array.
       def from_array_of_arrays(rows, hlines: false)
         result = new
         headers = []
