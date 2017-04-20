@@ -114,8 +114,7 @@ module FatTable
     # Construct a Table from another Table.  Inherit any group boundaries from
     # the input table.
     def self.from_table(table)
-      from_aoh(table.rows)
-      @boundaries = table.boundaries
+      table.deep_dup
     end
 
     # Construct a Table by running a SQL query against the database set up with
