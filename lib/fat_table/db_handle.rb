@@ -8,7 +8,7 @@ module FatTable
                   host: 'localhost',
                   port: '5432',
                   socket: '/tmp/.s.PGSQL.5432')
-    raise ArgumentError, 'must supply database name to set_db' unless database
+    raise UserError, 'must supply database name to set_db' unless database
 
     valid_drivers = ['Pg', 'Mysql', 'SQLite3']
     unless valid_drivers.include?(driver)
@@ -25,7 +25,7 @@ module FatTable
         "DBI:Pg:database=#{database};host=#{host};port=#{port}"
       end
     self.handle = ::DBI.connect(dsn, user, password)
-    raise 'Could not connect to #{dsn}' unless handle
+    raise TransientError, 'Could not connect to #{dsn}' unless handle
     handle
   end
 

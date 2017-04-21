@@ -17,7 +17,7 @@ module FatTable
           @raw_header.as_sym
         end
       @type = 'NilClass'
-      raise "Unknown column type '#{type}" unless TYPES.include?(@type.to_s)
+      raise UserError, "Unknown column type '#{type}" unless TYPES.include?(@type.to_s)
       @items = []
       items.each { |i| self << i }
     end
@@ -173,7 +173,7 @@ module FatTable
 
     def only_with(agg, *valid_types)
       return self if valid_types.include?(type)
-      raise "Aggregate '#{agg}' cannot be applied to a #{type} column"
+      raise UserError, "Aggregate '#{agg}' cannot be applied to a #{type} column"
     end
 
     public
@@ -190,7 +190,7 @@ module FatTable
     # Return a new Column appending the items of other to our items, checking
     # for type compatibility.
     def +(other)
-      raise 'Cannot combine columns with different types' unless type == other.type
+      raise UserError, 'Cannot combine columns with different types' unless type == other.type
       Column.new(header: header, items: items + other.items)
     end
 
@@ -234,7 +234,7 @@ module FatTable
             elsif new_val.is_a?(String)
               'String'
             else
-              raise "Cannot add #{val} of type #{new_val.class.name} to a column"
+              raise UserError, "Cannot add #{val} of type #{new_val.class.name} to a column"
             end
         end
         new_val
@@ -244,7 +244,7 @@ module FatTable
         else
           new_val = convert_to_boolean(val)
           if new_val.nil?
-            raise "Attempt to add '#{val}' to a column already typed as #{type}"
+            raise UserError, "Attempt to add '#{val}' to a column already typed as #{type}"
           end
           new_val
         end
@@ -254,7 +254,7 @@ module FatTable
         else
           new_val = convert_to_date_time(val)
           if new_val.nil?
-            raise "Attempt to add '#{val}' to a column already typed as #{type}"
+            raise UserError, "Attempt to add '#{val}' to a column already typed as #{type}"
           end
           new_val
         end
@@ -264,7 +264,7 @@ module FatTable
         else
           new_val = convert_to_numeric(val)
           if new_val.nil?
-            raise "Attempt to add '#{val}' to a column already typed as #{type}"
+            raise UserError, "Attempt to add '#{val}' to a column already typed as #{type}"
           end
           new_val
         end
@@ -274,12 +274,12 @@ module FatTable
         else
           new_val = convert_to_string(val)
           if new_val.nil?
-            raise "Attempt to add '#{val}' to a column already typed as #{type}"
+            raise UserError, "Attempt to add '#{val}' to a column already typed as #{type}"
           end
           new_val
         end
       else
-        raise "Mysteriously, column has unknown type '#{type}'"
+        raise UserError, "Mysteriously, column has unknown type '#{type}'"
       end
     end
 
