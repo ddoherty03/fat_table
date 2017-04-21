@@ -350,8 +350,10 @@ module FatTable
     # Return the rows from first to last.  We could just index #rows, but in a
     # large table, that would require that we construct all the rows for a range
     # of any size.
-    def rows_range(first = 0, last = size - 1)
-      raise ArgumentError, 'first must be <= last' unless first <= last
+    def rows_range(first = 0, last = nil)
+      last ||= size - 1
+      last = [last, 0].max
+      raise UserError, 'first must be <= last' unless first <= last
       rows = []
       unless columns.empty?
         first.upto(last) do |rnum|
