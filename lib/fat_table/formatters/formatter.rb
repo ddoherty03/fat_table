@@ -126,7 +126,7 @@ module FatTable
     #
     def initialize(table = Table.new, **options)
       unless table && table.is_a?(Table)
-        raise ArgumentError, 'must initialize Formatter with a Table'
+        raise UserError, 'must initialize Formatter with a Table'
       end
       @table = table
       @options = options
@@ -204,13 +204,13 @@ module FatTable
       foot = {}
       sum_cols.each do |h|
         unless table.headers.include?(h)
-          raise "No '#{h}' column in table to sum in the footer"
+          raise UserError, "No '#{h}' column in table to sum in the footer"
         end
         foot[h] = :sum
       end
       agg_cols.each do |h, agg|
         unless table.headers.include?(h)
-          raise "No '#{h}' column in table to #{aggregate} in the footer"
+          raise UserError, "No '#{h}' column in table to #{aggregate} in the footer"
         end
         foot[h] = agg
       end
@@ -223,13 +223,13 @@ module FatTable
       foot = {}
       sum_cols.each do |h|
         unless table.headers.include?(h)
-          raise "No '#{h}' column in table to sum in the group footer"
+          raise UserError, "No '#{h}' column in table to sum in the group footer"
         end
         foot[h] = :sum
       end
       agg_cols.each do |h, agg|
         unless table.headers.include?(h)
-          raise "No '#{h}' column in table to #{aggregate} in the group footer"
+          raise UserError, "No '#{h}' column in table to #{aggregate} in the group footer"
         end
         foot[h] = agg
       end
@@ -325,13 +325,13 @@ module FatTable
     # including all cells in group or table footers.
     def format_for(location, **fmts)
       unless LOCATIONS.include?(location)
-        raise ArgumentError, "unknown format location '#{location}'"
+        raise UserError, "unknown format location '#{location}'"
       end
       valid_keys = table.headers + [:string, :numeric, :datetime, :boolean, :nil]
       invalid_keys = (fmts.keys - valid_keys).uniq
       unless invalid_keys.empty?
         msg = "invalid #{location} column or type: #{invalid_keys.join(',')}"
-        raise ArgumentError, msg
+        raise UserError, msg
       end
       @format_at[location] ||= {}
       table.headers.each do |h|
@@ -405,7 +405,7 @@ module FatTable
     def parse_string_fmt(fmt)
       format, fmt = parse_str_fmt(fmt)
       unless fmt.blank?
-        raise ArgumentError, "unrecognized string formatting instructions '#{fmt}'"
+        raise UserError, "unrecognized string formatting instructions '#{fmt}'"
       end
       format
     end
@@ -513,7 +513,7 @@ module FatTable
         fmt = fmt.sub($&, '')
       end
       unless fmt.blank?
-        raise ArgumentError, "unrecognized numeric formatting instructions '#{fmt}'"
+        raise UserError, "unrecognized numeric formatting instructions '#{fmt}'"
       end
       fmt_hash
     end
@@ -537,7 +537,7 @@ module FatTable
         fmt = fmt.sub($&, '')
       end
       unless fmt.blank?
-        raise ArgumentError, "unrecognized datetime formatting instructions '#{fmt}'"
+        raise UserError, "unrecognized datetime formatting instructions '#{fmt}'"
       end
       fmt_hash
     end
@@ -584,7 +584,7 @@ module FatTable
         fmt = fmt.sub($&, '')
       end
       unless fmt.blank?
-        raise ArgumentError, "unrecognized boolean formatting instructions '#{fmt}'"
+        raise UserError, "unrecognized boolean formatting instructions '#{fmt}'"
       end
       fmt_hash
     end
@@ -633,7 +633,7 @@ module FatTable
         str = format_string(val, istruct, width)
         decorate ? decorate_string(str, istruct) : str
       else
-        raise ArgumentError,
+        raise UserError,
               "cannot format value '#{val}' of class #{val.class}"
       end
     end
@@ -987,7 +987,7 @@ module FatTable
     # Raise an error unless the given color is valid for this Formatter.
     def validate_color(clr)
       return true unless clr
-      raise ArgumentError, invalid_color_msg(clr) unless color_valid?(clr)
+      raise UserError, invalid_color_msg(clr) unless color_valid?(clr)
     end
 
     ###########################################################################
