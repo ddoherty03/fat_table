@@ -277,9 +277,10 @@ EOS
           ['7', '8', '9.0'],
           [10, 11, 12.1]
         ]
-        tab = Table.from_aoa(aoa)
+        tab = Table.from_aoa(aoa, hlines: true)
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to eq(4)
+        expect(tab.groups.size).to eq(1)
         expect(tab.rows[0].keys.sort).to eq [:first, :second, :third]
         tab.rows.each do |row|
           row.each_pair do |k, _v|
@@ -300,9 +301,10 @@ EOS
           ['7', '8', '9.0'],
           [10, 11, 12.1]
         ]
-        tab = Table.from_aoa(aoa)
+        tab = Table.from_aoa(aoa, hlines: true)
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to eq(4)
+        expect(tab.groups.size).to eq(1)
         expect(tab.headers.sort).to eq [:first, :second, :third]
         tab.rows.each do |row|
           row.each_pair do |k, _v|
