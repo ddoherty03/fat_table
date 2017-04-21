@@ -194,6 +194,9 @@ module FatTable
         end
         rows[first_data_row..-1].each do |row|
           if looks_like_boundary?(row)
+            unless hlines
+              raise UserError, 'found an hline in input with hlines false; try setting hlines true'
+            end
             result.mark_boundary
             next
           end
