@@ -1,14 +1,14 @@
 # FatTable
 
 ~FatTable~ is a gem that treats tables as a data type. It provides methods for
-constructing tables from a variety of sources, building them row-by-row or
-column-by-column, extracting rows, columns, and cells, and performing aggregate
-operations on columns. It also provides as set of SQL-esque methods for
-manipulating table objects: ~select~ for filtering by columns or for creating
-new columns, ~where~ for filtering by rows, ~order_by~ for sorting rows,
-~distinct~ for eliminating duplicate rows, ~group_by~ for aggregating multiple
-rows into single rows and applying column aggregate methods to ungrouped
-columns, a collection of ~join~ methods for combining tables, and more.
+constructing tables from a variety of sources, building them row-by-row,
+extracting rows, columns, and cells, and performing aggregate operations on
+columns. It also provides as set of SQL-esque methods for manipulating table
+objects: ~select~ for filtering by columns or for creating new columns, ~where~
+for filtering by rows, ~order_by~ for sorting rows, ~distinct~ for eliminating
+duplicate rows, ~group_by~ for aggregating multiple rows into single rows and
+applying column aggregate methods to ungrouped columns, a collection of ~join~
+methods for combining tables, and more.
 
 Furthermore, ~FatTable~ provides methods for formatting tables and producing
 output that targets various output media: text, ANSI terminals, ruby data
@@ -53,15 +53,17 @@ Or install it yourself as:
 
 ** Anatomy of a Table
 
+*** Columns
+
 ~FatTable::Table~ objects consist of an array of ~FatTable::Column~ objects.
 Each ~Column~ has a header, a type, and an array of items, all of the given type
 or nil. There are only five permissible types for a ~Column~:
 
-1. Boolean,
-2. DateTime (or Date),
-3. Numeric,
-4. String, or
-5. NilClass.
+1. Boolean (for holding ruby ~TrueClass~ and ~FalseClass~ objects),
+2. DateTime (for holding ruby ~DateTime~ or ~Date~ objects),
+3. Numeric (for holding ruby ~Integer~, ~Rational~, or ~BigDecimal~ objects),
+4. String (for ruby String objects), or
+5. NilClass (for the undetermined column type).
 
 When a ~Table~ is constructed from an external source, all ~Columns~ start out
 having a type of ~NilClass~, that is, their type is as yet undetermined. When a
@@ -99,13 +101,39 @@ types as follows:
      already having the String type are kept as empty strings.
 - NilClass :: until the input contains a non-blank string that can be parsed as
      one of the other types, it has this type, meaning that the type is still
-     open. A column comprised completely of blank strings or nils will reatin
-     this type.
+     open. A column comprised completely of blank strings or nils will retain
+     the ~NilClass~ type.
+
+*** Headers
+
+Headers for the columns are formed from the input.  If they are strings or
+respond to ~#to_s~, they are converted to symbols by
+
+- converting to a string with ~#to_s#,
+- converting any run of blanks to an underscore '_',
+- removing any characters that are not letters, numbers, or underscores, and
+- lowercasing all remaining letters
+
+Thus, a header of 'Date' become ~:date:, a header of 'Id Number' becomes,
+~:id_number~, etc. When referring to a column in code, you must use the symbol
+form of the header.
+
+If no sensible headers can be discerned from the input, headers of the form
+:col_1, :col_2, etc., are synthesized.
+
+*** Groups
+
+The rows of a table can be sub-divided into groups, either from markers in the
+input or as a result of certain operations. There is only one level of grouping,
+so ~FatTable~ has no concept of sub-groups. Groups can be shown on output with
+rules or 'hlines' that underline the last row in each group, and you can
+decorate the output with group footers that summarize the columns in each group.
 
 ** Constructing Tables
+
 *** Empty Tables
 
-You can build an empty table with ~FatTable.new~, and then add rows with the
+You can create an empty table with ~FatTable.new~, and then add rows with the
 ~<<~ operator and a Hash:
 
 #+BEGIN_SRC ruby
@@ -122,6 +150,62 @@ time stamps.
 
 *** From CSV or Org Mode files or strings
 
+Tables can also be read from ~.csv~ files or files containing ~org-mode~ tables.
+In the case of org-mode files, ~FatTable~ skips through the file until it finds
+lines that look like a table, that is they begin with any number of spaces
+followed by ~'|-'.  The first row is taken as the header row in either case, and
+the headers are converted to symbols as described above.
+
+Likewise, ~FatTable~ can construct a table from a string containing a ~.csv~ or
+org-mode table.
+
+#+BEGIN_SRC ruby
+    tab1 = FatTable.from_csv_file('~/data.csv')
+    tab2 = FatTable.from_org_file('~/project.org')
+
+        csv_body = <<-EOS
+  Ref,Date,Code,RawShares,Shares,Price,Info
+  1,2006-05-02,P,5000,5000,8.6000,2006-08-09-1-I
+  2,2006-05-03,P,5000,5000,8.4200,2006-08-09-1-I
+  3,2006-05-04,P,5000,5000,8.4000,2006-08-09-1-I
+  4,2006-05-10,P,8600,8600,8.0200,2006-08-09-1-D
+  5,2006-05-12,P,10000,10000,7.2500,2006-08-09-1-D
+  6,2006-05-12,P,2000,2000,6.7400,2006-08-09-1-I
+  EOS
+
+      tab3 = FatTable.from_csv_string(csv_body)
+
+      org_body = <<-EOS
+~*~ Smith Transactions
+:PROPERTIES:
+:TABLE_EXPORT_FILE: smith.csv
+:END:
+
+#+TBLNAME: smith_tab
+| Ref |       Date | Code |     Raw | Shares |    Price | Info    |
+|-----+------------+------+---------+--------+----------+---------|
+|  29 | 2013-05-02 | P    | 795,546 |  2,609 |  1.18500 | ENTITY1 |
+|  30 | 2013-05-02 | P    | 118,186 |    388 | 11.85000 | ENTITY1 |
+|  31 | 2013-05-02 | P    | 340,948 |  1,926 |  1.18500 | ENTITY2 |
+|  32 | 2013-05-02 | P    |  50,651 |    286 | 11.85000 | ENTITY2 |
+|  33 | 2013-05-20 | S    |  12,000 |     32 | 28.28040 | ENTITY3 |
+|  34 | 2013-05-20 | S    |  85,000 |    226 | 28.32240 | ENTITY3 |
+|  35 | 2013-05-20 | S    |  33,302 |     88 | 28.63830 | ENTITY3 |
+|  36 | 2013-05-23 | S    |   8,000 |     21 | 27.10830 | ENTITY3 |
+|  37 | 2013-05-23 | S    |  23,054 |     61 | 26.80150 | ENTITY3 |
+|  38 | 2013-05-23 | S    |  39,906 |    106 | 25.17490 | ENTITY3 |
+|  39 | 2013-05-29 | S    |  13,459 |     36 | 24.74640 | ENTITY3 |
+|  40 | 2013-05-29 | S    |  15,700 |     42 | 24.77900 | ENTITY3 |
+|  41 | 2013-05-29 | S    |  15,900 |     42 | 24.58020 | ENTITY3 |
+|  42 | 2013-05-30 | S    |   6,679 |     18 | 25.04710 | ENTITY3 |
+
+~*~ Another Heading
+EOS
+
+tab3 = FatTable.from_org_string(org_body)
+#+END_SRC
+
+
 *** From Arrays of Arrays
 
 *** From Arrays of Hashes
@@ -130,12 +214,14 @@ time stamps.
 
 ** Accessing Parts of Tables
 *** Rows
+
 *** Columns
+
 *** Cells
 
 ** Operations on Tables
 
-** Outputting Tables with Formatting
+** Formatting Tables
 
 * Development
 
