@@ -239,7 +239,7 @@ module FatTable
         end
         new_val
       when 'Boolean'
-        if val.nil?
+        if val.blank?
           nil
         else
           new_val = convert_to_boolean(val)
@@ -249,7 +249,7 @@ module FatTable
           new_val
         end
       when 'DateTime'
-        if val.nil?
+        if val.blank?
           nil
         else
           new_val = convert_to_date_time(val)
@@ -259,7 +259,7 @@ module FatTable
           new_val
         end
       when 'Numeric'
-        if val.nil?
+        if val.blank?
           nil
         else
           new_val = convert_to_numeric(val)
