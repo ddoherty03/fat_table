@@ -26,22 +26,27 @@ module FatTable
     # Attributes
     ##########################################################################
 
+    # Return the item of the column at the given index.
     def [](k)
       items[k]
     end
 
+    # Convert the column to an Array.
     def to_a
       items
     end
 
+    # Return the size of the column, including any nils.
     def size
       items.size
     end
 
+    # Return true if there are no items in the column.
     def empty?
       items.empty?
     end
 
+    # Return the index of the last item in the column.
     def last_i
       size - 1
     end
