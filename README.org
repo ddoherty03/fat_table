@@ -2,32 +2,32 @@
 
 ~FatTable~ is a gem that treats tables as a data type. It provides methods for
 constructing tables from a variety of sources, building them row-by-row or
-column-by-column, extracting rows and column, and performing aggregate
+column-by-column, extracting rows, columns, and cells, and performing aggregate
 operations on columns. It also provides as set of SQL-esque methods for
-manipulating table objects: ~select~ for filtering by columns or creating new
-columns, ~where~ for filtering by rows, ~order_by~ for sorting rows, ~distinct~
-for eliminating duplicate rows, ~group_by~ for aggregating multiple rows into
-single rows and applying column aggregate methods to ungrouped columns, and a
-collection of ~join~ methods for combining tables.
+manipulating table objects: ~select~ for filtering by columns or for creating
+new columns, ~where~ for filtering by rows, ~order_by~ for sorting rows,
+~distinct~ for eliminating duplicate rows, ~group_by~ for aggregating multiple
+rows into single rows and applying column aggregate methods to ungrouped
+columns, a collection of ~join~ methods for combining tables, and more.
 
 Furthermore, ~FatTable~ provides methods for formatting tables and producing
-output that target various output media: text, ANSI terminals, ruby data
+output that targets various output media: text, ANSI terminals, ruby data
 structures, LaTeX tables, Emacs org-mode tables, and more. The formatting
 methods can specify cell formatting in a way that is uniform across all the
-output methods and can also decorate the output with any number of footers.
-~FatTable~ applies the formatting to the extent they make sense for the output
-medium and treats other formatting directives as no-ops.
+output methods and can also decorate the output with any number of footers,
+including group footers. ~FatTable~ applies formatting directives to the extent
+they makes sense for the output medium and treats other formatting directives as
+no-ops.
 
 ~FatTable~ can be used to perform operations on data that are naturally best
-conceived of as tables, which in may experience is quite often.  It can also
-serve as a foundation for providing reporting functions where flexibility about
-the output medium can be quite useful.  Finally, one of the motivations for
-~FatTable~, is to use it within Emacs ~org-mode~ files in code blocks targeting
-the ruby language.  Org mode tables are presented to a ruby code block as an
-array of arrays, so ~FatTable~ can read them in with its ~from_aoa~ constructor.
-A ~FatTable~ table output as an array of arrays with its ~to_aoa~ output
-functions will be rendered in an org-mode buffer as an org-table, ready for
-processing by other code blocks.
+conceived of as tables, which in my experience is quite often. It can also serve
+as a foundation for providing reporting functions where flexibility about the
+output medium can be quite useful. Finally ~FatTable~ can be used within Emacs
+~org-mode~ files in code blocks targeting the Ruby language. Org mode tables are
+presented to a ruby code block as an array of arrays, so ~FatTable~ can read
+them in with its ~.from_aoa~ constructor. A ~FatTable~ table can output as an
+array of arrays with its ~.to_aoa~ output function and will be rendered in an
+org-mode buffer as an org-table, ready for processing by other code blocks.
 
 * Installation
 
@@ -54,8 +54,8 @@ Or install it yourself as:
 ** Anatomy of a Table
 
 ~FatTable::Table~ objects consist of an array of ~FatTable::Column~ objects.
-Each ~Column~ has a header, a type, and an array of items all of the given type
-or nil.  There are only five permissible types for a ~Column~:
+Each ~Column~ has a header, a type, and an array of items, all of the given type
+or nil. There are only five permissible types for a ~Column~:
 
 1. Boolean,
 2. DateTime (or Date),
@@ -63,38 +63,70 @@ or nil.  There are only five permissible types for a ~Column~:
 4. String, or
 5. NilClass.
 
-When a ~Table~ is constructed from an external source, all ~Column~s start out
+When a ~Table~ is constructed from an external source, all ~Columns~ start out
 having a type of ~NilClass~, that is, their type is as yet undetermined. When a
 string or object of one of the four determined types is added to a ~Column~, it
 fixes the type of the column and all further items added to the ~Column~ must
 either be nil (indicating no value) or be capable of being coerced to the
-columns type. Otherwise, ~FatTable~ raises an exception.
+column's type. Otherwise, ~FatTable~ raises an exception.
 
 Items of input must be either one of the permissible ruby objects or strings. If
 they are strings, ~FatTable~ attempts to parse them as one of the permissible
 types as follows:
 
-- Boolean :: the strings, 't', 'true', or 'yes', or 'y', regardless of case, are
+- Boolean :: the strings, 't', 'true', 'yes', or 'y', regardless of case, are
      interpreted as ~TrueClass~ and the strings, 'f', 'false', 'no', or 'n',
-     regardless of case, are interpreted as ~FalseClass~.
+     regardless of case, are interpreted as ~FalseClass~, in either case
+     resulting in a Boolean column. Empty strings in a column already having a
+     Boolean type are converted to nil.
 - DateTime :: strings that contain patterns of 'yyyy-mm-dd' or 'yyyy/mm/dd' will
      be interpreted as a ~DateTime~ or a ~Date~ (if there are no sub-day time
      components present). The number of digits in the month and day can be one
      or two, but the year component must be four digits. Any time components are
-     valid if they can be properly interpreted by ~DateTime.parse~.
-- Numeric :: all commas ',', underscores, '_', and dollar signs are removed from
-     the string and it is then interpreted as an ~Integer~ if there are do
+     valid if they can be properly interpreted by ~DateTime.parse~. Org mode
+     timestamps, active or inactive, are valid input strings for DateTime
+     columns. Empty strings in a column already having the DateTime type are
+     converted to nil.
+- Numeric :: all commas ',', underscores, '_', and '$' dollar signs are removed
+     from the string and if the remaining string can be interpreted as a
+     ~Numeric~, it will be. It is interpreted as an ~Integer~ if there are no
      decimal places in the remaining string, as a ~Rational~ if the string has
      the form '<number>:<number>' or '<number>/<number>', or as a ~BigDecimal~
-     if there is a decimal point in the remaining string.
-- String :: if all else fails, ~FatTable~ applies ~#to_s~ to the input and,
-     treats it as an item of type ~String~.
-- NilClass :: if
+     if there is a decimal point in the remaining string. Empty strings in a
+     column already having the Numeric type are converted to nil.
+- String :: if all else fails, ~FatTable~ applies ~#to_s~ to the input value
+     and, treats it as an item of type ~String~.  Empty strings in a column
+     already having the String type are kept as empty strings.
+- NilClass :: until the input contains a non-blank string that can be parsed as
+     one of the other types, it has this type, meaning that the type is still
+     open. A column comprised completely of blank strings or nils will reatin
+     this type.
 
 ** Constructing Tables
 *** Empty Tables
 
-You can build an empty table with FatTable.new, and then add rows or colums
+You can build an empty table with ~FatTable.new~, and then add rows with the
+~<<~ operator and a Hash:
+
+#+BEGIN_SRC ruby
+  tab = FatTable.new
+  tab << { a: 1, b: 2, c: '<2017-01-21>', d: 'f', e: '' }
+  tab << { a: 3.14, b: 2.17, c: '[2016-01-21 Thu]', d: 'Y', e: nil }
+#+END_SRC
+
+After this, the table will have column headers ~:a~, ~:b~, ~:c~, ~:d~, and ~:e~.
+Column, ~:a~ and ~:b~ will have type Numeric, column ~:c~ will have type
+~DateTime~, and column ~:f~ will have type ~Boolean~. Column ~:e~ will still
+have an open type. Notice that dates can be wrapped in brackets as in org-mode
+time stamps.
+
+*** From CSV or Org Mode files or strings
+
+*** From Arrays of Arrays
+
+*** From Arrays of Hashes
+
+*** From SQL queries
 
 ** Accessing Parts of Tables
 *** Rows
