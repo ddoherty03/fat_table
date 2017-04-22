@@ -127,10 +127,10 @@ module FatTable
       end
     end
 
-    # Return the variance, the average squared deviation from the mean, of the
-    # non-nil items in the column.  Works with numeric and datetime columns.
-    # For datetime columns, it converts each date to its Julian day number and
-    # computes the variance of those numbers.
+    # Return the population variance, the average squared deviation from the
+    # mean, of the non-nil items in the column. Works with numeric and datetime
+    # columns. For datetime columns, it converts each date to its Julian day
+    # number and computes the variance of those numbers.
     def var
       only_with('var', 'DateTime', 'Numeric')
       all_items =
@@ -147,10 +147,10 @@ module FatTable
       sq_dev / items.compact.size.to_d
     end
 
-    # Return the standard deviation, the square root of the variance, of the
-    # non-nil items in the column.  Works with numeric and datetime columns.
-    # For datetime columns, it converts each date to its Julian day number and
-    # computes the standard deviation of those numbers.
+    # Return the population standard deviation, the square root of the variance,
+    # of the non-nil items in the column. Works with numeric and datetime
+    # columns. For datetime columns, it converts each date to its Julian day
+    # number and computes the standard deviation of those numbers.
     def dev
       only_with('dev', 'DateTime', 'Numeric')
       Math.sqrt(var)
