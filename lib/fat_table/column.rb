@@ -239,7 +239,7 @@ module FatTable
         end
         new_val
       when 'Boolean'
-        if val.blank?
+        if (val.is_a?(String) && val.blank? || val.nil?)
           nil
         else
           new_val = convert_to_boolean(val)
