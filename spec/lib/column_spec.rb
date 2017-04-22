@@ -246,6 +246,90 @@ module FatTable
         expect(@dates.last).to eq(Date.new(2011, 2, 18))
         expect(@strs.last).to eq('ago')
       end
+
+      it 'should properly apply the rng aggregate' do
+        expect(@nums.rng).to eq('2018..87.654')
+        expect(@bools.rng).to eq('true..false')
+        expect(@dates.rng).to eq('2017-01-22..2011-02-18')
+        expect(@strs.rng).to eq('four..ago')
+      end
+
+      it 'should properly apply the sum aggregate' do
+        expect(@nums.sum.round(4)).to eq(64646466972.9067)
+        expect { @bools.sum }.to raise_error(/cannot be applied/)
+        expect { @dates.sum }.to raise_error(/cannot be applied/)
+        expect(@strs.sum).to eq('fourscoreand sevenyearsago')
+      end
+
+      it 'should properly apply the count aggregate' do
+        expect(@nums.count).to eq(6)
+        expect(@bools.count).to eq(4)
+        expect(@dates.count).to eq(4)
+        expect(@strs.count).to eq(5)
+      end
+
+      it 'should properly apply the min aggregate' do
+        expect(@nums.min).to eq(2/3r)
+        expect { @bools.min }.to raise_error(/cannot be applied/)
+        expect(@dates.min).to eq(Date.parse('1957-09-22'))
+        expect(@strs.min).to eq('ago')
+      end
+
+      it 'should properly apply the max aggregate' do
+        expect(@nums.max).to eq(64646464646)
+        expect { @bools.max }.to raise_error(/cannot be applied/)
+        expect(@dates.max).to eq(Date.parse('2017-01-22'))
+        expect(@strs.max).to eq('years')
+      end
+
+      it 'should properly apply the avg aggregate' do
+        expect(@nums.avg.round(2)).to eq(10774411162.15)
+        expect { @bools.avg }.to raise_error(/cannot be applied/)
+        expect(@dates.avg).to eq(DateTime.parse('1999-04-28 18:00'))
+        expect { @strs.avg }.to raise_error(/cannot be applied/)
+      end
+
+      it 'should properly apply the var aggregate' do
+        expect(@nums.var.round(1)).to eq(BigDecimal('580439629313335425001.2'))
+        expect { @bools.var }.to raise_error(/cannot be applied/)
+        expect(@dates.var).to eq(77700423.1875)
+        expect { @strs.var }.to raise_error(/cannot be applied/)
+      end
+
+      it 'should properly apply the dev aggregate' do
+        expect(@nums.dev.round(1)).to eq(BigDecimal('24092314735.5'))
+        expect { @bools.dev }.to raise_error(/cannot be applied/)
+        expect(@dates.dev.round(2)).to eq(8814.78)
+        expect { @strs.dev }.to raise_error(/cannot be applied/)
+      end
+
+      it 'should properly apply the any? aggregate' do
+        expect { @nums.any? }.to raise_error(/cannot be applied/)
+        expect(@bools.any?).to eq(true)
+        expect { @dates.any? }.to raise_error(/cannot be applied/)
+        expect { @strs.any? }.to raise_error(/cannot be applied/)
+      end
+
+      it 'should properly apply the all? aggregate' do
+        expect { @nums.all? }.to raise_error(/cannot be applied/)
+        expect(@bools.all?).to eq(false)
+        expect { @dates.all? }.to raise_error(/cannot be applied/)
+        expect { @strs.all? }.to raise_error(/cannot be applied/)
+      end
+
+      it 'should properly apply the none? aggregate' do
+        expect { @nums.none? }.to raise_error(/cannot be applied/)
+        expect(@bools.none?).to eq(false)
+        expect { @dates.none? }.to raise_error(/cannot be applied/)
+        expect { @strs.none? }.to raise_error(/cannot be applied/)
+      end
+
+      it 'should properly apply the one? aggregate' do
+        expect { @nums.one? }.to raise_error(/cannot be applied/)
+        expect(@bools.one?).to eq(false)
+        expect { @dates.one? }.to raise_error(/cannot be applied/)
+        expect { @strs.one? }.to raise_error(/cannot be applied/)
+      end
     end
   end
 end
