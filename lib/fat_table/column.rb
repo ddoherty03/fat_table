@@ -305,7 +305,6 @@ module FatTable
     # date, but the user probably does not intend it to be so treated.
     def convert_to_date_time(val)
       return val if val.is_a?(DateTime)
-      return val.to_datetime if val.is_a?(Date) && type == 'DateTime'
       return val if val.is_a?(Date)
       begin
         val = val.to_s.clean
