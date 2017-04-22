@@ -173,14 +173,14 @@ module FatTable
     # Return true if none of the items in the column are true; otherwise return
     # false.  Works only with boolean columns.
     def none?
-      only_with('any?', 'Boolean')
+      only_with('none?', 'Boolean')
       items.compact.none?
     end
 
     # Return true if precisely one of the items in the column is true;
     # otherwise return false.  Works only with boolean columns.
     def one?
-      only_with('any?', 'Boolean')
+      only_with('one?', 'Boolean')
       items.compact.one?
     end
 
