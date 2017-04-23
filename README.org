@@ -240,22 +240,22 @@ displayed as an org-mode table:
 #+NAME: trades1
 | Ref  |       Date | Code |  Price | G10 | QP10 | Shares |    LP |     QP |   IPLP |   IPQP |
 |------+------------+------+--------+-----+------+--------+-------+--------+--------+--------|
-| T001 | 2016-11-01 | P    | 7.7000 | F   | F    |    100 |    14 |     86 | 0.2453 | 0.1924 |
-| T002 | 2016-11-01 | P    | 7.7500 | F   | F    |    200 |    28 |    172 | 0.2453 | 0.1924 |
-| T003 | 2016-11-01 | P    | 7.5000 | F   | F    |    800 |   112 |    688 | 0.2453 | 0.1924 |
-| T004 | 2016-11-01 | S    | 7.5500 | F   | F    |   6811 |   966 |   5845 | 0.2453 | 0.1924 |
+| T001 | 2016-11-01 | P    | 7.7000 | T   | F    |    100 |    14 |     86 | 0.2453 | 0.1924 |
+| T002 | 2016-11-01 | P    | 7.7500 | T   | F    |    200 |    28 |    172 | 0.2453 | 0.1924 |
+| T003 | 2016-11-01 | P    | 7.5000 | F   | T    |    800 |   112 |    688 | 0.2453 | 0.1924 |
+| T004 | 2016-11-01 | S    | 7.5500 | T   | F    |   6811 |   966 |   5845 | 0.2453 | 0.1924 |
 | T005 | 2016-11-01 | S    | 7.5000 | F   | F    |   4000 |   572 |   3428 | 0.2453 | 0.1924 |
-| T006 | 2016-11-01 | S    | 7.6000 | F   | F    |   1000 |   143 |    857 | 0.2453 | 0.1924 |
-| T007 | 2016-11-01 | S    | 7.6500 | F   | F    |    200 |    28 |    172 | 0.2453 | 0.1924 |
+| T006 | 2016-11-01 | S    | 7.6000 | F   | T    |   1000 |   143 |    857 | 0.2453 | 0.1924 |
+| T007 | 2016-11-01 | S    | 7.6500 | T   | F    |    200 |    28 |    172 | 0.2453 | 0.1924 |
 | T008 | 2016-11-01 | P    | 7.6500 | F   | F    |   2771 |   393 |   2378 | 0.2453 | 0.1924 |
 | T009 | 2016-11-01 | P    | 7.6000 | F   | F    |   9550 |  1363 |   8187 | 0.2453 | 0.1924 |
-| T010 | 2016-11-01 | P    | 7.5500 | F   | F    |   3175 |   451 |   2724 | 0.2453 | 0.1924 |
-| T011 | 2016-11-02 | P    | 7.4250 | F   | F    |    100 |    14 |     86 | 0.2453 | 0.1924 |
+| T010 | 2016-11-01 | P    | 7.5500 | F   | T    |   3175 |   451 |   2724 | 0.2453 | 0.1924 |
+| T011 | 2016-11-02 | P    | 7.4250 | T   | F    |    100 |    14 |     86 | 0.2453 | 0.1924 |
 | T012 | 2016-11-02 | P    | 7.5500 | F   | F    |   4700 |   677 |   4023 | 0.2453 | 0.1924 |
-| T013 | 2016-11-02 | P    | 7.3500 | F   | F    |  53100 |  7656 |  45444 | 0.2453 | 0.1924 |
-| T014 | 2016-11-02 | P    | 7.4500 | F   | F    |   5847 |   835 |   5012 | 0.2453 | 0.1924 |
+| T013 | 2016-11-02 | P    | 7.3500 | T   | T    |  53100 |  7656 |  45444 | 0.2453 | 0.1924 |
+| T014 | 2016-11-02 | P    | 7.4500 | F   | T    |   5847 |   835 |   5012 | 0.2453 | 0.1924 |
 | T015 | 2016-11-02 | P    | 7.7500 | F   | F    |    500 |    72 |    428 | 0.2453 | 0.1924 |
-| T016 | 2016-11-02 | P    | 8.2500 | F   | F    |    100 |    14 |     86 | 0.2453 | 0.1924 |
+| T016 | 2016-11-02 | P    | 8.2500 | T   | T    |    100 |    14 |     86 | 0.2453 | 0.1924 |
 
 #+HEADER: :colnames no
 :#+BEGIN_SRC ruby :var tab=trades1
@@ -267,16 +267,16 @@ displayed as an org-mode table:
 #+RESULTS:
 | Ref  |       Date | Code | Price | G10 | QP10 | Shares |   Lp |    Qp |   Iplp |   Ipqp |
 |------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
-| T003 | 2016-11-01 | P    |   7.5 | F   | F    |    800 |  112 |   688 | 0.2453 | 0.1924 |
-| T004 | 2016-11-01 | S    |  7.55 | F   | F    |   6811 |  966 |  5845 | 0.2453 | 0.1924 |
+| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 |
+| T004 | 2016-11-01 | S    |  7.55 | T   | F    |   6811 |  966 |  5845 | 0.2453 | 0.1924 |
 | T005 | 2016-11-01 | S    |   7.5 | F   | F    |   4000 |  572 |  3428 | 0.2453 | 0.1924 |
-| T006 | 2016-11-01 | S    |   7.6 | F   | F    |   1000 |  143 |   857 | 0.2453 | 0.1924 |
+| T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 |
 | T008 | 2016-11-01 | P    |  7.65 | F   | F    |   2771 |  393 |  2378 | 0.2453 | 0.1924 |
 | T009 | 2016-11-01 | P    |   7.6 | F   | F    |   9550 | 1363 |  8187 | 0.2453 | 0.1924 |
-| T010 | 2016-11-01 | P    |  7.55 | F   | F    |   3175 |  451 |  2724 | 0.2453 | 0.1924 |
+| T010 | 2016-11-01 | P    |  7.55 | F   | T    |   3175 |  451 |  2724 | 0.2453 | 0.1924 |
 | T012 | 2016-11-02 | P    |  7.55 | F   | F    |   4700 |  677 |  4023 | 0.2453 | 0.1924 |
-| T013 | 2016-11-02 | P    |  7.35 | F   | F    |  53100 | 7656 | 45444 | 0.2453 | 0.1924 |
-| T014 | 2016-11-02 | P    |  7.45 | F   | F    |   5847 |  835 |  5012 | 0.2453 | 0.1924 |
+| T013 | 2016-11-02 | P    |  7.35 | T   | T    |  53100 | 7656 | 45444 | 0.2453 | 0.1924 |
+| T014 | 2016-11-02 | P    |  7.45 | F   | T    |   5847 |  835 |  5012 | 0.2453 | 0.1924 |
 #+END_EXAMPLE
 
 This example illustrates several things:
@@ -389,10 +389,111 @@ table:
   tab.types         # => an Array of the column types
   tab.size          # => the number of rows in the table
   tab.empty?        # => is the table empty?
-  tab.column?(head) # => does the table have a column with the given header
+  tab.column?(head) # => does the table have a column with the given header?
+  tab.groups        # => return an Array of an Array of row Hashes.
 #+END_SRC
 
 ** Operations on Tables
+
+Once you have one or more tables, you will likely want to perform operations on
+them. The operations provided by ~FatTable~ are the subject of this section.
+Before getting into the operations, though, there are a couple of issues that
+cut across all or many of the operations.
+
+First, tables are by and large immutable objects. Each operation creates a new
+table without affecting the input tables. Where this is not the case, it will be
+noted below.
+
+Second, because each operation results in a ~FatTable::Table~ object, the
+operations are chainable.
+
+Third, ~FatTable::Table~ objects can have "groups" of rows within the table.
+These can be decorated with hlines and group footers on output. Some of these
+operations result in marking group boundaries in the result table, others remove
+group boundaries that may have existed in the input table. Operations that
+either create or remove groups will also be noted below.
+
+Finally, the operations are for the most part patterned on SQL table operations,
+but when expressions play a role, you write them using ruby syntax rather than
+SQL, or worse, a totally new made-up language.
+
+*** Example Input Table
+
+For illustration purposes, we'll assume that the following table is, read into a
+ruby variable called 'trades' using one of the input methods above.  We have
+given the table groups, marked by the hlines below, to illustrate the affect of
+operations on groups if applicable.
+
+#+BEGIN_EXAMPLE
+#+NAME: trades
+| Ref  |       Date | Code |  Price | G10 | QP10 | Shares |    LP |     QP |   IPLP |   IPQP |
+|------+------------+------+--------+-----+------+--------+-------+--------+--------+--------|
+| T001 | 2016-11-01 | P    | 7.7000 | T   | F    |    100 |    14 |     86 | 0.2453 | 0.1924 |
+| T002 | 2016-11-01 | P    | 7.7500 | T   | F    |    200 |    28 |    172 | 0.2453 | 0.1924 |
+| T003 | 2016-11-01 | P    | 7.5000 | F   | T    |    800 |   112 |    688 | 0.2453 | 0.1924 |
+|------+------------+------+--------+-----+------+--------+-------+--------+--------+--------|
+| T004 | 2016-11-01 | S    | 7.5500 | T   | F    |   6811 |   966 |   5845 | 0.2453 | 0.1924 |
+| T005 | 2016-11-01 | S    | 7.5000 | F   | F    |   4000 |   572 |   3428 | 0.2453 | 0.1924 |
+| T006 | 2016-11-01 | S    | 7.6000 | F   | T    |   1000 |   143 |    857 | 0.2453 | 0.1924 |
+| T007 | 2016-11-01 | S    | 7.6500 | T   | F    |    200 |    28 |    172 | 0.2453 | 0.1924 |
+| T008 | 2016-11-01 | P    | 7.6500 | F   | F    |   2771 |   393 |   2378 | 0.2453 | 0.1924 |
+| T009 | 2016-11-01 | P    | 7.6000 | F   | F    |   9550 |  1363 |   8187 | 0.2453 | 0.1924 |
+|------+------------+------+--------+-----+------+--------+-------+--------+--------+--------|
+| T010 | 2016-11-01 | P    | 7.5500 | F   | T    |   3175 |   451 |   2724 | 0.2453 | 0.1924 |
+| T011 | 2016-11-02 | P    | 7.4250 | T   | F    |    100 |    14 |     86 | 0.2453 | 0.1924 |
+| T012 | 2016-11-02 | P    | 7.5500 | F   | F    |   4700 |   677 |   4023 | 0.2453 | 0.1924 |
+| T013 | 2016-11-02 | P    | 7.3500 | T   | T    |  53100 |  7656 |  45444 | 0.2453 | 0.1924 |
+|------+------------+------+--------+-----+------+--------+-------+--------+--------+--------|
+| T014 | 2016-11-02 | P    | 7.4500 | F   | T    |   5847 |   835 |   5012 | 0.2453 | 0.1924 |
+| T015 | 2016-11-02 | P    | 7.7500 | F   | F    |    500 |    72 |    428 | 0.2453 | 0.1924 |
+| T016 | 2016-11-02 | P    | 8.2500 | T   | T    |    100 |    14 |     86 | 0.2453 | 0.1924 |
+#+END_EXAMPLE
+
+*** Select
+
+With the ~select~ method, you can select which existing columns should appear in
+the output table and create new columns in the output table that are a function
+of existing and new columns.
+
+Here we select three existing columns:
+#+BEGIN_SRC ruby
+  trades.select(:ref, :price, :shares)
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+| Ref  | Price | Shares |
+|------+-------+--------|
+| T001 |   7.7 |    100 |
+| T002 |  7.75 |    200 |
+| T003 |   7.5 |    800 |
+| T004 |  7.55 |   6811 |
+| T005 |   7.5 |   4000 |
+| T006 |   7.6 |   1000 |
+| T007 |  7.65 |    200 |
+| T008 |  7.65 |   2771 |
+| T009 |   7.6 |   9550 |
+| T010 |  7.55 |   3175 |
+| T011 | 7.425 |    100 |
+| T012 |  7.55 |   4700 |
+| T013 |  7.35 |  53100 |
+| T014 |  7.45 |   5847 |
+| T015 |  7.75 |    500 |
+| T016 |  8.25 |    100 |
+#+END_EXAMPLE
+
+*** Where
+
+*** Order_by
+
+*** Group_by
+
+*** Join
+
+*** Union, Intersect, and Except
+
+*** Uniq (aka Distinct)
+
+*** Nogroups
 
 ** Formatting Tables
 
