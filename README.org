@@ -152,72 +152,245 @@ time stamps.
 
 Tables can also be read from ~.csv~ files or files containing ~org-mode~ tables.
 In the case of org-mode files, ~FatTable~ skips through the file until it finds
-lines that look like a table, that is they begin with any number of spaces
-followed by ~'|-'.  The first row is taken as the header row in either case, and
-the headers are converted to symbols as described above.
+a line that look like a table, that is it begins with any number of spaces
+followed by ~'|-'. The first row is taken as the header row in either case, and
+the headers are converted to symbols as described above.  Only the first table
+in the file is read.
 
 Likewise, ~FatTable~ can construct a table from a string containing a ~.csv~ or
 org-mode table.
 
 #+BEGIN_SRC ruby
-    tab1 = FatTable.from_csv_file('~/data.csv')
-    tab2 = FatTable.from_org_file('~/project.org')
+      tab1 = FatTable.from_csv_file('~/data.csv')
+      tab2 = FatTable.from_org_file('~/project.org')
 
-        csv_body = <<-EOS
-  Ref,Date,Code,RawShares,Shares,Price,Info
-  1,2006-05-02,P,5000,5000,8.6000,2006-08-09-1-I
-  2,2006-05-03,P,5000,5000,8.4200,2006-08-09-1-I
-  3,2006-05-04,P,5000,5000,8.4000,2006-08-09-1-I
-  4,2006-05-10,P,8600,8600,8.0200,2006-08-09-1-D
-  5,2006-05-12,P,10000,10000,7.2500,2006-08-09-1-D
-  6,2006-05-12,P,2000,2000,6.7400,2006-08-09-1-I
-  EOS
+      csv_body = <<-EOS
+    Ref,Date,Code,RawShares,Shares,Price,Info
+    1,2006-05-02,P,5000,5000,8.6000,2006-08-09-1-I
+    2,2006-05-03,P,5000,5000,8.4200,2006-08-09-1-I
+    3,2006-05-04,P,5000,5000,8.4000,2006-08-09-1-I
+    4,2006-05-10,P,8600,8600,8.0200,2006-08-09-1-D
+    5,2006-05-12,P,10000,10000,7.2500,2006-08-09-1-D
+    6,2006-05-12,P,2000,2000,6.7400,2006-08-09-1-I
+    EOS
 
       tab3 = FatTable.from_csv_string(csv_body)
 
       org_body = <<-EOS
-~*~ Smith Transactions
-:PROPERTIES:
-:TABLE_EXPORT_FILE: smith.csv
-:END:
+  .* Smith Transactions
+  :PROPERTIES:
+  :TABLE_EXPORT_FILE: smith.csv
+  :END:
 
-#+TBLNAME: smith_tab
-| Ref |       Date | Code |     Raw | Shares |    Price | Info    |
-|-----+------------+------+---------+--------+----------+---------|
-|  29 | 2013-05-02 | P    | 795,546 |  2,609 |  1.18500 | ENTITY1 |
-|  30 | 2013-05-02 | P    | 118,186 |    388 | 11.85000 | ENTITY1 |
-|  31 | 2013-05-02 | P    | 340,948 |  1,926 |  1.18500 | ENTITY2 |
-|  32 | 2013-05-02 | P    |  50,651 |    286 | 11.85000 | ENTITY2 |
-|  33 | 2013-05-20 | S    |  12,000 |     32 | 28.28040 | ENTITY3 |
-|  34 | 2013-05-20 | S    |  85,000 |    226 | 28.32240 | ENTITY3 |
-|  35 | 2013-05-20 | S    |  33,302 |     88 | 28.63830 | ENTITY3 |
-|  36 | 2013-05-23 | S    |   8,000 |     21 | 27.10830 | ENTITY3 |
-|  37 | 2013-05-23 | S    |  23,054 |     61 | 26.80150 | ENTITY3 |
-|  38 | 2013-05-23 | S    |  39,906 |    106 | 25.17490 | ENTITY3 |
-|  39 | 2013-05-29 | S    |  13,459 |     36 | 24.74640 | ENTITY3 |
-|  40 | 2013-05-29 | S    |  15,700 |     42 | 24.77900 | ENTITY3 |
-|  41 | 2013-05-29 | S    |  15,900 |     42 | 24.58020 | ENTITY3 |
-|  42 | 2013-05-30 | S    |   6,679 |     18 | 25.04710 | ENTITY3 |
+  #+TBLNAME: smith_tab
+  | Ref |       Date | Code |     Raw | Shares |    Price | Info    |
+  |-----+------------+------+---------+--------+----------+---------|
+  |  29 | 2013-05-02 | P    | 795,546 |  2,609 |  1.18500 | ENTITY1 |
+  |  30 | 2013-05-02 | P    | 118,186 |    388 | 11.85000 | ENTITY1 |
+  |  31 | 2013-05-02 | P    | 340,948 |  1,926 |  1.18500 | ENTITY2 |
+  |  32 | 2013-05-02 | P    |  50,651 |    286 | 11.85000 | ENTITY2 |
+  |  33 | 2013-05-20 | S    |  12,000 |     32 | 28.28040 | ENTITY3 |
+  |  34 | 2013-05-20 | S    |  85,000 |    226 | 28.32240 | ENTITY3 |
+  |  35 | 2013-05-20 | S    |  33,302 |     88 | 28.63830 | ENTITY3 |
+  |  36 | 2013-05-23 | S    |   8,000 |     21 | 27.10830 | ENTITY3 |
+  |  37 | 2013-05-23 | S    |  23,054 |     61 | 26.80150 | ENTITY3 |
+  |  38 | 2013-05-23 | S    |  39,906 |    106 | 25.17490 | ENTITY3 |
+  |  39 | 2013-05-29 | S    |  13,459 |     36 | 24.74640 | ENTITY3 |
+  |  40 | 2013-05-29 | S    |  15,700 |     42 | 24.77900 | ENTITY3 |
+  |  41 | 2013-05-29 | S    |  15,900 |     42 | 24.58020 | ENTITY3 |
+  |  42 | 2013-05-30 | S    |   6,679 |     18 | 25.04710 | ENTITY3 |
 
-~*~ Another Heading
-EOS
+  .* Another Heading
+  EOS
 
-tab3 = FatTable.from_org_string(org_body)
+      tab4 = FatTable.from_org_string(org_body)
 #+END_SRC
 
 
 *** From Arrays of Arrays
 
+Rather than read the table from text, you can also initialize a table directly
+from ruby data structures.  First, you can build a table from an array of
+arrays:
+
+#+BEGIN_SRC ruby
+  aoa =
+    [['Ref', 'Date', 'Code', 'Raw', 'Shares', 'Price', 'Info', 'Bool'],
+     [1, '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850, 'ENTITY1', 'T'],
+     [2, '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500, 'ENTITY1', 'T'],
+     [7, '2013-05-20', 'S', 12_000.00, 5046.00, 28.2804, 'ENTITY3', 'F'],
+     [8, '2013-05-20', 'S', 85_000.00, 35_742.50, 28.3224, 'ENTITY3', 'T'],
+     [9, '2013-05-20', 'S', 33_302.00, 14_003.49, 28.6383, 'ENTITY3', 'T'],
+     [10, '2013-05-23', 'S', 8000.00, 3364.00, 27.1083, 'ENTITY3', 'T'],
+     [11, '2013-05-23', 'S', 23_054.00, 9694.21, 26.8015, 'ENTITY3', 'F'],
+     [12, '2013-05-23', 'S', 39_906.00, 16_780.47, 25.1749, 'ENTITY3', 'T'],
+     [13, '2013-05-29', 'S', 13_459.00, 5659.51, 24.7464, 'ENTITY3', 'T'],
+     [14, '2013-05-29', 'S', 15_700.00, 6601.85, 24.7790, 'ENTITY3', 'F'],
+     [15, '2013-05-29', 'S', 15_900.00, 6685.95, 24.5802, 'ENTITY3', 'T'],
+     [16, '2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'ENTITY3', 'T']]
+tab = FatTable.from_aoa(aoa)
+#+END_SRC
+
+This method of building a table is particularly useful in dealing with Emacs
+org-mode code blocks.  Tables in org-mode are passed to code blocks as arrays of
+arrays.  Likewise, a result of a code block in the form of an array of arrays is
+displayed as an org-mode table:
+
+#+BEGIN_EXAMPLE
+#+NAME: trades1
+| Ref  |       Date | Code |  Price | G10 | QP10 | Shares |    LP |     QP |   IPLP |   IPQP |
+|------+------------+------+--------+-----+------+--------+-------+--------+--------+--------|
+| T001 | 2016-11-01 | P    | 7.7000 | F   | F    |    100 |    14 |     86 | 0.2453 | 0.1924 |
+| T002 | 2016-11-01 | P    | 7.7500 | F   | F    |    200 |    28 |    172 | 0.2453 | 0.1924 |
+| T003 | 2016-11-01 | P    | 7.5000 | F   | F    |    800 |   112 |    688 | 0.2453 | 0.1924 |
+| T004 | 2016-11-01 | S    | 7.5500 | F   | F    |   6811 |   966 |   5845 | 0.2453 | 0.1924 |
+| T005 | 2016-11-01 | S    | 7.5000 | F   | F    |   4000 |   572 |   3428 | 0.2453 | 0.1924 |
+| T006 | 2016-11-01 | S    | 7.6000 | F   | F    |   1000 |   143 |    857 | 0.2453 | 0.1924 |
+| T007 | 2016-11-01 | S    | 7.6500 | F   | F    |    200 |    28 |    172 | 0.2453 | 0.1924 |
+| T008 | 2016-11-01 | P    | 7.6500 | F   | F    |   2771 |   393 |   2378 | 0.2453 | 0.1924 |
+| T009 | 2016-11-01 | P    | 7.6000 | F   | F    |   9550 |  1363 |   8187 | 0.2453 | 0.1924 |
+| T010 | 2016-11-01 | P    | 7.5500 | F   | F    |   3175 |   451 |   2724 | 0.2453 | 0.1924 |
+| T011 | 2016-11-02 | P    | 7.4250 | F   | F    |    100 |    14 |     86 | 0.2453 | 0.1924 |
+| T012 | 2016-11-02 | P    | 7.5500 | F   | F    |   4700 |   677 |   4023 | 0.2453 | 0.1924 |
+| T013 | 2016-11-02 | P    | 7.3500 | F   | F    |  53100 |  7656 |  45444 | 0.2453 | 0.1924 |
+| T014 | 2016-11-02 | P    | 7.4500 | F   | F    |   5847 |   835 |   5012 | 0.2453 | 0.1924 |
+| T015 | 2016-11-02 | P    | 7.7500 | F   | F    |    500 |    72 |    428 | 0.2453 | 0.1924 |
+| T016 | 2016-11-02 | P    | 8.2500 | F   | F    |    100 |    14 |     86 | 0.2453 | 0.1924 |
+
+#+HEADER: :colnames no
+#+BEGIN_SRC ruby :var tab=trades1
+  require 'fat_table'
+  tab = FatTable.from_aoa(tab).where('shares > 500')
+  FatTable.to_aoa(tab)
+#+END_SRC
+
+#+RESULTS:
+| Ref  |       Date | Code | Price | G10 | QP10 | Shares |   Lp |    Qp |   Iplp |   Ipqp |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
+| T003 | 2016-11-01 | P    |   7.5 | F   | F    |    800 |  112 |   688 | 0.2453 | 0.1924 |
+| T004 | 2016-11-01 | S    |  7.55 | F   | F    |   6811 |  966 |  5845 | 0.2453 | 0.1924 |
+| T005 | 2016-11-01 | S    |   7.5 | F   | F    |   4000 |  572 |  3428 | 0.2453 | 0.1924 |
+| T006 | 2016-11-01 | S    |   7.6 | F   | F    |   1000 |  143 |   857 | 0.2453 | 0.1924 |
+| T008 | 2016-11-01 | P    |  7.65 | F   | F    |   2771 |  393 |  2378 | 0.2453 | 0.1924 |
+| T009 | 2016-11-01 | P    |   7.6 | F   | F    |   9550 | 1363 |  8187 | 0.2453 | 0.1924 |
+| T010 | 2016-11-01 | P    |  7.55 | F   | F    |   3175 |  451 |  2724 | 0.2453 | 0.1924 |
+| T012 | 2016-11-02 | P    |  7.55 | F   | F    |   4700 |  677 |  4023 | 0.2453 | 0.1924 |
+| T013 | 2016-11-02 | P    |  7.35 | F   | F    |  53100 | 7656 | 45444 | 0.2453 | 0.1924 |
+| T014 | 2016-11-02 | P    |  7.45 | F   | F    |   5847 |  835 |  5012 | 0.2453 | 0.1924 |
+#+END_EXAMPLE
+
+This example illustrates several things:
+
+1. The named org-mode table, 'trades1', can be passed into a ruby code block
+   using the '~:var tab=trades1~' header argument to the code block; that makes
+   the variable ~tab~ available to the code block as an array of arrays, which
+   ~FatTable~ then uses to initialize the table.
+2. The code block requires that you set '~:colnames no~ in the header arguments.
+   This suppresses org-mode's own processing of the header line so that
+   ~FatTable~ can see the headers.  Failure to do this will cause an error.
+3. The table is subjected to some processing, in this case selecting those rows
+   where the number of shares is greater than 500.  More on that later.
+4. ~FatTable~ passes back to org-mode an array of arrays using the
+   ~FatTable.to_aoa~ function. As we'll see below, this method can also take a
+   block to which formatting instructions and footers can be attached.
+
 *** From Arrays of Hashes
 
+A second ruby structure that can be used to initialize a ~FatTable~ table is an
+array of ruby Hashes.  Each hash represents a row of the table, and the headers
+of the table are take from the keys of the hashes.  Accordingly, all the hashes
+should have the same keys.
+
+#+BEGIN_SRC ruby
+aoh = [
+  { ref: 'T001', date: '2016-11-01', code: 'P', price: '7.7000',  shares: 100 },
+  { ref: 'T002', date: '2016-11-01', code: 'P', price: 7.7500,  shares: 200 },
+  { ref: 'T003', date: '2016-11-01', code: 'P', price: 7.5000,  shares: 800 },
+  { ref: 'T004', date: '2016-11-01', code: 'S', price: 7.5500,  shares: 6811 },
+  { ref: 'T005', date: Date.today, code: 'S', price: 7.5000,  shares: 4000 },
+  { ref: 'T006', date: '2016-11-01', code: 'S', price: 7.6000,  shares: 1000 },
+  { ref: 'T007', date: '2016-11-01', code: 'S', price: 7.6500,  shares: 200 },
+  { ref: 'T008', date: '2016-11-01', code: 'P', price: 7.6500,  shares: 2771 },
+  { ref: 'T009', date: '2016-11-01', code: 'P', price: 7.6000,  shares: 9550 },
+  { ref: 'T010', date: '2016-11-01', code: 'P', price: 7.5500,  shares: 3175 },
+  { ref: 'T011', date: '2016-11-02', code: 'P', price: 7.4250,  shares: 100 },
+  { ref: 'T012', date: '2016-11-02', code: 'P', price: 7.5500,  shares: 4700 },
+  { ref: 'T013', date: '2016-11-02', code: 'P', price: 7.3500,  shares: 53100 },
+  { ref: 'T014', date: '2016-11-02', code: 'P', price: 7.4500,  shares: 5847 },
+  { ref: 'T015', date: '2016-11-02', code: 'P', price: 7.7500,  shares: 500 },
+  { ref: 'T016', date: '2016-11-02', code: 'P', price: 8.2500,  shares: 100 }
+]
+tab = FatTable.from_aoh(aoh)
+#+END_SRC
+
+Notice that the values can either be ruby objects, such as ~Date.today~, or
+strings that can parsed into one of the permissible column types.
+
 *** From SQL queries
+
+Another way to initialize a ~FatTable~ table is with the results of a SQL query.
+~FatTable~ uses the ~dbi~ gem to query databases.  In this case, you must first
+set the database parameters to be used for the queries.
+
+#+BEGIN_SRC ruby
+  require 'fat_table'
+  FatTable.set_db(driver: 'Pg',
+                  database: 'XXX_development',
+                  user: 'dtd',
+                  password: 'slflpowert',
+                  host: 'localhost',
+                  socket: '/tmp/.s.PGSQL.5432')
+  tab = FatTable.from_sql('select * from trades;')
+#+END_SRC
+
+Some of the parameters to the ~.set_db~ function have defaults. The driver
+defaults to 'Pg' for postgresql and the socket defaults to '/tmp/.s.PGSQL.5432'
+if the host is 'localhost', which it is by default. If the host is not
+'localhost', the dsn uses a port rather than a socket and defaults to port
+'5432'. While user and password default to nil, the database parameter is
+required.
+
+The ~.set_db~ function need only be set once, and the database handle it creates
+will be used for all subsequent ~.from_sql~ calls.
 
 ** Accessing Parts of Tables
 *** Rows
 
+A ~FatTable~ table is an Enumerable, yielding each row of the table as a Hash
+keyed on the header symbols.  The method ~Table#rows~ returns an Array of the rows as
+Hashes as well.
+
+You can also use indexing to access a row of the table by number. Using an
+integer index returns a Hash of the given row. Thus, ~tab[20]~ returns the 21st
+data row of the table, while ~tab[0]~ returns the first row and tab[-1] returns
+the last row.
+
 *** Columns
 
+If the index provided to ~[]~ is a string or a symbol, it returns an Array of
+the items of the column with that header. Thus, ~tab[:ref]~ returns an Array of
+all the items of the table's ~:ref~ column.
+
 *** Cells
+
+The two forms of indexing can be combined to access individual cells of the
+table:
+#+BEGIN_SRC ruby
+  tab[13]         # => Hash of the 14th row
+  tab[:date]      # => Array of all Dates in the :date column
+  tab[13][:date]  # => The Date in the 14th row
+  tab[:date][13]  # => The Date in the 14th row; indexes can be in either order.
+#+END_SRC
+
+*** Other table attributes
+
+#+BEGIN_SRC ruby
+  tab.headers       # => an Array of the headers in symbol form
+  tab.types         # => an Array of the column types
+  tab.size          # => the number of rows in the table
+  tab.empty?        # => is the table empty?
+  tab.column?(head) # => does the table have a column with the given header
+#+END_SRC
 
 ** Operations on Tables
 
