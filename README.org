@@ -459,6 +459,7 @@ Here we select three existing columns by simply passing header symbols in the
 order we want them to appear in the output. Thus, one use of =select= is to
 filter and permute the order of existing columns. The =select= method preserves
 any group boundaries present in the input table.
+
 #+BEGIN_SRC ruby
   trades.select(:price, :ref, :shares)
 #+END_SRC
