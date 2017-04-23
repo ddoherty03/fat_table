@@ -258,11 +258,11 @@ displayed as an org-mode table:
 | T016 | 2016-11-02 | P    | 8.2500 | F   | F    |    100 |    14 |     86 | 0.2453 | 0.1924 |
 
 #+HEADER: :colnames no
-#+BEGIN_SRC ruby :var tab=trades1
+:#+BEGIN_SRC ruby :var tab=trades1
   require 'fat_table'
   tab = FatTable.from_aoa(tab).where('shares > 500')
   FatTable.to_aoa(tab)
-#+END_SRC
+:#+END_SRC
 
 #+RESULTS:
 | Ref  |       Date | Code | Price | G10 | QP10 | Shares |   Lp |    Qp |   Iplp |   Ipqp |
