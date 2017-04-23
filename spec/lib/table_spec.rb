@@ -414,9 +414,9 @@ EOQ
       end
 
       it 'should be able to index by row number' do
-        expect(@tab[1]).to eq({a: 1, two_words: 2, c: 3123, d: 'apple'})
-        expect(@tab[3]).to eq({a: 7, two_words: 8, c: 9888, d: 'pear'})
-        expect { @tab[0] }.to raise_error(/out of range/)
+        expect(@tab[0]).to eq({a: 1, two_words: 2, c: 3123, d: 'apple'})
+        expect(@tab[2]).to eq({a: 7, two_words: 8, c: 9888, d: 'pear'})
+        expect(@tab[-1]).to eq({a: 7, two_words: 8, c: 9888, d: 'pear'})
         expect { @tab[4] }.to raise_error(/out of range/)
       end
     end

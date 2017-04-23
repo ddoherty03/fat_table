@@ -291,8 +291,8 @@ module FatTable
     def [](key)
       case key
       when Integer
-        raise UserError, "index '#{key}' out of range" unless (1..size).cover?(key)
-        rows[key - 1]
+        raise UserError, "index '#{key}' out of range" unless (0..size-1).cover?(key.abs)
+        rows[key]
       when String
         raise UserError, "header '#{key}' not in table" unless headers.include?(key)
         column(key).items
