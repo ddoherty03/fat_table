@@ -1,12 +1,19 @@
-* Conversion to Spreadsheets
+* TODO Conversion to Spreadsheets
+- State "TODO"       from              [2017-04-21 Fri 10:36]
 This is a [[https://github.com/westonganger/spreadsheet_architect][gem]] that I can include into the Table model to convert a table into
 a spread-sheet, or even a sheet in a multi-sheet spreadsheet file.
 
-* Formatters
+* DONE Formatters
+CLOSED: [2017-04-21 Fri 10:36]
+- State "WAIT"       from "TODO"       [2017-04-21 Fri 10:36]
+- State "TODO"       from              [2017-04-21 Fri 10:35]
 Need to think about ways to define formatters for Table for different output
 types, including tty, color-tty, latex, csv, spreadsheet?
 
-* Add a Group Boundary concept
+* DONE Add a Group Boundary concept
+CLOSED: [2017-04-21 Fri 10:36]
+- State "WAIT"       from "TODO"       [2017-04-21 Fri 10:36]
+- State "TODO"       from              [2017-04-21 Fri 10:35]
 If I want a table to perform sub-totals at various break points, need to have a
 way for a table to record its grouping boundaries. Maybe an array of row
 numbers?  Automatically injected by the group-by method?
@@ -15,5 +22,10 @@ numbers?  Automatically injected by the group-by method?
 CLOSED: [2017-03-02 Thu 15:54]
 - State "WAIT"       from "TODO"       [2017-03-02 Thu 15:54]
 - State "TODO"       from              [2017-03-02 Thu 15:54]
-  For tables, add a method that eliminates any duplicate rows. Perhaps just
-  apply Array#uniq to the columns?
+For tables, add a method that eliminates any duplicate rows. Perhaps just apply
+Array#uniq to the columns?
+
+* TODO Add from_yql for fetching from Yahoo
+- State "TODO"       from              [2017-04-21 Fri 10:35]
+Add a constructor to allow fetching stock data from yql.  Perhaps grab all
+available fields, then allow a select of those of interest.
