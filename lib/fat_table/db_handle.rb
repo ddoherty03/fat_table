@@ -24,8 +24,11 @@ module FatTable
       else
         "DBI:Pg:database=#{database};host=#{host};port=#{port}"
       end
-    self.handle = ::DBI.connect(dsn, user, password)
-    raise TransientError, 'Could not connect to #{dsn}' unless handle
+    begin
+      self.handle = ::DBI.connect(dsn, user, password)
+    rescue DBI::OperationalError => ex
+      raise TransientError, "#{dsn}: #{ex}"
+    end
     handle
   end
 
