@@ -41,7 +41,7 @@ module FatTable
     describe 'initialization of datetime' do
       it 'should initialize a good datetime column without trailing nils' do
         items = [nil, nil, '2018-01-21', Date.parse('1957/9/22'), '1957/9/22',
-                 '1956-03-16 08:21:13']
+                 '1956-03-16 08:21:13', '[2017-04-22 Sat]', '<2017-04-23>']
         col = Column.new(header: 'junk', items: items)
         expect(col.header).to eq(:junk)
         expect(col.type).to eq('DateTime')
@@ -51,7 +51,8 @@ module FatTable
         expect(col[3]).to eq(Date.new(1957, 9, 22))
         expect(col[4]).to eq(Date.new(1957, 9, 22))
         expect(col[5]).to eq(DateTime.new(1956, 3, 16, 8, 21, 13))
-        expect(col.size).to eq(6)
+        expect(col[6]).to eq(Date.new(2017, 4, 22))
+        expect(col.size).to eq(8)
       end
 
       it 'should initialize a good boolean column with trailing nils' do
