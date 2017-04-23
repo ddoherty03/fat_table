@@ -455,30 +455,36 @@ With the ~select~ method, you can select which existing columns should appear in
 the output table and create new columns in the output table that are a function
 of existing and new columns.
 
-Here we select three existing columns:
+Here we select three existing columns by simply passing header symbols in the
+order we want them to appear in the output. Thus, one use of =select= is to
+filter and permute the order of existing columns. The =select= method preserves
+any group boundaries present in the input table.
 #+BEGIN_SRC ruby
-  trades.select(:ref, :price, :shares)
+  trades.select(:price, :ref, :shares)
 #+END_SRC
 
 #+BEGIN_EXAMPLE
-| Ref  | Price | Shares |
-|------+-------+--------|
-| T001 |   7.7 |    100 |
-| T002 |  7.75 |    200 |
-| T003 |   7.5 |    800 |
-| T004 |  7.55 |   6811 |
-| T005 |   7.5 |   4000 |
-| T006 |   7.6 |   1000 |
-| T007 |  7.65 |    200 |
-| T008 |  7.65 |   2771 |
-| T009 |   7.6 |   9550 |
-| T010 |  7.55 |   3175 |
-| T011 | 7.425 |    100 |
-| T012 |  7.55 |   4700 |
-| T013 |  7.35 |  53100 |
-| T014 |  7.45 |   5847 |
-| T015 |  7.75 |    500 |
-| T016 |  8.25 |    100 |
+| Price | Ref  | Shares |
+|-------+------+--------|
+|   7.7 | T001 |    100 |
+|  7.75 | T002 |    200 |
+|   7.5 | T003 |    800 |
+|-------+------+--------|
+|  7.55 | T004 |   6811 |
+|   7.5 | T005 |   4000 |
+|   7.6 | T006 |   1000 |
+|  7.65 | T007 |    200 |
+|  7.65 | T008 |   2771 |
+|   7.6 | T009 |   9550 |
+|-------+------+--------|
+|  7.55 | T010 |   3175 |
+| 7.425 | T011 |    100 |
+|  7.55 | T012 |   4700 |
+|  7.35 | T013 |  53100 |
+|-------+------+--------|
+|  7.45 | T014 |   5847 |
+|  7.75 | T015 |    500 |
+|  8.25 | T016 |    100 |
 #+END_EXAMPLE
 
 *** Where
