@@ -1064,5 +1064,113 @@ module FatTable
       columns << col
       self
     end
+
+    ############################################################################
+    # Convenience output methods
+    ############################################################################
+
+    # In the same spirit as the FatTable module-level functions do, the
+    # following simply tee-up a Formatter for self so that the user need not
+    # instantiate actual Formatter objects.  Thus, one of these methods can be
+    # invoked as the last method in a chain of Table operations.
+
+    # Return a string or ruby object according to the format specified in
+    # FatTable.format.  If a block is given, it will yield a Formatter of the
+    # appropriate type to which format and footers can be applied. Otherwise, the
+    # default format for the type will be used.
+    def to_format(options = {})
+      if block_given?
+        to_any(FatTable.format, self, options, &Proc.new)
+      else
+        to_any(FatTable.format, self, options)
+      end
+    end
+
+    # Return a string or ruby object according to the format given in the first
+    # argument. Valid formats are :psv, :aoa, :aoh, :latex, :org, :term, :text, or
+    # their string equivalents. If a block is given, it will yield a Formatter of
+    # the appropriate type to which format and footers can be applied. Otherwise,
+    # the default format for the type will be used.
+    def to_any(fmt, options = {})
+      fmt = fmt.as_sym
+      raise UserError, "unknown format '#{fmt}'" unless FatTable::FORMATS.include?(fmt)
+      method = "to_#{fmt}"
+      if block_given?
+        send method, options, &Proc.new
+      else
+        send method, options
+      end
+    end
+
+    # Return the table as a string formatted as a pipe-separated values. If no
+    # block is given, default formatting is applies to the table's cells. If a
+    # block is given, it yields a Formatter to the block to which formatting
+    # instructions and footers can be added by calling methods on it.
+    def to_psv(options = {})
+      fmt = Formatter(self, options)
+      yield fmt if block_given?
+      fmt.output
+    end
+
+    # Return the table as an Array of Array of strings. If no block is given,
+    # default formatting is applies to the table's cells. If a block is given, it
+    # yields an AoaFormatter to the block to which formatting instructions and
+    # footers can be added by calling methods on it.
+    def to_aoa(options = {})
+      fmt = AoaFormatter(self, options)
+      yield fmt if block_given?
+      fmt.output
+    end
+
+    # Return the table as an Array of Hashes. Each inner hash uses the Table's
+    # columns as keys and it values are strings representing the cells of the
+    # table. If no block is given, default formatting is applies to the table's
+    # cells. If a block is given, it yields an AohFormatter to the block to which
+    # formatting instructions and footers can be added by calling methods on it.
+    def to_aoh(options = {})
+      fmt = AohFormatter(self, options)
+      yield fmt if block_given?
+      fmt.output
+    end
+
+    # Return the table as a string containing a LaTeX table. If no block is given,
+    # default formatting applies to the table's cells. If a block is given, it
+    # yields a LaTeXFormatter to the block to which formatting instructions and
+    # footers can be added by calling methods on it.
+    def to_latex(options = {})
+      fmt = LaTeXFormatter(self, options)
+      yield fmt if block_given?
+      fmt.output
+    end
+
+    # Return the table as a string containing an Emacs org-mode table. If no block
+    # is given, default formatting applies to the table's cells. If a block is
+    # given, it yields a OrgFormatter to the block to which formatting
+    # instructions and footers can be added by calling methods on it.
+    def to_org(options = {})
+      fmt = OrgFormatter(self, options)
+      yield fmt if block_given?
+      fmt.output
+    end
+
+    # Return the table as a string containing ANSI terminal text representing
+    # table. If no block is given, default formatting applies to the table's
+    # cells. If a block is given, it yields a TermFormatter to the block to which
+    # formatting instructions and footers can be added by calling methods on it.
+    def to_term(options = {})
+      fmt = TermFormatter(self, options)
+      yield fmt if block_given?
+      fmt.output
+    end
+
+    # Return the table as a string containing ordinary text representing table. If
+    # no block is given, default formatting applies to the table's cells. If a
+    # block is given, it yields a TextFormatter to the block to which formatting
+    # instructions and footers can be added by calling methods on it.
+    def to_text(options = {})
+      fmt = TextFormatter(self, options)
+      yield fmt if block_given?
+      fmt.output
+    end
   end
 end
