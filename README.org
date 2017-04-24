@@ -50,9 +50,7 @@ Or install it yourself as:
 #+END_SRC
 
 * Usage
-
 ** Anatomy of a Table
-
 *** Columns
 
 ~FatTable::Table~ objects consist of an array of ~FatTable::Column~ objects.
@@ -106,10 +104,10 @@ types as follows:
 
 *** Headers
 
-Headers for the columns are formed from the input.  If they are strings or
-respond to ~#to_s~, they are converted to symbols by
+Headers for the columns are formed from the input. No two column in a table can
+have the same header. Headers in the input are converted to symbols by
 
-- converting to a string with ~#to_s#,
+- converting the header to a string with ~#to_s#,
 - converting any run of blanks to an underscore '_',
 - removing any characters that are not letters, numbers, or underscores, and
 - lowercasing all remaining letters
@@ -123,14 +121,14 @@ If no sensible headers can be discerned from the input, headers of the form
 
 *** Groups
 
-The rows of a table can be sub-divided into groups, either from markers in the
-input or as a result of certain operations. There is only one level of grouping,
-so ~FatTable~ has no concept of sub-groups. Groups can be shown on output with
-rules or 'hlines' that underline the last row in each group, and you can
-decorate the output with group footers that summarize the columns in each group.
+The rows of a ~FatTable~ table can be sub-divided into groups, either from
+markers in the input or as a result of certain operations. There is only one
+level of grouping, so ~FatTable~ has no concept of sub-groups. Groups can be
+shown on output with rules or 'hlines' that underline the last row in each
+group, and you can decorate the output with group footers that summarize the
+columns in each group.
 
 ** Constructing Tables
-
 *** Empty Tables
 
 You can create an empty table with ~FatTable.new~, and then add rows with the
@@ -205,7 +203,6 @@ org-mode table.
 
       tab4 = FatTable.from_org_string(org_body)
 #+END_SRC
-
 
 *** From Arrays of Arrays
 
@@ -353,6 +350,26 @@ required.
 The ~.set_db~ function need only be set once, and the database handle it creates
 will be used for all subsequent ~.from_sql~ calls.
 
+*** Marking Groups in Input
+
+The ~.from_aoa~ and ~.from_aoh~ functions take an optional keyword parameter
+~hlines:~ that, if set to ~true~ causes them to mark group boundaries in the
+table wherever a row Array (for ~.from_aoa~) or Hash (for ~.from_aoh~) is
+followed by a ~nil~. Each boundary means that the rows above it and after the
+header or prior group boundary all belong to a group. By default ~hlines~ is
+false for both functions so neither expects hlines in its input.
+
+In the case of ~.from_aoa~, if ~hlines:~ is set true, the input must also
+include a ~nil~ in the second element of the outer array to indicate that the
+first row is to be used as headers.  Otherwise, it will synthesize headers of
+the form ~:col_1~, ~:col_2~, ... ~:col_n~.
+
+In org mode table text passed to ~.from_org_file~ and ~.from_org_string~, you
+/must/ mark the header row by following it with an hrule and you /may/ mark
+group boundaries with an hrule. In org mode tables, hlines are table rows
+beginning with something like '~|---~'. The ~.from_org_...~ functions always
+recognizes hlines in the input, so it takes no ~hlines:~ keyword parameter.
+
 ** Accessing Parts of Tables
 *** Rows
 
@@ -419,9 +436,9 @@ SQL, or worse, a totally new made-up language.
 
 *** Example Input Table
 
-For illustration purposes, we'll assume that the following table is, read into a
-ruby variable called 'trades' using one of the input methods above.  We have
-given the table groups, marked by the hlines below, to illustrate the affect of
+For illustration purposes assume that the following table is read into a ruby
+variable called '~trades~' using one of the input methods above. We have given
+the table groups, marked by the hlines below, to illustrate the affect of
 operations on groups if applicable.
 
 #+BEGIN_EXAMPLE
@@ -488,9 +505,167 @@ any group boundaries present in the input table.
 |  8.25 | T016 |    100 |
 #+END_EXAMPLE
 
+More interesting is that ~select~ can take hash-like keyword arguments following
+all of the symbol arguments to create new columns in the output from existing
+columns, or even from new columns earlier in the parameter list. The keyword
+given must be a symbol and becomes the header for the new column and the value
+must be either: (1) a symbol representing an existing column or (2) a string
+representing a ruby expression for the value of the new column.
+
+The names of existing or already-specified columns are available as local
+variables in the expression, as well as the instance variables '@row' and
+'@group'. So for our example table, the string expressions for new columns have
+access to local variables ~ref~, ~date~, ~code~, ~price~, ~g10~, ~qp10~,
+~shares~, ~lp~, ~qp~, ~iplp~, and ~ipqp~ as well as the instance variables
+~@row~ and ~@group~.  The local variables are set to the values of the cell in
+their respective columns for each row in the input table and the instance
+variables are set the number of the current row and group respectively.
+
+For example, if we want to rename the :date column and compute the cost of
+shares, we could:
+
+#+BEGIN_SRC ruby
+  tab = trades.select(:ref, :price, :shares, traded_on: :date, cost: 'price * shares')
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+| Ref  | Price | Shares |  Traded On |     Cost |
+|------+-------+--------+------------+----------|
+| T001 |   7.7 |    100 | 2016-11-01 |    770.0 |
+| T002 |  7.75 |    200 | 2016-11-01 |   1550.0 |
+| T003 |   7.5 |    800 | 2016-11-01 |   6000.0 |
+|------+-------+--------+------------+----------|
+| T004 |  7.55 |   6811 | 2016-11-01 | 51423.05 |
+| T005 |   7.5 |   4000 | 2016-11-01 |  30000.0 |
+| T006 |   7.6 |   1000 | 2016-11-01 |   7600.0 |
+| T007 |  7.65 |    200 | 2016-11-01 |   1530.0 |
+| T008 |  7.65 |   2771 | 2016-11-01 | 21198.15 |
+| T009 |   7.6 |   9550 | 2016-11-01 |  72580.0 |
+|------+-------+--------+------------+----------|
+| T010 |  7.55 |   3175 | 2016-11-01 | 23971.25 |
+| T011 | 7.425 |    100 | 2016-11-02 |    742.5 |
+| T012 |  7.55 |   4700 | 2016-11-02 |  35485.0 |
+| T013 |  7.35 |  53100 | 2016-11-02 | 390285.0 |
+|------+-------+--------+------------+----------|
+| T014 |  7.45 |   5847 | 2016-11-02 | 43560.15 |
+| T015 |  7.75 |    500 | 2016-11-02 |   3875.0 |
+| T016 |  8.25 |    100 | 2016-11-02 |    825.0 |
+#+END_EXAMPLE
+
+The parameter '~traded_on: :date~' caused the ~:date~ column of the input table
+to be renamed '~:traded_on~, and the ~cost: 'price * shares'~ created a new
+column, ~:cost~, as the product of ~:price~ and ~:shares~.
+
+Note that the order of the columns is the same as the order of the parameters to
+the ~select~ method.  You can re-order the columns with a second, chained call
+to ~select~:
+
+#+BEGIN_SRC ruby
+  tab = trades.select(:ref, :price, :shares, traded_on: :date, cost: 'price * shares')
+          .select(:ref, :traded_on, :price, :shares, :cost)
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+| Ref  | Price | Shares |  Traded On |     Cost |
+|------+-------+--------+------------+----------|
+| T001 |   7.7 |    100 | 2016-11-01 |    770.0 |
+| T002 |  7.75 |    200 | 2016-11-01 |   1550.0 |
+| T003 |   7.5 |    800 | 2016-11-01 |   6000.0 |
+|------+-------+--------+------------+----------|
+| T004 |  7.55 |   6811 | 2016-11-01 | 51423.05 |
+| T005 |   7.5 |   4000 | 2016-11-01 |  30000.0 |
+| T006 |   7.6 |   1000 | 2016-11-01 |   7600.0 |
+| T007 |  7.65 |    200 | 2016-11-01 |   1530.0 |
+| T008 |  7.65 |   2771 | 2016-11-01 | 21198.15 |
+| T009 |   7.6 |   9550 | 2016-11-01 |  72580.0 |
+|------+-------+--------+------------+----------|
+| T010 |  7.55 |   3175 | 2016-11-01 | 23971.25 |
+| T011 | 7.425 |    100 | 2016-11-02 |    742.5 |
+| T012 |  7.55 |   4700 | 2016-11-02 |  35485.0 |
+| T013 |  7.35 |  53100 | 2016-11-02 | 390285.0 |
+|------+-------+--------+------------+----------|
+| T014 |  7.45 |   5847 | 2016-11-02 | 43560.15 |
+| T015 |  7.75 |    500 | 2016-11-02 |   3875.0 |
+| T016 |  8.25 |    100 | 2016-11-02 |    825.0 |
+#+END_EXAMPLE
+
+Notice that ~select~ can take any number of arguments but all the symbol
+arguments must come first followed by all the hash-like keyword arguments.
+
+As the example illustrates, ~.select~ preserves any group boundaries in its
+input table.
+
 *** Where
 
+You can filter the rows of the output table with the ~.where~ method. ~.where~
+takes a single string expression as an argument which is evaluated in a manner
+similar to ~.select~ in which the value of the cells in each column are
+available as local variables and the instance variables ~@row~ and ~@group~ are
+available for testing. The expression is evaluated for each row, and if the
+expression evaluates to a truthy value, the row is included in the output,
+otherwise it is not.  The ~.where~ method obliterates any group boundaries in
+the input, so the output table has only a single group.
+
+Here we select only those even-numbered rows where either of the two boolean
+fields is true:
+
+#+BEGIN_SRC ruby
+  tab = trades.where('@row.even? && (g10 || qp10)')
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+| Ref  |       Date | Code | Price | G10 | QP10 | Shares |  Lp |   Qp |   Iplp |   Ipqp |
+|------+------------+------+-------+-----+------+--------+-----+------+--------+--------|
+| T002 | 2016-11-01 | P    |  7.75 | T   | F    |    200 |  28 |  172 | 0.2453 | 0.1924 |
+| T004 | 2016-11-01 | S    |  7.55 | T   | F    |   6811 | 966 | 5845 | 0.2453 | 0.1924 |
+| T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 | 143 |  857 | 0.2453 | 0.1924 |
+| T010 | 2016-11-01 | P    |  7.55 | F   | T    |   3175 | 451 | 2724 | 0.2453 | 0.1924 |
+| T014 | 2016-11-02 | P    |  7.45 | F   | T    |   5847 | 835 | 5012 | 0.2453 | 0.1924 |
+| T016 | 2016-11-02 | P    |  8.25 | T   | T    |    100 |  14 |   86 | 0.2453 | 0.1924 |
+#+END_EXAMPLE
+
 *** Order_by
+
+You can sort a table on any number of columns with ~order_by~. The ~order_by~
+method takes any number of symbol arguments for the columns to sort on. If you
+specify more than one column, the sort is performed on the first column, then
+all columns that are equal with respect to the first column are sorted by the
+second column, and so on. All columns of the input table are included in the
+output.
+
+Let's sort our table first by ~:code~, then by ~:date~.
+
+#+BEGIN_SRC ruby
+  tab = trades.order_by(:code, :date)
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+| Ref  |       Date | Code | Price | G10 | QP10 | Shares |   Lp |    Qp |   Iplp |   Ipqp |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
+| T001 | 2016-11-01 | P    |   7.7 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 |
+| T002 | 2016-11-01 | P    |  7.75 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 |
+| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 |
+| T008 | 2016-11-01 | P    |  7.65 | F   | F    |   2771 |  393 |  2378 | 0.2453 | 0.1924 |
+| T009 | 2016-11-01 | P    |   7.6 | F   | F    |   9550 | 1363 |  8187 | 0.2453 | 0.1924 |
+| T010 | 2016-11-01 | P    |  7.55 | F   | T    |   3175 |  451 |  2724 | 0.2453 | 0.1924 |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
+| T011 | 2016-11-02 | P    | 7.425 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 |
+| T012 | 2016-11-02 | P    |  7.55 | F   | F    |   4700 |  677 |  4023 | 0.2453 | 0.1924 |
+| T013 | 2016-11-02 | P    |  7.35 | T   | T    |  53100 | 7656 | 45444 | 0.2453 | 0.1924 |
+| T014 | 2016-11-02 | P    |  7.45 | F   | T    |   5847 |  835 |  5012 | 0.2453 | 0.1924 |
+| T015 | 2016-11-02 | P    |  7.75 | F   | F    |    500 |   72 |   428 | 0.2453 | 0.1924 |
+| T016 | 2016-11-02 | P    |  8.25 | T   | T    |    100 |   14 |    86 | 0.2453 | 0.1924 |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
+| T004 | 2016-11-01 | S    |  7.55 | T   | F    |   6811 |  966 |  5845 | 0.2453 | 0.1924 |
+| T005 | 2016-11-01 | S    |   7.5 | F   | F    |   4000 |  572 |  3428 | 0.2453 | 0.1924 |
+| T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 |
+| T007 | 2016-11-01 | S    |  7.65 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 |
+#+END_EXAMPLE
+
+The interesting thing about ~order_by~ is that, while it ignores groups in its
+input, it adds group boundaries in the output table at those rows where the sort
+keys change.  Thus, in each group, ~:code~ and ~:date~ are the same, and when
+either changes, ~order_by~ inserts a group boundary.
 
 *** Group_by
 
