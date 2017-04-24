@@ -990,7 +990,7 @@ module FatTable
     # the column as the key and a symbol for the aggregate function as the
     # value.  For example, consider the following call:
     #
-    # tab.group_by(:date, :code, :price, shares: :sum, ).
+    # tab.group_by(:date, :code, :price, shares: :sum).
     #
     # The first three parameters are simple symbols, so the table is divided
     # into groups of rows in which the value of :date, :code, and :price are
