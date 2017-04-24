@@ -1107,7 +1107,7 @@ module FatTable
     # block is given, it yields a Formatter to the block to which formatting
     # instructions and footers can be added by calling methods on it.
     def to_psv(options = {})
-      fmt = Formatter(self, options)
+      fmt = Formatter.new(self, options)
       yield fmt if block_given?
       fmt.output
     end
@@ -1117,7 +1117,7 @@ module FatTable
     # yields an AoaFormatter to the block to which formatting instructions and
     # footers can be added by calling methods on it.
     def to_aoa(options = {})
-      fmt = AoaFormatter(self, options)
+      fmt = FatTable::AoaFormatter.new(self, options)
       yield fmt if block_given?
       fmt.output
     end
@@ -1128,7 +1128,7 @@ module FatTable
     # cells. If a block is given, it yields an AohFormatter to the block to which
     # formatting instructions and footers can be added by calling methods on it.
     def to_aoh(options = {})
-      fmt = AohFormatter(self, options)
+      fmt = AohFormatter.new(self, options)
       yield fmt if block_given?
       fmt.output
     end
@@ -1138,7 +1138,7 @@ module FatTable
     # yields a LaTeXFormatter to the block to which formatting instructions and
     # footers can be added by calling methods on it.
     def to_latex(options = {})
-      fmt = LaTeXFormatter(self, options)
+      fmt = LaTeXFormatter.new(self, options)
       yield fmt if block_given?
       fmt.output
     end
@@ -1148,7 +1148,7 @@ module FatTable
     # given, it yields a OrgFormatter to the block to which formatting
     # instructions and footers can be added by calling methods on it.
     def to_org(options = {})
-      fmt = OrgFormatter(self, options)
+      fmt = OrgFormatter.new(self, options)
       yield fmt if block_given?
       fmt.output
     end
@@ -1158,7 +1158,7 @@ module FatTable
     # cells. If a block is given, it yields a TermFormatter to the block to which
     # formatting instructions and footers can be added by calling methods on it.
     def to_term(options = {})
-      fmt = TermFormatter(self, options)
+      fmt = TermFormatter.new(self, options)
       yield fmt if block_given?
       fmt.output
     end
@@ -1168,7 +1168,7 @@ module FatTable
     # block is given, it yields a TextFormatter to the block to which formatting
     # instructions and footers can be added by calling methods on it.
     def to_text(options = {})
-      fmt = TextFormatter(self, options)
+      fmt = TextFormatter.new(self, options)
       yield fmt if block_given?
       fmt.output
     end
