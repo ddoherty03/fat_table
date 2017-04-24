@@ -561,32 +561,33 @@ the ~select~ method.  You can re-order the columns with a second, chained call
 to ~select~:
 
 #+BEGIN_SRC ruby
-  tab = trades.select(:ref, :price, :shares, traded_on: :date, cost: 'price * shares')
-          .select(:ref, :traded_on, :price, :shares, :cost)
+  tab = trades.
+          select(:ref, :price, :shares, traded_on: :date, cost: 'price * shares').
+          select(:ref, :traded_on, :price, :shares, :cost)
 #+END_SRC
 
 #+BEGIN_EXAMPLE
-| Ref  | Price | Shares |  Traded On |     Cost |
-|------+-------+--------+------------+----------|
-| T001 |   7.7 |    100 | 2016-11-01 |    770.0 |
-| T002 |  7.75 |    200 | 2016-11-01 |   1550.0 |
-| T003 |   7.5 |    800 | 2016-11-01 |   6000.0 |
-|------+-------+--------+------------+----------|
-| T004 |  7.55 |   6811 | 2016-11-01 | 51423.05 |
-| T005 |   7.5 |   4000 | 2016-11-01 |  30000.0 |
-| T006 |   7.6 |   1000 | 2016-11-01 |   7600.0 |
-| T007 |  7.65 |    200 | 2016-11-01 |   1530.0 |
-| T008 |  7.65 |   2771 | 2016-11-01 | 21198.15 |
-| T009 |   7.6 |   9550 | 2016-11-01 |  72580.0 |
-|------+-------+--------+------------+----------|
-| T010 |  7.55 |   3175 | 2016-11-01 | 23971.25 |
-| T011 | 7.425 |    100 | 2016-11-02 |    742.5 |
-| T012 |  7.55 |   4700 | 2016-11-02 |  35485.0 |
-| T013 |  7.35 |  53100 | 2016-11-02 | 390285.0 |
-|------+-------+--------+------------+----------|
-| T014 |  7.45 |   5847 | 2016-11-02 | 43560.15 |
-| T015 |  7.75 |    500 | 2016-11-02 |   3875.0 |
-| T016 |  8.25 |    100 | 2016-11-02 |    825.0 |
+| Ref  |  Traded On | Price | Shares |     Cost |
+|------+------------+-------+--------+----------|
+| T001 | 2016-11-01 |   7.7 |    100 |    770.0 |
+| T002 | 2016-11-01 |  7.75 |    200 |   1550.0 |
+| T003 | 2016-11-01 |   7.5 |    800 |   6000.0 |
+|------+------------+-------+--------+----------|
+| T004 | 2016-11-01 |  7.55 |   6811 | 51423.05 |
+| T005 | 2016-11-01 |   7.5 |   4000 |  30000.0 |
+| T006 | 2016-11-01 |   7.6 |   1000 |   7600.0 |
+| T007 | 2016-11-01 |  7.65 |    200 |   1530.0 |
+| T008 | 2016-11-01 |  7.65 |   2771 | 21198.15 |
+| T009 | 2016-11-01 |   7.6 |   9550 |  72580.0 |
+|------+------------+-------+--------+----------|
+| T010 | 2016-11-01 |  7.55 |   3175 | 23971.25 |
+| T011 | 2016-11-02 | 7.425 |    100 |    742.5 |
+| T012 | 2016-11-02 |  7.55 |   4700 |  35485.0 |
+| T013 | 2016-11-02 |  7.35 |  53100 | 390285.0 |
+|------+------------+-------+--------+----------|
+| T014 | 2016-11-02 |  7.45 |   5847 | 43560.15 |
+| T015 | 2016-11-02 |  7.75 |    500 |   3875.0 |
+| T016 | 2016-11-02 |  8.25 |    100 |    825.0 |
 #+END_EXAMPLE
 
 Notice that ~select~ can take any number of arguments but all the symbol
@@ -668,6 +669,86 @@ keys change.  Thus, in each group, ~:code~ and ~:date~ are the same, and when
 either changes, ~order_by~ inserts a group boundary.
 
 *** Group_by
+
+Like ~order_by~, ~group_by~ takes a set of column header symbols by which to
+sort the table into groups that are equal with respect to values in those
+columns.  In addition, those can be followed by a series of hash-like parameters
+that indicate how the remaining, non-group columns are to be aggregated into a
+single value.  The output table has one row for each group for which the
+grouping parameters are equal containing those columns and an aggregate column
+for all the other rows.
+
+For example, let's summarize the ~trades~ table by ~:code~ and ~:price~ again,
+and determine total shares, average price, and other features of each group:
+
+#+BEGIN_SRC ruby
+  tab = trades.
+          group_by(:code, :date, price: :avg,
+                   shares: :sum, lp: :sum, qp: :sum,
+                   g10: :any?, qp10: :all?)
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+| Code |       Date | Avg Price | Sum Shares | Sum Lp | Sum Qp |
+|------+------------+-----------+------------+--------+--------|
+| P    | 2016-11-01 |     7.625 |      16596 |   2361 |  14235 |
+| P    | 2016-11-02 |  7.629167 |      64347 |   9268 |  55079 |
+| S    | 2016-11-01 |     7.575 |      12011 |   1709 |  10302 |
+
+| Code |       Date | Any G10 | All QP10 | First Ref | First Iplp | First Ipqp |
+|------+------------+---------+----------+-----------+------------+------------|
+| P    | 2016-11-01 | T       | F        | T001      |     0.2453 |     0.1924 |
+| P    | 2016-11-02 | T       | F        | T011      |     0.2453 |     0.1924 |
+| S    | 2016-11-01 | T       | F        | T004      |     0.2453 |     0.1924 |
+#+END_EXAMPLE
+
+The result is broken up into two tables, but the actual result is a single table
+with 11 columns and only 3 rows, one for each group. You can see the input
+groups in the ~order_by~ section above since we are grouping by the same
+columns. Each group results in a single row in the output.
+
+After the grouping column parameters, there are several hash-like "aggregating"
+parameters where the key is the column to aggregate and the value is a symbol
+for one of several aggregating methods that ~FatTable::Column~ objects
+understand. For example, the ~:avg~ method is applied to the :price column so
+that the output shows the average price in each group. The ~:shares~, ~:lp~, and
+~:qp~ columns are summed, and the ~:any?~ aggregate is applied to one of the
+boolean fields, that is, it is ~true~ if any of the values in that column are
+~true~. The columns not named in the ~group_by~ parameter list have the default
+aggregate method ~:first~ applied to them, so they get the value of the column
+in the first row of the group.  The column names in the output of the aggregated
+columns have the name of the aggregating method pre-pended to the column name.
+
+Here is a list of all the aggregate methods available.  If the description
+restricts the aggregate to particular column types, applying it to other types
+will raise an exception.
+
+- ~first~ :: the first non-nil item in the column,
+- ~last~ :: the last non-nil item in the column,
+- ~rng~ :: form a string of the form "#{first}..#{last}" to show the range of
+     values in the column,
+- ~sum~ :: for Numeric and String columns, apply '+' to all the non-nil values,
+- ~count~ :: the number of non-nil values in the column,
+- ~min~ :: for Numeric, String, and DateTime columns, return the minimum non-nil
+     value in the column,
+- ~max~ :: for Numeric, String, and DateTime columns, return the maximum non-nil
+     value in the column,
+- ~avg~ :: for Numeric and DateTime columns, return the arithmetic mean of the
+     non-nil values in the column; with respect to DateTime objects, each is
+     converted to a numeric Julian date, the average is calculated, and the
+     result converted back to a Date or DateTime object,
+- ~var~ :: for Numeric and DateTime columns, compute the population variance of
+     the non-nil values in the column, dates are converted to numbers as for the
+     :avg aggregate,
+- ~dev~ :: for Numeric and DateTime columns, compute the population standard
+     deviation of the non-nil values in the column, dates are converted to
+     numbers as for the :avg aggregate,
+- ~any?~ :: for Boolean columns only, return true if any non-nil value in the
+     column is true,
+- ~none?~ :: for Boolean columns only, return true if no non-nil value in the
+     column is true,
+- ~one?~ :: for Boolean columns only, return true if exactly one non-nil value in
+     the column is true,
 
 *** Join
 
