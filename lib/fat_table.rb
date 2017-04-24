@@ -75,8 +75,8 @@ module FatTable
   # Construct a FatTable::Table from an array of hashes, or an array of any
   # objects that respond to the #to_h method. All hashes must have the same
   # keys, which, converted to symbols, will become the headers for the Table.
-  def self.from_aoh(aoh)
-    Table.from_aoh(aoh)
+  def self.from_aoh(aoh, hlines: false)
+    Table.from_aoh(aoh, hlines: hlines)
   end
 
   # Construct a FatTable::Table from another FatTable::Table. Inherit any group

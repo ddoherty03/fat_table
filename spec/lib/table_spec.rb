@@ -271,7 +271,7 @@ EOS
         # rubocop:disable Style/WordArray
         aoa = [
           ['First', 'Second', 'Third'],
-          ['|---------+----------+---------|', nil, nil],
+          nil,
           ['1', '2', '3.2'],
           ['4', '5', '6.4'],
           ['7', '8', '9.0'],
@@ -952,7 +952,7 @@ EOQ
       end
 
       it 'add group boundaries on reading from aoh' do
-        tab = Table.from_aoh(@aoh)
+        tab = Table.from_aoh(@aoh, hlines: true)
         expect(tab.groups.size).to eq(4)
         expect(tab.groups[0].size).to eq(1)
         expect(tab.groups[1].size).to eq(3)

@@ -92,25 +92,25 @@ module FatTable
     # false, do not look for separators, i.e. nil or a string of dashes, just
     # treat the first row as headers. With hlines true, expect separators to
     # mark the header row and any boundaries. If the second element of the array
-    # is a nil, or an array whose first element is a string that looks like an
-    # hrule, '|-----------', '+----------', etc., interpret the first element of
-    # the array as a row of headers. Otherwise, synthesize headers of the form
-    # :col_1, :col_2, ... and so forth. The remaining elements are taken as the
-    # body of the table, except that if an element of the outer array is a nil
-    # or an array whose first element is a string that looks like an hrule, mark
-    # the preceding row as a boundary. In org mode code blocks, by default
-    # (:hlines no) all hlines are stripped from the table, otherwise (:hlines
-    # yes) they are indicated with nil elements in the outer array.
+    # is a nil, interpret the first element of the array as a row of headers.
+    # Otherwise, synthesize headers of the form :col_1, :col_2, ... and so
+    # forth. The remaining elements are taken as the body of the table, except
+    # that if an element of the outer array is a nil, mark the preceding row as
+    # a boundary. Note: In org mode code blocks, by default (:hlines no) all
+    # hlines are stripped from the table, otherwise (:hlines yes) they are
+    # indicated with nil elements in the outer array.
     def self.from_aoa(aoa, hlines: false)
       from_array_of_arrays(aoa, hlines: hlines)
     end
 
     # Construct a Table from an array of hashes, or any objects that respond to
     # the #to_h method.  All hashes must have the same keys, which, when
-    # converted to symbols will become the headers for the Table.
-    def self.from_aoh(aoh)
+    # converted to symbols will become the headers for the Table.  If hlines is
+    # set true, mark a group boundary when ever a nil, rather than a hash
+    # appears in the outer array.
+    def self.from_aoh(aoh, hlines: false)
       if aoh.first.respond_to?(:to_h)
-        from_array_of_hashes(aoh)
+        from_array_of_hashes(aoh, hlines: hlines)
       else
         raise UserError,
               "Cannot initialize Table with an array of #{input[0].class}"
@@ -146,10 +146,13 @@ module FatTable
       # Construct table from an array of hashes or an array of any object that can
       # respond to #to_h.  If an array element is a nil, mark it as a group
       # boundary in the Table.
-      def from_array_of_hashes(hashes)
+      def from_array_of_hashes(hashes, hlines: false)
         result = new
         hashes.each do |hsh|
           if hsh.nil?
+            unless hlines
+              raise UserError, 'found an hline in input with hlines false; try setting hlines true'
+            end
             result.mark_boundary
             next
           end
@@ -159,19 +162,17 @@ module FatTable
       end
 
       # Construct a new table from an array of arrays. By default, with hlines
-      # false, do not look for separators, i.e. nil or a string of dashes, just
-      # treat the first row as headers. With hlines true, expect separators to
-      # mark the header row and any boundaries. If the second element of the
-      # array is a nil, or an array whose first element is a string that looks
-      # like an hrule, '|-----------', '+----------', etc., interpret the first
-      # element of the array as a row of headers. Otherwise, synthesize headers
-      # of the form :col_1, :col_2, ... and so forth. The remaining elements are
-      # taken as the body of the table, except that if an element of the outer
-      # array is a nil or an array whose first element is a string that looks
-      # like an hrule, mark the preceding row as a boundary. In org mode code
-      # blocks, by default (:hlines no) all hlines are stripped from the table,
-      # otherwise (:hlines yes) they are indicated with nil elements in the
-      # outer array.
+      # false, do not look for separators, i.e. nils, just treat the first row
+      # as headers. With hlines true, expect nil separators to mark the header
+      # row and any boundaries. If the second element of the array is a nil,
+      # interpret the first element of the array as a row of headers. Otherwise,
+      # synthesize headers of the form :col_1, :col_2, ... and so forth. The
+      # remaining elements are taken as the body of the table, except that if an
+      # element of the outer array is a nil, mark the preceding row as a group
+      # boundary. Note: In org mode code blocks, by default (:hlines no) all
+      # hlines are stripped from the table, otherwise (:hlines yes) they are
+      # indicated with nil elements in the outer array as expected by this
+      # method when hlines is set true.
       def from_array_of_arrays(rows, hlines: false)
         result = new
         headers = []
@@ -180,7 +181,7 @@ module FatTable
           # Second row et seq as data
           headers = rows[0].map(&:to_s).map(&:as_sym)
           first_data_row = 1
-        elsif looks_like_boundary?(rows[1])
+        elsif rows[1].nil?
           # Use first row 0 as headers
           # Row 1 is an hline
           # Row 2 et seq are data
@@ -193,7 +194,7 @@ module FatTable
           first_data_row = 0
         end
         rows[first_data_row..-1].each do |row|
-          if looks_like_boundary?(row)
+          if row.nil?
             unless hlines
               raise UserError, 'found an hline in input with hlines false; try setting hlines true'
             end
@@ -207,20 +208,6 @@ module FatTable
         result
       end
 
-      # Return true if row is nil, a string that matches hrule_re, or is an
-      # array whose first element matches hrule_re.
-      def looks_like_boundary?(row)
-        hrule_re = /\A\s*[\|+][-]+/
-        return true if row.nil?
-        if row.respond_to?(:first) && row.first.respond_to?(:to_s)
-          return row.first.to_s =~ hrule_re
-        end
-        if row.respond_to?(:to_s)
-          return row.to_s =~ hrule_re
-        end
-        false
-      end
-
       def from_csv_io(io)
         result = new
         ::CSV.new(io, headers: true, header_converters: :symbol,
@@ -230,7 +217,10 @@ module FatTable
         result
       end
 
-      # Form rows of table by reading the first table found in the org file.
+      # Form rows of table by reading the first table found in the org file. The
+      # header row must be marked with an hline (i.e, a row that looks like
+      # '|---+--...--|') and groups of rows may be marked with hlines to
+      # indicate group boundaries.
       def from_org_io(io)
         table_re = /\A\s*\|/
         hrule_re = /\A\s*\|[-+]+/
