@@ -279,12 +279,12 @@ displayed as an org-mode table:
 This example illustrates several things:
 
 1. The named org-mode table, 'trades1', can be passed into a ruby code block
-   using the '~:var tab=trades1~' header argument to the code block; that makes
+   using the ~:var tab=trades1~ header argument to the code block; that makes
    the variable ~tab~ available to the code block as an array of arrays, which
    ~FatTable~ then uses to initialize the table.
-2. The code block requires that you set '~:colnames no~ in the header arguments.
+2. The code block requires that you set ~:colnames no~ in the header arguments.
    This suppresses org-mode's own processing of the header line so that
-   ~FatTable~ can see the headers.  Failure to do this will cause an error.
+   ~FatTable~ can see the headers. Failure to do this will cause an error.
 3. The table is subjected to some processing, in this case selecting those rows
    where the number of shares is greater than 500.  More on that later.
 4. ~FatTable~ passes back to org-mode an array of arrays using the
@@ -341,14 +341,15 @@ set the database parameters to be used for the queries.
 #+END_SRC
 
 Some of the parameters to the ~.set_db~ function have defaults. The driver
-defaults to 'Pg' for postgresql and the socket defaults to '/tmp/.s.PGSQL.5432'
+defaults to 'Pg' for postgresql and the socket defaults to ~/tmp/.s.PGSQL.5432~
 if the host is 'localhost', which it is by default. If the host is not
 'localhost', the dsn uses a port rather than a socket and defaults to port
 '5432'. While user and password default to nil, the database parameter is
 required.
 
-The ~.set_db~ function need only be set once, and the database handle it creates
-will be used for all subsequent ~.from_sql~ calls.
+The ~.set_db~ function need only be called once, and the database handle it
+creates will be used for all subsequent ~.from_sql~ calls until ~.set_db~ is
+called again.
 
 *** Marking Groups in Input
 
@@ -432,7 +433,7 @@ either create or remove groups will also be noted below.
 
 Finally, the operations are for the most part patterned on SQL table operations,
 but when expressions play a role, you write them using ruby syntax rather than
-SQL, or worse, a totally new made-up language.
+SQL.
 
 *** Example Input Table
 
@@ -556,9 +557,9 @@ The parameter '~traded_on: :date~' caused the ~:date~ column of the input table
 to be renamed '~:traded_on~, and the ~cost: 'price * shares'~ created a new
 column, ~:cost~, as the product of ~:price~ and ~:shares~.
 
-Note that the order of the columns is the same as the order of the parameters to
-the ~select~ method.  You can re-order the columns with a second, chained call
-to ~select~:
+The order of the columns is the same as the order of the parameters to the
+~select~ method. You can re-order the columns with a second, chained call to
+~select~:
 
 #+BEGIN_SRC ruby
   tab = trades.
@@ -750,7 +751,107 @@ will raise an exception.
 - ~one?~ :: for Boolean columns only, return true if exactly one non-nil value in
      the column is true,
 
+Perhaps surprisingly, the ~group_by~ method ignores any groups in its input and
+results in no group boundaries in the output. Each group formed by the implicit
+~order_by~ on the group columns is collapsed into a single row.
+
 *** Join
+
+**** Join Types
+
+So far, all the operations have operated on a single table. ~FatTable~ provides
+several ~join~ methods for combining two tables, each of which takes as
+parameters (1) a second table and (2) except in the case of ~cross_join~, zero
+or more "join expressions".  In the descriptions below, T1 is the table on which
+the method is called, ~T2~ is the table supplied as the first parameter ~other~,
+and ~R1~ and ~R2~ are rows in their respective tables being considered for
+inclusion in the joined output table.
+
+- ~join(other, *jexps)~ :: Performs an "inner join" on the tables. For each row
+     R1 of T1, the joined table has a row for each row in T2 that satisfies the
+     join condition with R1.
+
+- ~left_join(other, *jexps)~ :: First, an inner join is performed. Then, for
+     each row in T1 that does not satisfy the join condition with any row in T2,
+     a joined row is added with null values in columns of T2. Thus, the joined
+     table always has at least one row for each row in T1.
+
+- ~right_join(other, *jexps)~ :: First, an inner join is performed. Then, for
+     each row in T2 that does not satisfy the join condition with any row in T1,
+     a joined row is added with null values in columns of T1. This is the
+     converse of a left join: the result table will always have a row for each
+     row in T2.
+
+- ~full_join(other, *jexps)~ :: First, an inner join is performed. Then, for
+     each row in T1 that does not satisfy the join condition with any row in T2,
+     a joined row is added with null values in columns of T2. Also, for each row
+     of T2 that does not satisfy the join condition with any row in T1, a joined
+     row with null values in the columns of T1 is added.
+
+- ~cross_join(other)~ :: For every possible combination of rows from T1 and T2
+     (i.e., a Cartesian product), the joined table will contain a row consisting
+     of all columns in T1 followed by all columns in T2. If the tables have N
+     and M rows respectively, the joined table will have N * M rows.
+
+**** Join Expressions
+
+For each of the join types, if no join expressions are given, the tables will be
+joined on columns having the same column header in both tables, and the join
+condition is satisfied when all the values in those columns are equal. If the
+join type is an inner join, this is a so-called "natural" join.
+
+If the join expressions are one or more symbols, the join condition requires
+that the values of both tables are equal for all columns named by the symbols. A
+column that appears in both tables can be given without modification and will be
+assumed to require equality on that column. If an unmodified symbol is not a
+name that appears in both tables, an exception will be raised. Column names that
+are unique to the first table must have a '_a' appended to the column name and
+column names that are unique to the other table must have a '_b' appended to the
+column name. These disambiguated column names must come in pairs, one for the
+first table and one for the second, and they will imply a join condition that
+the columns must be equal on those columns. Several such symbol expressions will
+require that all such implied pairs are equal in order for the join condition to
+be met.
+
+Finally, a join expression can be a string that contains an arbitrary ruby
+expression that will be evaluated for truthiness. Within the string, /all/
+column names must be disambiguated with the '_a' or '_b' modifiers whether they
+are common to both tables or not. As with ~select~ and ~where~ methods, the
+names of the columns in both tables (albeit disambiguated) are available as
+local variables within the expression, but the instance variables ~@row~ and
+~@group~ are not.
+
+**** Join Examples
+
+These methods cry out for some examples, no?  The following are taken from a the
+[[https://www.tutorialspoint.com/postgresql/postgresql_using_joins.htm][Postgresql tutorial]], with some slight modifications.  The examples will use the
+following two tables:
+
+#+BEGIN_EXAMPLE
+tab_a:
+
+| Id | Name  | Age | Address    | Salary |  Join Date |
+|----+-------+-----+------------+--------+------------|
+|  1 | Paul  |  32 | California |  20000 | 2001-07-13 |
+|  3 | Teddy |  23 | Norway     |  20000 | 2007-12-13 |
+|  4 | Mark  |  25 | Rich-Mond  |  65000 | 2007-12-13 |
+|  5 | David |  27 | Texas      |  85000 | 2007-12-13 |
+|  2 | Allen |  25 | Texas      |        | 2005-07-13 |
+|  8 | Paul  |  24 | Houston    |  20000 | 2005-07-13 |
+|  9 | James |  44 | Norway     |   5000 | 2005-07-13 |
+| 10 | James |  45 | Texas      |   5000 |            |
+#+END_EXAMPLE
+
+#+BEGIN_EXAMPLE
+tab_b:
+
+| Id | Dept        | Emp Id |
+|----+-------------+--------|
+|  1 | IT Billing  |      1 |
+|  2 | Engineering |      2 |
+|  3 | Finance     |      7 |
+#+END_EXAMPLE
+
 
 *** Union, Intersect, and Except
 
