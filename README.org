@@ -852,6 +852,159 @@ tab_b:
 |  3 | Finance     |      7 |
 #+END_EXAMPLE
 
+***** Inner Join
+
+With no join expression arguments, the tables are joined when their sole common
+field, ~:id~, is equal in both tables.  The result is the natural join of the
+two tables.
+
+#+BEGIN_SRC ruby
+  tab_a.join(tab_b).to_aoa
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+| Id | Name  | Age | Address    | Salary |  Join Date | Dept        | Emp Id |
+|----+-------+-----+------------+--------+------------+-------------+--------|
+|  1 | Paul  |  32 | California |  20000 | 2001-07-13 | IT Billing  |      1 |
+|  3 | Teddy |  23 | Norway     |  20000 | 2007-12-13 | Finance     |      7 |
+|  2 | Allen |  25 | Texas      |        | 2005-07-13 | Engineering |      2 |
+#+END_EXAMPLE
+
+But the natural join joined employee IDs in the first table and department IDs
+in the second table. To correct this, we need to explicitly state the columns we
+want to join on in each table by disambiguating them with ~_a~ and ~_b~
+suffixes:
+
+#+BEGIN_SRC ruby
+  tab_a.join(tab_b, :id_a, :emp_id_b).to_aoa
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+| Id | Name  | Age | Address    | Salary |  Join Date | Id B | Dept        |
+|----+-------+-----+------------+--------+------------+------+-------------|
+|  1 | Paul  |  32 | California |  20000 | 2001-07-13 |    1 | IT Billing  |
+|  2 | Allen |  25 | Texas      |        | 2005-07-13 |    2 | Engineering |
+#+END_EXAMPLE
+
+Instead of using the disambiguated column names as symbols, we could also use a
+string containing a ruby expression.  Within the expression, the column names
+should be treated as local variables:
+
+#+BEGIN_SRC ruby
+  tab_a.join(tab_b, 'id_a == emp_id_b').to_aoa
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+| Id | Name  | Age | Address    | Salary |  Join Date | Id B | Dept        | Emp Id |
+|----+-------+-----+------------+--------+------------+------+-------------+--------|
+|  1 | Paul  |  32 | California |  20000 | 2001-07-13 |    1 | IT Billing  |      1 |
+|  2 | Allen |  25 | Texas      |        | 2005-07-13 |    2 | Engineering |      2 |
+#+END_EXAMPLE
+
+***** Left and Right Joins
+
+In left join, all the rows of ~tab_a~ are included in the output, augmented by
+the matching columns of ~tab_b~ and augmented with nils where there is no match:
+
+#+BEGIN_SRC ruby
+  tab_a.left_join(tab_b, 'id_a == emp_id_b').to_aoa
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+| Id | Name  | Age | Address    | Salary |  Join Date | Id B | Dept        | Emp Id |
+|----+-------+-----+------------+--------+------------+------+-------------+--------|
+|  1 | Paul  |  32 | California |  20000 | 2001-07-13 |    1 | IT Billing  |      1 |
+|  3 | Teddy |  23 | Norway     |  20000 | 2007-12-13 |      |             |        |
+|  4 | Mark  |  25 | Rich-Mond  |  65000 | 2007-12-13 |      |             |        |
+|  5 | David |  27 | Texas      |  85000 | 2007-12-13 |      |             |        |
+|  2 | Allen |  25 | Texas      |        | 2005-07-13 |    2 | Engineering |      2 |
+|  8 | Paul  |  24 | Houston    |  20000 | 2005-07-13 |      |             |        |
+|  9 | James |  44 | Norway     |   5000 | 2005-07-13 |      |             |        |
+| 10 | James |  45 | Texas      |   5000 |            |      |             |        |
+#+END_EXAMPLE
+
+In a right join, all the rows of ~tab_b~ are included in the output, augmented
+by the matching columns of ~tab_a~ and augmented with nils where there is no
+match:
+
+#+BEGIN_SRC ruby
+  tab_a.right_join(tab_b, 'id_a == emp_id_b').to_aoa
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+| Id | Name  | Age | Address    | Salary |  Join Date | Id B | Dept        | Emp Id |
+|----+-------+-----+------------+--------+------------+------+-------------+--------|
+|  1 | Paul  |  32 | California |  20000 | 2001-07-13 |    1 | IT Billing  |      1 |
+|  2 | Allen |  25 | Texas      |        | 2005-07-13 |    2 | Engineering |      2 |
+|    |       |     |            |        |            |    3 | Finance     |      7 |
+#+END_EXAMPLE
+
+***** Full Join
+
+A full join combines the effects of a left join and a right join.  All the rows
+from both tables are included in the output augmented by columns of the other
+tables where the join expression is satisfied and augmented with nils otherwise.
+
+#+HEADER: :colnames no :session example :hlines yes :wrap EXAMPLE
+#+BEGIN_SRC ruby
+  tab_a.full_join(tab_b, 'id_a == emp_id_b').to_aoa
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_EXAMPLE
+| Id | Name  | Age | Address    | Salary |  Join Date | Id B | Dept        | Emp Id |
+|----+-------+-----+------------+--------+------------+------+-------------+--------|
+|  1 | Paul  |  32 | California |  20000 | 2001-07-13 |    1 | IT Billing  |      1 |
+|  3 | Teddy |  23 | Norway     |  20000 | 2007-12-13 |      |             |        |
+|  4 | Mark  |  25 | Rich-Mond  |  65000 | 2007-12-13 |      |             |        |
+|  5 | David |  27 | Texas      |  85000 | 2007-12-13 |      |             |        |
+|  2 | Allen |  25 | Texas      |        | 2005-07-13 |    2 | Engineering |      2 |
+|  8 | Paul  |  24 | Houston    |  20000 | 2005-07-13 |      |             |        |
+|  9 | James |  44 | Norway     |   5000 | 2005-07-13 |      |             |        |
+| 10 | James |  45 | Texas      |   5000 |            |      |             |        |
+|    |       |     |            |        |            |    3 | Finance     |      7 |
+#+END_EXAMPLE
+
+***** Cross Join
+
+Finally, a cross join outputs every row of ~tab_a~ augmented with every row of
+~tab_b~.  In other words, the Cartesian product of the two tables.  If ~tab_a~
+has ~N~ rows and ~tab_b~ has ~M~ rows, the output table will have ~N * M~ rows.
+
+#+HEADER: :colnames no :session example :hlines yes :wrap EXAMPLE
+#+BEGIN_SRC ruby
+  tab_a.cross_join(tab_b).to_aoa
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_EXAMPLE
+| Id | Name  | Age | Address    | Salary |  Join Date | Id B | Dept        | Emp Id |
+|----+-------+-----+------------+--------+------------+------+-------------+--------|
+|  1 | Paul  |  32 | California |  20000 | 2001-07-13 |    1 | IT Billing  |      1 |
+|  1 | Paul  |  32 | California |  20000 | 2001-07-13 |    2 | Engineering |      2 |
+|  1 | Paul  |  32 | California |  20000 | 2001-07-13 |    3 | Finance     |      7 |
+|  3 | Teddy |  23 | Norway     |  20000 | 2007-12-13 |    1 | IT Billing  |      1 |
+|  3 | Teddy |  23 | Norway     |  20000 | 2007-12-13 |    2 | Engineering |      2 |
+|  3 | Teddy |  23 | Norway     |  20000 | 2007-12-13 |    3 | Finance     |      7 |
+|  4 | Mark  |  25 | Rich-Mond  |  65000 | 2007-12-13 |    1 | IT Billing  |      1 |
+|  4 | Mark  |  25 | Rich-Mond  |  65000 | 2007-12-13 |    2 | Engineering |      2 |
+|  4 | Mark  |  25 | Rich-Mond  |  65000 | 2007-12-13 |    3 | Finance     |      7 |
+|  5 | David |  27 | Texas      |  85000 | 2007-12-13 |    1 | IT Billing  |      1 |
+|  5 | David |  27 | Texas      |  85000 | 2007-12-13 |    2 | Engineering |      2 |
+|  5 | David |  27 | Texas      |  85000 | 2007-12-13 |    3 | Finance     |      7 |
+|  2 | Allen |  25 | Texas      |        | 2005-07-13 |    1 | IT Billing  |      1 |
+|  2 | Allen |  25 | Texas      |        | 2005-07-13 |    2 | Engineering |      2 |
+|  2 | Allen |  25 | Texas      |        | 2005-07-13 |    3 | Finance     |      7 |
+|  8 | Paul  |  24 | Houston    |  20000 | 2005-07-13 |    1 | IT Billing  |      1 |
+|  8 | Paul  |  24 | Houston    |  20000 | 2005-07-13 |    2 | Engineering |      2 |
+|  8 | Paul  |  24 | Houston    |  20000 | 2005-07-13 |    3 | Finance     |      7 |
+|  9 | James |  44 | Norway     |   5000 | 2005-07-13 |    1 | IT Billing  |      1 |
+|  9 | James |  44 | Norway     |   5000 | 2005-07-13 |    2 | Engineering |      2 |
+|  9 | James |  44 | Norway     |   5000 | 2005-07-13 |    3 | Finance     |      7 |
+| 10 | James |  45 | Texas      |   5000 |            |    1 | IT Billing  |      1 |
+| 10 | James |  45 | Texas      |   5000 |            |    2 | Engineering |      2 |
+| 10 | James |  45 | Texas      |   5000 |            |    3 | Finance     |      7 |
+#+END_EXAMPLE
 
 *** Union, Intersect, and Except
 
