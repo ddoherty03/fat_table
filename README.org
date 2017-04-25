@@ -950,7 +950,6 @@ table where the join expression is satisfied and augmented with nils otherwise.
   tab_a.full_join(tab_b, 'id_a == emp_id_b').to_aoa
 #+END_SRC
 
-#+RESULTS:
 #+BEGIN_EXAMPLE
 | Id | Name  | Age | Address    | Salary |  Join Date | Id B | Dept        | Emp Id |
 |----+-------+-----+------------+--------+------------+------+-------------+--------|
@@ -976,7 +975,6 @@ has ~N~ rows and ~tab_b~ has ~M~ rows, the output table will have ~N * M~ rows.
   tab_a.cross_join(tab_b).to_aoa
 #+END_SRC
 
-#+RESULTS:
 #+BEGIN_EXAMPLE
 | Id | Name  | Age | Address    | Salary |  Join Date | Id B | Dept        | Emp Id |
 |----+-------+-----+------------+--------+------------+------+-------------+--------|
