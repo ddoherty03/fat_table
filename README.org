@@ -258,7 +258,7 @@ displayed as an org-mode table:
 :#+BEGIN_SRC ruby :var tab=trades1
   require 'fat_table'
   tab = FatTable.from_aoa(tab).where('shares > 500')
-  FatTable.to_aoa(tab)
+  tab.to_aoa
 :#+END_SRC
 
 #+RESULTS:
@@ -287,9 +287,11 @@ This example illustrates several things:
    ~FatTable~ can see the headers. Failure to do this will cause an error.
 3. The table is subjected to some processing, in this case selecting those rows
    where the number of shares is greater than 500.  More on that later.
-4. ~FatTable~ passes back to org-mode an array of arrays using the
-   ~FatTable.to_aoa~ function. As we'll see below, this method can also take a
-   block to which formatting instructions and footers can be attached.
+4. ~FatTable~ passes back to org-mode an array of arrays using the ~.to_aoa~
+   method. In an ~org-mode~ buffer, these are rendered as tables. We'll often
+   apply ~.to_aoa~ at the end of example blocks to render the results inside
+   this README.org file. As we'll see below, this method can also take a block
+   to which formatting instructions and footers can be attached.
 
 *** From Arrays of Hashes
 
@@ -1008,9 +1010,9 @@ has ~N~ rows and ~tab_b~ has ~M~ rows, the output table will have ~N * M~ rows.
 ~FatTable~ can perform several set operations on tables.  In order for two
 tables to be used this way, they must have the same number of columns with the
 same types or an exception will be raised.  We'll call two tables that qualify
-for combining with set operations "set compatible."
+for combining with set operations "set-compatible."
 
-We'll use the following two set compatible tables in the examples.  They each
+We'll use the following two set-compatible tables in the examples.  They each
 have group boundaries so you can see the effect of the set operations on the
 groups.
 
@@ -1068,7 +1070,7 @@ groups.
 
 **** Unions
 
-Two tables that are set compatible can be combined with the ~union~ or
+Two tables that are set-compatible can be combined with the ~union~ or
 ~union_all~ methods so that the rows of both tables appear in the output. In the
 output table, the headers of the receiver table are used. You can use ~select~
 to change or re-order the headers if you prefer.  The ~union~ method eliminates
@@ -1355,7 +1357,7 @@ to remove any groups.
  tab1.nogroups.to_aoa
 #+END_SRC
 
-+BEGIN_EXAMPLE
+#+BEGIN_EXAMPLE
 | Ref  |       Date | Code | Price | G10 | QP10 | Shares |   Lp |    Qp |   Iplp |   Ipqp |
 |------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
 | T001 | 2016-11-01 | P    |   7.7 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 |
@@ -1380,6 +1382,34 @@ to remove any groups.
 #+END_EXAMPLE
 
 ** Formatting Tables
+
+Besides creating and operating on tables, you may want to display the resulting
+table.  ~FatTable~ seeks to provide a set of formatting directives that are the
+most common across many output media.  It provides directives for alignment, for
+color, for adding currency symbols and grouping commas to numbers, for padding
+numbers, and for formatting dates and booleans.
+
+In addition, you can add any number of footers to a table, which appear at the
+end of the table, and any number of group footers, which appear after each group
+in the table.  These also can be formatted independently of the table body.
+
+If the target output medium does not support a formatting directive or the
+directive simply does not make sense, it is simply ignored.  For example, you
+can output an ~org-mode~ table as a String, and since ~org-mode~ does not
+support colors, any color directives are simply ignored.  Some of the output
+targets are not strings, but ruby data structures, and for them, things such as
+alignment are simply irrelevant.
+
+*** Available Formatters
+
+*** Table Locations
+
+*** Formatting Directives
+
+*** Formatting Methods
+
+*** Examples
+
 
 * Development
 
