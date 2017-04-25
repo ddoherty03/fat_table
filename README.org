@@ -941,11 +941,11 @@ match:
 
 ***** Full Join
 
-A full join combines the effects of a left join and a right join.  All the rows
+A full join combines the effects of a left join and a right join. All the rows
 from both tables are included in the output augmented by columns of the other
-tables where the join expression is satisfied and augmented with nils otherwise.
+table where the join expression is satisfied and augmented with nils otherwise.
 
-#+HEADER: :colnames no :session example :hlines yes :wrap EXAMPLE
+#+HEADER: :colnames no :session example :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
   tab_a.full_join(tab_b, 'id_a == emp_id_b').to_aoa
 #+END_SRC
@@ -971,7 +971,7 @@ Finally, a cross join outputs every row of ~tab_a~ augmented with every row of
 ~tab_b~.  In other words, the Cartesian product of the two tables.  If ~tab_a~
 has ~N~ rows and ~tab_b~ has ~M~ rows, the output table will have ~N * M~ rows.
 
-#+HEADER: :colnames no :session example :hlines yes :wrap EXAMPLE
+#+HEADER: :colnames no :session example :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
   tab_a.cross_join(tab_b).to_aoa
 #+END_SRC
