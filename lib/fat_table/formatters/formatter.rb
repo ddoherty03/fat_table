@@ -153,7 +153,6 @@ module FatTable
     ############################################################################
     # Footer methods
     #
-    #
     # A Table may have any number of footers and any number of group footers.
     # Footers are not part of the table's data and never participate in any of
     # the transformation methods on tables.  They are never inherited by output
