@@ -291,7 +291,7 @@ This example illustrates several things:
    method. In an ~org-mode~ buffer, these are rendered as tables. We'll often
    apply ~.to_aoa~ at the end of example blocks to render the results inside
    this README.org file. As we'll see below, this method can also take a block
-   to which formatting instructions and footers can be attached.
+   to which formatting directives and footers can be attached.
 
 *** From Arrays of Hashes
 
@@ -1402,9 +1402,122 @@ alignment are simply irrelevant.
 
 *** Available Formatters
 
+~FatTable~ supports the following output targets for its tables:
+
+- Text :: form the table with ACSII characters,
+- Org :: form the table with ASCII characters but in the form used by Emacs
+     org-mode for constructing tables,
+- Term :: form the table with ANSI terminal codes and unicode characters,
+     possibly including colored text and cell backgrounds,
+- LaTeX :: form the table as input for LaTeX's longtable environment,
+- Aoh :: output the table as a ruby data structure, building the table as an
+     array of hashes, and
+- Aoa :: output the table as a ruby data structure, building the table as an
+     array of array,
+
+These are all implemented by classes that inherit from ~FatTable::Formatter~
+class by defining about a dozen methods that get called at various places during
+the construction of the output table.  The idea is that more classes can be
+defined by adding additional classes.
+
 *** Table Locations
 
+In the formatting methods, the table is divided into several "locations" for
+which separate formatting directives may be given.  These locations are
+identified with the following symbols:
+
+- :header :: the first row of the output table containing the headers,
+- :footer :: all rows of the table's footers,
+- :gfooter :: all rows of the table's group footers,
+- :body :: all the data rows of the table, that is, those that are neither part
+     of the header, footers, or gfooters,
+- :bfirst :: the first row of the table's body, and
+- :gfirst :: the first row in each group in the table's body.
+
 *** Formatting Directives
+
+The formatting methods explained in the next section all take formatting
+directives as strings in which letters and other characters signify what
+formatting applies.  For example, we may apply the formatting directive ~'R,$'~
+to numbers in a certain part of the table.  Each of those characters, and in
+some cases a whole substring, is a single directive.  They can appear in any
+order, so ~'$R,'~ and ~',$R'~ are equivalent.
+
+Here is a list of all the formatting directives that apply to each cell type:
+
+**** String
+
+For string columns, the following instructions are valid:
+
+- u :: convert the element to all lowercase,
+- U :: convert the element to all uppercase,
+- t :: title case the element, that is, upcase the initial letter in
+    each word and lower case the other letters
+- B :: make the element bold
+- I :: make the element italic
+- R :: align the element on the right of the column
+- L :: align the element on the left of the column
+- C :: align the element in the center of the column
+- c[color] :: render the element in the given color; the color can have
+    the form fgcolor, fgcolor.bgcolor, or .bgcolor, to set the
+    foreground or background colors respectively, and each of those can
+    be an ANSI or X11 color name in addition to the special color,
+    'none', which keeps the terminal's default color.
+- _ :: underline the element,
+- * :: cause the element to blink
+
+**** Numeric
+
+For a numeric, all the instructions valid for string are available, in addition
+to the following:
+
+- , :: insert grouping commas,
+- $ :: format the number as currency according to the locale,
+- m.n :: include at least m digits before the decimal point, padding on
+    the left with zeroes as needed, and round the number to the n
+    decimal places and include n digits after the decimal point,
+    padding on the right with zeroes as needed,
+- H :: convert the number (assumed to be in units of seconds) to
+    HH:MM:SS.ss form.  So a column that is the result of subtracting
+    two :datetime forms will result in a :numeric expressed as seconds
+    and can be displayed in hours, minutes, and seconds with this
+    formatting instruction.
+
+**** DateTime
+
+For a datetime, all the instructions valid for string are available, in addition
+to the following:
+
+- d[fmt] :: apply the format to a datetime that has no or a zero hour, minute,
+     second components, where fmt is a valid format string for Date#strftime,
+     otherwise, the datetime will be formatted as an ISO 8601 string,
+     YYYY-MM-DD.
+- D[fmt] :: apply the format to a datetime that has at least a non-zero
+    hour component where fmt is a valid format string for
+    Date#strftime, otherwise, the datetime will be formatted as an ISO
+    8601 string, YYYY-MM-DD.
+
+**** Boolean
+
+For a boolean cell, all the instructions valid for string are available, in
+  addition to the following:
+
+- Y :: print true as 'Y' and false as 'N',
+- T :: print true as 'T' and false as 'F',
+- X :: print true as 'X' and false as '',
+- b[xxx,yyy] :: print true as the string given as xxx and false as the
+    string given as yyy,
+- c[tcolor,fcolor] :: color a true element with tcolor and a false
+    element with fcolor. Each of the colors may be specified in the
+    same manner as colors for strings described above.
+
+**** NilClass
+
+By default, nil elements are rendered as blank cells, but you can make them
+visible with the following, and in that case, all the formatting instructions
+valid for strings are also available:
+
+- n[niltext] :: render a nil item with the given text.
 
 *** Formatting Methods
 
