@@ -639,17 +639,18 @@ module FatTable
     # exception will be thrown. Duplicates are eliminated from the
     # result. Resets groups.
     def intersect(other)
-      set_operation(other, :intersect, true)
+      set_operation(other, :intersect, distinct: true)
     end
 
-    # Return a Table that includes the rows that appear in this table and in
-    # another table. In other words, return the intersection of this table with
-    # the other. The headers of this table are used in the result. There must be
-    # the same number of columns of the same type in the two tables, or an
-    # exception will be thrown. Duplicates are not eliminated from the
-    # result. Resets groups.
+    # Return a Table that includes all the rows in this table that also occur in
+    # other table. Note that the order of the operands matters. Duplicates in
+    # this table will be included in the output, but duplicates in other will
+    # not. The headers of this table are used in the result. There must be the
+    # same number of columns of the same type in the two tables, or an exception
+    # will be thrown. Duplicates are not eliminated from the result. Resets
+    # groups.
     def intersect_all(other)
-      set_operation(other, :intersect, false)
+      set_operation(other, :intersect, distinct: false)
     end
 
     # Return a Table that includes the rows of this table except for any rows
@@ -659,7 +660,7 @@ module FatTable
     # same type in the two tables, or an exception will be thrown. Duplicates
     # are eliminated from the result. Resets groups.
     def except(other)
-      set_operation(other, :difference, true)
+      set_operation(other, :difference, distinct: true)
     end
 
     # Return a Table that includes the rows of this table except for any rows
@@ -669,7 +670,7 @@ module FatTable
     # same type in the two tables, or an exception will be thrown. Duplicates
     # are not eliminated from the result. Resets groups.
     def except_all(other)
-      set_operation(other, :difference, false)
+      set_operation(other, :difference, distinct: false)
     end
 
     private
@@ -679,7 +680,7 @@ module FatTable
     # from the result.
     def set_operation(other, op = :+,
                       distinct: true,
-                      add_boundaries: false,
+                      add_boundaries: true,
                       inherit_boundaries: false)
       unless columns.size == other.columns.size
         raise UserError, 'Cannot apply a set operation to tables with a different number of columns.'
