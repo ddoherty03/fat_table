@@ -311,8 +311,8 @@ module FatTable
     # symbol form, or (2) the name of a column type, i.e., :string, :numeric, or
     # :datetime, :boolean, or :nil (for empty cells or untyped columns). The
     # value given for the hash arguments should be strings that contain
-    # "instructions" on how elements of that column, or that type are to be
-    # formatted on output. Formatting instructions for a column name take
+    # "directives" on how elements of that column, or that type are to be
+    # formatted on output. Formatting directives for a column name take
     # precedence over those specified by type. And more specific locations take
     # precedence over less specific ones. For example, the first line of a table
     # is part of :body, :gfirst, and :bfirst, but since its identity as the

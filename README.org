@@ -1537,7 +1537,56 @@ valid for strings are also available:
 For example, you might want to use 'n[-]Cc[purple]' to make nils visible as a
 centered hyphen.
 
+*** Adding Footers
+
+As part of the formatting methods described in the next section, you can attach
+method calls on the Formatter for adding footers and group footers. Their
+signatures are:
+
+- ~footer(label, *sum_cols, **agg_cols)~ :: where ~label~ is a label to be
+     placed in the first cell of the footer (unless that column is named as one
+     of the ~sum_cols~ or ~agg_cols~, in which case the label is ignored),
+     ~*sum_cols~ are zero or more symbols for columns to be summed, and
+     ~**agg_cols~ is zero or more hash-like parameters with a column symbol as a
+     key and a symbol for an aggregate method as the value. This causes a
+     table-wide header to be added at the bottom of the table applying the :sum
+     aggregate to the ~sum_cols~ and the named aggregate method to the
+     ~agg_cols~. A table can have any number of footers attached, and they will
+     appear at the bottom of the output table in the order they are given.
+
+- ~gfooter(label, *sum_cols, **agg_cols)~ :: where the parameters have the same
+     meaning as for the ~footer~ method, but result in a footer for each group
+     in the table rather than the table as a whole. These will appear in the
+     output table just below each group.
+
+There are also a number of convenience methods for common footers:
+
+- ~sum_footer(*cols)~ :: Add a footer summing the given columns with the label
+     'Total'.
+- ~sum_gfooter(*cols)~ :: Add a group footer summing the given columns with the
+     label 'Group Total'.
+- ~avg_footer(*cols)~ :: Add a footer averaging the given columns with the label
+     'Average'.
+- ~avg_gfooter(*cols)~ :: Add a group footer averaging the given columns with the label
+     'Group Average'.
+- ~min_footer(*cols)~ :: Add a footer showing the minimum for the given columns
+     with the label 'Minimum'.
+- ~min_gfooter(*cols)~ :: Add a group footer showing the minumum for the given
+     columns with the label 'Group Minimum'.
+- ~max_footer(*cols)~ :: Add a footer showing the maximum for the given columns
+     with the label 'Maximum'.
+- ~max_gfooter(*cols)~ :: Add a group footer showing the maximum for the given
+     columns with the label 'Group Maximum'.
+
 *** Formatting Methods
+
+The ~FatTable::Table~ class provides several methods of the form ~to_<format>~
+that feed the table into a formatter of the given type and output the table in
+that format. Unlike the other methods on tables, these do not return the table
+itself and so are not chainable. Instead they return a string of the formatted
+table, or in the case of ~to_aoa~ and ~to_aoh~, a ruby data structure of the
+given type. Each also takes a block an yields a ~FatTable::Formatter~ object to
+the block so that formatting directives can be given before output.
 
 *** Examples
 
