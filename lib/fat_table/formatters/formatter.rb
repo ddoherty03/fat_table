@@ -209,7 +209,7 @@ module FatTable
       end
       agg_cols.each do |h, agg|
         unless table.headers.include?(h)
-          raise UserError, "No '#{h}' column in table to #{aggregate} in the footer"
+          raise UserError, "No '#{h}' column in table to #{agg} in the footer"
         end
         foot[h] = agg
       end
@@ -228,7 +228,7 @@ module FatTable
       end
       agg_cols.each do |h, agg|
         unless table.headers.include?(h)
-          raise UserError, "No '#{h}' column in table to #{aggregate} in the group footer"
+          raise UserError, "No '#{h}' column in table to #{agg} in the group footer"
         end
         foot[h] = agg
       end
