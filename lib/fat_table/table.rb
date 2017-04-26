@@ -995,11 +995,9 @@ module FatTable
     # where the value of all columns named as simple symbols are equal. All
     # other columns are set to the result of aggregating the values of that
     # column within the group according to a aggregate function (:count, :sum,
-    # :min, :max, etc.), which defaults to the :first function, giving the value
-    # of that column for the first row in the group.  You can specify a
-    # different aggregate function for a column by adding a hash parameter with
-    # the column as the key and a symbol for the aggregate function as the
-    # value.  For example, consider the following call:
+    # :min, :max, etc.) that you can specify by adding a hash parameter with the
+    # column as the key and a symbol for the aggregate function as the value.
+    # For example, consider the following call:
     #
     # tab.group_by(:date, :code, :price, shares: :sum).
     #
@@ -1007,17 +1005,10 @@ module FatTable
     # into groups of rows in which the value of :date, :code, and :price are
     # equal. The shares: hash parameter is set to the aggregate function :sum,
     # so it will appear in the result as the sum of all the :shares values in
-    # each group. Any non-aggregate columns that have no aggregate function set
-    # default to using the aggregate function :first. Because of the way Ruby
-    # parses parameters to a method call, all the grouping symbols must appear
-    # first in the parameter list before any hash parameters.
+    # each group. Because of the way Ruby parses parameters to a method call,
+    # all the grouping symbols must appear first in the parameter list before
+    # any hash parameters.
     def group_by(*group_cols, **agg_cols)
-      default_agg_func = :first
-      default_cols = headers - group_cols - agg_cols.keys
-      default_cols.each do |h|
-        agg_cols[h] = default_agg_func
-      end
-
       sorted_tab = order_by(group_cols)
       groups = sorted_tab.rows.group_by do |r|
         group_cols.map { |k| r[k] }
