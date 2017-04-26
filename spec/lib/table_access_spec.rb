@@ -28,6 +28,15 @@ module FatTable
       end
 
       it 'should be able to report its headings' do
+
+      it 'should be able to report column types' do
+        typs = @tab.types
+        expect(typs.class).to eq(Hash)
+        expect(typs[:a]).to eq('Numeric')
+        expect(typs[:two_words]).to eq('Numeric')
+        expect(typs[:c]).to eq('Numeric')
+        expect(typs[:d]).to eq('String')
+      end
         expect(@tab.headers).to eq [:a, :two_words, :c, :d]
       end
     end

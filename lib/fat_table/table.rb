@@ -299,9 +299,13 @@ module FatTable
       headers.include?(key.as_sym)
     end
 
-    # Return an array of the Table's column types.
+    # Return a Hash of the Table's column symbols to types.
     def types
-      columns.map(&:type)
+      result = {}
+      columns.each do |c|
+        result[c.header] = c.type
+      end
+      result
     end
 
     # Return the headers for the Table as an array of symbols.
@@ -313,6 +317,12 @@ module FatTable
     def size
       return 0 if columns.empty?
       columns.first.size
+    end
+
+    # Return the number of columns in the Table.
+    def width
+      return 0 if columns.empty?
+      columns.size
     end
 
     # Return whether this Table is empty.
