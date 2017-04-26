@@ -1,3 +1,5 @@
+require 'spec_helper'
+
 module FatTable
   describe Table do
     describe 'accessing' do
@@ -27,7 +29,12 @@ module FatTable
         expect { @tab[4] }.to raise_error(/out of range/)
       end
 
-      it 'should be able to report its headings' do
+      it 'should be able to report if column exists' do
+        expect(@tab.column?(:a)).to be true
+        expect(@tab.column?('a')).to be true
+        expect(@tab.column?('A')).to be true
+        expect(@tab.column?(:x)).to be false
+      end
 
       it 'should be able to report column types' do
         typs = @tab.types
@@ -37,7 +44,24 @@ module FatTable
         expect(typs[:c]).to eq('Numeric')
         expect(typs[:d]).to eq('String')
       end
+
+      it 'should be able to report its headers' do
         expect(@tab.headers).to eq [:a, :two_words, :c, :d]
+      end
+
+      it 'should be able to report the table size' do
+        expect(@tab.size).to eq(3)
+        expect(Table.new.size).to eq(0)
+      end
+
+      it 'should be able to report the table width' do
+        expect(@tab.width).to eq(4)
+        expect(Table.new.size).to eq(0)
+      end
+
+      it 'should be able to determine if table is empty' do
+        expect(Table.new.empty?).to be true
+        expect(@tab.empty?).to be false
       end
     end
   end
