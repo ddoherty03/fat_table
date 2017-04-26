@@ -52,10 +52,11 @@ Or install it yourself as:
 * Usage
 ** Quick Start
 
-~FatTable~ provides table objects as a data type that can constructed and
-operated on in a number of ways.  Here's a quick example:
+~FatTable~ provides table objects as a data type that can be constructed and
+operated on in a number of ways. Here's a quick example to illustrate the use of
+the main features of ~FatTable~. See the detailed explanations further on down.
 
-#+HEADER: :colnames no :session example :hlines yes :wrap EXAMPLE :exports both
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
   require 'fat_table'
 
@@ -74,18 +75,27 @@ operated on in a number of ways.  Here's a quick example:
        ['2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'ENTITY3', 'T'],
        ['2013-05-23', 'S', 23_054.00, 9694.21, 26.8015, 'ENTITY3', 'F']]
 
+  # Build the Table and then perform chained operations on it
+
   table = FatTable.from_aoa(data) \
     .where('shares > 2000') \
     .order_by(:date, :code) \
-    .select(:date, :code, :shares, :price, :ok, ref: '@row') \
-    .select(:ref, :date, :code, :shares, :price, :ok)
+    .select(:date, :code, :shares,
+            :price, :ok, ref: '@row') \
+    .select(:ref, :date, :code,
+            :shares, :price, :ok)
+
+  # Convert the table to an ASCII text string
 
   table.to_text do |fmt|
-    fmt.avg_footer(:price)
+    # Add some table footers
+    fmt.avg_footer(:price, :shares)
     fmt.sum_footer(:shares)
-    #fmt.sum_gfooter(:shares)
-    #fmt.avg_gfooter(:price)
+    # Add a group footer
+    fmt.gfooter('Avg', shares: :avg, price: :avg)
+    # Formats for all locations
     fmt.format(ref: 'CB', numeric: 'R', boolean: 'CY')
+    # Formats for different "locations" in the table
     fmt.format_for(:header, string: 'CB')
     fmt.format_for(:body, code: 'C', shares: ',0.1', price: '0.4', )
     fmt.format_for(:bfirst, price: '$0.4', )
@@ -94,7 +104,6 @@ operated on in a number of ways.  Here's a quick example:
   end
 #+END_SRC
 
-#+RESULTS:
 #+BEGIN_EXAMPLE
 +=========+============+======+=============+==========+====+
 |   Ref   |    Date    | Code |    Shares   |   Price  | Ok |
@@ -102,25 +111,36 @@ operated on in a number of ways.  Here's a quick example:
 |    1    | 2013-05-02 |   P  |   118,186.4 | $11.8500 |  Y |
 |    2    | 2013-05-02 |   P  |   795,546.2 |   1.1850 |  Y |
 +---------+------------+------+-------------+----------+----+
+|   Avg   |            |      |   456,866.3 |   6.5175 |    |
++---------+------------+------+-------------+----------+----+
 |    3    | 2013-05-20 |   S  |     5,046.0 |  28.2804 |  N |
 |    4    | 2013-05-20 |   S  |    35,742.5 |  28.3224 |  Y |
 |    5    | 2013-05-20 |   S  |    14,003.5 |  28.6383 |  Y |
++---------+------------+------+-------------+----------+----+
+|   Avg   |            |      |    18,264.0 |  28.4137 |    |
 +---------+------------+------+-------------+----------+----+
 |    6    | 2013-05-23 |   S  |     3,364.0 |  27.1083 |  Y |
 |    7    | 2013-05-23 |   S  |    16,780.5 |  25.1749 |  Y |
 |    8    | 2013-05-23 |   S  |     9,694.2 |  26.8015 |  N |
 +---------+------------+------+-------------+----------+----+
+|   Avg   |            |      |     9,946.2 |  26.3616 |    |
++---------+------------+------+-------------+----------+----+
 |    9    | 2013-05-29 |   S  |     6,601.9 |  24.7790 |  N |
 |    10   | 2013-05-29 |   S  |     5,659.5 |  24.7464 |  Y |
 |    11   | 2013-05-29 |   S  |     6,686.0 |  24.5802 |  Y |
 +---------+------------+------+-------------+----------+----+
+|   Avg   |            |      |     6,315.8 |  24.7019 |    |
++---------+------------+------+-------------+----------+----+
 |    12   | 2013-05-30 |   S  |     2,808.5 |  25.0471 |  Y |
 +---------+------------+------+-------------+----------+----+
-| Average |            |      |             | $23.0428 |    |
+|   Avg   |            |      |     2,808.5 |  25.0471 |    |
++---------+------------+------+-------------+----------+----+
+| Average |            |      |    85,009.9 | $23.0428 |    |
 +---------+------------+------+-------------+----------+----+
 |  Total  |            |      | 1,020,119.1 |          |    |
 +=========+============+======+=============+==========+====+
 #+END_EXAMPLE
+
 
 ** Anatomy of a Table
 *** Columns
@@ -176,7 +196,7 @@ types as follows:
 
 *** Headers
 
-Headers for the columns are formed from the input. No two column in a table can
+Headers for the columns are formed from the input. No two columns in a table can
 have the same header. Headers in the input are converted to symbols by
 
 - converting the header to a string with ~#to_s#,
@@ -210,13 +230,14 @@ You can create an empty table with ~FatTable.new~, and then add rows with the
   tab = FatTable.new
   tab << { a: 1, b: 2, c: '<2017-01-21>', d: 'f', e: '' }
   tab << { a: 3.14, b: 2.17, c: '[2016-01-21 Thu]', d: 'Y', e: nil }
+  tab.to_aoa
 #+END_SRC
 
 After this, the table will have column headers ~:a~, ~:b~, ~:c~, ~:d~, and ~:e~.
 Column, ~:a~ and ~:b~ will have type Numeric, column ~:c~ will have type
-~DateTime~, and column ~:f~ will have type ~Boolean~. Column ~:e~ will still
-have an open type. Notice that dates can be wrapped in brackets as in org-mode
-time stamps.
+~DateTime~, and column ~:d~ will have type ~Boolean~. Column ~:e~ will still
+have an open type. Notice that dates in the input can be wrapped in brackets as
+in org-mode time stamps.
 
 *** From CSV or Org Mode files or strings
 
@@ -467,6 +488,7 @@ all the items of the table's ~:ref~ column.
 
 The two forms of indexing can be combined to access individual cells of the
 table:
+
 #+BEGIN_SRC ruby
   tab[13]         # => Hash of the 14th row
   tab[:date]      # => Array of all Dates in the :date column
