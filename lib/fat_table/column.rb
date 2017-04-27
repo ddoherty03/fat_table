@@ -96,7 +96,7 @@ module FatTable
     # Return a count of the non-nil items in the column.  Works with any column
     # type.
     def count
-      items.compact.count
+      items.compact.count.to_d
     end
 
     # Return the smallest non-nil item in the column.  Works with numeric,
@@ -127,7 +127,8 @@ module FatTable
       end
     end
 
-    # Return the population variance, the average squared deviation from the
+    # Return the sample variance (the unbiased estimator of the population
+    # variance using a divisor of N-1) as the average squared deviation from the
     # mean, of the non-nil items in the column. Works with numeric and datetime
     # columns. For datetime columns, it converts each date to its Julian day
     # number and computes the variance of those numbers.
@@ -139,21 +140,48 @@ module FatTable
         else
           items.compact
         end
+      n = count
+      return BigDecimal('0.0') if n <= 1
       mu = Column.new(header: :mu, items: all_items).avg
-      sq_dev = 0.0
-      all_items.compact.each do |itm|
+      sq_dev = BigDecimal('0.0')
+      all_items.each do |itm|
         sq_dev += (itm - mu) * (itm - mu)
       end
-      sq_dev / items.compact.size.to_d
+      sq_dev / (n - 1)
     end
 
-    # Return the population standard deviation, the square root of the variance,
-    # of the non-nil items in the column. Works with numeric and datetime
+    # Return the population variance (the biased estimator of the population
+    # variance using a divisor of N) as the average squared deviation from the
+    # mean, of the non-nil items in the column. Works with numeric and datetime
     # columns. For datetime columns, it converts each date to its Julian day
-    # number and computes the standard deviation of those numbers.
+    # number and computes the variance of those numbers.
+    def pvar
+      only_with('var', 'DateTime', 'Numeric')
+      n = items.compact.size.to_d
+      return BigDecimal('0.0') if n <= 1
+      var * ((n - 1) / n)
+    end
+
+    # Return the sample standard deviation (the unbiased estimator of the
+    # population standard deviation using a divisor of N-1) as the square root
+    # of the sample variance, of the non-nil items in the column. Works with
+    # numeric and datetime columns. For datetime columns, it converts each date
+    # to its Julian day number and computes the standard deviation of those
+    # numbers.
     def dev
       only_with('dev', 'DateTime', 'Numeric')
-      Math.sqrt(var)
+      var.sqrt(20)
+    end
+
+    # Return the population standard deviation (the biased estimator of the
+    # population standard deviation using a divisor of N) as the square root of
+    # the population variance, of the non-nil items in the column. Works with
+    # numeric and datetime columns. For datetime columns, it converts each date
+    # to its Julian day number and computes the standard deviation of those
+    # numbers.
+    def pdev
+      only_with('dev', 'DateTime', 'Numeric')
+      Math.sqrt(pvar)
     end
 
     # Return true if any of the items in the column are true; otherwise return

@@ -291,17 +291,31 @@ module FatTable
       end
 
       it 'should properly apply the var aggregate' do
-        expect(@nums.var.round(1)).to eq(BigDecimal('580439629313335425001.2'))
+        expect(@nums.var.round(1)).to eq(BigDecimal('696527555176002510001.4'))
         expect { @bools.var }.to raise_error(/cannot be applied/)
-        expect(@dates.var).to eq(77700423.1875)
+        expect(@dates.var).to eq(103600564.25)
         expect { @strs.var }.to raise_error(/cannot be applied/)
       end
 
+      it 'should properly apply the pvar aggregate' do
+        expect(@nums.pvar.round(1)).to eq(BigDecimal('580439629313335424769.0'))
+        expect { @bools.pvar }.to raise_error(/cannot be applied/)
+        expect(@dates.pvar).to eq(77700423.1875)
+        expect { @strs.pvar }.to raise_error(/cannot be applied/)
+      end
+
       it 'should properly apply the dev aggregate' do
-        expect(@nums.dev.round(1)).to eq(BigDecimal('24092314735.5'))
+        expect(@nums.dev.round(1)).to eq(BigDecimal('26391808486.3'))
         expect { @bools.dev }.to raise_error(/cannot be applied/)
-        expect(@dates.dev.round(2)).to eq(8814.78)
+        expect(@dates.dev.round(2)).to eq(10178.44)
         expect { @strs.dev }.to raise_error(/cannot be applied/)
+      end
+
+      it 'should properly apply the pdev aggregate' do
+        expect(@nums.pdev.round(1)).to eq(BigDecimal('24092314735.5'))
+        expect { @bools.pdev }.to raise_error(/cannot be applied/)
+        expect(@dates.pdev.round(2)).to eq(8814.78)
+        expect { @strs.pdev }.to raise_error(/cannot be applied/)
       end
 
       it 'should properly apply the any? aggregate' do
