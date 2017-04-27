@@ -1,5 +1,7 @@
 # FatTable
 
+* Introduction
+
 ~FatTable~ is a gem that treats tables as a data type. It provides methods for
 constructing tables from a variety of sources, building them row-by-row,
 extracting rows, columns, and cells, and performing aggregate operations on
@@ -140,7 +142,6 @@ the main features of ~FatTable~. See the detailed explanations further on down.
 |  Total  |            |      | 1,020,119.1 |          |    |
 +=========+============+======+=============+==========+====+
 #+END_EXAMPLE
-
 
 ** Anatomy of a Table
 *** Columns
@@ -500,11 +501,12 @@ table:
 
 #+BEGIN_SRC ruby
   tab.headers       # => an Array of the headers in symbol form
-  tab.types         # => an Array of the column types
+  tab.types         # => a Hash mapping headers to column types
   tab.size          # => the number of rows in the table
+  tab.width         # => the number of columns in the table
   tab.empty?        # => is the table empty?
   tab.column?(head) # => does the table have a column with the given header?
-  tab.groups        # => return an Array of an Array of row Hashes.
+  tab.groups        # => return an Array of the table's groups as Arrays of row Hashes.
 #+END_SRC
 
 ** Operations on Tables
@@ -533,34 +535,72 @@ SQL.
 
 *** Example Input Table
 
-For illustration purposes assume that the following table is read into a ruby
-variable called '~trades~' using one of the input methods above. We have given
-the table groups, marked by the hlines below, to illustrate the affect of
-operations on groups if applicable.
+For illustration purposes assume that the following tables are read into a ruby
+variables called '~tab1~' and '~tab2~. We have given the table groups, marked by
+the hlines below, and added some duplicates to illustrate the affect of
+operations these as applicable.
 
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
+#+BEGIN_SRC ruby
+require 'fat_table'
+
+tab1_str = <<-EOS
+| Ref  | Date             | Code |  Price | G10 | QP10 | Shares |   LP |    QP |   IPLP |   IPQP |
+|------+------------------+------+--------+-----+------+--------+------+-------+--------+--------|
+| T001 | [2016-11-01 Tue] | P    | 7.7000 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 |
+| T002 | [2016-11-01 Tue] | P    | 7.7500 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 |
+| T003 | [2016-11-01 Tue] | P    | 7.5000 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 |
+| T003 | [2016-11-01 Tue] | P    | 7.5000 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 |
+|------+------------------+------+--------+-----+------+--------+------+-------+--------+--------|
+| T004 | [2016-11-01 Tue] | S    | 7.5500 | T   | F    |   6811 |  966 |  5845 | 0.2453 | 0.1924 |
+| T005 | [2016-11-01 Tue] | S    | 7.5000 | F   | F    |   4000 |  572 |  3428 | 0.2453 | 0.1924 |
+| T006 | [2016-11-01 Tue] | S    | 7.6000 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 |
+| T006 | [2016-11-01 Tue] | S    | 7.6000 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 |
+| T007 | [2016-11-01 Tue] | S    | 7.6500 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 |
+| T008 | [2016-11-01 Tue] | P    | 7.6500 | F   | F    |   2771 |  393 |  2378 | 0.2453 | 0.1924 |
+| T009 | [2016-11-01 Tue] | P    | 7.6000 | F   | F    |   9550 | 1363 |  8187 | 0.2453 | 0.1924 |
+|------+------------------+------+--------+-----+------+--------+------+-------+--------+--------|
+| T010 | [2016-11-01 Tue] | P    | 7.5500 | F   | T    |   3175 |  451 |  2724 | 0.2453 | 0.1924 |
+| T011 | [2016-11-02 Wed] | P    | 7.4250 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 |
+| T012 | [2016-11-02 Wed] | P    | 7.5500 | F   | F    |   4700 |  677 |  4023 | 0.2453 | 0.1924 |
+| T012 | [2016-11-02 Wed] | P    | 7.5500 | F   | F    |   4700 |  677 |  4023 | 0.2453 | 0.1924 |
+| T013 | [2016-11-02 Wed] | P    | 7.3500 | T   | T    |  53100 | 7656 | 45444 | 0.2453 | 0.1924 |
+|------+------------------+------+--------+-----+------+--------+------+-------+--------+--------|
+| T014 | [2016-11-02 Wed] | P    | 7.4500 | F   | T    |   5847 |  835 |  5012 | 0.2453 | 0.1924 |
+| T015 | [2016-11-02 Wed] | P    | 7.7500 | F   | F    |    500 |   72 |   428 | 0.2453 | 0.1924 |
+| T016 | [2016-11-02 Wed] | P    | 8.2500 | T   | T    |    100 |   14 |    86 | 0.2453 | 0.1924 |
+EOS
+
+tab2_str = <<-EOS
+| Ref  | Date             | Code |  Price | G10 | QP10 | Shares |    LP |   QP |   IPLP |   IPQP |
+|------+------------------+------+--------+-----+------+--------+-------+------+--------+--------|
+| T003 | [2016-11-01 Tue] | P    | 7.5000 | F   | T    |    800 |   112 |  688 | 0.2453 | 0.1924 |
+| T003 | [2016-11-01 Tue] | P    | 7.5000 | F   | T    |    800 |   112 |  688 | 0.2453 | 0.1924 |
+| T017 | [2016-11-01 Tue] | P    |    8.3 | F   | T    |   1801 |  1201 |  600 | 0.2453 | 0.1924 |
+|------+------------------+------+--------+-----+------+--------+-------+------+--------+--------|
+| T018 | [2016-11-01 Tue] | S    |  7.152 | T   | F    |   2516 |  2400 |  116 | 0.2453 | 0.1924 |
+| T018 | [2016-11-01 Tue] | S    |  7.152 | T   | F    |   2516 |  2400 |  116 | 0.2453 | 0.1924 |
+| T006 | [2016-11-01 Tue] | S    | 7.6000 | F   | T    |   1000 |   143 |  857 | 0.2453 | 0.1924 |
+| T007 | [2016-11-01 Tue] | S    | 7.6500 | T   | F    |    200 |    28 |  172 | 0.2453 | 0.1924 |
+|------+------------------+------+--------+-----+------+--------+-------+------+--------+--------|
+| T014 | [2016-11-02 Wed] | P    | 7.4500 | F   | T    |   5847 |   835 | 5012 | 0.2453 | 0.1924 |
+| T015 | [2016-11-02 Wed] | P    | 7.7500 | F   | F    |    500 |    72 |  428 | 0.2453 | 0.1924 |
+| T015 | [2016-11-02 Wed] | P    | 7.7500 | F   | F    |    500 |    72 |  428 | 0.2453 | 0.1924 |
+| T016 | [2016-11-02 Wed] | P    | 8.2500 | T   | T    |    100 |    14 |   86 | 0.2453 | 0.1924 |
+|------+------------------+------+--------+-----+------+--------+-------+------+--------+--------|
+| T019 | [2017-01-15 Sun] | S    |   8.75 | T   | F    |    300 |   175 |  125 | 0.2453 | 0.1924 |
+| T020 | [2017-01-19 Thu] | S    |   8.25 | F   | T    |    700 |   615 |   85 | 0.2453 | 0.1924 |
+| T021 | [2017-01-23 Mon] | P    |   7.16 | T   | T    |  12100 | 11050 | 1050 | 0.2453 | 0.1924 |
+| T021 | [2017-01-23 Mon] | P    |   7.16 | T   | T    |  12100 | 11050 | 1050 | 0.2453 | 0.1924 |
+EOS
+
+tab1 = FatTable.from_org_string(tab1_str)
+tab2 = FatTable.from_org_string(tab2_str)
+#+END_SRC
+
+#+RESULTS:
 #+BEGIN_EXAMPLE
-#+NAME: trades
-| Ref  |       Date | Code |  Price | G10 | QP10 | Shares |    LP |     QP |   IPLP |   IPQP |
-|------+------------+------+--------+-----+------+--------+-------+--------+--------+--------|
-| T001 | 2016-11-01 | P    | 7.7000 | T   | F    |    100 |    14 |     86 | 0.2453 | 0.1924 |
-| T002 | 2016-11-01 | P    | 7.7500 | T   | F    |    200 |    28 |    172 | 0.2453 | 0.1924 |
-| T003 | 2016-11-01 | P    | 7.5000 | F   | T    |    800 |   112 |    688 | 0.2453 | 0.1924 |
-|------+------------+------+--------+-----+------+--------+-------+--------+--------+--------|
-| T004 | 2016-11-01 | S    | 7.5500 | T   | F    |   6811 |   966 |   5845 | 0.2453 | 0.1924 |
-| T005 | 2016-11-01 | S    | 7.5000 | F   | F    |   4000 |   572 |   3428 | 0.2453 | 0.1924 |
-| T006 | 2016-11-01 | S    | 7.6000 | F   | T    |   1000 |   143 |    857 | 0.2453 | 0.1924 |
-| T007 | 2016-11-01 | S    | 7.6500 | T   | F    |    200 |    28 |    172 | 0.2453 | 0.1924 |
-| T008 | 2016-11-01 | P    | 7.6500 | F   | F    |   2771 |   393 |   2378 | 0.2453 | 0.1924 |
-| T009 | 2016-11-01 | P    | 7.6000 | F   | F    |   9550 |  1363 |   8187 | 0.2453 | 0.1924 |
-|------+------------+------+--------+-----+------+--------+-------+--------+--------+--------|
-| T010 | 2016-11-01 | P    | 7.5500 | F   | T    |   3175 |   451 |   2724 | 0.2453 | 0.1924 |
-| T011 | 2016-11-02 | P    | 7.4250 | T   | F    |    100 |    14 |     86 | 0.2453 | 0.1924 |
-| T012 | 2016-11-02 | P    | 7.5500 | F   | F    |   4700 |   677 |   4023 | 0.2453 | 0.1924 |
-| T013 | 2016-11-02 | P    | 7.3500 | T   | T    |  53100 |  7656 |  45444 | 0.2453 | 0.1924 |
-|------+------------+------+--------+-----+------+--------+-------+--------+--------+--------|
-| T014 | 2016-11-02 | P    | 7.4500 | F   | T    |   5847 |   835 |   5012 | 0.2453 | 0.1924 |
-| T015 | 2016-11-02 | P    | 7.7500 | F   | F    |    500 |    72 |    428 | 0.2453 | 0.1924 |
-| T016 | 2016-11-02 | P    | 8.2500 | T   | T    |    100 |    14 |     86 | 0.2453 | 0.1924 |
+#<FatTable::Table:0x0055ba59415c08 @columns=[#<FatTable::Column:0x0055ba5940fa60 @raw_header=:ref, @header=:ref, @type="String", @items=["T003", "T003", "T017", "T018", "T018", "T006", "T007", "T014", "T015", "T015", "T016", "T019", "T020", "T021", "T021"]>, #<FatTable::Column:0x0055ba5940f358 @raw_header=:date, @header=:date, @type="DateTime", @items=[Tue, 01 Nov 2016, Tue, 01 Nov 2016, Tue, 01 Nov 2016, Tue, 01 Nov 2016, Tue, 01 Nov 2016, Tue, 01 Nov 2016, Tue, 01 Nov 2016, Wed, 02 Nov 2016, Wed, 02 Nov 2016, Wed, 02 Nov 2016, Wed, 02 Nov 2016, Sun, 15 Jan 2017, Thu, 19 Jan 2017, Mon, 23 Jan 2017, Mon, 23 Jan 2017]>, #<FatTable::Column:0x0055ba5940ea48 @raw_header=:code, @header=:code, @type="String", @items=["P", "P", "P", "S", "S", "S", "S", "P", "P", "P", "P", "S", "S", "P", "P"]>, #<FatTable::Column:0x0055ba5940e4d0 @raw_header=:price, @header=:price, @type="Numeric", @items=[7.5, 7.5, 8.3, 7.152, 7.152, 7.6, 7.65, 7.45, 7.75, 7.75, 8.25, 8.75, 8.25, 7.16, 7.16]>, #<FatTable::Column:0x0055ba5940de90 @raw_header=:g10, @header=:g10, @type="Boolean", @items=[false, false, false, true, true, false, true, false, false, false, true, true, false, true, true]>, #<FatTable::Column:0x0055ba5940dad0 @raw_header=:qp10, @header=:qp10, @type="Boolean", @items=[true, true, true, false, false, true, false, true, false, false, true, false, true, true, true]>, #<FatTable::Column:0x0055ba5940d710 @raw_header=:shares, @header=:shares, @type="Numeric", @items=[800, 800, 1801, 2516, 2516, 1000, 200, 5847, 500, 500, 100, 300, 700, 12100, 12100]>, #<FatTable::Column:0x0055ba5940d198 @raw_header=:lp, @header=:lp, @type="Numeric", @items=[112, 112, 1201, 2400, 2400, 143, 28, 835, 72, 72, 14, 175, 615, 11050, 11050]>, #<FatTable::Column:0x0055ba5940cc70 @raw_header=:qp, @header=:qp, @type="Numeric", @items=[688, 688, 600, 116, 116, 857, 172, 5012, 428, 428, 86, 125, 85, 1050, 1050]>, #<FatTable::Column:0x0055ba5940c720 @raw_header=:iplp, @header=:iplp, @type="Numeric", @items=[0.2453, 0.2453, 0.2453, 0.2453, 0.2453, 0.2453, 0.2453, 0.2453, 0.2453, 0.2453, 0.2453, 0.2453, 0.2453, 0.2453, 0.2453]>, #<FatTable::Column:0x0055ba5940c108 @raw_header=:ipqp, @header=:ipqp, @type="Numeric", @items=[0.1924, 0.1924, 0.1924, 0.1924, 0.1924, 0.1924, 0.1924, 0.1924, 0.1924, 0.1924, 0.1924, 0.1924, 0.1924, 0.1924, 0.1924]>], @boundaries=[2, 6, 10]>
 #+END_EXAMPLE
 
 *** Select
@@ -574,8 +614,9 @@ order we want them to appear in the output. Thus, one use of =select= is to
 filter and permute the order of existing columns. The =select= method preserves
 any group boundaries present in the input table.
 
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
-  trades.select(:price, :ref, :shares)
+  tab1.select(:price, :ref, :shares).to_aoa
 #+END_SRC
 
 #+BEGIN_EXAMPLE
@@ -584,9 +625,11 @@ any group boundaries present in the input table.
 |   7.7 | T001 |    100 |
 |  7.75 | T002 |    200 |
 |   7.5 | T003 |    800 |
+|   7.5 | T003 |    800 |
 |-------+------+--------|
 |  7.55 | T004 |   6811 |
 |   7.5 | T005 |   4000 |
+|   7.6 | T006 |   1000 |
 |   7.6 | T006 |   1000 |
 |  7.65 | T007 |    200 |
 |  7.65 | T008 |   2771 |
@@ -594,6 +637,7 @@ any group boundaries present in the input table.
 |-------+------+--------|
 |  7.55 | T010 |   3175 |
 | 7.425 | T011 |    100 |
+|  7.55 | T012 |   4700 |
 |  7.55 | T012 |   4700 |
 |  7.35 | T013 |  53100 |
 |-------+------+--------|
@@ -621,8 +665,9 @@ variables are set the number of the current row and group respectively.
 For example, if we want to rename the :date column and compute the cost of
 shares, we could:
 
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
-  tab = trades.select(:ref, :price, :shares, traded_on: :date, cost: 'price * shares')
+  tab1.select(:ref, :price, :shares, traded_on: :date, cost: 'price * shares').to_aoa
 #+END_SRC
 
 #+BEGIN_EXAMPLE
@@ -631,9 +676,11 @@ shares, we could:
 | T001 |   7.7 |    100 | 2016-11-01 |    770.0 |
 | T002 |  7.75 |    200 | 2016-11-01 |   1550.0 |
 | T003 |   7.5 |    800 | 2016-11-01 |   6000.0 |
+| T003 |   7.5 |    800 | 2016-11-01 |   6000.0 |
 |------+-------+--------+------------+----------|
 | T004 |  7.55 |   6811 | 2016-11-01 | 51423.05 |
 | T005 |   7.5 |   4000 | 2016-11-01 |  30000.0 |
+| T006 |   7.6 |   1000 | 2016-11-01 |   7600.0 |
 | T006 |   7.6 |   1000 | 2016-11-01 |   7600.0 |
 | T007 |  7.65 |    200 | 2016-11-01 |   1530.0 |
 | T008 |  7.65 |   2771 | 2016-11-01 | 21198.15 |
@@ -641,6 +688,7 @@ shares, we could:
 |------+-------+--------+------------+----------|
 | T010 |  7.55 |   3175 | 2016-11-01 | 23971.25 |
 | T011 | 7.425 |    100 | 2016-11-02 |    742.5 |
+| T012 |  7.55 |   4700 | 2016-11-02 |  35485.0 |
 | T012 |  7.55 |   4700 | 2016-11-02 |  35485.0 |
 | T013 |  7.35 |  53100 | 2016-11-02 | 390285.0 |
 |------+-------+--------+------------+----------|
@@ -657,10 +705,11 @@ The order of the columns is the same as the order of the parameters to the
 ~select~ method. You can re-order the columns with a second, chained call to
 ~select~:
 
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
-  tab = trades.
-          select(:ref, :price, :shares, traded_on: :date, cost: 'price * shares').
-          select(:ref, :traded_on, :price, :shares, :cost)
+  tab1.select(:ref, :price, :shares, traded_on: :date, cost: 'price * shares') \
+    .select(:ref, :traded_on, :price, :shares, :cost) \
+    .to_aoa
 #+END_SRC
 
 #+BEGIN_EXAMPLE
@@ -669,9 +718,11 @@ The order of the columns is the same as the order of the parameters to the
 | T001 | 2016-11-01 |   7.7 |    100 |    770.0 |
 | T002 | 2016-11-01 |  7.75 |    200 |   1550.0 |
 | T003 | 2016-11-01 |   7.5 |    800 |   6000.0 |
+| T003 | 2016-11-01 |   7.5 |    800 |   6000.0 |
 |------+------------+-------+--------+----------|
 | T004 | 2016-11-01 |  7.55 |   6811 | 51423.05 |
 | T005 | 2016-11-01 |   7.5 |   4000 |  30000.0 |
+| T006 | 2016-11-01 |   7.6 |   1000 |   7600.0 |
 | T006 | 2016-11-01 |   7.6 |   1000 |   7600.0 |
 | T007 | 2016-11-01 |  7.65 |    200 |   1530.0 |
 | T008 | 2016-11-01 |  7.65 |   2771 | 21198.15 |
@@ -680,12 +731,14 @@ The order of the columns is the same as the order of the parameters to the
 | T010 | 2016-11-01 |  7.55 |   3175 | 23971.25 |
 | T011 | 2016-11-02 | 7.425 |    100 |    742.5 |
 | T012 | 2016-11-02 |  7.55 |   4700 |  35485.0 |
+| T012 | 2016-11-02 |  7.55 |   4700 |  35485.0 |
 | T013 | 2016-11-02 |  7.35 |  53100 | 390285.0 |
 |------+------------+-------+--------+----------|
 | T014 | 2016-11-02 |  7.45 |   5847 | 43560.15 |
 | T015 | 2016-11-02 |  7.75 |    500 |   3875.0 |
 | T016 | 2016-11-02 |  8.25 |    100 |    825.0 |
 #+END_EXAMPLE
+
 
 Notice that ~select~ can take any number of arguments but all the symbol
 arguments must come first followed by all the hash-like keyword arguments.
@@ -707,19 +760,20 @@ the input, so the output table has only a single group.
 Here we select only those even-numbered rows where either of the two boolean
 fields is true:
 
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
-  tab = trades.where('@row.even? && (g10 || qp10)')
+    tab1.where('@row.even? && (g10 || qp10)') \
+      .to_aoa
 #+END_SRC
 
 #+BEGIN_EXAMPLE
-| Ref  |       Date | Code | Price | G10 | QP10 | Shares |  Lp |   Qp |   Iplp |   Ipqp |
-|------+------------+------+-------+-----+------+--------+-----+------+--------+--------|
-| T002 | 2016-11-01 | P    |  7.75 | T   | F    |    200 |  28 |  172 | 0.2453 | 0.1924 |
-| T004 | 2016-11-01 | S    |  7.55 | T   | F    |   6811 | 966 | 5845 | 0.2453 | 0.1924 |
-| T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 | 143 |  857 | 0.2453 | 0.1924 |
-| T010 | 2016-11-01 | P    |  7.55 | F   | T    |   3175 | 451 | 2724 | 0.2453 | 0.1924 |
-| T014 | 2016-11-02 | P    |  7.45 | F   | T    |   5847 | 835 | 5012 | 0.2453 | 0.1924 |
-| T016 | 2016-11-02 | P    |  8.25 | T   | T    |    100 |  14 |   86 | 0.2453 | 0.1924 |
+| Ref  |       Date | Code | Price | G10 | QP10 | Shares |   Lp |    Qp |   Iplp |   Ipqp |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
+| T002 | 2016-11-01 | P    |  7.75 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 |
+| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 |
+| T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 |
+| T010 | 2016-11-01 | P    |  7.55 | F   | T    |   3175 |  451 |  2724 | 0.2453 | 0.1924 |
+| T013 | 2016-11-02 | P    |  7.35 | T   | T    |  53100 | 7656 | 45444 | 0.2453 | 0.1924 |
 #+END_EXAMPLE
 
 *** Order_by
@@ -733,8 +787,10 @@ output.
 
 Let's sort our table first by ~:code~, then by ~:date~.
 
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
-  tab = trades.order_by(:code, :date)
+  tab1.order_by(:code, :date) \
+    .to_aoa
 #+END_SRC
 
 #+BEGIN_EXAMPLE
@@ -743,11 +799,13 @@ Let's sort our table first by ~:code~, then by ~:date~.
 | T001 | 2016-11-01 | P    |   7.7 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 |
 | T002 | 2016-11-01 | P    |  7.75 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 |
 | T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 |
+| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 |
 | T008 | 2016-11-01 | P    |  7.65 | F   | F    |   2771 |  393 |  2378 | 0.2453 | 0.1924 |
 | T009 | 2016-11-01 | P    |   7.6 | F   | F    |   9550 | 1363 |  8187 | 0.2453 | 0.1924 |
 | T010 | 2016-11-01 | P    |  7.55 | F   | T    |   3175 |  451 |  2724 | 0.2453 | 0.1924 |
 |------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
 | T011 | 2016-11-02 | P    | 7.425 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 |
+| T012 | 2016-11-02 | P    |  7.55 | F   | F    |   4700 |  677 |  4023 | 0.2453 | 0.1924 |
 | T012 | 2016-11-02 | P    |  7.55 | F   | F    |   4700 |  677 |  4023 | 0.2453 | 0.1924 |
 | T013 | 2016-11-02 | P    |  7.35 | T   | T    |  53100 | 7656 | 45444 | 0.2453 | 0.1924 |
 | T014 | 2016-11-02 | P    |  7.45 | F   | T    |   5847 |  835 |  5012 | 0.2453 | 0.1924 |
@@ -756,6 +814,7 @@ Let's sort our table first by ~:code~, then by ~:date~.
 |------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
 | T004 | 2016-11-01 | S    |  7.55 | T   | F    |   6811 |  966 |  5845 | 0.2453 | 0.1924 |
 | T005 | 2016-11-01 | S    |   7.5 | F   | F    |   4000 |  572 |  3428 | 0.2453 | 0.1924 |
+| T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 |
 | T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 |
 | T007 | 2016-11-01 | S    |  7.65 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 |
 #+END_EXAMPLE
@@ -768,41 +827,31 @@ either changes, ~order_by~ inserts a group boundary.
 *** Group_by
 
 Like ~order_by~, ~group_by~ takes a set of column header symbols by which to
-sort the table into groups that are equal with respect to values in those
-columns.  In addition, those can be followed by a series of hash-like parameters
-that indicate how the remaining, non-group columns are to be aggregated into a
-single value.  The output table has one row for each group for which the
-grouping parameters are equal containing those columns and an aggregate column
-for all the other rows.
+sort the table into a set of groups that are equal with respect to values in
+those columns. In addition, those parameters can be followed by a series of
+hash-like parameters that indicate how any of the remaining, non-group columns
+are to be aggregated into a single value. The output table has one row for each
+group for which the grouping parameters are equal containing those columns and
+an aggregate column for all the other rows.
 
 For example, let's summarize the ~trades~ table by ~:code~ and ~:price~ again,
 and determine total shares, average price, and other features of each group:
 
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
-  tab = trades.
-          group_by(:code, :date, price: :avg,
-                   shares: :sum, lp: :sum, qp: :sum,
-                   g10: :any?, qp10: :all?)
+  tab1.group_by(:code, :date, price: :avg,
+                shares: :sum, lp: :sum, qp: :sum,
+                qp10: :all?) \
+    .to_aoa { |f| f.format(avg_price: '0.5R') }
 #+END_SRC
 
 #+BEGIN_EXAMPLE
-| Code |       Date | Avg Price | Sum Shares | Sum Lp | Sum Qp |
-|------+------------+-----------+------------+--------+--------|
-| P    | 2016-11-01 |     7.625 |      16596 |   2361 |  14235 |
-| P    | 2016-11-02 |  7.629167 |      64347 |   9268 |  55079 |
-| S    | 2016-11-01 |     7.575 |      12011 |   1709 |  10302 |
-
-| Code |       Date | Any G10 | All QP10 | First Ref | First Iplp | First Ipqp |
-|------+------------+---------+----------+-----------+------------+------------|
-| P    | 2016-11-01 | T       | F        | T001      |     0.2453 |     0.1924 |
-| P    | 2016-11-02 | T       | F        | T011      |     0.2453 |     0.1924 |
-| S    | 2016-11-01 | T       | F        | T004      |     0.2453 |     0.1924 |
+| Code |       Date | Avg Price | Sum Shares | Sum Lp | Sum Qp | All QP10 |
+|------+------------+-----------+------------+--------+--------+----------|
+| P    | 2016-11-01 |   7.60714 |      17396 |   2473 |  14923 | F        |
+| P    | 2016-11-02 |   7.61786 |      69047 |   9945 |  59102 | F        |
+| S    | 2016-11-01 |   7.58000 |      13011 |   1852 |  11159 | F        |
 #+END_EXAMPLE
-
-The result is broken up into two tables, but the actual result is a single table
-with 11 columns and only 3 rows, one for each group. You can see the input
-groups in the ~order_by~ section above since we are grouping by the same
-columns. Each group results in a single row in the output.
 
 After the grouping column parameters, there are several hash-like "aggregating"
 parameters where the key is the column to aggregate and the value is a symbol
@@ -811,10 +860,8 @@ understand. For example, the ~:avg~ method is applied to the :price column so
 that the output shows the average price in each group. The ~:shares~, ~:lp~, and
 ~:qp~ columns are summed, and the ~:any?~ aggregate is applied to one of the
 boolean fields, that is, it is ~true~ if any of the values in that column are
-~true~. The columns not named in the ~group_by~ parameter list have the default
-aggregate method ~:first~ applied to them, so they get the value of the column
-in the first row of the group.  The column names in the output of the aggregated
-columns have the name of the aggregating method pre-pended to the column name.
+~true~. The column names in the output of the aggregated columns have the name
+of the aggregating method pre-pended to the column name.
 
 Here is a list of all the aggregate methods available.  If the description
 restricts the aggregate to particular column types, applying it to other types
@@ -834,10 +881,16 @@ will raise an exception.
      non-nil values in the column; with respect to DateTime objects, each is
      converted to a numeric Julian date, the average is calculated, and the
      result converted back to a Date or DateTime object,
-- ~var~ :: for Numeric and DateTime columns, compute the population variance of
+- ~var~ :: for Numeric and DateTime columns, compute the sample variance of the
+     non-nil values in the column, dates are converted to numbers as for the
+     :avg aggregate,
+- ~pvar~ :: for Numeric and DateTime columns, compute the population variance of
      the non-nil values in the column, dates are converted to numbers as for the
      :avg aggregate,
-- ~dev~ :: for Numeric and DateTime columns, compute the population standard
+- ~dev~ :: for Numeric and DateTime columns, compute the sample standard
+     deviation of the non-nil values in the column, dates are converted to
+     numbers as for the :avg aggregate,
+- ~pdev~ :: for Numeric and DateTime columns, compute the population standard
      deviation of the non-nil values in the column, dates are converted to
      numbers as for the :avg aggregate,
 - ~any?~ :: for Boolean columns only, return true if any non-nil value in the
@@ -922,30 +975,32 @@ These methods cry out for some examples, no?  The following are taken from a the
 [[https://www.tutorialspoint.com/postgresql/postgresql_using_joins.htm][Postgresql tutorial]], with some slight modifications.  The examples will use the
 following two tables:
 
-#+BEGIN_EXAMPLE
-tab_a:
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
+#+BEGIN_SRC ruby
+    tab_a_str = <<-EOS
+  | Id | Name  | Age | Address    | Salary |  Join Date |
+  |----+-------+-----+------------+--------+------------|
+  |  1 | Paul  |  32 | California |  20000 | 2001-07-13 |
+  |  3 | Teddy |  23 | Norway     |  20000 | 2007-12-13 |
+  |  4 | Mark  |  25 | Rich-Mond  |  65000 | 2007-12-13 |
+  |  5 | David |  27 | Texas      |  85000 | 2007-12-13 |
+  |  2 | Allen |  25 | Texas      |        | 2005-07-13 |
+  |  8 | Paul  |  24 | Houston    |  20000 | 2005-07-13 |
+  |  9 | James |  44 | Norway     |   5000 | 2005-07-13 |
+  | 10 | James |  45 | Texas      |   5000 |            |
+  EOS
 
-| Id | Name  | Age | Address    | Salary |  Join Date |
-|----+-------+-----+------------+--------+------------|
-|  1 | Paul  |  32 | California |  20000 | 2001-07-13 |
-|  3 | Teddy |  23 | Norway     |  20000 | 2007-12-13 |
-|  4 | Mark  |  25 | Rich-Mond  |  65000 | 2007-12-13 |
-|  5 | David |  27 | Texas      |  85000 | 2007-12-13 |
-|  2 | Allen |  25 | Texas      |        | 2005-07-13 |
-|  8 | Paul  |  24 | Houston    |  20000 | 2005-07-13 |
-|  9 | James |  44 | Norway     |   5000 | 2005-07-13 |
-| 10 | James |  45 | Texas      |   5000 |            |
-#+END_EXAMPLE
+    tab_b_str = <<-EOS
+  | Id | Dept        | Emp Id |
+  |----+-------------+--------|
+  |  1 | IT Billing  |      1 |
+  |  2 | Engineering |      2 |
+  |  3 | Finance     |      7 |
+  EOS
 
-#+BEGIN_EXAMPLE
-tab_b:
-
-| Id | Dept        | Emp Id |
-|----+-------------+--------|
-|  1 | IT Billing  |      1 |
-|  2 | Engineering |      2 |
-|  3 | Finance     |      7 |
-#+END_EXAMPLE
+    tab_a = FatTable.from_org_string(tab_a_str)
+    tab_b = FatTable.from_org_string(tab_b_str)
+#+END_SRC
 
 ***** Inner Joins
 
@@ -953,6 +1008,7 @@ With no join expression arguments, the tables are joined when their sole common
 field, ~:id~, is equal in both tables.  The result is the natural join of the
 two tables.
 
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
   tab_a.join(tab_b).to_aoa
 #+END_SRC
@@ -970,6 +1026,7 @@ in the second table. To correct this, we need to explicitly state the columns we
 want to join on in each table by disambiguating them with ~_a~ and ~_b~
 suffixes:
 
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
   tab_a.join(tab_b, :id_a, :emp_id_b).to_aoa
 #+END_SRC
@@ -985,6 +1042,7 @@ Instead of using the disambiguated column names as symbols, we could also use a
 string containing a ruby expression.  Within the expression, the column names
 should be treated as local variables:
 
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
   tab_a.join(tab_b, 'id_a == emp_id_b').to_aoa
 #+END_SRC
@@ -1001,6 +1059,7 @@ should be treated as local variables:
 In left join, all the rows of ~tab_a~ are included in the output, augmented by
 the matching columns of ~tab_b~ and augmented with nils where there is no match:
 
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
   tab_a.left_join(tab_b, 'id_a == emp_id_b').to_aoa
 #+END_SRC
@@ -1022,6 +1081,7 @@ In a right join, all the rows of ~tab_b~ are included in the output, augmented
 by the matching columns of ~tab_a~ and augmented with nils where there is no
 match:
 
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
   tab_a.right_join(tab_b, 'id_a == emp_id_b').to_aoa
 #+END_SRC
@@ -1040,7 +1100,7 @@ A full join combines the effects of a left join and a right join. All the rows
 from both tables are included in the output augmented by columns of the other
 table where the join expression is satisfied and augmented with nils otherwise.
 
-#+HEADER: :colnames no :session example :hlines yes :wrap EXAMPLE :exports both
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
   tab_a.full_join(tab_b, 'id_a == emp_id_b').to_aoa
 #+END_SRC
@@ -1065,7 +1125,7 @@ Finally, a cross join outputs every row of ~tab_a~ augmented with every row of
 ~tab_b~.  In other words, the Cartesian product of the two tables.  If ~tab_a~
 has ~N~ rows and ~tab_b~ has ~M~ rows, the output table will have ~N * M~ rows.
 
-#+HEADER: :colnames no :session example :hlines yes :wrap EXAMPLE :exports both
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
   tab_a.cross_join(tab_b).to_aoa
 #+END_SRC
@@ -1110,56 +1170,64 @@ We'll use the following two set-compatible tables in the examples.  They each
 have group boundaries so you can see the effect of the set operations on the
 groups.
 
-#+BEGIN_EXAMPLE
-#+NAME: tab1
-| Ref  | Date             | Code |  Price | G10 | QP10 | Shares |   LP |    QP |   IPLP |   IPQP |
-|------+------------------+------+--------+-----+------+--------+------+-------+--------+--------|
-| T001 | [2016-11-01 Tue] | P    | 7.7000 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 |
-| T002 | [2016-11-01 Tue] | P    | 7.7500 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 |
-| T003 | [2016-11-01 Tue] | P    | 7.5000 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 |
-| T003 | [2016-11-01 Tue] | P    | 7.5000 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 |
-|------+------------------+------+--------+-----+------+--------+------+-------+--------+--------|
-| T004 | [2016-11-01 Tue] | S    | 7.5500 | T   | F    |   6811 |  966 |  5845 | 0.2453 | 0.1924 |
-| T005 | [2016-11-01 Tue] | S    | 7.5000 | F   | F    |   4000 |  572 |  3428 | 0.2453 | 0.1924 |
-| T006 | [2016-11-01 Tue] | S    | 7.6000 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 |
-| T006 | [2016-11-01 Tue] | S    | 7.6000 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 |
-| T007 | [2016-11-01 Tue] | S    | 7.6500 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 |
-| T008 | [2016-11-01 Tue] | P    | 7.6500 | F   | F    |   2771 |  393 |  2378 | 0.2453 | 0.1924 |
-| T009 | [2016-11-01 Tue] | P    | 7.6000 | F   | F    |   9550 | 1363 |  8187 | 0.2453 | 0.1924 |
-|------+------------------+------+--------+-----+------+--------+------+-------+--------+--------|
-| T010 | [2016-11-01 Tue] | P    | 7.5500 | F   | T    |   3175 |  451 |  2724 | 0.2453 | 0.1924 |
-| T011 | [2016-11-02 Wed] | P    | 7.4250 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 |
-| T012 | [2016-11-02 Wed] | P    | 7.5500 | F   | F    |   4700 |  677 |  4023 | 0.2453 | 0.1924 |
-| T012 | [2016-11-02 Wed] | P    | 7.5500 | F   | F    |   4700 |  677 |  4023 | 0.2453 | 0.1924 |
-| T013 | [2016-11-02 Wed] | P    | 7.3500 | T   | T    |  53100 | 7656 | 45444 | 0.2453 | 0.1924 |
-|------+------------------+------+--------+-----+------+--------+------+-------+--------+--------|
-| T014 | [2016-11-02 Wed] | P    | 7.4500 | F   | T    |   5847 |  835 |  5012 | 0.2453 | 0.1924 |
-| T015 | [2016-11-02 Wed] | P    | 7.7500 | F   | F    |    500 |   72 |   428 | 0.2453 | 0.1924 |
-| T016 | [2016-11-02 Wed] | P    | 8.2500 | T   | T    |    100 |   14 |    86 | 0.2453 | 0.1924 |
-#+END_EXAMPLE
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
+#+BEGIN_SRC ruby
+  tab1.to_aoa
+#+END_SRC
 
 #+BEGIN_EXAMPLE
-#+NAME: tab2
-| Ref  | Date             | Code |  Price | G10 | QP10 | Shares |    LP |   QP |   IPLP |   IPQP |
-|------+------------------+------+--------+-----+------+--------+-------+------+--------+--------|
-| T003 | [2016-11-01 Tue] | P    | 7.5000 | F   | T    |    800 |   112 |  688 | 0.2453 | 0.1924 |
-| T003 | [2016-11-01 Tue] | P    | 7.5000 | F   | T    |    800 |   112 |  688 | 0.2453 | 0.1924 |
-| T017 | [2016-11-01 Tue] | P    |    8.3 | F   | T    |   1801 |  1201 |  600 | 0.2453 | 0.1924 |
-|------+------------------+------+--------+-----+------+--------+-------+------+--------+--------|
-| T018 | [2016-11-01 Tue] | S    |  7.152 | T   | F    |   2516 |  2400 |  116 | 0.2453 | 0.1924 |
-| T018 | [2016-11-01 Tue] | S    |  7.152 | T   | F    |   2516 |  2400 |  116 | 0.2453 | 0.1924 |
-| T006 | [2016-11-01 Tue] | S    | 7.6000 | F   | T    |   1000 |   143 |  857 | 0.2453 | 0.1924 |
-| T007 | [2016-11-01 Tue] | S    | 7.6500 | T   | F    |    200 |    28 |  172 | 0.2453 | 0.1924 |
-|------+------------------+------+--------+-----+------+--------+-------+------+--------+--------|
-| T014 | [2016-11-02 Wed] | P    | 7.4500 | F   | T    |   5847 |   835 | 5012 | 0.2453 | 0.1924 |
-| T015 | [2016-11-02 Wed] | P    | 7.7500 | F   | F    |    500 |    72 |  428 | 0.2453 | 0.1924 |
-| T015 | [2016-11-02 Wed] | P    | 7.7500 | F   | F    |    500 |    72 |  428 | 0.2453 | 0.1924 |
-| T016 | [2016-11-02 Wed] | P    | 8.2500 | T   | T    |    100 |    14 |   86 | 0.2453 | 0.1924 |
-|------+------------------+------+--------+-----+------+--------+-------+------+--------+--------|
-| T019 | [2017-01-15 Sun] | S    |   8.75 | T   | F    |    300 |   175 |  125 | 0.2453 | 0.1924 |
-| T020 | [2017-01-19 Thu] | S    |   8.25 | F   | T    |    700 |   615 |   85 | 0.2453 | 0.1924 |
-| T021 | [2017-01-23 Mon] | P    |   7.16 | T   | T    |  12100 | 11050 | 1050 | 0.2453 | 0.1924 |
-| T021 | [2017-01-23 Mon] | P    |   7.16 | T   | T    |  12100 | 11050 | 1050 | 0.2453 | 0.1924 |
+| Ref  |       Date | Code | Price | G10 | QP10 | Shares |   Lp |    Qp |   Iplp |   Ipqp |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
+| T001 | 2016-11-01 | P    |   7.7 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 |
+| T002 | 2016-11-01 | P    |  7.75 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 |
+| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 |
+| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
+| T004 | 2016-11-01 | S    |  7.55 | T   | F    |   6811 |  966 |  5845 | 0.2453 | 0.1924 |
+| T005 | 2016-11-01 | S    |   7.5 | F   | F    |   4000 |  572 |  3428 | 0.2453 | 0.1924 |
+| T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 |
+| T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 |
+| T007 | 2016-11-01 | S    |  7.65 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 |
+| T008 | 2016-11-01 | P    |  7.65 | F   | F    |   2771 |  393 |  2378 | 0.2453 | 0.1924 |
+| T009 | 2016-11-01 | P    |   7.6 | F   | F    |   9550 | 1363 |  8187 | 0.2453 | 0.1924 |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
+| T010 | 2016-11-01 | P    |  7.55 | F   | T    |   3175 |  451 |  2724 | 0.2453 | 0.1924 |
+| T011 | 2016-11-02 | P    | 7.425 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 |
+| T012 | 2016-11-02 | P    |  7.55 | F   | F    |   4700 |  677 |  4023 | 0.2453 | 0.1924 |
+| T012 | 2016-11-02 | P    |  7.55 | F   | F    |   4700 |  677 |  4023 | 0.2453 | 0.1924 |
+| T013 | 2016-11-02 | P    |  7.35 | T   | T    |  53100 | 7656 | 45444 | 0.2453 | 0.1924 |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
+| T014 | 2016-11-02 | P    |  7.45 | F   | T    |   5847 |  835 |  5012 | 0.2453 | 0.1924 |
+| T015 | 2016-11-02 | P    |  7.75 | F   | F    |    500 |   72 |   428 | 0.2453 | 0.1924 |
+| T016 | 2016-11-02 | P    |  8.25 | T   | T    |    100 |   14 |    86 | 0.2453 | 0.1924 |
+#+END_EXAMPLE
+
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
+#+BEGIN_SRC ruby
+  tab2.to_aoa
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+| Ref  |       Date | Code | Price | G10 | QP10 | Shares |    Lp |   Qp |   Iplp |   Ipqp |
+|------+------------+------+-------+-----+------+--------+-------+------+--------+--------|
+| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |   112 |  688 | 0.2453 | 0.1924 |
+| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |   112 |  688 | 0.2453 | 0.1924 |
+| T017 | 2016-11-01 | P    |   8.3 | F   | T    |   1801 |  1201 |  600 | 0.2453 | 0.1924 |
+|------+------------+------+-------+-----+------+--------+-------+------+--------+--------|
+| T018 | 2016-11-01 | S    | 7.152 | T   | F    |   2516 |  2400 |  116 | 0.2453 | 0.1924 |
+| T018 | 2016-11-01 | S    | 7.152 | T   | F    |   2516 |  2400 |  116 | 0.2453 | 0.1924 |
+| T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 |   143 |  857 | 0.2453 | 0.1924 |
+| T007 | 2016-11-01 | S    |  7.65 | T   | F    |    200 |    28 |  172 | 0.2453 | 0.1924 |
+|------+------------+------+-------+-----+------+--------+-------+------+--------+--------|
+| T014 | 2016-11-02 | P    |  7.45 | F   | T    |   5847 |   835 | 5012 | 0.2453 | 0.1924 |
+| T015 | 2016-11-02 | P    |  7.75 | F   | F    |    500 |    72 |  428 | 0.2453 | 0.1924 |
+| T015 | 2016-11-02 | P    |  7.75 | F   | F    |    500 |    72 |  428 | 0.2453 | 0.1924 |
+| T016 | 2016-11-02 | P    |  8.25 | T   | T    |    100 |    14 |   86 | 0.2453 | 0.1924 |
+|------+------------+------+-------+-----+------+--------+-------+------+--------+--------|
+| T019 | 2017-01-15 | S    |  8.75 | T   | F    |    300 |   175 |  125 | 0.2453 | 0.1924 |
+| T020 | 2017-01-19 | S    |  8.25 | F   | T    |    700 |   615 |   85 | 0.2453 | 0.1924 |
+| T021 | 2017-01-23 | P    |  7.16 | T   | T    |  12100 | 11050 | 1050 | 0.2453 | 0.1924 |
+| T021 | 2017-01-23 | P    |  7.16 | T   | T    |  12100 | 11050 | 1050 | 0.2453 | 0.1924 |
 #+END_EXAMPLE
 
 **** Unions
@@ -1174,7 +1242,7 @@ Any group boundaries in the input tables are destroyed by ~union~ but are
 preserved by ~union_all~. In addition, ~union_all~ (but not ~union~) adds a
 group boundary between the rows of the two input tables.
 
-#+HEADER: :colnames no :session example :hlines yes :wrap EXAMPLE
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
  tab1.union(tab2).to_aoa
 #+END_SRC
@@ -1205,7 +1273,7 @@ group boundary between the rows of the two input tables.
 | T021 | 2017-01-23 | P    |  7.16 | T   | T    |  12100 | 11050 |  1050 | 0.2453 | 0.1924 |
 #+END_EXAMPLE
 
-#+HEADER: :colnames no :session example :hlines yes :wrap EXAMPLE
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
  tab1.union_all(tab2).to_aoa
 #+END_SRC
@@ -1256,13 +1324,12 @@ group boundary between the rows of the two input tables.
 | T021 | 2017-01-23 | P    |  7.16 | T   | T    |  12100 | 11050 |  1050 | 0.2453 | 0.1924 |
 #+END_EXAMPLE
 
-
 **** Intersections
 
 The ~intersect~ method returns a table having only rows common to both tables,
 eliminating any duplicate rows in the result.
 
-#+HEADER: :colnames no :session example :hlines yes :wrap EXAMPLE
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
  tab1.intersect(tab2).to_aoa
 #+END_SRC
@@ -1282,7 +1349,7 @@ With ~intersect_all~, all the rows of the first table, including duplicates, are
 included in the result if they also occur in the second table.  However,
 duplicates in the second table do not appear.
 
-#+HEADER: :colnames no :session example :hlines yes :wrap EXAMPLE
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
  tab1.intersect_all(tab2).to_aoa
 #+END_SRC
@@ -1304,7 +1371,7 @@ As a result, it makes a difference which table is the receiver of the
 ~intersect_all~ method call and which is the argument.  In other words, order of
 operation matters.
 
-#+HEADER: :colnames no :session example :hlines yes :wrap EXAMPLE
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
  tab2.intersect_all(tab1).to_aoa
 #+END_SRC
@@ -1327,7 +1394,7 @@ operation matters.
 You can use the ~except~ method to delete from a table any rows that occur in
 another table, that is, compute the set difference between the tables.
 
-#+HEADER: :colnames no :session example :hlines yes :wrap EXAMPLE
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
  tab1.except(tab2).to_aoa
 #+END_SRC
@@ -1350,7 +1417,7 @@ another table, that is, compute the set difference between the tables.
 Like subtraction, though, the order of operands matters with set difference
 computed by ~except~.
 
-#+HEADER: :colnames no :session example :hlines yes :wrap EXAMPLE
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
  tab2.except(tab1).to_aoa
 #+END_SRC
@@ -1368,7 +1435,7 @@ computed by ~except~.
 As with ~intersect_all~, ~except_all~ includes any duplicates in the first,
 receiver table, but not those in the second, argument table.
 
-#+HEADER: :colnames no :session example :hlines yes :wrap EXAMPLE
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
  tab1.except_all(tab2).to_aoa
 #+END_SRC
@@ -1391,7 +1458,7 @@ receiver table, but not those in the second, argument table.
 
 And, of course, the order of operands matters here as well.
 
-#+HEADER: :colnames no :session example :hlines yes :wrap EXAMPLE
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
  tab2.except_all(tab1).to_aoa
 #+END_SRC
@@ -1414,7 +1481,7 @@ The ~uniq~ method takes no arguments and simply removes any duplicate rows from
 the input table.  The ~distinct~ method is an alias for ~uniq~.  Any groups in
 the input table are lost.
 
-#+HEADER: :colnames no :session example :hlines yes :wrap EXAMPLE
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
  tab1.uniq.to_aoa
 #+END_SRC
@@ -1446,7 +1513,7 @@ Finally, it is sometimes helpful to remove any group boundaries in the input
 table.  You can do this with ~.nogroups~, which does not affect the table except
 to remove any groups.
 
-#+HEADER: :colnames no :session example :hlines yes :wrap EXAMPLE
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
  tab1.nogroups.to_aoa
 #+END_SRC
@@ -1683,7 +1750,6 @@ given type. Each also takes a block an yields a ~FatTable::Formatter~ object to
 the block so that formatting directives can be given before output.
 
 *** Examples
-
 
 * Development
 
