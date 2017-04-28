@@ -23,7 +23,7 @@ module FatTable
       color: 'none',
       bgcolor: 'none',
       hms: false,
-      pre_digits: -1,
+      pre_digits: 0,
       post_digits: -1,
       commas: false,
       currency: false,
@@ -684,7 +684,7 @@ module FatTable
         result = val.secs_to_hms
         istruct.commas = false
       elsif istruct.currency
-        prec = istruct.post_digits == -1 ? 2 : istruct.post_digits
+        prec = istruct.post_digits == 0 ? 2 : istruct.post_digits
         delim = istruct.commas ? ',' : ''
         result = val.to_s(:currency, precision: prec, delimiter: delim,
                           unit: currency_symbol)
