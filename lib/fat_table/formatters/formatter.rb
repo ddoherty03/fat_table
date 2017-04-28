@@ -342,21 +342,10 @@ module FatTable
             format_at[location][h].to_h
           end
 
-        # Merge in type-based formatting
-        typ = table.type(h).as_sym
-        parse_typ_method_name = 'parse_' + typ.to_s + '_fmt'
-        if location == :header
-          # Treat header as string type
-          if fmts.keys.include?(:string)
-            str_fmt = parse_string_fmt(fmts[:string])
-            format_h = format_h.merge(str_fmt)
-          end
-        else
-          # Use column type for other locations
-          if fmts.keys.include?(typ)
-            typ_fmt = send(parse_typ_method_name, fmts[typ])
-            format_h = format_h.merge(typ_fmt)
-          end
+        unless location == :header
+          # Merge in string and nil formatting, but not in header.  Header is
+          # always typed a string, so it will get formatted in type-based
+          # formatting below.
           if fmts.keys.include?(:string)
             typ_fmt = parse_string_fmt(fmts[:string])
             format_h = format_h.merge(typ_fmt)
@@ -366,11 +355,33 @@ module FatTable
             format_h = format_h.merge(typ_fmt)
           end
         end
-
-        # Merge in column-based formatting
+        typ = location == :header ? :string : table.type(h).as_sym
+        parse_typ_method_name = 'parse_' + typ.to_s + '_fmt'
+        if fmts.keys.include?(typ)
+          # Merge in type-based formatting
+          typ_fmt = send(parse_typ_method_name, fmts[typ])
+          format_h = format_h.merge(typ_fmt)
+        end
         if fmts[h]
-          col_fmt = send(parse_typ_method_name, fmts[h])
+          # Merge in column formatting
+          col_fmt = send(parse_typ_method_name, fmts[h], strict: location != :header)
           format_h = format_h.merge(col_fmt)
+        end
+
+        # Copy :body formatting to :bfirst and :gfirst if they still have the
+        # default formatting. Can be overridden with a format_for call with
+        # those locations.
+        if location == :body
+          pristine = default_format.to_h
+          pristine[:_location] = :bfirst
+          pristine[:_h] = h
+          if format_at[:bfirst][h].to_h == pristine
+            format_at[:bfirst][h] = OpenStruct.new(format_h)
+          end
+          pristine[:_location] = :gfirst
+          if format_at[:gfirst][h].to_h == pristine
+            format_at[:gfirst][h] = OpenStruct.new(format_h)
+          end
         end
 
         # Record its origin (using leading underscore so not to clash with any
@@ -378,12 +389,6 @@ module FatTable
         format_h[:_h] = h
         format_h[:_location] = location
         format_at[location][h] = OpenStruct.new(format_h)
-        # Copy :body formatting to :bfirst and :gfirst.  Can be overridden with
-        # a format_for call with those locations.
-        if location == :body
-          format_at[:bfirst][h] = format_at[:body][h]
-          format_at[:gfirst][h] = format_at[:body][h]
-        end
       end
       self
     end
@@ -401,9 +406,9 @@ module FatTable
     # string fmt. Raise an error if it contains invalid formatting instructions.
     # If fmt contains conflicting instructions, say C and L, there is no
     # guarantee which will win, but it will not be considered an error to do so.
-    def parse_string_fmt(fmt)
+    def parse_string_fmt(fmt, strict: true)
       format, fmt = parse_str_fmt(fmt)
-      unless fmt.blank?
+      unless fmt.blank? || !strict
         raise UserError, "unrecognized string formatting instructions '#{fmt}'"
       end
       format
@@ -472,7 +477,7 @@ module FatTable
     # instructions and the unconsumed part of the instruction string. This is
     # called to cull nil-based instructions from a formatting string intended
     # for other types, such as numeric, etc.
-    def parse_nil_fmt(fmt)
+    def parse_nil_fmt(fmt, _strict: true)
       # We parse the more complex formatting constructs first, and after each
       # parse, we remove the matched construct from fmt.  At the end, any
       # remaining characters in fmt should be invalid.
@@ -488,7 +493,7 @@ module FatTable
     # given in the string fmt. Raise an error if it contains invalid formatting
     # instructions. If fmt contains conflicting instructions, there is no
     # guarantee which will win, but it will not be considered an error to do so.
-    def parse_numeric_fmt(fmt)
+    def parse_numeric_fmt(fmt, strict: true)
       # We parse the more complex formatting constructs first, and after each
       # parse, we remove the matched construct from fmt.  At the end, any
       # remaining characters in fmt should be invalid.
@@ -511,7 +516,7 @@ module FatTable
         fmt_hash[:hms] = true
         fmt = fmt.sub($&, '')
       end
-      unless fmt.blank?
+      unless fmt.blank? || !strict
         raise UserError, "unrecognized numeric formatting instructions '#{fmt}'"
       end
       fmt_hash
@@ -521,7 +526,7 @@ module FatTable
     # given in the string fmt. Raise an error if it contains invalid formatting
     # instructions. If fmt contains conflicting instructions, there is no
     # guarantee which will win, but it will not be considered an error to do so.
-    def parse_datetime_fmt(fmt)
+    def parse_datetime_fmt(fmt, strict: true)
       # We parse the more complex formatting constructs first, and after each
       # parse, we remove the matched construct from fmt.  At the end, any
       # remaining characters in fmt should be invalid.
@@ -535,7 +540,7 @@ module FatTable
         fmt_hash[:date_fmt] = $1
         fmt = fmt.sub($&, '')
       end
-      unless fmt.blank?
+      unless fmt.blank? || !strict
         raise UserError, "unrecognized datetime formatting instructions '#{fmt}'"
       end
       fmt_hash
@@ -545,7 +550,7 @@ module FatTable
     # given in the string fmt. Raise an error if it contains invalid formatting
     # instructions. If fmt contains conflicting instructions, there is no
     # guarantee which will win, but it will not be considered an error to do so.
-    def parse_boolean_fmt(fmt)
+    def parse_boolean_fmt(fmt, strict: true)
       # We parse the more complex formatting constructs first, and after each
       # parse, we remove the matched construct from fmt.  At the end, any
       # remaining characters in fmt should be invalid.
@@ -582,7 +587,7 @@ module FatTable
         fmt_hash[:false_text] = ''
         fmt = fmt.sub($&, '')
       end
-      unless fmt.blank?
+      unless fmt.blank? || !strict
         raise UserError, "unrecognized boolean formatting instructions '#{fmt}'"
       end
       fmt_hash
