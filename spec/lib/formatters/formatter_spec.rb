@@ -42,6 +42,116 @@ module FatTable
         }.to raise_error(/unrecognized boolean formatting instruction/)
       end
 
+      it 'should parse bold or not bold' do
+        fmt = Formatter.new(@tab)
+                .format_for(:body, numeric: '4.0B')
+        expect(fmt.format_at[:body][:shares].bold).to eq(true)
+        fmt = Formatter.new(@tab)
+                .format_for(:body, numeric: '4.0~ B')
+        expect(fmt.format_at[:body][:shares].bold).to eq(false)
+      end
+
+      it 'should parse italic or not italic' do
+        fmt = Formatter.new(@tab)
+                .format_for(:body, numeric: '4.0I')
+        expect(fmt.format_at[:body][:shares].italic).to eq(true)
+        fmt = Formatter.new(@tab)
+                .format_for(:body, numeric: '4.0~ I')
+        expect(fmt.format_at[:body][:shares].italic).to eq(false)
+      end
+
+      it 'should parse underline or not underline' do
+        fmt = Formatter.new(@tab)
+                .format_for(:body, numeric: '4.0_')
+        expect(fmt.format_at[:body][:shares].underline).to eq(true)
+        fmt = Formatter.new(@tab)
+                .format_for(:body, numeric: '4.0~ _')
+        expect(fmt.format_at[:body][:shares].underline).to eq(false)
+      end
+
+      it 'should parse blink or not blink' do
+        fmt = Formatter.new(@tab)
+                .format_for(:body, numeric: '4.0*')
+        expect(fmt.format_at[:body][:shares].blink).to eq(true)
+        fmt = Formatter.new(@tab)
+                .format_for(:body, numeric: '4.0~ *')
+        expect(fmt.format_at[:body][:shares].blink).to eq(false)
+      end
+
+      it 'should parse commas or not commas' do
+        fmt = Formatter.new(@tab)
+                .format_for(:body, numeric: '4.0,')
+        expect(fmt.format_at[:body][:shares].commas).to eq(true)
+        fmt = Formatter.new(@tab)
+                .format_for(:body, numeric: '4.0~ ,')
+        expect(fmt.format_at[:body][:shares].commas).to eq(false)
+      end
+
+      it 'should parse currency or not currency' do
+        fmt = Formatter.new(@tab)
+                .format_for(:body, numeric: '4.0$')
+        expect(fmt.format_at[:body][:shares].currency).to eq(true)
+        fmt = Formatter.new(@tab)
+                .format_for(:body, numeric: '4.0~ $')
+        expect(fmt.format_at[:body][:shares].currency).to eq(false)
+      end
+
+      it 'should parse hms or not hms' do
+        fmt = Formatter.new(@tab)
+                .format_for(:body, numeric: '4.0H')
+        expect(fmt.format_at[:body][:shares].hms).to eq(true)
+        fmt = Formatter.new(@tab)
+                .format_for(:body, numeric: '4.0~ H')
+        expect(fmt.format_at[:body][:shares].hms).to eq(false)
+      end
+
+      it 'should give priority to column over type formatting' do
+        fmt = Formatter.new(@tab)
+                .format_for(:body, numeric: '4.0', shares: '0.4')
+        expect(fmt.format_at[:body][:shares].pre_digits).to eq(0)
+        expect(fmt.format_at[:body][:shares].post_digits).to eq(4)
+      end
+
+      it 'should give priority to column over string formatting' do
+        fmt = Formatter.new(@tab)
+                .format_for(:body, string: 'c[red]', shares: 'c[blue]')
+        expect(fmt.format_at[:body][:shares].color).to eq('blue')
+      end
+
+      it 'should give priority to column over nil formatting' do
+        fmt = Formatter.new(@tab)
+                .format_for(:body, nil: 'n[Blank]', shares: 'n[Nada]')
+        expect(fmt.format_at[:body][:shares].nil_text).to eq('Nada')
+      end
+
+      it 'should give priority to type over string formatting' do
+        fmt = Formatter.new(@tab)
+                .format_for(:body, string: 'c[red]', numeric: 'c[blue]')
+        expect(fmt.format_at[:body][:shares].color).to eq('blue')
+      end
+
+      it 'should give priority to type over nil formatting' do
+        fmt = Formatter.new(@tab)
+                .format_for(:body, nil: 'n[Blank]', numeric: 'n[Nada]')
+        expect(fmt.format_at[:body][:shares].nil_text).to eq('Nada')
+      end
+
+      it 'should give priority to nil over string formatting' do
+        fmt = Formatter.new(@tab)
+                .format_for(:body, nil: 'n[Blank]', string: 'n[Nada]')
+        expect(fmt.format_at[:body][:shares].nil_text).to eq('Blank')
+      end
+
+      it 'should give priority to bfirst over body formatting' do
+        fmt = Formatter.new(@tab)
+                .format_for(:bfirst, ref: '3.1')
+                .format_for(:body, ref: '4.0')
+        expect(fmt.format_at[:bfirst][:ref][:_location]).to eq(:bfirst)
+        expect(fmt.format_at[:bfirst][:ref][:_h]).to eq(:ref)
+        expect(fmt.format_at[:bfirst][:ref].pre_digits).to eq(3)
+        expect(fmt.format_at[:bfirst][:ref].post_digits).to eq(1)
+      end
+
       it 'should be able to set element formats' do
         fmt = Formatter.new(@tab)
                 .format_for(:header, string: 'Uc[red]', ref: 'uc[blue.aquamarine]')
@@ -142,14 +252,17 @@ module FatTable
           expect(fmt.format_at[:footer][h].nil_text).to eq('')
         end
         # .format_for(:body, numeric: ',0.2', shares: '0.4', ref: 'B',
+        #             price: '$,',
         #             bool: '  c[green, red]  b[  Yippers, Nah Sir]',
         #             nil: 'n[  Nothing to see here   ]')
-        # Body, numeric columns except :shares
-        [:raw, :price].each do |h|
-          expect(fmt.format_at[:body][h].commas).to eq(true)
-          expect(fmt.format_at[:body][h].pre_digits).to eq(0)
-          expect(fmt.format_at[:body][h].post_digits).to eq(2)
-        end
+        # Body, :raw (inherit numeric)
+        expect(fmt.format_at[:body][:raw].commas).to eq(true)
+        expect(fmt.format_at[:body][:raw].pre_digits).to eq(0)
+        expect(fmt.format_at[:body][:raw].post_digits).to eq(2)
+        # Body, :price
+        expect(fmt.format_at[:body][:price].commas).to eq(true)
+        expect(fmt.format_at[:body][:price].pre_digits).to eq(0)
+        expect(fmt.format_at[:body][:price].post_digits).to eq(2)
         # Body, :shares
         expect(fmt.format_at[:body][:shares].commas).to eq(true)
         expect(fmt.format_at[:body][:shares].pre_digits).to eq(0)
@@ -166,28 +279,17 @@ module FatTable
         # Body, :price
         expect(fmt.format_at[:body][:price].currency).to eq(true)
         # Body all others, the default
-        @tab.headers.each do |h|
+        [:date, :code, :info].each do |h|
           expect(fmt.format_at[:body][h].color).to eq('none')
-          unless h == :bool
-            expect(fmt.format_at[:body][h].true_color).to eq('none')
-            expect(fmt.format_at[:body][h].false_color).to eq('none')
-            expect(fmt.format_at[:body][h].true_text).to eq('T')
-            expect(fmt.format_at[:body][h].false_text).to eq('F')
-          end
+          expect(fmt.format_at[:body][h].true_color).to eq('none')
+          expect(fmt.format_at[:body][h].false_color).to eq('none')
+          expect(fmt.format_at[:body][h].true_text).to eq('T')
+          expect(fmt.format_at[:body][h].false_text).to eq('F')
           expect(fmt.format_at[:body][h].date_fmt).to eq('%F')
-          if @tab.type(h) == 'Numeric'
-            expect(fmt.format_at[:body][h].pre_digits).to eq(0)
-            expect(fmt.format_at[:body][h].post_digits)
-              .to eq(h == :shares ? 4 : 2)
-            expect(fmt.format_at[:body][h].commas).to eq(true)
-            expect(fmt.format_at[:body][h].bold).to eq(h == :ref)
-            expect(fmt.format_at[:body][h].currency).to eq(h == :price)
-          else
-            expect(fmt.format_at[:body][h].italic).to eq(false)
-            expect(fmt.format_at[:body][h].alignment).to eq(:left)
-            expect(fmt.format_at[:body][h].currency).to eq(false)
-            expect(fmt.format_at[:body][h].nil_text).to eq('Nothing to see here')
-          end
+          expect(fmt.format_at[:body][h].italic).to eq(false)
+          expect(fmt.format_at[:body][h].alignment).to eq(:left)
+          expect(fmt.format_at[:body][h].currency).to eq(false)
+          expect(fmt.format_at[:body][h].nil_text).to eq('Nothing to see here')
         end
       end
     end

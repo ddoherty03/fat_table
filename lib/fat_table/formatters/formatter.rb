@@ -59,8 +59,8 @@ module FatTable
     #   + U :: convert the element to all uppercase,
     #   + t :: title case the element, that is, upcase the initial letter in
     #        each word and lower case the other letters
-    #   + B :: make the element bold
-    #   + I :: make the element italic
+    #   + B ~B :: make the element bold, or not
+    #   + I ~I :: make the element italic, or not
     #   + R :: align the element on the right of the column
     #   + L :: align the element on the left of the column
     #   + C :: align the element in the center of the column
@@ -69,18 +69,18 @@ module FatTable
     #        foreground or background colors respectively, and each of those can
     #        be an ANSI or X11 color name in addition to the special color,
     #        'none', which keeps the terminal's default color.
-    #   + _ :: underline the element,
-    #   + * :: cause the element to blink
+    #   + _, ~_ :: underline the element, or not,
+    #   + *  ~* :: cause the element to blink, or not,
     # - numeric :: for a numeric, all the instructions valid for string are
     #      available, in addition to the following:
-    #   + , :: insert grouping commas,
-    #   + $ :: format the number as currency according to the locale,
+    #   + , ~, :: insert grouping commas, or not,
+    #   + $ ~$ :: format the number as currency according to the locale, or not,
     #   + m.n :: include at least m digits before the decimal point, padding on
     #        the left with zeroes as needed, and round the number to the n
     #        decimal places and include n digits after the decimal point,
     #        padding on the right with zeroes as needed,
-    #   + H :: convert the number (assumed to be in units of seconds) to
-    #        HH:MM:SS.ss form.  So a column that is the result of subtracting
+    #   + H ~H :: convert the number (assumed to be in units of seconds) to
+    #        HH:MM:SS.ss form, or not.  So a column that is the result of subtracting
     #        two :datetime forms will result in a :numeric expressed as seconds
     #        and can be displayed in hours, minutes, and seconds with this
     #        formatting instruction.
@@ -332,6 +332,7 @@ module FatTable
         msg = "invalid #{location} column or type: #{invalid_keys.join(',')}"
         raise UserError, msg
       end
+
       @format_at[location] ||= {}
       table.headers.each do |h|
         # Default formatting hash
@@ -442,12 +443,12 @@ module FatTable
         fmt_hash[:case] = :title
         fmt = fmt.sub($&, '')
       end
-      if fmt =~ /B/
-        fmt_hash[:bold] = true
+      if fmt =~ /(~\s*)?B/
+        fmt_hash[:bold] = !!!$1
         fmt = fmt.sub($&, '')
       end
-      if fmt =~ /I/
-        fmt_hash[:italic] = true
+      if fmt =~ /(~\s*)?I/
+        fmt_hash[:italic] = !!!$1
         fmt = fmt.sub($&, '')
       end
       if fmt =~ /R/
@@ -462,14 +463,17 @@ module FatTable
         fmt_hash[:alignment] = :left
         fmt = fmt.sub($&, '')
       end
-      if fmt =~ /_/
-        fmt_hash[:underline] = true
+      if fmt =~ /(~\s*)?_/
+        fmt_hash[:underline] = !!!$1
         fmt = fmt.sub($&, '')
       end
-      if fmt =~ /\*/
-        fmt_hash[:blink] = true
+      if fmt =~ /(~\s*)?\*/
+        fmt_hash[:blink] = !!!$1
         fmt = fmt.sub($&, '')
       end
+      # Nil formatting can apply to strings as well
+      nil_hash, fmt = parse_nil_fmt(fmt)
+      fmt_hash = fmt_hash.merge(nil_hash)
       [fmt_hash, fmt]
     end
 
@@ -504,16 +508,16 @@ module FatTable
         fmt_hash[:post_digits] = $2.to_i
         fmt = fmt.sub($&, '')
       end
-      if fmt =~ /,/
-        fmt_hash[:commas] = true
+      if fmt =~ /(~\s*)?,/
+        fmt_hash[:commas] = !!!$1
         fmt = fmt.sub($&, '')
       end
-      if fmt =~ /\$/
-        fmt_hash[:currency] = true
+      if fmt =~ /(~\s*)?\$/
+        fmt_hash[:currency] = !!!$1
         fmt = fmt.sub($&, '')
       end
-      if fmt =~ /H/
-        fmt_hash[:hms] = true
+      if fmt =~ /(~\s*)?H/
+        fmt_hash[:hms] = !!!$1
         fmt = fmt.sub($&, '')
       end
       unless fmt.blank? || !strict
