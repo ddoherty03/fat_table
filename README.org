@@ -598,11 +598,6 @@ tab1 = FatTable.from_org_string(tab1_str)
 tab2 = FatTable.from_org_string(tab2_str)
 #+END_SRC
 
-#+RESULTS:
-#+BEGIN_EXAMPLE
-#<FatTable::Table:0x0055ba59415c08 @columns=[#<FatTable::Column:0x0055ba5940fa60 @raw_header=:ref, @header=:ref, @type="String", @items=["T003", "T003", "T017", "T018", "T018", "T006", "T007", "T014", "T015", "T015", "T016", "T019", "T020", "T021", "T021"]>, #<FatTable::Column:0x0055ba5940f358 @raw_header=:date, @header=:date, @type="DateTime", @items=[Tue, 01 Nov 2016, Tue, 01 Nov 2016, Tue, 01 Nov 2016, Tue, 01 Nov 2016, Tue, 01 Nov 2016, Tue, 01 Nov 2016, Tue, 01 Nov 2016, Wed, 02 Nov 2016, Wed, 02 Nov 2016, Wed, 02 Nov 2016, Wed, 02 Nov 2016, Sun, 15 Jan 2017, Thu, 19 Jan 2017, Mon, 23 Jan 2017, Mon, 23 Jan 2017]>, #<FatTable::Column:0x0055ba5940ea48 @raw_header=:code, @header=:code, @type="String", @items=["P", "P", "P", "S", "S", "S", "S", "P", "P", "P", "P", "S", "S", "P", "P"]>, #<FatTable::Column:0x0055ba5940e4d0 @raw_header=:price, @header=:price, @type="Numeric", @items=[7.5, 7.5, 8.3, 7.152, 7.152, 7.6, 7.65, 7.45, 7.75, 7.75, 8.25, 8.75, 8.25, 7.16, 7.16]>, #<FatTable::Column:0x0055ba5940de90 @raw_header=:g10, @header=:g10, @type="Boolean", @items=[false, false, false, true, true, false, true, false, false, false, true, true, false, true, true]>, #<FatTable::Column:0x0055ba5940dad0 @raw_header=:qp10, @header=:qp10, @type="Boolean", @items=[true, true, true, false, false, true, false, true, false, false, true, false, true, true, true]>, #<FatTable::Column:0x0055ba5940d710 @raw_header=:shares, @header=:shares, @type="Numeric", @items=[800, 800, 1801, 2516, 2516, 1000, 200, 5847, 500, 500, 100, 300, 700, 12100, 12100]>, #<FatTable::Column:0x0055ba5940d198 @raw_header=:lp, @header=:lp, @type="Numeric", @items=[112, 112, 1201, 2400, 2400, 143, 28, 835, 72, 72, 14, 175, 615, 11050, 11050]>, #<FatTable::Column:0x0055ba5940cc70 @raw_header=:qp, @header=:qp, @type="Numeric", @items=[688, 688, 600, 116, 116, 857, 172, 5012, 428, 428, 86, 125, 85, 1050, 1050]>, #<FatTable::Column:0x0055ba5940c720 @raw_header=:iplp, @header=:iplp, @type="Numeric", @items=[0.2453, 0.2453, 0.2453, 0.2453, 0.2453, 0.2453, 0.2453, 0.2453, 0.2453, 0.2453, 0.2453, 0.2453, 0.2453, 0.2453, 0.2453]>, #<FatTable::Column:0x0055ba5940c108 @raw_header=:ipqp, @header=:ipqp, @type="Numeric", @items=[0.1924, 0.1924, 0.1924, 0.1924, 0.1924, 0.1924, 0.1924, 0.1924, 0.1924, 0.1924, 0.1924, 0.1924, 0.1924, 0.1924, 0.1924]>], @boundaries=[2, 6, 10]>
-#+END_EXAMPLE
-
 *** Select
 
 With the ~select~ method, you can select which existing columns should appear in
@@ -1741,13 +1736,193 @@ There are also a number of convenience methods for common footers:
 
 *** Formatting Methods
 
-The ~FatTable::Table~ class provides several methods of the form ~to_<format>~
-that feed the table into a formatter of the given type and output the table in
-that format. Unlike the other methods on tables, these do not return the table
-itself and so are not chainable. Instead they return a string of the formatted
-table, or in the case of ~to_aoa~ and ~to_aoh~, a ruby data structure of the
-given type. Each also takes a block an yields a ~FatTable::Formatter~ object to
-the block so that formatting directives can be given before output.
+**** Instantiating a Formatter
+
+There are several ways to invoke the formatting methods on a table. First, you
+can instantiate a ~XXXFormatter~ object an feed it a table. There is a Formatter
+subclass for each target output medium, for example, ~AoaFormatter~ will produce
+a ruby array of arrays. You can then call the ~output~ method on the
+~XXXFormatter~.
+
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
+#+BEGIN_SRC ruby
+  FatTable::AoaFormatter.new(tab_a).output
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+| Id | Name  | Age | Address    | Salary |  Join Date |
+|----+-------+-----+------------+--------+------------|
+|  1 | Paul  |  32 | California |  20000 | 2001-07-13 |
+|  3 | Teddy |  23 | Norway     |  20000 | 2007-12-13 |
+|  4 | Mark  |  25 | Rich-Mond  |  65000 | 2007-12-13 |
+|  5 | David |  27 | Texas      |  85000 | 2007-12-13 |
+|  2 | Allen |  25 | Texas      |        | 2005-07-13 |
+|  8 | Paul  |  24 | Houston    |  20000 | 2005-07-13 |
+|  9 | James |  44 | Norway     |   5000 | 2005-07-13 |
+| 10 | James |  45 | Texas      |   5000 |            |
+#+END_EXAMPLE
+
+The ~XXXFormatter.new~ method yields the new instance to any block given, and
+you can call methods on it to affect the formatting of the output:
+
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
+#+BEGIN_SRC ruby
+  FatTable::AoaFormatter.new(tab_a) do |f|
+    f.format(numeric: '0.0,R', id: '6.0C')
+  end.output
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+|      Id | Name  | Age | Address    | Salary |  Join Date |
+|---------+-------+-----+------------+--------+------------|
+| 000,001 | Paul  |  32 | California | 20,000 | 2001-07-13 |
+| 000,003 | Teddy |  23 | Norway     | 20,000 | 2007-12-13 |
+| 000,004 | Mark  |  25 | Rich-Mond  | 65,000 | 2007-12-13 |
+| 000,005 | David |  27 | Texas      | 85,000 | 2007-12-13 |
+| 000,002 | Allen |  25 | Texas      |        | 2005-07-13 |
+| 000,008 | Paul  |  24 | Houston    | 20,000 | 2005-07-13 |
+| 000,009 | James |  44 | Norway     |  5,000 | 2005-07-13 |
+| 000,010 | James |  45 | Texas      |  5,000 |            |
+#+END_EXAMPLE
+
+**** ~FatTable~ module-level method calls
+
+The ~FatTable~ module provides a set of methods of the form ~to_aoa~, ~to_text~,
+etc., to access a ~Formatter~ without having to create an instance yourself.
+Without a block, they apply the default formatting to the table and call the
+~.output~ method automatically:
+
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
+#+BEGIN_SRC ruby
+  FatTable.to_aoa(tab_a)
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+| Id | Name  | Age | Address    | Salary |  Join Date |
+|----+-------+-----+------------+--------+------------|
+|  1 | Paul  |  32 | California |  20000 | 2001-07-13 |
+|  3 | Teddy |  23 | Norway     |  20000 | 2007-12-13 |
+|  4 | Mark  |  25 | Rich-Mond  |  65000 | 2007-12-13 |
+|  5 | David |  27 | Texas      |  85000 | 2007-12-13 |
+|  2 | Allen |  25 | Texas      |        | 2005-07-13 |
+|  8 | Paul  |  24 | Houston    |  20000 | 2005-07-13 |
+|  9 | James |  44 | Norway     |   5000 | 2005-07-13 |
+| 10 | James |  45 | Texas      |   5000 |            |
+#+END_EXAMPLE
+
+You can supply a block to these methods as well, and, again, the ~.output~
+method is called automatically after the block:
+
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
+#+BEGIN_SRC ruby
+  FatTable.to_aoa(tab_a) do |f|
+    f.format(numeric: '0.0,R', id: '3.0C')
+  end
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+|  Id | Name  | Age | Address    | Salary |  Join Date |
+|-----+-------+-----+------------+--------+------------|
+| 001 | Paul  |  32 | California | 20,000 | 2001-07-13 |
+| 003 | Teddy |  23 | Norway     | 20,000 | 2007-12-13 |
+| 004 | Mark  |  25 | Rich-Mond  | 65,000 | 2007-12-13 |
+| 005 | David |  27 | Texas      | 85,000 | 2007-12-13 |
+| 002 | Allen |  25 | Texas      |        | 2005-07-13 |
+| 008 | Paul  |  24 | Houston    | 20,000 | 2005-07-13 |
+| 009 | James |  44 | Norway     |  5,000 | 2005-07-13 |
+| 010 | James |  45 | Texas      |  5,000 |            |
+#+END_EXAMPLE
+
+**** Calling methods on Table objects
+
+Finally, you can call methods such as ~to_aoa~, ~to_text~, etc., directly on a
+Table:
+
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
+#+BEGIN_SRC ruby
+  tab_a.to_aoa
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+| Id | Name  | Age | Address    | Salary |  Join Date |
+|----+-------+-----+------------+--------+------------|
+|  1 | Paul  |  32 | California |  20000 | 2001-07-13 |
+|  3 | Teddy |  23 | Norway     |  20000 | 2007-12-13 |
+|  4 | Mark  |  25 | Rich-Mond  |  65000 | 2007-12-13 |
+|  5 | David |  27 | Texas      |  85000 | 2007-12-13 |
+|  2 | Allen |  25 | Texas      |        | 2005-07-13 |
+|  8 | Paul  |  24 | Houston    |  20000 | 2005-07-13 |
+|  9 | James |  44 | Norway     |   5000 | 2005-07-13 |
+| 10 | James |  45 | Texas      |   5000 |            |
+#+END_EXAMPLE
+
+And you can supply a block to it as well:
+
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
+#+BEGIN_SRC ruby
+  tab_a.to_aoa do |f|
+    f.format(numeric: '0.0,R', id: '3.0C')
+  end
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+|  Id | Name  | Age | Address    | Salary |  Join Date |
+|-----+-------+-----+------------+--------+------------|
+| 001 | Paul  |  32 | California | 20,000 | 2001-07-13 |
+| 003 | Teddy |  23 | Norway     | 20,000 | 2007-12-13 |
+| 004 | Mark  |  25 | Rich-Mond  | 65,000 | 2007-12-13 |
+| 005 | David |  27 | Texas      | 85,000 | 2007-12-13 |
+| 002 | Allen |  25 | Texas      |        | 2005-07-13 |
+| 008 | Paul  |  24 | Houston    | 20,000 | 2005-07-13 |
+| 009 | James |  44 | Norway     |  5,000 | 2005-07-13 |
+| 010 | James |  45 | Texas      |  5,000 |            |
+#+END_EXAMPLE
+
+*** The ~format~ and ~format_for~ methods
+
+Formatters take only two kinds of methods, those that attach footers to a
+table, which are discussed in the next section, and those that specify
+formatting for table cells, which are the subject of this section.
+
+To set formatting directives for all locations in a table at once, you use the
+~format~ method; to set formatting directives for a particular location in the
+table, you use the ~format_for~ method, giving the location as the first
+parameter. Other than that first parameter, the two methods take the same types
+of parameters.
+
+The remaining parameters are hash-like parameters that use either a column name
+or a type as the key and a string with the formatting directives to apply as the
+value. For example, this says to set the formatting for all locations in the
+table such that all numeric fields are rounded to whole numbers (the '0.0'
+part), are right-aligned (the 'R' part), and have grouping commas inserted (the
+',' part). But the ~:id~ column is numeric and the second parameter overrides
+the formatting for numerics in general and calls for the ~:id~ column to be
+padded to three digits with zeros on the left (the '3.0' part) and to be
+centered.
+
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
+#+BEGIN_SRC ruby
+  tab_a.to_aoa do |f|
+    f.format(numeric: '0.0,R', id: '3.0C')
+  end
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+|  Id | Name  | Age | Address    | Salary |  Join Date |
+|-----+-------+-----+------------+--------+------------|
+| 001 | Paul  |  32 | California | 20,000 | 2001-07-13 |
+| 003 | Teddy |  23 | Norway     | 20,000 | 2007-12-13 |
+| 004 | Mark  |  25 | Rich-Mond  | 65,000 | 2007-12-13 |
+| 005 | David |  27 | Texas      | 85,000 | 2007-12-13 |
+| 002 | Allen |  25 | Texas      |        | 2005-07-13 |
+| 008 | Paul  |  24 | Houston    | 20,000 | 2005-07-13 |
+| 009 | James |  44 | Norway     |  5,000 | 2005-07-13 |
+| 010 | James |  45 | Texas      |  5,000 |            |
+#+END_EXAMPLE
+
+The ~numeric:~ directive affected the ~:age~ and ~:salary~ columns and the ~id:~
+directive affected only the ~:id~ column.  All the other cells in the table had
+the default formatting applied.
 
 *** Examples
 
