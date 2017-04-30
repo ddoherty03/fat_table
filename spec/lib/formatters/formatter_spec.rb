@@ -42,6 +42,42 @@ module FatTable
         }.to raise_error(/unrecognized boolean formatting instruction/)
       end
 
+      it 'should parse nil for a string type' do
+        fmt = Formatter.new(@tab)
+        fmt.format_for(:body, string: 'Rn[No Data]')
+        expect(fmt.format_at[:body][:info].nil_text).to eq('No Data')
+        fmt = Formatter.new(@tab)
+        fmt.format_for(:body, info: 'Rn[No Data]')
+        expect(fmt.format_at[:body][:info].nil_text).to eq('No Data')
+      end
+
+      it 'should parse nil for a numeric type' do
+        fmt = Formatter.new(@tab)
+        fmt.format_for(:body, numeric: '3.2n[No Data]')
+        expect(fmt.format_at[:body][:shares].nil_text).to eq('No Data')
+        fmt = Formatter.new(@tab)
+        fmt.format_for(:body, shares: '3.2n[No Data]')
+        expect(fmt.format_at[:body][:shares].nil_text).to eq('No Data')
+      end
+
+      it 'should parse nil for a boolean type' do
+        fmt = Formatter.new(@tab)
+        fmt.format_for(:body, boolean: 'Yn[No Data]')
+        expect(fmt.format_at[:body][:bool].nil_text).to eq('No Data')
+        fmt = Formatter.new(@tab)
+        fmt.format_for(:body, bool: 'Yn[No Data]')
+        expect(fmt.format_at[:body][:bool].nil_text).to eq('No Data')
+      end
+
+      it 'should parse nil for a datetime type' do
+        fmt = Formatter.new(@tab)
+        fmt.format_for(:body, datetime: 'd[%Y %m]n[No Data]')
+        expect(fmt.format_at[:body][:date].nil_text).to eq('No Data')
+        fmt = Formatter.new(@tab)
+        fmt.format_for(:body, date: 'd[%Y %m]n[No Data]')
+        expect(fmt.format_at[:body][:date].nil_text).to eq('No Data')
+      end
+
       it 'should parse bold or not bold' do
         fmt = Formatter.new(@tab)
                 .format_for(:body, numeric: '4.0B')
@@ -253,7 +289,7 @@ module FatTable
         end
         # .format_for(:body, numeric: ',0.2', shares: '0.4', ref: 'B',
         #             price: '$,',
-        #             bool: '  c[green, red]  b[  Yippers, Nah Sir]',
+        #             bool: '  c[white.green, red.white]  b[  Yippers, Nah Sir]',
         #             nil: 'n[  Nothing to see here   ]')
         # Body, :raw (inherit numeric)
         expect(fmt.format_at[:body][:raw].commas).to eq(true)

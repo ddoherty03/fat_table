@@ -431,6 +431,9 @@ module FatTable
         validate_color(fmt_hash[:bgcolor])
         fmt = fmt.sub($&, '')
       end
+      # Nil formatting can apply to strings as well
+      nil_hash, fmt = parse_nil_fmt(fmt)
+      fmt_hash = fmt_hash.merge(nil_hash)
       if fmt =~ /u/
         fmt_hash[:case] = :lower
         fmt = fmt.sub($&, '')
@@ -471,9 +474,6 @@ module FatTable
         fmt_hash[:blink] = !!!$1
         fmt = fmt.sub($&, '')
       end
-      # Nil formatting can apply to strings as well
-      nil_hash, fmt = parse_nil_fmt(fmt)
-      fmt_hash = fmt_hash.merge(nil_hash)
       [fmt_hash, fmt]
     end
 
