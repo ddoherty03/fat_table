@@ -2017,7 +2017,6 @@ require 'fat_table'
   end
 #+END_SRC
 
-#+RESULTS:
 #+BEGIN_EXAMPLE
 ╒═════╤═══════╤═════╤════════════╤════════╤════════════╕
 │  Id │  Name │ Age │    Address │ Salary │  Join Date │
