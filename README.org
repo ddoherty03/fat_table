@@ -1611,8 +1611,8 @@ to a string in forming the output.
 - U :: convert the element to all uppercase,
 - t :: title case the element, that is, upcase the initial letter in
     each word and lower case the other letters
-- B :: make the element bold
-- I :: make the element italic
+- B ~B :: make the element bold, or turn off bold
+- I ~I :: make the element italic, or turn off italic
 - R :: align the element on the right of the column
 - L :: align the element on the left of the column
 - C :: align the element in the center of the column
@@ -1621,19 +1621,22 @@ to a string in forming the output.
     foreground or background colors respectively, and each of those can
     be an ANSI or X11 color name in addition to the special color,
     'none', which keeps the terminal's default color.
-- _ :: underline the element,
-- * :: cause the element to blink
+- _ ~_ :: underline the element, or turn off underline
+- * ~* :: cause the element to blink, or turn off blink
 
 For example, the directive 'tCc[red.yellow]' would title-case the element,
-center it, and color it red on a yellow background.
+center it, and color it red on a yellow background.  The directives that are
+boolean have negating forms so that, for example, if bold is turned on for all
+columns of a given type, it can be countermanded in formatting directives for
+particular columns.
 
 **** Numeric
 
 For a numeric element, all the instructions valid for string are available, in
 addition to the following:
 
-- , :: insert grouping commas,
-- $ :: format the number as currency according to the locale,
+- , ~, :: insert grouping commas, or do not insert grouping commas,
+- $ ~$ :: format the number as currency according to the locale, or not,
 - m.n :: include at least m digits before the decimal point, padding on
     the left with zeroes as needed, and round the number to the n
     decimal places and include n digits after the decimal point,
@@ -1693,11 +1696,10 @@ valid for strings are also available:
 For example, you might want to use 'n[-]Cc[purple]' to make nils visible as a
 centered hyphen.
 
-*** Adding Footers
+*** Footers Methods
 
-As part of the formatting methods described in the next section, you can attach
-method calls on the Formatter for adding footers and group footers. Their
-signatures are:
+You can call methods on  ~Formatter~ objects to add footers and group footers.
+Their signatures are:
 
 - ~footer(label, *sum_cols, **agg_cols)~ :: where ~label~ is a label to be
      placed in the first cell of the footer (unless that column is named as one
@@ -1715,7 +1717,7 @@ signatures are:
      in the table rather than the table as a whole. These will appear in the
      output table just below each group.
 
-There are also a number of convenience methods for common footers:
+There are also a number of convenience methods for adding common footers:
 
 - ~sum_footer(*cols)~ :: Add a footer summing the given columns with the label
      'Total'.
@@ -1735,6 +1737,10 @@ There are also a number of convenience methods for common footers:
      columns with the label 'Group Maximum'.
 
 *** Formatting Methods
+
+You can call methods on  ~Formatter~ objects to specify formatting directives
+for specific columns or types.  There are two methods for doing so, ~format_for~
+and ~format~.
 
 **** Instantiating a Formatter
 
@@ -1768,21 +1774,21 @@ you can call methods on it to affect the formatting of the output:
 #+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
   FatTable::AoaFormatter.new(tab_a) do |f|
-    f.format(numeric: '0.0,R', id: '6.0C')
+    f.format(numeric: '0.0,R', id: '3.0C')
   end.output
 #+END_SRC
 
 #+BEGIN_EXAMPLE
-|      Id | Name  | Age | Address    | Salary |  Join Date |
-|---------+-------+-----+------------+--------+------------|
-| 000,001 | Paul  |  32 | California | 20,000 | 2001-07-13 |
-| 000,003 | Teddy |  23 | Norway     | 20,000 | 2007-12-13 |
-| 000,004 | Mark  |  25 | Rich-Mond  | 65,000 | 2007-12-13 |
-| 000,005 | David |  27 | Texas      | 85,000 | 2007-12-13 |
-| 000,002 | Allen |  25 | Texas      |        | 2005-07-13 |
-| 000,008 | Paul  |  24 | Houston    | 20,000 | 2005-07-13 |
-| 000,009 | James |  44 | Norway     |  5,000 | 2005-07-13 |
-| 000,010 | James |  45 | Texas      |  5,000 |            |
+|  Id | Name  | Age | Address    | Salary |  Join Date |
+|-----+-------+-----+------------+--------+------------|
+| 001 | Paul  |  32 | California | 20,000 | 2001-07-13 |
+| 003 | Teddy |  23 | Norway     | 20,000 | 2007-12-13 |
+| 004 | Mark  |  25 | Rich-Mond  | 65,000 | 2007-12-13 |
+| 005 | David |  27 | Texas      | 85,000 | 2007-12-13 |
+| 002 | Allen |  25 | Texas      |        | 2005-07-13 |
+| 008 | Paul  |  24 | Houston    | 20,000 | 2005-07-13 |
+| 009 | James |  44 | Norway     |  5,000 | 2005-07-13 |
+| 010 | James |  45 | Texas      |  5,000 |            |
 #+END_EXAMPLE
 
 **** ~FatTable~ module-level method calls
@@ -1810,8 +1816,9 @@ Without a block, they apply the default formatting to the table and call the
 | 10 | James |  45 | Texas      |   5000 |            |
 #+END_EXAMPLE
 
-You can supply a block to these methods as well, and, again, the ~.output~
-method is called automatically after the block:
+With a block, these methods yield a ~Formatter~ instance on which you can call
+formatting and footer methods. The ~.output~ method is called on the ~Formatter~
+automatically after the block:
 
 #+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
@@ -1856,27 +1863,31 @@ Table:
 | 10 | James |  45 | Texas      |   5000 |            |
 #+END_EXAMPLE
 
-And you can supply a block to it as well:
+And you can supply a block to them as well to specify formatting or footers:
 
 #+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
   tab_a.to_aoa do |f|
     f.format(numeric: '0.0,R', id: '3.0C')
+    f.sum_footer(:salary, :age)
   end
 #+END_SRC
 
 #+BEGIN_EXAMPLE
-|  Id | Name  | Age | Address    | Salary |  Join Date |
-|-----+-------+-----+------------+--------+------------|
-| 001 | Paul  |  32 | California | 20,000 | 2001-07-13 |
-| 003 | Teddy |  23 | Norway     | 20,000 | 2007-12-13 |
-| 004 | Mark  |  25 | Rich-Mond  | 65,000 | 2007-12-13 |
-| 005 | David |  27 | Texas      | 85,000 | 2007-12-13 |
-| 002 | Allen |  25 | Texas      |        | 2005-07-13 |
-| 008 | Paul  |  24 | Houston    | 20,000 | 2005-07-13 |
-| 009 | James |  44 | Norway     |  5,000 | 2005-07-13 |
-| 010 | James |  45 | Texas      |  5,000 |            |
+|    Id | Name  | Age | Address    |  Salary |  Join Date |
+|-------+-------+-----+------------+---------+------------|
+|   001 | Paul  |  32 | California |  20,000 | 2001-07-13 |
+|   003 | Teddy |  23 | Norway     |  20,000 | 2007-12-13 |
+|   004 | Mark  |  25 | Rich-Mond  |  65,000 | 2007-12-13 |
+|   005 | David |  27 | Texas      |  85,000 | 2007-12-13 |
+|   002 | Allen |  25 | Texas      |         | 2005-07-13 |
+|   008 | Paul  |  24 | Houston    |  20,000 | 2005-07-13 |
+|   009 | James |  44 | Norway     |   5,000 | 2005-07-13 |
+|   010 | James |  45 | Texas      |   5,000 |            |
+|-------+-------+-----+------------+---------+------------|
+| Total |       | 245 |            | 220,000 |            |
 #+END_EXAMPLE
+
 
 *** The ~format~ and ~format_for~ methods
 
@@ -1884,21 +1895,20 @@ Formatters take only two kinds of methods, those that attach footers to a
 table, which are discussed in the next section, and those that specify
 formatting for table cells, which are the subject of this section.
 
-To set formatting directives for all locations in a table at once, you use the
+To set formatting directives for all locations in a table at once, use the
 ~format~ method; to set formatting directives for a particular location in the
-table, you use the ~format_for~ method, giving the location as the first
-parameter. Other than that first parameter, the two methods take the same types
-of parameters.
+table, use the ~format_for~ method, giving the location as the first parameter.
 
-The remaining parameters are hash-like parameters that use either a column name
-or a type as the key and a string with the formatting directives to apply as the
-value. For example, this says to set the formatting for all locations in the
-table such that all numeric fields are rounded to whole numbers (the '0.0'
-part), are right-aligned (the 'R' part), and have grouping commas inserted (the
-',' part). But the ~:id~ column is numeric and the second parameter overrides
-the formatting for numerics in general and calls for the ~:id~ column to be
-padded to three digits with zeros on the left (the '3.0' part) and to be
-centered.
+Other than that first parameter, the two methods take the same types of
+parameters. The remaining parameters are hash-like parameters that use either a
+column name or a type as the key and a string with the formatting directives to
+apply as the value. The following example says to set the formatting for all
+locations in the table and to set all numeric fields are rounded to whole
+numbers (the '0.0' part), that are right-aligned (the 'R' part), and have
+grouping commas inserted (the ',' part). But the ~:id~ column is numeric, and
+the second parameter overrides the formatting for numerics in general and calls
+for the ~:id~ column to be padded to three digits with zeros on the left (the
+'3.0' part) and to be centered (the 'C' part).
 
 #+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
@@ -1923,6 +1933,81 @@ centered.
 The ~numeric:~ directive affected the ~:age~ and ~:salary~ columns and the ~id:~
 directive affected only the ~:id~ column.  All the other cells in the table had
 the default formatting applied.
+
+**** Location priority
+
+Formatting for any given cell depends on its location in the table.  The
+~format_for~ method takes a location to which its formatting directive are
+restricted as the first argument.  It can be one of the following:
+
+- ~:header~ :: directive apply only to the header row, that is the first row, of
+     the output table,
+
+- ~:footer~ :: directives apply to all the footer rows of the output table,
+     regardless of how many there are,
+
+- ~gfooter~ :: directives apply to all group footer rows of the output tables,
+     regardless of how many there are,
+
+- ~:body~ :: directives apply to all rows in the body of the table unless the
+     row is the first row in the table or in a group and separate directives for
+     those have been given, in which case those directives apply,
+
+- ~:gfirst~ :: directives apply to the first row in each group in the output
+     table, unless the row is also the first row in the table as a whole, in
+     which case the ~:bfirst~ directives apply,
+
+- ~:bfirst~ :: directives apply to the first row in the table.
+
+If you give directives for ~:body~, they are copied to ~:bfirst~ and ~:gfirst~
+as well and can be overridden by directives for those locations.
+
+Directives given to the ~format~ method apply the directives to all locations in
+the table, but they can be overridden by more specific directives given in a
+~format_for~ directive.
+
+**** Type and Column priority
+
+A directive based on type applies to all columns having that type unless
+overridden by a directive specific to a named column; a directive based on a
+column name applies only to cells in that column.
+
+However, there is a twist.  Since the end result of formatting is to convert all
+columns to strings, the formatting directives for the ~:string~ type applies to
+all columns.  Likewise, since all columns may contain nils, the ~nil:~ type
+applies to nils in all columns regardless of the column's type.
+
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
+#+BEGIN_SRC ruby
+require 'fat_table'
+  tab_a.to_text do |f|
+    f.format(string: 'R', id: '3.0C', salary: 'n[N/A]')
+  end
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_EXAMPLE
+false
+#+END_EXAMPLE
+
+The ~string: 'R'~ directive causes all the cells to be right-aligned except
+~:id~ which specifies centering for the ~:id~ column only.
+
+#+BEGIN_EXAMPLE
++=====+=======+=====+============+========+============+
+|  Id |  Name | Age |    Address | Salary |  Join Date |
++-----+-------+-----+------------+--------+------------+
+| 001 |  Paul |  32 | California |  20000 | 2001-07-13 |
+| 003 | Teddy |  23 |     Norway |  20000 | 2007-12-13 |
+| 004 |  Mark |  25 |  Rich-Mond |  65000 | 2007-12-13 |
+| 005 | David |  27 |      Texas |  85000 | 2007-12-13 |
+| 002 | Allen |  25 |      Texas |        | 2005-07-13 |
+| 008 |  Paul |  24 |    Houston |  20000 | 2005-07-13 |
+| 009 | James |  44 |     Norway |   5000 | 2005-07-13 |
+| 010 | James |  45 |      Texas |   5000 |            |
++=====+=======+=====+============+========+============+
+#+END_EXAMPLE
+
 
 *** Examples
 
