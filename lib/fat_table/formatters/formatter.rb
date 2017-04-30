@@ -502,7 +502,6 @@ module FatTable
       # parse, we remove the matched construct from fmt.  At the end, any
       # remaining characters in fmt should be invalid.
       fmt_hash, fmt = parse_str_fmt(fmt)
-      fmt = fmt.gsub(/\s+/, '')
       if fmt =~ /(\d+).(\d+)/
         fmt_hash[:pre_digits] = $1.to_i
         fmt_hash[:post_digits] = $2.to_i
@@ -535,7 +534,6 @@ module FatTable
       # parse, we remove the matched construct from fmt.  At the end, any
       # remaining characters in fmt should be invalid.
       fmt_hash, fmt = parse_str_fmt(fmt)
-      fmt = fmt.gsub(/\s+/, '')
       if fmt =~ /d\[([^\]]*)\]/
         fmt_hash[:date_fmt] = $1
         fmt = fmt.sub($&, '')
@@ -566,7 +564,6 @@ module FatTable
       end
       # Since true_text, false_text and nil_text may want to have internal
       # spaces, defer removing extraneous spaces until after they are parsed.
-      fmt = fmt.gsub(/\s+/, '')
       if fmt =~ /c\[(#{CLR_RE})(\.(#{CLR_RE}))?,\s*(#{CLR_RE})(\.(#{CLR_RE}))?\]/
         fmt_hash[:true_color] = $1 unless $1.blank?
         fmt_hash[:true_bgcolor] = $3 unless $3.blank?
