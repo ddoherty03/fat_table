@@ -428,10 +428,10 @@ module FatTable
 
     public
 
-    # Return this table with all groups removed. Useful after something like
-    # Table#order_by, which adds groups as a side-effect. This modifies the
+    # Return this table mutated with all groups removed. Useful after something
+    # like Table#order_by, which adds groups as a side-effect. This modifies the
     # input table, so it a departure from the otherwise immutability of Tables.
-    def nogroups
+    def degroup!
       @boundaries = []
       self
     end
