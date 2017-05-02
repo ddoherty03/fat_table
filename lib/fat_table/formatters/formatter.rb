@@ -346,7 +346,7 @@ module FatTable
         unless location == :header
           # Merge in string and nil formatting, but not in header.  Header is
           # always typed a string, so it will get formatted in type-based
-          # formatting below.
+          # formatting below. And headers are never nil.
           if fmts.keys.include?(:string)
             typ_fmt = parse_string_fmt(fmts[:string])
             format_h = format_h.merge(typ_fmt)
@@ -369,19 +369,24 @@ module FatTable
           format_h = format_h.merge(col_fmt)
         end
 
-        # Copy :body formatting to :bfirst and :gfirst if they still have the
-        # default formatting. Can be overridden with a format_for call with
-        # those locations.
         if location == :body
-          pristine = default_format.to_h
-          pristine[:_location] = :bfirst
-          pristine[:_h] = h
-          if format_at[:bfirst][h].to_h == pristine
-            format_at[:bfirst][h] = OpenStruct.new(format_h)
+          # Copy :body formatting for column h to :bfirst and :gfirst if they
+          # still have the default formatting. Can be overridden with a format_for
+          # call with those locations.
+          format_h.each_pair do |k, v|
+            if format_at[:bfirst][h].send(k) == default_format[k]
+              format_at[:bfirst][h].send("#{k}=", v)
+            end
+            if format_at[:gfirst][h].send(k) == default_format[k]
+              format_at[:gfirst][h].send("#{k}=", v)
+            end
           end
-          pristine[:_location] = :gfirst
-          if format_at[:gfirst][h].to_h == pristine
-            format_at[:gfirst][h] = OpenStruct.new(format_h)
+        elsif location == :gfirst
+          # Copy :gfirst formatting to :bfirst if it is still the default
+          format_h.each_pair do |k, v|
+            if format_at[:bfirst][h].send(k) == default_format[k]
+              format_at[:bfirst][h].send("#{k}=", v)
+            end
           end
         end
 

@@ -188,6 +188,72 @@ module FatTable
         expect(fmt.format_at[:bfirst][:ref].post_digits).to eq(1)
       end
 
+      it 'bfirst should inherit body formatting with possible override' do
+        fmt = Formatter.new(@tab)
+                .format_for(:bfirst, ref: 'c[red]')
+                .format_for(:body, ref: '4.0')
+        expect(fmt.format_at[:bfirst][:ref][:_location]).to eq(:bfirst)
+        expect(fmt.format_at[:bfirst][:ref][:_h]).to eq(:ref)
+        expect(fmt.format_at[:bfirst][:ref].pre_digits).to eq(4)
+        expect(fmt.format_at[:bfirst][:ref].post_digits).to eq(0)
+        expect(fmt.format_at[:bfirst][:ref].color).to eq('red')
+        expect(fmt.format_at[:body][:ref].color).to eq('none')
+        # Regardless of the order
+        fmt = Formatter.new(@tab)
+                .format_for(:body, ref: '4.0')
+                .format_for(:bfirst, ref: 'c[red]')
+        expect(fmt.format_at[:bfirst][:ref][:_location]).to eq(:bfirst)
+        expect(fmt.format_at[:bfirst][:ref][:_h]).to eq(:ref)
+        expect(fmt.format_at[:bfirst][:ref].pre_digits).to eq(4)
+        expect(fmt.format_at[:bfirst][:ref].post_digits).to eq(0)
+        expect(fmt.format_at[:bfirst][:ref].color).to eq('red')
+        expect(fmt.format_at[:body][:ref].color).to eq('none')
+      end
+
+      it 'gfirst should inherit body formatting with possible override' do
+        fmt = Formatter.new(@tab)
+                .format_for(:gfirst, ref: 'c[red]')
+                .format_for(:body, ref: '4.0')
+        expect(fmt.format_at[:gfirst][:ref][:_location]).to eq(:gfirst)
+        expect(fmt.format_at[:gfirst][:ref][:_h]).to eq(:ref)
+        expect(fmt.format_at[:gfirst][:ref].pre_digits).to eq(4)
+        expect(fmt.format_at[:gfirst][:ref].post_digits).to eq(0)
+        expect(fmt.format_at[:gfirst][:ref].color).to eq('red')
+        expect(fmt.format_at[:body][:ref].color).to eq('none')
+        # Regardless of the order
+        fmt = Formatter.new(@tab)
+                .format_for(:body, ref: '4.0')
+                .format_for(:gfirst, ref: 'c[red]')
+        expect(fmt.format_at[:gfirst][:ref][:_location]).to eq(:gfirst)
+        expect(fmt.format_at[:gfirst][:ref][:_h]).to eq(:ref)
+        expect(fmt.format_at[:gfirst][:ref].pre_digits).to eq(4)
+        expect(fmt.format_at[:gfirst][:ref].post_digits).to eq(0)
+        expect(fmt.format_at[:gfirst][:ref].color).to eq('red')
+        expect(fmt.format_at[:body][:ref].color).to eq('none')
+      end
+
+      it 'bfirst should inherit gfirst formatting with possible override' do
+        fmt = Formatter.new(@tab)
+                .format_for(:bfirst, ref: 'c[red]')
+                .format_for(:gfirst, ref: '4.0')
+        expect(fmt.format_at[:bfirst][:ref][:_location]).to eq(:bfirst)
+        expect(fmt.format_at[:bfirst][:ref][:_h]).to eq(:ref)
+        expect(fmt.format_at[:bfirst][:ref].pre_digits).to eq(4)
+        expect(fmt.format_at[:bfirst][:ref].post_digits).to eq(0)
+        expect(fmt.format_at[:bfirst][:ref].color).to eq('red')
+        expect(fmt.format_at[:gfirst][:ref].color).to eq('none')
+        # Regardless of the order
+        fmt = Formatter.new(@tab)
+                .format_for(:gfirst, ref: '4.0')
+                .format_for(:bfirst, ref: 'c[red]')
+        expect(fmt.format_at[:bfirst][:ref][:_location]).to eq(:bfirst)
+        expect(fmt.format_at[:bfirst][:ref][:_h]).to eq(:ref)
+        expect(fmt.format_at[:bfirst][:ref].pre_digits).to eq(4)
+        expect(fmt.format_at[:bfirst][:ref].post_digits).to eq(0)
+        expect(fmt.format_at[:bfirst][:ref].color).to eq('red')
+        expect(fmt.format_at[:gfirst][:ref].color).to eq('none')
+      end
+
       it 'should be able to set element formats' do
         fmt = Formatter.new(@tab)
                 .format_for(:header, string: 'Uc[red]', ref: 'uc[blue.aquamarine]')
