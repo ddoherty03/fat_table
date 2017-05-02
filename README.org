@@ -277,7 +277,7 @@ types as follows:
 Headers for the columns are formed from the input. No two columns in a table can
 have the same header. Headers in the input are converted to symbols by
 
-- converting the header to a string with ~#to_s#,
+- converting the header to a string with ~#to_s~,
 - converting any run of blanks to an underscore '_',
 - removing any characters that are not letters, numbers, or underscores, and
 - lowercasing all remaining letters
@@ -322,12 +322,10 @@ in org-mode time stamps.
 Tables can also be read from ~.csv~ files or files containing ~org-mode~ tables.
 In the case of org-mode files, ~FatTable~ skips through the file until it finds
 a line that look like a table, that is it begins with any number of spaces
-followed by ~'|-'. The first row is taken as the header row in either case, and
-the headers are converted to symbols as described above.  Only the first table
-in the file is read.
+followed by ~|-~. Only the first table in an ~.org~ file is read.
 
-Likewise, ~FatTable~ can construct a table from a string containing a ~.csv~ or
-org-mode table.
+For both ~.csv~ and ~.org~ files, the first row in the tables is taken as the
+header row, and the headers are converted to symbols as described above.
 
 #+BEGIN_SRC ruby
       tab1 = FatTable.from_csv_file('~/data.csv')
@@ -377,9 +375,8 @@ org-mode table.
 
 *** From Arrays of Arrays
 
-Rather than read the table from text, you can also initialize a table directly
-from ruby data structures.  First, you can build a table from an array of
-arrays:
+You can also initialize a table directly from ruby data structures. You can, for
+example, build a table from an array of arrays:
 
 #+BEGIN_SRC ruby
   aoa =
@@ -399,10 +396,13 @@ arrays:
 tab = FatTable.from_aoa(aoa)
 #+END_SRC
 
-This method of building a table is particularly useful in dealing with Emacs
-org-mode code blocks.  Tables in org-mode are passed to code blocks as arrays of
-arrays.  Likewise, a result of a code block in the form of an array of arrays is
-displayed as an org-mode table:
+Notice that the values can either be ruby objects, such as the Integer ~85_000~,
+or strings that can be parsed into one of the permissible column types.
+
+This method of building a table, ~.from_aoa~, is particularly useful in dealing
+with Emacs org-mode code blocks. Tables in org-mode are passed to code blocks as
+arrays of arrays. Likewise, a result of a code block in the form of an array of
+arrays is displayed as an org-mode table:
 
 #+BEGIN_EXAMPLE
 #+NAME: trades1
@@ -466,10 +466,13 @@ This example illustrates several things:
 
 *** From Arrays of Hashes
 
-A second ruby structure that can be used to initialize a ~FatTable~ table is an
-array of ruby Hashes.  Each hash represents a row of the table, and the headers
-of the table are take from the keys of the hashes.  Accordingly, all the hashes
-should have the same keys.
+A second ruby data structure that can be used to initialize a ~FatTable~ table
+is an array of ruby Hashes. Each hash represents a row of the table, and the
+headers of the table are take from the keys of the hashes. Accordingly, all the
+hashes should have the same keys. This same method can in fact take an array of
+any objects that can be converted to a Hash with the ~#to_h~ method, so you can
+use an array of your own objects to initialize a table, provided that you define
+a suitable ~#to_h~ method for the objects' class.
 
 #+BEGIN_SRC ruby
 aoh = [
@@ -493,14 +496,14 @@ aoh = [
 tab = FatTable.from_aoh(aoh)
 #+END_SRC
 
-Notice that the values can either be ruby objects, such as ~Date.today~, or
-strings that can parsed into one of the permissible column types.
+Notice, again, that the values can either be ruby objects, such as ~Date.today~,
+or strings that can parsed into one of the permissible column types.
 
 *** From SQL queries
 
 Another way to initialize a ~FatTable~ table is with the results of a SQL query.
-~FatTable~ uses the ~dbi~ gem to query databases.  In this case, you must first
-set the database parameters to be used for the queries.
+~FatTable~ uses the ~dbi~ gem to query databases. You must first set the
+database parameters to be used for the queries.
 
 #+BEGIN_SRC ruby
   require 'fat_table'
@@ -594,17 +597,17 @@ Before getting into the operations, though, there are a couple of issues that
 cut across all or many of the operations.
 
 First, tables are by and large immutable objects. Each operation creates a new
-table without affecting the input tables. Where this is not the case, it will be
-noted below.
+table without affecting the input tables. The only exception is the ~nogroups~
+operation, which removes any group boundaries from the table.
 
-Second, because each operation results in a ~FatTable::Table~ object, the
+Second, because each operation returns a ~FatTable::Table~ object, the
 operations are chainable.
 
 Third, ~FatTable::Table~ objects can have "groups" of rows within the table.
 These can be decorated with hlines and group footers on output. Some of these
 operations result in marking group boundaries in the result table, others remove
 group boundaries that may have existed in the input table. Operations that
-either create or remove groups will also be noted below.
+either create or remove groups will be noted below.
 
 Finally, the operations are for the most part patterned on SQL table operations,
 but when expressions play a role, you write them using ruby syntax rather than
@@ -614,8 +617,8 @@ SQL.
 
 For illustration purposes assume that the following tables are read into a ruby
 variables called '~tab1~' and '~tab2~. We have given the table groups, marked by
-the hlines below, and added some duplicates to illustrate the affect of
-operations these as applicable.
+the hlines below, and some duplicate rows to illustrate the effect of certain
+operations on groups and duplicates.
 
 #+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
@@ -719,23 +722,23 @@ any group boundaries present in the input table.
 #+END_EXAMPLE
 
 More interesting is that ~select~ can take hash-like keyword arguments following
-all of the symbol arguments to create new columns in the output from existing
-columns, or even from new columns earlier in the parameter list. The keyword
-given must be a symbol and becomes the header for the new column and the value
-must be either: (1) a symbol representing an existing column or (2) a string
-representing a ruby expression for the value of the new column.
+all of the symbol arguments to create new columns in the output as functions of
+other columns. For each hash-like parameter, the keyword given must be a symbol,
+which becomes the header for the new column, and the value must be either: (1) a
+symbol representing an existing column or (2) a string representing a ruby
+expression for the value of the new column.
 
-The names of existing or already-specified columns are available as local
-variables in the expression, as well as the instance variables '@row' and
+Within the string expression, the names of existing or already-specified columns
+are available as local variables, as well as the instance variables '@row' and
 '@group'. So for our example table, the string expressions for new columns have
 access to local variables ~ref~, ~date~, ~code~, ~price~, ~g10~, ~qp10~,
 ~shares~, ~lp~, ~qp~, ~iplp~, and ~ipqp~ as well as the instance variables
-~@row~ and ~@group~.  The local variables are set to the values of the cell in
+~@row~ and ~@group~. The local variables are set to the values of the cell in
 their respective columns for each row in the input table and the instance
 variables are set the number of the current row and group respectively.
 
 For example, if we want to rename the :date column and compute the cost of
-shares, we could:
+shares, we could do the following:
 
 #+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
@@ -770,12 +773,13 @@ shares, we could:
 #+END_EXAMPLE
 
 The parameter '~traded_on: :date~' caused the ~:date~ column of the input table
-to be renamed '~:traded_on~, and the ~cost: 'price * shares'~ created a new
-column, ~:cost~, as the product of ~:price~ and ~:shares~.
+to be renamed '~:traded_on~, and the parameter ~cost: 'price * shares'~ created
+a new column, ~:cost~, as the product of values in the ~:price~ and ~:shares~
+columns.
 
-The order of the columns is the same as the order of the parameters to the
-~select~ method. You can re-order the columns with a second, chained call to
-~select~:
+The order of the columns in the result tables is the same as the order of the
+parameters to the ~select~ method. So, you can re-order the columns with a
+second, chained call to ~select~:
 
 #+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
@@ -815,19 +819,19 @@ The order of the columns is the same as the order of the parameters to the
 Notice that ~select~ can take any number of arguments but all the symbol
 arguments must come first followed by all the hash-like keyword arguments.
 
-As the example illustrates, ~.select~ preserves any group boundaries in its
-input table.
+As the example illustrates, ~.select~ transmits any group boundaries in its
+input table to the result table.
 
 *** Where
 
-You can filter the rows of the output table with the ~.where~ method. ~.where~
-takes a single string expression as an argument which is evaluated in a manner
-similar to ~.select~ in which the value of the cells in each column are
-available as local variables and the instance variables ~@row~ and ~@group~ are
-available for testing. The expression is evaluated for each row, and if the
-expression evaluates to a truthy value, the row is included in the output,
-otherwise it is not.  The ~.where~ method obliterates any group boundaries in
-the input, so the output table has only a single group.
+You can filter the rows of the result table with the ~.where~ method. It takes a
+single string expression as an argument which is evaluated in a manner similar
+to ~.select~ in which the value of the cells in each column are available as
+local variables and the instance variables ~@row~ and ~@group~ are available for
+testing. The expression is evaluated for each row, and if the expression
+evaluates to a truthy value, the row is included in the output, otherwise it is
+not. The ~.where~ method obliterates any group boundaries in the input, so the
+output table has only a single group.
 
 Here we select only those even-numbered rows where either of the two boolean
 fields is true:
@@ -898,13 +902,14 @@ either changes, ~order_by~ inserts a group boundary.
 
 *** Group_by
 
-Like ~order_by~, ~group_by~ takes a set of column header symbols by which to
-sort the table into a set of groups that are equal with respect to values in
-those columns. In addition, those parameters can be followed by a series of
-hash-like parameters that indicate how any of the remaining, non-group columns
-are to be aggregated into a single value. The output table has one row for each
-group for which the grouping parameters are equal containing those columns and
-an aggregate column for all the other rows.
+Like ~order_by~, ~group_by~ takes a set of parameters of column header symbols,
+the "grouping parameters", by which to sort the table into a set of groups that
+are equal with respect to values in those columns. In addition, those parameters
+can be followed by a series of hash-like parameters, the "aggregating
+parameters", that indicate how any of the remaining, non-group columns are to be
+aggregated into a single value. The output table has one row for each group for
+which the grouping parameters are equal containing those columns and an
+aggregate column for each of the aggregating parameters.
 
 For example, let's summarize the ~trades~ table by ~:code~ and ~:price~ again,
 and determine total shares, average price, and other features of each group:
@@ -925,15 +930,15 @@ and determine total shares, average price, and other features of each group:
 | S    | 2016-11-01 |   7.58000 |      13011 |   1852 |  11159 | F        |
 #+END_EXAMPLE
 
-After the grouping column parameters, there are several hash-like "aggregating"
-parameters where the key is the column to aggregate and the value is a symbol
-for one of several aggregating methods that ~FatTable::Column~ objects
-understand. For example, the ~:avg~ method is applied to the :price column so
-that the output shows the average price in each group. The ~:shares~, ~:lp~, and
-~:qp~ columns are summed, and the ~:any?~ aggregate is applied to one of the
-boolean fields, that is, it is ~true~ if any of the values in that column are
-~true~. The column names in the output of the aggregated columns have the name
-of the aggregating method pre-pended to the column name.
+After the grouping column parameters, ~:code~ and ~:date~, there are several
+hash-like "aggregating" parameters where the key is the column to aggregate and
+the value is a symbol for one of several aggregating methods that
+~FatTable::Column~ objects understand. For example, the ~:avg~ method is applied
+to the :price column so that the output shows the average price in each group.
+The ~:shares~, ~:lp~, and ~:qp~ columns are summed, and the ~:any?~ aggregate is
+applied to one of the boolean fields, that is, it is ~true~ if any of the values
+in that column are ~true~. The column names in the output of the aggregated
+columns have the name of the aggregating method pre-pended to the column name.
 
 Here is a list of all the aggregate methods available.  If the description
 restricts the aggregate to particular column types, applying it to other types
@@ -973,8 +978,8 @@ will raise an exception.
      the column is true,
 
 Perhaps surprisingly, the ~group_by~ method ignores any groups in its input and
-results in no group boundaries in the output. Each group formed by the implicit
-~order_by~ on the group columns is collapsed into a single row.
+results in no group boundaries in the output since each group formed by the
+implicit ~order_by~ on the grouping columns is collapsed into a single row.
 
 *** Join
 **** Join Types
@@ -1043,9 +1048,9 @@ local variables within the expression, but the instance variables ~@row~ and
 
 **** Join Examples
 
-These methods cry out for some examples, no?  The following are taken from a the
-[[https://www.tutorialspoint.com/postgresql/postgresql_using_joins.htm][Postgresql tutorial]], with some slight modifications.  The examples will use the
-following two tables:
+The following examples are taken from a the [[https://www.tutorialspoint.com/postgresql/postgresql_using_joins.htm][Postgresql tutorial]], with some
+slight modifications. The examples will use the following two tables, which are
+also available in ~ft_console~:
 
 #+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
@@ -1196,8 +1201,8 @@ table where the join expression is satisfied and augmented with nils otherwise.
 ***** Cross Join
 
 Finally, a cross join outputs every row of ~tab_a~ augmented with every row of
-~tab_b~.  In other words, the Cartesian product of the two tables.  If ~tab_a~
-has ~N~ rows and ~tab_b~ has ~M~ rows, the output table will have ~N * M~ rows.
+~tab_b~, in other words, the Cartesian product of the two tables. If ~tab_a~ has
+~N~ rows and ~tab_b~ has ~M~ rows, the output table will have ~N * M~ rows.
 
 #+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
@@ -1240,9 +1245,9 @@ tables to be used this way, they must have the same number of columns with the
 same types or an exception will be raised.  We'll call two tables that qualify
 for combining with set operations "set-compatible."
 
-We'll use the following two set-compatible tables in the examples.  They each
-have group boundaries so you can see the effect of the set operations on the
-groups.
+We'll use the following two set-compatible tables in the examples. They each
+have some duplicates and some group boundaries so you can see the effect of the
+set operations on duplicates and groups.
 
 #+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
@@ -1581,15 +1586,15 @@ the input table are lost.
 | T016 | 2016-11-02 | P    |  8.25 | T   | T    |    100 |   14 |    86 | 0.2453 | 0.1924 |
 #+END_EXAMPLE
 
-*** Nogroups
+*** Remove groups with degroup!
 
-Finally, it is sometimes helpful to remove any group boundaries in the input
-table.  You can do this with ~.nogroups~, which does not affect the table except
-to remove any groups.
+Finally, it is sometimes helpful to remove any group boundaries from a table.
+You can do this with ~.degroup!~, which is the only operation that mutates its
+receiver table by removing its groups.
 
 #+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
- tab1.nogroups.to_aoa
+ tab1.degroup!.to_aoa
 #+END_SRC
 
 #+BEGIN_EXAMPLE
