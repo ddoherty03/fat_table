@@ -146,19 +146,19 @@ the main features of ~FatTable~. See the detailed explanations further on down.
 ** A Word About the Examples
 
 When you install the fat_table gem, you have access to a program ~ft_console~
-which opens a ~pry~ session with the tables used in the examples in this README
-loaded as local variables so you can experiment with the examples and variations
-on them.
+which opens a ~pry~ session with ~fat_table~ loaded and the tables used in the
+examples in this README defined as local variables so you can experiment with
+them.
 
-The examples in this ~README~ file are executed as code blocks with the
+The examples in this ~README~ file are executed as code blocks within the
 ~README.org~ file, so they typically end with a call to ~.to_aoa~. That causes
-the table to be inserted into this ~README.org~ file and formatted as a table.
-With ~ft_console~, you should instead display your tables with ~.to_text~ or
-~.to_term~. This will give you a string that you can print to the terminal with
+the table to be inserted into the file and formatted as a table. With
+~ft_console~, you should instead display your tables with ~.to_text~ or
+~.to_term~. These will return a string that you can print to the terminal with
 ~puts~.
 
-So, to read in the table used in the Quick Start section above, you might do the
-following.
+To read in the table used in the Quick Start section above, you might do the
+following:
 
 #+BEGIN_EXAMPLE
 $ ft_console
