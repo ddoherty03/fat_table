@@ -143,6 +143,83 @@ the main features of ~FatTable~. See the detailed explanations further on down.
 +=========+============+======+=============+==========+====+
 #+END_EXAMPLE
 
+** A Word About the Examples
+
+When you install the fat_table gem, you have access to a program ~ft_console~
+which opens a ~pry~ session with the tables used in the examples in this README
+loaded as local variables so you can experiment with the examples and variations
+on them.
+
+The examples in this ~README~ file are executed as code blocks with the
+~README.org~ file, so they typically end with a call to ~.to_aoa~. That causes
+the table to be inserted into this ~README.org~ file and formatted as a table.
+With ~ft_console~, you should instead display your tables with ~.to_text~ or
+~.to_term~. This will give you a string that you can print to the terminal with
+~puts~.
+
+So, to read in the table used in the Quick Start section above, you might do the
+following.
+
+#+BEGIN_EXAMPLE
+$ ft_console
+From: /home/ded/.rbenv/versions/2.3.0/lib/ruby/gems/2.3.0/gems/fat_table-0.2.1/bin/ft_console @ line 115 :
+
+    110:        [15, '2013-05-29', 'S', 15_900.00, 6685.95, 24.5802, 'YLEAC', 'T'],
+    111:        [16, '2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'YLEAC', 'T']]
+    112: tt = FatTable.from_aoa(AOA)
+    113:
+    114: binding.pry
+ => 115: instr <<-EOS
+    116: FatTable console sets up some sample tables you can play with (see ls)
+    117:
+    118:   For example, try 'puts tab1.to_term'
+    119: EOS
+
+[1] pry(main)> table = FatTable.from_aoa(data)
+=> #<FatTable::Table:0x0055b40e6cd870
+ @boundaries=[],
+ @columns=
+  [#<FatTable::Column:0x0055b40e6cc948
+    @header=:date,
+    @items=
+     [Wed, 29 May 2013,
+      Thu, 02 May 2013,
+      Mon, 20 May 2013,
+      Thu, 23 May 2013,
+      Thu, 23 May 2013,
+      Mon, 20 May 2013,
+      Thu, 02 May 2013,
+      Wed, 29 May 2013,
+      Mon, 20 May 2013,
+...
+    @items=["ENTITY3", "ENTITY1", "ENTITY3", "ENTITY3", "ENTITY3", "ENTITY3", "ENTITY1", "ENTITY3", "ENTITY3", "ENTITY3", "ENTITY3", "ENTITY3"],
+    @raw_header=:info,
+    @type="String">,
+   #<FatTable::Column:0x0055b40e6d2668 @header=:ok, @items=[false, true, false, true, true, true, true, true, true, true, true, false], @raw_header=:ok, @type="Boolean">]>
+[2] pry(main)> puts table.to_text
++============+======+==========+==========+=========+=========+====+
+| Date       | Code | Raw      | Shares   | Price   | Info    | Ok |
++------------+------+----------+----------+---------+---------+----+
+| 2013-05-29 | S    | 15700.0  | 6601.85  | 24.779  | ENTITY3 | F  |
+| 2013-05-02 | P    | 118186.4 | 118186.4 | 11.85   | ENTITY1 | T  |
+| 2013-05-20 | S    | 12000.0  | 5046.0   | 28.2804 | ENTITY3 | F  |
+| 2013-05-23 | S    | 8000.0   | 3364.0   | 27.1083 | ENTITY3 | T  |
+| 2013-05-23 | S    | 39906.0  | 16780.47 | 25.1749 | ENTITY3 | T  |
+| 2013-05-20 | S    | 85000.0  | 35742.5  | 28.3224 | ENTITY3 | T  |
+| 2013-05-02 | P    | 795546.2 | 795546.2 | 1.185   | ENTITY1 | T  |
+| 2013-05-29 | S    | 13459.0  | 5659.51  | 24.7464 | ENTITY3 | T  |
+| 2013-05-20 | S    | 33302.0  | 14003.49 | 28.6383 | ENTITY3 | T  |
+| 2013-05-29 | S    | 15900.0  | 6685.95  | 24.5802 | ENTITY3 | T  |
+| 2013-05-30 | S    | 6679.0   | 2808.52  | 25.0471 | ENTITY3 | T  |
+| 2013-05-23 | S    | 23054.0  | 9694.21  | 26.8015 | ENTITY3 | F  |
++============+======+==========+==========+=========+=========+====+
+=> nil
+[3] pry(main)>
+#+END_EXAMPLE
+
+And if you use ~.to_term~, you can see the effect of the color formatting
+directives.
+
 ** Anatomy of a Table
 *** Columns
 
@@ -998,7 +1075,6 @@ require 'fat_table'
     tab_a = FatTable.from_org_string(tab_a_str)
     tab_b = FatTable.from_org_string(tab_b_str)
 #+END_SRC
-
 
 ***** Inner Joins
 
@@ -1890,7 +1966,6 @@ And you can supply a block to them as well to specify formatting or footers:
 |-------+-------+-----+------------+---------+------------|
 | Total |       | 245 |            | 220,000 |            |
 #+END_EXAMPLE
-
 
 *** The ~format~ and ~format_for~ methods
 
