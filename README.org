@@ -597,7 +597,7 @@ Before getting into the operations, though, there are a couple of issues that
 cut across all or many of the operations.
 
 First, tables are by and large immutable objects. Each operation creates a new
-table without affecting the input tables. The only exception is the ~nogroups~
+table without affecting the input tables. The only exception is the ~degroup!~
 operation, which removes any group boundaries from the table.
 
 Second, because each operation returns a ~FatTable::Table~ object, the
