@@ -1,4 +1,5 @@
-# FatTable
+#+OPTIONS: :toc
+#+LATEX_HEADER: \usepackage[margin=0.75in]{geometry}
 
 * Introduction
 
