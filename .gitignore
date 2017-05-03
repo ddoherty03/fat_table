@@ -11,3 +11,9 @@
 
 # rspec failure tracking
 .rspec_status
+/README.pdf
+/README.tex
+/README.synctex.gz
+/_minted*
+/auto/
+/html/
