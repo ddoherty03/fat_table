@@ -2088,31 +2088,6 @@ The ~string: 'R'~ directive causes all the cells to be right-aligned except
 ~:id~ which specifies centering for the ~:id~ column only. The ~n[N/A]~
 directive for nil text can be used with the numeric column, ~:salary~.
 
-*** Examples
-
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
-require 'fat_table'
-  tab_a.to_term do |f|
-    f.format(string: 'R', id: '3.0C', salary: 'c[red]n[N/A]')
-  end
-#+END_SRC
-
-#+BEGIN_EXAMPLE
-╒═════╤═══════╤═════╤════════════╤════════╤════════════╕
-│  Id │  Name │ Age │    Address │ Salary │  Join Date │
-├─────┼───────┼─────┼────────────┼────────┼────────────┤
-│ 001 │  Paul │  32 │ California │  20000 │ 2001-07-13 │
-│ 003 │ Teddy │  23 │     Norway │  20000 │ 2007-12-13 │
-│ 004 │  Mark │  25 │  Rich-Mond │  65000 │ 2007-12-13 │
-│ 005 │ David │  27 │      Texas │  85000 │ 2007-12-13 │
-│ 002 │ Allen │  25 │      Texas │    N/A │ 2005-07-13 │
-│ 008 │  Paul │  24 │    Houston │  20000 │ 2005-07-13 │
-│ 009 │ James │  44 │     Norway │   5000 │ 2005-07-13 │
-│ 010 │ James │  45 │      Texas │   5000 │            │
-╘═════╧═══════╧═════╧════════════╧════════╧════════════╛
-#+END_EXAMPLE
-
 * Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run
