@@ -39,9 +39,6 @@ module FatTable
       blink: false
     }
 
-    class_attribute :currency_symbol
-    self.currency_symbol = '$'
-
     class_attribute :valid_colors
     self.valid_colors = ['none']
 
@@ -698,7 +695,7 @@ module FatTable
         prec = istruct.post_digits == 0 ? 2 : istruct.post_digits
         delim = istruct.commas ? ',' : ''
         result = val.to_s(:currency, precision: prec, delimiter: delim,
-                          unit: currency_symbol)
+                          unit: FatTable.currency_symbol)
         istruct.commas = false
       elsif istruct.pre_digits.positive?
         if val.whole?

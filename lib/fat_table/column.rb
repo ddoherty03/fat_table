@@ -367,8 +367,10 @@ module FatTable
     def convert_to_numeric(val)
       return BigDecimal.new(val, Float::DIG) if val.is_a?(Float)
       return val if val.is_a?(Numeric)
-      # Eliminate any commas, $'s, or _'s.
-      val = val.to_s.clean.gsub(/[,_$]/, '')
+      # Eliminate any commas, $'s (or other currency symbol), or _'s.
+      cursym = Regexp.quote(FatTable.currency_symbol)
+      clean_re = /[,_#{cursym}]/
+      val = val.to_s.clean.gsub(clean_re, '')
       return nil if val.blank?
       case val
       when /\A(\d+\.\d*)|(\d*\.\d+)\z/

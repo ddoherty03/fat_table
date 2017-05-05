@@ -14,39 +14,57 @@ module FatTable
   require 'fat_table/db_handle'
   require 'fat_table/errors'
 
+  # Valid output formats as symbols.
+  FORMATS = [:psv, :aoa, :aoh, :latex, :org, :term, :text].freeze
+
+  class << self
+    # Set a default output format to use when FatTable.to_format is invoked.
+    # Valid formats are +:psv+, +:aoa+, +:aoh+, +:latex+, +:org+, +:term+, and
+    # +:text+, or their string equivalents. By default, +FatTable.format+ is
+    # +:text+.
+    attr_accessor :format
+
+    # Default value to use to indicate currency in a Numeric column.  By default
+    # this is set to '$'.
+    attr_accessor :currency_symbol
+  end
+  self.format = :text
+  self.currency_symbol = '$'
+
   ###########################################################################
   # Table Constructors
   ###########################################################################
 
-  # Return an empty FatTable::Table object.  You can use add_row or add_column
-  # to fill on the table.
+  # Return an empty FatTable::Table object. You can use FatTable::Table#add_row
+  # or FatTable::Table#add_column to populate the table with data.
   def self.new
     Table.new
   end
 
-  # Construct a FatTable::Table from the contents of a CSV file. Headers will be
-  # taken from the first row and converted to symbols.
+  # Construct a FatTable::Table from the contents of a CSV file given by the
+  # file name +fname+. Headers will be taken from the first row and converted to
+  # symbols.
   def self.from_csv_file(fname)
     Table.from_csv_file(fname)
   end
 
-  # Construct a FatTable::Table from a string, treated in the same manner as if
-  # read the input from a CSV file. Headers will be taken from the first row and
-  # converted to symbols.
+  # Construct a FatTable::Table from the string +str+, treated in the same
+  # manner as if read the input from a CSV file. Headers will be taken from the
+  # first row and converted to symbols.
   def self.from_csv_string(str)
     Table.from_csv_string(str)
   end
 
-  # Construct a FatTable::Table from the first table found in the given Emacs
-  # org-mode file. Headers are taken from the first row if the second row is an
-  # hrule. Otherwise, synthetic headers of the form :col_1, :col_2, etc. are
-  # created. Any other hlines will be treated as marking a boundary in the
-  # table.
+  # Construct a FatTable::Table from the first table found in the Emacs org-mode
+  # file names +fname+. Headers are taken from the first row if the second row
+  # is an hline. Otherwise, synthetic headers of the form +:col_1+, +:col_2+,
+  # etc. are created. Any other hlines will be treated as marking a boundary in
+  # the table.
   def self.from_org_file(fname)
     Table.from_org_file(fname)
   end
 
-  # Construct a FatTable::Table from the first table found in the given string,
+  # Construct a FatTable::Table from the first table found in the string +str+,
   # treated in the same manner as if read from an Emacs org-mode file. Headers
   # are taken from the first row if the second row is an hrule. Otherwise,
   # synthetic headers of the form :col_1, :col_2, etc. are created. Any other
