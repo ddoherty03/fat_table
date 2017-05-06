@@ -12,14 +12,14 @@ module FatTable
       super
       @options[:unicode] = options.fetch(:unicode, true)
       @options[:framecolor] = options.fetch(:framecolor, 'none.none')
-      if @options[:framecolor] =~ /([-_a-zA-Z]*)(\.([-_a-zA-Z]*))/
-        @options[:frame_fg] = $1.downcase unless $1.blank?
-        @options[:frame_bg] = $3.downcase unless $3.blank?
-      end
+      return unless @options[:framecolor] =~ /([-_a-zA-Z]*)(\.([-_a-zA-Z]*))/
+      @options[:frame_fg] = $1.downcase unless $1.blank?
+      @options[:frame_bg] = $3.downcase unless $3.blank?
     end
 
-    # Taken from the xcolor documentation PDF, list of base colors and x11names.
-    self.valid_colors = ['none'] + Rainbow::X11ColorNames::NAMES.keys.map(&:to_s).sort
+    # Valid colors for ANSI terminal using the rainbow gem's X11ColorNames.
+    self.valid_colors = ['none'] +
+                        ::Rainbow::X11ColorNames::NAMES.keys.map(&:to_s).sort
 
     def color_valid?(clr)
       valid_colors.include?(clr)
@@ -40,7 +40,7 @@ module FatTable
     end
 
     def strip_ansi(str)
-      str.gsub(/\e\[[0-9;]+m/, '') if str
+      str&.gsub(/\e\[[0-9;]+m/, '')
     end
 
     # Add ANSI codes to string to implement the given decorations
