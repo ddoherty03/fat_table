@@ -33,7 +33,7 @@ module FatTable
 
     # Convert the column to an Array.
     def to_a
-      items
+      items.deep_dup
     end
 
     # Return the size of the column, including any nils.
