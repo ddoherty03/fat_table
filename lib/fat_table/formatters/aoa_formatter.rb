@@ -1,5 +1,12 @@
 module FatTable
+  # A subclass of Formatter for rendering the table as a Ruby Array of Arrays.
+  # Each cell is an element of the inner Array is formatted as a string in
+  # accordance with the formatting directives. All footers are included as extra
+  # Arrays of the output. AoaFormatter supports no +options+
   class AoaFormatter < Formatter
+
+    private
+
     def evaluate?
       true
     end

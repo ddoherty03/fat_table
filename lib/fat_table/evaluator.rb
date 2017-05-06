@@ -12,32 +12,44 @@ module FatTable
   # update values of instance variables for use in subsequent calls to
   # #evaluate.
   class Evaluator
-   def initialize(vars: {}, before: nil, after: nil)
-     @before = before
-     @after = after
-     set_instance_vars(vars)
-   end
+    # Return a new Evaluator object in which the Hash +vars+ defines the
+    # bindings for instance variables to be available and maintained across all
+    # subsequent calls to Evaluator.evaluate. The strings +before+ and +after+
+    # are string expressions that will be evaluated before and after each
+    # subsequent call to Evaluator.evaluate.
+    def initialize(vars: {}, before: nil, after: nil)
+      @before = before
+      @after = after
+      set_instance_vars(vars)
+    end
 
-   def set_instance_vars(vars = {})
-     vars.each_pair do |name, val|
-       name = "@#{name}" unless name.to_s.start_with?('@')
-       instance_variable_set(name, val)
-     end
-   end
+    # Return the result of evaluating +expr+ as a Ruby expression in which the
+    # instance variables set in Evaluator.new and any local variables set in the
+    # Hash parameter +vars+ are available to the expression. Call any +before+
+    # hook defined in Evaluator.new before evaluating +expr+ and any +after+
+    # hook defined in Evaluator.new after evaluating +expr+.
+    def evaluate(expr = '', vars: {})
+      bdg = binding
+      set_local_vars(vars, bdg)
+      eval(@before, bdg) if @before
+      result = eval(expr, bdg)
+      eval(@after, bdg) if @after
+      result
+    end
 
-   def set_local_vars(vars = {}, bnd)
-     vars.each_pair do |name, val|
-       bnd.local_variable_set(name, val)
-     end
-   end
+    private
 
-   def evaluate(expr = '', vars: {})
-     bdg = binding
-     set_local_vars(vars, bdg)
-     eval(@before, bdg) if @before
-     result = eval(expr, bdg)
-     eval(@after, bdg) if @after
-     result
-   end
+    def set_instance_vars(vars = {})
+      vars.each_pair do |name, val|
+        name = "@#{name}" unless name.to_s.start_with?('@')
+        instance_variable_set(name, val)
+      end
+    end
+
+    def set_local_vars(vars = {}, bnd)
+      vars.each_pair do |name, val|
+        bnd.local_variable_set(name, val)
+      end
+    end
   end
 end

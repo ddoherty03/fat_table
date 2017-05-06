@@ -3,11 +3,27 @@
 require 'rainbow'
 
 module FatTable
-  # Output the table as for a unicode-enabled terminal.  This makes table
+  # Output the table as for a unicode-enabled ANSI terminal. This makes table
   # gridlines drawable with unicode characters, as well as supporting colored
-  # text and backgrounds.plain text.
-
+  # text and backgrounds, and blink, and underline attributes. See
+  # TermFormatter.valid_colors for an Array of valid colors that you can use.
+  # The extent to which all of these are actually supported depends on your
+  # terminal. TermFormatter uses the +rainbow+ gem for forming colored strings.
+  # Use a
   class TermFormatter < Formatter
+    # Return a new TermFormatter for +table+.  You can set a few +options+ with
+    # the following hash-like parameters:
+    #
+    # unicode::
+    #     if set true, use unicode characters to form the frame of the table on
+    #     output; if set false, use ASCII characters for the frame.  By default,
+    #     this is true.
+    #
+    # framecolor::
+    #     set to a string of the form '<color>' or '<color.color>' to set the
+    #     color of the frame or the color and background color.  By default, the
+    #     framecolor is set to 'none.none', meaning that the normal terminal
+    #     foreground and background colors will be used for the frame.
     def initialize(table = Table.new, **options)
       super
       @options[:unicode] = options.fetch(:unicode, true)
@@ -21,14 +37,18 @@ module FatTable
     self.valid_colors = ['none'] +
                         ::Rainbow::X11ColorNames::NAMES.keys.map(&:to_s).sort
 
+    private
+
     def color_valid?(clr)
       valid_colors.include?(clr)
     end
 
     def invalid_color_msg(clr)
       valid_colors_list = valid_colors.join(' ').wrap
-      "TermFormatter invalid color '#{clr}'. Valid colors are:\n#{valid_colors_list}"
+      "TermFormatter invalid color '#{clr}'. Valid colors are:\n" +
+        valid_colors_list
     end
+
     # Compute the width of the string as displayed, taking into account the
     # characteristics of the target device.  For example, a colored string
     # should not include in the width terminal control characters that simply
@@ -75,6 +95,7 @@ module FatTable
       colorize(str, @options[:frame_fg], @options[:frame_bg])
     end
 
+    # :stopdoc:
     # Unicode line-drawing characters. We use double lines before and after the
     # table and single lines for the sides and hlines between groups and
     # footers.
@@ -90,6 +111,7 @@ module FatTable
     LOWER_LEFT = "\u2558".freeze
     LOWER_RIGHT = "\u255B".freeze
     LOWER_TEE = "\u2567".freeze
+    # :startdoc:
 
     def upper_left
       if options[:unicode]

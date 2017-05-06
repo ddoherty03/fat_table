@@ -4,6 +4,9 @@ module FatTable
   # connector at the beginning of hlines is a '+' rather than a '|' as for org
   # tables.
   class TextFormatter < Formatter
+
+    private
+
     # Does this Formatter require a second pass over the cells to align the
     # columns according to the alignment formatting instruction to the width of
     # the widest cell in each column?

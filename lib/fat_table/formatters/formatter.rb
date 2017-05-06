@@ -1,17 +1,53 @@
 module FatTable
-  ## A formatter is for use in Table output routines, and provides instructions
-  ## for how the table ought to be formatted. The goal is to make subclasses of
-  ## this class to handle different output targets, such as aoa for org tables,
-  ## ansi terminals, LaTeX, html, plain text, org mode table text, and so forth.
-  ## Many of the formatting options, such as color, will be no-ops for some
-  ## output targets, such as text, but will be valid nonetheless. Thus, the
-  ## Formatter subclass should provide the best implementation for each
-  ## formatting request available for the target. This base class will consist
-  ## largely of stub methods with implementations provided by the subclass.
+  ## A Formatter is for use in Table output routines, and provides methods for
+  ## adding group and table footers to the output and instructions for how the
+  ## table's cells ought to be formatted. The goal is to make subclasses of this
+  ## class handle different output targets, such as aoa for org tables, ansi
+  ## terminals, LaTeX, html, plain text, org mode table text, and so forth. Many
+  ## of the formatting options, such as color, will be no-ops for some output
+  ## targets, such as text, but will be valid nonetheless. Thus, the Formatter
+  ## subclass should provide the best implementation for each formatting request
+  ## available for the target. This base class will consist largely of methods
+  ## that format output as pipe-separated values, but implementations provided
+  ## by subclasses will override these for different output targets.
   class Formatter
+    # Valid locations in a Table as an array of symbols.
     LOCATIONS = [:header, :body, :bfirst, :gfirst, :gfooter, :footer].freeze
 
-    attr_reader :table, :options, :format_at, :footers, :gfooters
+    # The table that is the subject of the Formatter.
+    attr_reader :table
+
+    # Options given to the Formatter constructor that allow variants for
+    # specific Formatters.
+    attr_reader :options
+
+    # A Hash of Hashes with the outer Hash keyed on location.  The value for the
+    # outer Hash is another Hash keyed on column names.  The values of the inner
+    # Hash are OpenStruct objects that contain the formatting instructions for
+    # the location and column.  For example, +format_at[:body][:shares].commas+
+    # is set either true or false depending on whether the +:shares+ column in
+    # the table body is to have grouping commas inserted in the output.
+    attr_reader :format_at
+
+    # A Hash of the table-wide footers to be added to the output.  The key is a
+    # string that is to serve as the label for the footer and inserted in the
+    # first column of the footer if that column is otherwise not populated with
+    # footer content. The value is Hash in which the keys are column symbols and
+    # the values are symbols for the aggregate method to be applied to the
+    # column to provide a value in the footer for that column.  Thus,
+    # +footers['Total'][:shares]+ might be set to +:sum+ to indicate that the
+    # +:shares+ column is to be summed in the footer labeled 'Total'.
+    attr_reader :footers
+
+    # A Hash of the group footers to be added to the output. The key is a string
+    # that is to serve as the label for the footer and inserted in the first
+    # column of the footer if that column is otherwise not populated with group
+    # footer content. The value is Hash in which the keys are column symbols and
+    # the values are symbols for the aggregate method to be applied to the
+    # group's column to provide a value in the group footer for that column.
+    # Thus, +gfooters['Average'][:shares]+ might be set to +:avg+ to indicate that
+    # the +:shares+ column is to be averaged in the group footer labeled 'Average'.
+    attr_reader :gfooters
 
     class_attribute :default_format
     self.default_format = {
@@ -42,6 +78,230 @@ module FatTable
     class_attribute :valid_colors
     self.valid_colors = ['none']
 
+    # Return a new Formatter for the given +table+ which must be of the class
+    # FatTable::Table. The +options+ hash can specify variants for the output
+    # for specific subclasses of Formatter. This base class outputs the +table+
+    # as a string in the pipe-separated form, which is much like CSV except that
+    # it uses the ASCII pipe symbol +|+ to separate values rather than the
+    # comma, and therefore does not bother to quote strings since it assumes
+    # they will not contain any pipes. A new Formatter provides default
+    # formatting for all the cells in the table. If you give a block, the new
+    # Formatter is yielded to the block so that methods for formatting and
+    # adding footers can be called on it.
+    def initialize(table = Table.new, **options)
+      unless table && table.is_a?(Table)
+        raise UserError, 'must initialize Formatter with a Table'
+      end
+      @table = table
+      @options = options
+      @footers = {}
+      @gfooters = {}
+      # Formatting instructions for various "locations" within the Table, as
+      # a hash of hashes.  The outer hash is keyed on the location, and each
+      # inner hash is keyed on either a column sym or a type sym, :string, :numeric,
+      # :datetime, :boolean, or :nil.  The value of the inner hashes are
+      # OpenStruct structs.
+      @format_at = {}
+      [:header, :bfirst, :gfirst, :body, :footer, :gfooter].each do |loc|
+        @format_at[loc] = {}
+        table.headers.each do |h|
+          fmt_hash = self.class.default_format
+          fmt_hash[:_h] = h
+          fmt_hash[:_location] = loc
+          format_at[loc][h] = OpenStruct.new(fmt_hash)
+        end
+      end
+      yield self if block_given?
+    end
+
+    ############################################################################
+    # Footer methods
+    #
+    # A Table may have any number of footers and any number of group footers.
+    # Footers are not part of the table's data and never participate in any of
+    # the transformation methods on tables.  They are never inherited by output
+    # tables from input tables in any of the transformation methods.
+    #
+    # When output, a table footer will appear at the bottom of the table, and a
+    # group footer will appear at the bottom of each group.
+    #
+    # Each footer must have a label, usually a string such as 'Total', to
+    # identify the purpose of the footer, and the label must be distinct among
+    # all footers of the same type. That is you may have a table footer labeled
+    # 'Total' and a group footer labeled 'Total', but you may not have two table
+    # footers with that label.  If the first column of the table is not included
+    # in the footer, the footer's label will be placed there, otherwise, there
+    # will be no label output.  The footers are accessible with the #footers
+    # method, which returns a hash indexed by the label converted to a symbol.
+    # The symbol is reconverted to a title-cased string on output.
+    #
+    # Note that by adding footers or gfooters to the table, you are only stating
+    # what footers you want on output of the table.  No actual calculation is
+    # performed until the table is output.
+    #
+    ############################################################################
+
+    public
+
+    # :category: Footers
+    # Add a table footer to the table with a label given in the first parameter,
+    # defaulting to 'Total'.  After the label, you can given any number of
+    # headers (as symbols) for columns to be summed, and then any number of hash
+    # parameters for columns for with to apply an aggregate other than :sum.
+    # For example, these are valid footer definitions.
+    #
+    # Just sum the shares column with a label of 'Total'
+    #   tab.footer(:shares)
+    #
+    # Change the label and sum the :price column as well
+    #   tab.footer('Grand Total', :shares, :price)
+    #
+    # Average then show standard deviation of several columns
+    #   tab.footer.('Average', date: avg, shares: :avg, price: avg)
+    #   tab.footer.('Sigma', date: dev, shares: :dev, price: :dev)
+    #
+    # Do some sums and some other aggregates: sum shares, average date and
+    # price.
+    #   tab.footer.('Summary', :shares, date: avg, price: avg)
+    def footer(label, *sum_cols, **agg_cols)
+      label = label.to_s
+      foot = {}
+      sum_cols.each do |h|
+        unless table.headers.include?(h)
+          raise UserError, "No '#{h}' column in table to sum in the footer"
+        end
+        foot[h] = :sum
+      end
+      agg_cols.each do |h, agg|
+        unless table.headers.include?(h)
+          raise UserError, "No '#{h}' column in table to #{agg} in the footer"
+        end
+        foot[h] = agg
+      end
+      @footers[label] = foot
+      self
+    end
+
+    # :category: Footers
+    # Add a group footer to the table with a label given in the first parameter,
+    # defaulting to 'Total'.  After the label, you can given any number of
+    # headers (as symbols) for columns to be summed, and then any number of hash
+    # parameters for columns for with to apply an aggregate other than :sum.
+    # For example, these are valid gfooter definitions.
+    #
+    # Just sum the shares column with a label of 'Total'
+    #   tab.gfooter(:shares)
+    #
+    # Change the label and sum the :price column as well
+    #   tab.gfooter('Total', :shares, :price)
+    #
+    # Average then show standard deviation of several columns
+    #   tab.gfooter.('Average', date: avg, shares: :avg, price: avg)
+    #   tab.gfooter.('Sigma', date: dev, shares: :dev, price: :dev)
+    #
+    # Do some sums and some other aggregates: sum shares, average date and
+    # price.
+    #   tab.gfooter.('Summary', :shares, date: avg, price: avg)
+    def gfooter(label, *sum_cols, **agg_cols)
+      label = label.to_s
+      foot = {}
+      sum_cols.each do |h|
+        unless table.headers.include?(h)
+          raise UserError, "No '#{h}' column in table to sum in the group footer"
+        end
+        foot[h] = :sum
+      end
+      agg_cols.each do |h, agg|
+        unless table.headers.include?(h)
+          raise UserError, "No '#{h}' column in table to #{agg} in the group footer"
+        end
+        foot[h] = agg
+      end
+      @gfooters[label] = foot
+      self
+    end
+
+    # :category: Footers
+    # Add table footer to sum the +cols+ given as header symbols.
+    def sum_footer(*cols)
+      footer('Total', *cols)
+    end
+
+    # :category: Footers
+    # Add group footer to sum the +cols+ given as header symbols.
+    def sum_gfooter(*cols)
+      gfooter('Group Total', *cols)
+    end
+
+    # :category: Footers
+    # Add table footer to average the +cols+ given as header symbols.
+    def avg_footer(*cols)
+      hsh = {}
+      cols.each do |c|
+        hsh[c] = :avg
+      end
+      footer('Average', hsh)
+    end
+
+    # :category: Footers
+    # Add group footer to average the +cols+ given as header symbols.
+    def avg_gfooter(*cols)
+      hsh = {}
+      cols.each do |c|
+        hsh[c] = :avg
+      end
+      gfooter('Group Average', hsh)
+    end
+
+    # :category: Footers
+    # Add table footer to display the minimum value of the +cols+ given as
+    # header symbols.
+    def min_footer(*cols)
+      hsh = {}
+      cols.each do |c|
+        hsh[c] = :min
+      end
+      footer('Minimum', hsh)
+    end
+
+    # :category: Footers
+    # Add group footer to display the minimum value of the +cols+ given as
+    # header symbols.
+    def min_gfooter(*cols)
+      hsh = {}
+      cols.each do |c|
+        hsh[c] = :min
+      end
+      gfooter('Group Minimum', hsh)
+    end
+
+    # :category: Footers
+    # Add table footer to display the maximum value of the +cols+ given as
+    # header symbols.
+    def max_footer(*cols)
+      hsh = {}
+      cols.each do |c|
+        hsh[c] = :max
+      end
+      footer('Maximum', hsh)
+    end
+
+    # :category: Footers
+    # Add group footer to display the maximum value of the +cols+ given as
+    # header symbols.
+    def max_gfooter(*cols)
+      hsh = {}
+      cols.each do |c|
+        hsh[c] = :max
+      end
+      gfooter('Group Maximum', hsh)
+    end
+
+    ############################################################################
+    # Formatting methods
+    ############################################################################
+
+    # :category: Formatting
     # A Formatter can specify a hash to hold the formatting instructions for
     # columns by using the column head as a key and the value as the format
     # instructions.  In addition, the keys, :numeric, :string, :datetime,
@@ -109,191 +369,6 @@ module FatTable
     # In the foregoing, the earlier elements in each list will be available for
     # all formatter subclasses, while the later elements may or may not have any
     # effect on the output.
-    #
-    # The hashes that can be specified to the formatter determine the formatting
-    # instructions for different parts of the output table:
-    #
-    # - header: :: instructions for the headers of the table,
-    # - bfirst :: instructions for the first row in the body of the table,
-    # - gfirst :: instructions for the cells in the first row of a group,
-    # - body :: instructions for the cells in the body of the table, to the
-    #      extent they are not governed by bfirst or gfirst.
-    # - gfooter :: instructions for the cells of a group footer, and
-    # - footer :: instructions for the cells of a footer.
-    #
-    def initialize(table = Table.new, **options)
-      unless table && table.is_a?(Table)
-        raise UserError, 'must initialize Formatter with a Table'
-      end
-      @table = table
-      @options = options
-      @footers = {}
-      @gfooters = {}
-      # Formatting instructions for various "locations" within the Table, as
-      # a hash of hashes.  The outer hash is keyed on the location, and each
-      # inner hash is keyed on either a column sym or a type sym, :string, :numeric,
-      # :datetime, :boolean, or :nil.  The value of the inner hashes are
-      # OpenStruct structs.
-      @format_at = {}
-      [:header, :bfirst, :gfirst, :body, :footer, :gfooter].each do |loc|
-        @format_at[loc] = {}
-        table.headers.each do |h|
-          fmt_hash = self.class.default_format
-          fmt_hash[:_h] = h
-          fmt_hash[:_location] = loc
-          format_at[loc][h] = OpenStruct.new(fmt_hash)
-        end
-      end
-      yield self if block_given?
-    end
-
-    ############################################################################
-    # Footer methods
-    #
-    # A Table may have any number of footers and any number of group footers.
-    # Footers are not part of the table's data and never participate in any of
-    # the transformation methods on tables.  They are never inherited by output
-    # tables from input tables in any of the transformation methods.
-    #
-    # When output, a table footer will appear at the bottom of the table, and a
-    # group footer will appear at the bottom of each group.
-    #
-    # Each footer must have a label, usually a string such as 'Total', to
-    # identify the purpose of the footer, and the label must be distinct among
-    # all footers of the same type. That is you may have a table footer labeled
-    # 'Total' and a group footer labeled 'Total', but you may not have two table
-    # footers with that label.  If the first column of the table is not included
-    # in the footer, the footer's label will be placed there, otherwise, there
-    # will be no label output.  The footers are accessible with the #footers
-    # method, which returns a hash indexed by the label converted to a symbol.
-    # The symbol is reconverted to a title-cased string on output.
-    #
-    # Note that by adding footers or gfooters to the table, you are only stating
-    # what footers you want on output of the table.  No actual calculation is
-    # performed until the table is output.
-    #
-    ############################################################################
-
-    public
-
-    # Add a table footer to the table with a label given in the first parameter,
-    # defaulting to 'Total'.  After the label, you can given any number of
-    # headers (as symbols) for columns to be summed, and then any number of hash
-    # parameters for columns for with to apply an aggregate other than :sum.
-    # For example, these are valid footer definitions.
-    #
-    # # Just sum the shares column with a label of 'Total'
-    # tab.footer(:shares)
-    #
-    # # Change the label and sum the :price column as well
-    # tab.footer('Grand Total', :shares, :price)
-    #
-    # # Average then show standard deviation of several columns
-    # tab.footer.('Average', date: avg, shares: :avg, price: avg)
-    # tab.footer.('Sigma', date: dev, shares: :dev, price: :dev)
-    #
-    # # Do some sums and some other aggregates: sum shares, average date and
-    # # price.
-    # tab.footer.('Summary', :shares, date: avg, price: avg)
-    def footer(label, *sum_cols, **agg_cols)
-      label = label.to_s
-      foot = {}
-      sum_cols.each do |h|
-        unless table.headers.include?(h)
-          raise UserError, "No '#{h}' column in table to sum in the footer"
-        end
-        foot[h] = :sum
-      end
-      agg_cols.each do |h, agg|
-        unless table.headers.include?(h)
-          raise UserError, "No '#{h}' column in table to #{agg} in the footer"
-        end
-        foot[h] = agg
-      end
-      @footers[label] = foot
-      self
-    end
-
-    def gfooter(label, *sum_cols, **agg_cols)
-      label = label.to_s
-      foot = {}
-      sum_cols.each do |h|
-        unless table.headers.include?(h)
-          raise UserError, "No '#{h}' column in table to sum in the group footer"
-        end
-        foot[h] = :sum
-      end
-      agg_cols.each do |h, agg|
-        unless table.headers.include?(h)
-          raise UserError, "No '#{h}' column in table to #{agg} in the group footer"
-        end
-        foot[h] = agg
-      end
-      @gfooters[label] = foot
-      self
-    end
-
-    def sum_footer(*cols)
-      footer('Total', *cols)
-    end
-
-    def sum_gfooter(*cols)
-      gfooter('Group Total', *cols)
-    end
-
-    def avg_footer(*cols)
-      hsh = {}
-      cols.each do |c|
-        hsh[c] = :avg
-      end
-      footer('Average', hsh)
-    end
-
-    def avg_gfooter(*cols)
-      hsh = {}
-      cols.each do |c|
-        hsh[c] = :avg
-      end
-      gfooter('Group Average', hsh)
-    end
-
-    def min_footer(*cols)
-      hsh = {}
-      cols.each do |c|
-        hsh[c] = :min
-      end
-      footer('Minimum', hsh)
-    end
-
-    def min_gfooter(*cols)
-      hsh = {}
-      cols.each do |c|
-        hsh[c] = :min
-      end
-      gfooter('Group Minimum', hsh)
-    end
-
-    def max_footer(*cols)
-      hsh = {}
-      cols.each do |c|
-        hsh[c] = :max
-      end
-      footer('Maximum', hsh)
-    end
-
-    def max_gfooter(*cols)
-      hsh = {}
-      cols.each do |c|
-        hsh[c] = :max
-      end
-      gfooter('Group Maximum', hsh)
-    end
-
-    ############################################################################
-    # Formatting methods
-    ############################################################################
-
-    # Define formats for all locations
     def format(**fmts)
       [:header, :bfirst, :gfirst, :body, :footer, :gfooter].each do |loc|
         format_for(loc, fmts)
@@ -301,6 +376,7 @@ module FatTable
       self
     end
 
+    # :category: Formatting
     # Define a format for the given location, :header, :body, :footer, :gfooter
     # (the group footers), :bfirst (the first row in the table body), or :gfirst
     # (the first rows in group bodies). Formats are specified with hash
@@ -319,6 +395,17 @@ module FatTable
     # the :string type. All empty cells are considered to be of the :nilclass
     # type. All other cells have the type of the column to which they belong,
     # including all cells in group or table footers.
+    #
+    # The hashes that can be specified to the formatter determine the formatting
+    # instructions for different parts of the output table:
+    #
+    # - header: :: instructions for the headers of the table,
+    # - bfirst :: instructions for the first row in the body of the table,
+    # - gfirst :: instructions for the cells in the first row of a group,
+    # - body :: instructions for the cells in the body of the table, to the
+    #      extent they are not governed by bfirst or gfirst.
+    # - gfooter :: instructions for the cells of a group footer, and
+    # - footer :: instructions for the cells of a footer.
     def format_for(location, **fmts)
       unless LOCATIONS.include?(location)
         raise UserError, "unknown format location '#{location}'"
@@ -602,6 +689,8 @@ module FatTable
 
     public
 
+    # :stopdoc:
+
     # Convert a value to a string based on the instructions in istruct,
     # depending on the type of val. "Formatting," which changes the content of
     # the string, such as adding commas, is always performed, except alignment
@@ -764,6 +853,12 @@ module FatTable
 
     public
 
+    # :startdoc:
+
+    # Return the +table+ as either a string in the target format or as a Ruby
+    # data structure if that is the target.  In the latter case, all the cells
+    # are converted to strings formatted according to the Formatter's formatting
+    # directives given in Formatter.format_for or Formatter.format.
     def output
       # This results in a hash of two-element arrays. The key is the header and
       # the value is an array of the header and formatted header. We do the
@@ -1015,14 +1110,14 @@ module FatTable
     # Does this Formatter require a second pass over the cells to align the
     # columns according to the alignment formatting instruction to the width of
     # the widest cell in each column? If no alignment is needed, as for
-    # AoaFormatter, or the external target medium does alignment, as for
-    # LaTeXFormatter, this should be false.  For TextFormatter or TermFormatter,
+    # AoaFormatter, or if the external target medium does alignment, as for
+    # LaTeXFormatter, this should be false. For TextFormatter or TermFormatter,
     # where we must pad out the cells with spaces, it should be true.
     def aligned?
       false
     end
 
-    # Should the string result of #output be evaluated to form a ruby data
+    # Should the string result of #output be evaluated to form a Ruby data
     # structure? For example, AoaFormatter wants to return an array of arrays of
     # strings, so it should build a ruby expression to do that, then have it
     # eval'ed.

@@ -1,5 +1,14 @@
 module FatTable
+  # A subclass of Formatter for rendering the table as a Ruby Array of Hashes.
+  # Each row of the Array is a Hash representing one row of the table with the
+  # keys being the symbolic form of the headers. Each cell is a value in a row
+  # Hash formatted as a string in accordance with the formatting directives. All
+  # footers are included as extra Hashes of the output. AoaFormatter supports no
+  # +options+
   class AohFormatter < Formatter
+
+    private
+
     def evaluate?
       true
     end

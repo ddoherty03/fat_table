@@ -9,6 +9,8 @@ module FatTable
     self.default_format[:date_fmt] = '[%F]'
     self.default_format[:datetime_fmt] = '[%F %a %H:%M:%S]'
 
+    private
+
     # Does this Formatter require a second pass over the cells to align the
     # columns according to the alignment formatting instruction to the width of
     # the widest cell in each column?

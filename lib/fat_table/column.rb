@@ -1,13 +1,85 @@
 module FatTable
-  # Column objects are just a thin wrapper around an Array to allow columns to
-  # be summed and have other operations performed on them, but compacting out
-  # nils before proceeding. My original attempt to do this by monkey-patching
-  # Array turned out badly.  This works much nicer.
+  # Column objects are a thin wrapper around an Array to allow columns to be
+  # summed and have other aggregate operations performed on them, but compacting
+  # out nils before proceeding. They are characterized by a header, which gives
+  # the Column a name, a type, which limits the kinds of items that can be
+  # stored in the Column, and the items themselves, which all must either be nil
+  # or objects compatible with the Column's type. The valid types are Boolean,
+  # DateTime, Numeric, String, and NilClass, the last of which is used as the
+  # initial type until items added to the Column fix its type as one of the
+  # others.
   class Column
-    attr_reader :header, :raw_header, :type, :items
+    # The symbol representing this Column.
+    attr_reader :header
 
+    # The header as provided by the caller before its conversion to a symbol.
+    # You can use this to recover the original string form of the header.
+    attr_reader :raw_header
+
+    # A string representing the deduced type of this Column. One of
+    # Column::TYPES.
+    attr_reader :type
+
+    # An Array of the items of this Column, all of which must be values of the
+    # Columns type or a nil.  This Array contains the value of the item after
+    # conversion to a native Ruby type, such as TrueClass, Date, DateTime,
+    # Integer, String, etc.  Thus, you can perform operations on the items,
+    # perhaps after removing nils with +.items.compact+.
+    attr_reader :items
+
+    # Valid Column types as strings.
     TYPES = %w(NilClass Boolean DateTime Numeric String).freeze
 
+    # Create a new Column with the given +header+ and initialized with the given
+    # +items+, as an array of either strings or ruby objects that are one of the
+    # permissible types or strings parsable as one of the permissible types. If
+    # no +items+ are passed, returns an empty Column to which items may be added
+    # with the Column#<< method. The item types must be one of the following types or
+    # strings parseable as one of them:
+    #
+    # Boolean::
+    #     an object of type TrueClass or FalseClass or a string that is either
+    #     't', 'true', 'y', 'yes', 'f', 'false', 'n', or 'no', in each case,
+    #     regardless of case.
+    #
+    # DateTime::
+    #      an object of class Date, DateTime, or a string that matches
+    #      +/\d\d\d\d[-\/]\d\d?[-\/]\d\d?/+ and is parseable by DateTime.parse.
+    #
+    # Numeric::
+    #      on object that is of class Numeric, or a string that looks
+    #      like a number after removing '+$+', '+,+', and '+_+' as well as Rationals
+    #      in the form /<number>:<number>/ or <number>/<number>, where <number>
+    #      is an integer.
+    #
+    # String::
+    #      if the object is a non-blank string that does not parse as any
+    #      of the foregoing, it its treated as a Sting type, and once a column
+    #      is typed as such, blank strings represent blank strings rather than
+    #      nil values.
+    #
+    # NilClass::
+    #      until a Column sees an item that qualifies as one of the
+    #      foregoing, it is typed as NilClass, meaning that the type is
+    #      undetermined. Until a column obtains a type, blank strings are
+    #      treated as nils and do not affect the type of the column. After a
+    #      column acquires a type, blank strings are treated as nil values
+    #      except in the case of String columns, which retain them a blank
+    #      strings.
+    #
+    # Examples:
+    #
+    #   require 'fat_table'
+    #   col = FatTable::Column.new(header: 'date')
+    #   col << Date.today - 30
+    #   col << '2017-05-04'
+    #   col.type #=> 'DateTime'
+    #   col.header #=> :date
+    #   nums = [35.25, 18, '35:14', '$18_321']
+    #   col = FatTable::Column.new(header: :prices, items: nums)
+    #   col.type #=> 'Numeric'
+    #   col.header #=> :prices
+    #   col.sum #=> 18376.75
     def initialize(header:, items: [])
       @raw_header = header
       @header =
@@ -26,27 +98,28 @@ module FatTable
     # Attributes
     ##########################################################################
 
-    # Return the item of the column at the given index.
+    # Return the item of the Column at the given index.
     def [](k)
       items[k]
     end
 
-    # Convert the column to an Array.
+    # Return a dupped Array of this Column's items. To get the non-dupped items,
+    # just use the .items accessor.
     def to_a
       items.deep_dup
     end
 
-    # Return the size of the column, including any nils.
+    # Return the size of the Column, including any nils.
     def size
       items.size
     end
 
-    # Return true if there are no items in the column.
+    # Return true if there are no items in the Column.
     def empty?
       items.empty?
     end
 
-    # Return the index of the last item in the column.
+    # Return the index of the last item in the Column.
     def last_i
       size - 1
     end
@@ -57,6 +130,9 @@ module FatTable
 
     include Enumerable
 
+    # Yield each item in the Column in the order in which they appear in the
+    # Column. This makes Columns Enumerable, so all the Enumerable methods are
+    # available on a Column.
     def each
       items.each { |itm| yield itm }
     end
@@ -65,56 +141,58 @@ module FatTable
     # Aggregates
     ##########################################################################
 
+    # The names of the known aggregate operations that can be performed on a
+    # Column.
     VALID_AGGREGATES = %s(first last rng
                           sum count min max avg var dev
                           any? all? none? one?)
 
-    # Return the first non-nil item in the column.  Works with any column type.
+    # Return the first non-nil item in the Column.  Works with any Column type.
     def first
       items.compact.first
     end
 
-    # Return the last non-nil item in the column.  Works with any column type.
+    # Return the last non-nil item in the Column.  Works with any Column type.
     def last
       items.compact.last
     end
 
-    # Return a string of the first and last non-nil values.  Works with any
-    # column type.
+    # Return a string of the #first and #last non-nil values in the Column.
+    # Works with any Column type.
     def rng
       "#{first}..#{last}"
     end
 
-    # Return the sum of the non-nil items in the column.  Works with numeric and
-    # string columns. For a string column, it will return the concatenation of
+    # Return the sum of the non-nil items in the Column.  Works with numeric and
+    # string Columns. For a string Column, it will return the concatenation of
     # the non-nil items.
     def sum
       only_with('sum', 'Numeric', 'String')
       items.compact.sum
     end
 
-    # Return a count of the non-nil items in the column.  Works with any column
+    # Return a count of the non-nil items in the Column.  Works with any Column
     # type.
     def count
       items.compact.count.to_d
     end
 
-    # Return the smallest non-nil item in the column.  Works with numeric,
-    # string, and datetime columns.
+    # Return the smallest non-nil item in the Column.  Works with numeric,
+    # string, and datetime Columns.
     def min
       only_with('min', 'NilClass', 'Numeric', 'String', 'DateTime')
       items.compact.min
     end
 
-    # Return the largest non-nil item in the column.  Works with numeric,
-    # string, and datetime columns.
+    # Return the largest non-nil item in the Column.  Works with numeric,
+    # string, and datetime Columns.
     def max
       only_with('max', 'NilClass', 'Numeric', 'String', 'DateTime')
       items.compact.max
     end
 
-    # Return the average value of the non-nil items in the column.  Works with
-    # numeric and datetime columns.  For datetime columns, it converts each date
+    # Return the average value of the non-nil items in the Column.  Works with
+    # numeric and datetime Columns.  For datetime Columns, it converts each date
     # to its Julian day number, computes the average, and then converts the
     # average back to a DateTime.
     def avg
@@ -129,8 +207,8 @@ module FatTable
 
     # Return the sample variance (the unbiased estimator of the population
     # variance using a divisor of N-1) as the average squared deviation from the
-    # mean, of the non-nil items in the column. Works with numeric and datetime
-    # columns. For datetime columns, it converts each date to its Julian day
+    # mean, of the non-nil items in the Column. Works with numeric and datetime
+    # Columns. For datetime Columns, it converts each date to its Julian day
     # number and computes the variance of those numbers.
     def var
       only_with('var', 'DateTime', 'Numeric')
@@ -152,8 +230,8 @@ module FatTable
 
     # Return the population variance (the biased estimator of the population
     # variance using a divisor of N) as the average squared deviation from the
-    # mean, of the non-nil items in the column. Works with numeric and datetime
-    # columns. For datetime columns, it converts each date to its Julian day
+    # mean, of the non-nil items in the Column. Works with numeric and datetime
+    # Columns. For datetime Columns, it converts each date to its Julian day
     # number and computes the variance of those numbers.
     def pvar
       only_with('var', 'DateTime', 'Numeric')
@@ -164,8 +242,8 @@ module FatTable
 
     # Return the sample standard deviation (the unbiased estimator of the
     # population standard deviation using a divisor of N-1) as the square root
-    # of the sample variance, of the non-nil items in the column. Works with
-    # numeric and datetime columns. For datetime columns, it converts each date
+    # of the sample variance, of the non-nil items in the Column. Works with
+    # numeric and datetime Columns. For datetime Columns, it converts each date
     # to its Julian day number and computes the standard deviation of those
     # numbers.
     def dev
@@ -175,8 +253,8 @@ module FatTable
 
     # Return the population standard deviation (the biased estimator of the
     # population standard deviation using a divisor of N) as the square root of
-    # the population variance, of the non-nil items in the column. Works with
-    # numeric and datetime columns. For datetime columns, it converts each date
+    # the population variance, of the non-nil items in the Column. Works with
+    # numeric and datetime Columns. For datetime Columns, it converts each date
     # to its Julian day number and computes the standard deviation of those
     # numbers.
     def pdev
@@ -184,29 +262,29 @@ module FatTable
       Math.sqrt(pvar)
     end
 
-    # Return true if any of the items in the column are true; otherwise return
-    # false.  Works only with boolean columns.
+    # Return true if any of the items in the Column are true; otherwise return
+    # false.  Works only with boolean Columns.
     def any?
       only_with('any?', 'Boolean')
       items.compact.any?
     end
 
-    # Return true if all of the items in the column are true; otherwise return
-    # false.  Works only with boolean columns.
+    # Return true if all of the items in the Column are true; otherwise return
+    # false.  Works only with boolean Columns.
     def all?
       only_with('all?', 'Boolean')
       items.compact.all?
     end
 
-    # Return true if none of the items in the column are true; otherwise return
-    # false.  Works only with boolean columns.
+    # Return true if none of the items in the Column are true; otherwise return
+    # false.  Works only with boolean Columns.
     def none?
       only_with('none?', 'Boolean')
       items.compact.none?
     end
 
-    # Return true if precisely one of the items in the column is true;
-    # otherwise return false.  Works only with boolean columns.
+    # Return true if precisely one of the items in the Column is true;
+    # otherwise return false.  Works only with boolean Columns.
     def one?
       only_with('one?', 'Boolean')
       items.compact.one?
@@ -225,13 +303,16 @@ module FatTable
     # Construction
     ##########################################################################
 
-    # Append item to end of the column
+    # Append +itm+ to end of the Column after converting it to the Column's
+    # type. If the Column's type is still open, i.e. NilClass, attempt to fix
+    # the Column's type based on the type of +itm+ as with Column.new.
     def <<(itm)
       items << convert_to_type(itm)
     end
 
-    # Return a new Column appending the items of other to our items, checking
-    # for type compatibility.
+    # Return a new Column appending the items of other to this Column's items,
+    # checking for type compatibility.  Use the header of this Column as the
+    # header of the new Column.
     def +(other)
       raise UserError, 'Cannot combine columns with different types' unless type == other.type
       Column.new(header: header, items: items + other.items)
@@ -243,21 +324,21 @@ module FatTable
     # Numeric, etc. If type is NilClass, the type is open, and a non-blank val
     # will attempt conversion to one of the allowed types, typing it as a String
     # if no other type is recognized. If the val is blank, and the type is nil,
-    # the column type remains open. If the val is nil or a blank and the type is
+    # the Column type remains open. If the val is nil or a blank and the type is
     # already determined, the val is set to nil, and should be filtered from any
-    # column computations. If the val is non-blank and the column type
-    # determined, raise an error if the val cannot be converted to the column
+    # Column computations. If the val is non-blank and the Column type
+    # determined, raise an error if the val cannot be converted to the Column
     # type. Otherwise, returns the converted val as an object of the correct
     # class.
     def convert_to_type(val)
       case type
       when 'NilClass'
         if val != false && val.blank?
-          # Leave the type of the column open. Unfortunately, false counts as
+          # Leave the type of the Column open. Unfortunately, false counts as
           # blank and we don't want it to. It should be classified as a boolean.
           new_val = nil
         else
-          # Only non-blank values are allowed to set the type of the column
+          # Only non-blank values are allowed to set the type of the Column
           bool_val = convert_to_boolean(val)
           new_val =
             if bool_val.nil?

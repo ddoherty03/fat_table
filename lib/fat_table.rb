@@ -1,5 +1,11 @@
 require "fat_table/version"
 
+# This module provides objects for treating tables as a data type on which you
+# can (1) perform operations, such as select, where, join, and others and (2)
+# output the tables in several formats, including text, ANSI terminal, LaTeX,
+# and others.  It also provides several constructors for building tables from a
+# variety of input sources.  See, e.g., .from_csv_file,
+# FatTable.from_org_file, and FatTable.from_sql, for more details.
 module FatTable
   require 'fat_core'
   require 'dbi'
@@ -73,26 +79,26 @@ module FatTable
     Table.from_org_string(str)
   end
 
-  # Construct a FatTable::Table from an array of arrays. By default, with hlines
-  # false, do not look for separators, i.e. nil or a string of dashes, just
-  # treat the first row as headers. With hlines true, expect separators to mark
-  # the header row and any boundaries. If the second element of the array is a
-  # nil, or an array whose first element is a string that looks like an hrule,
-  # '|-----------', '+----------', etc., interpret the first element of the
-  # array as a row of headers. Otherwise, synthesize headers of the form :col_1,
-  # :col_2, ... and so forth. The remaining elements are taken as the body of
-  # the table, except that if an element of the outer array is a nil or an array
-  # whose first element is a string that looks like an hrule, mark the preceding
-  # row as a boundary. In org mode code blocks, by default (:hlines no) all
-  # hlines are stripped from the table, otherwise (:hlines yes) they are
-  # indicated with nil elements in the outer array.
+  # Construct a FatTable::Table from the array of arrays +aoa+. By default, with
+  # +hlines+ false, do not look for nil separators, just treat the first row as
+  # headers. With +hlines+ true, expect separators to mark the header row and
+  # any boundaries. If the second element of the array is a nil, interpret the
+  # first element of the array as a row of headers. Otherwise, synthesize
+  # headers of the form +:col_1+, +:col_2+, ... and so forth. The remaining
+  # elements are taken as the body of the table, except that if an element of
+  # the outer array is a nil, mark the preceding row as a boundary. In Emacs
+  # org-mode code blocks, by default (+:hlines no+) all hlines are stripped from
+  # the table, otherwise (+:hlines yes+) they are indicated with nil elements in
+  # the outer array.
   def self.from_aoa(aoa, hlines: false)
     Table.from_aoa(aoa, hlines: hlines)
   end
 
-  # Construct a FatTable::Table from an array of hashes, or an array of any
-  # objects that respond to the #to_h method. All hashes must have the same
-  # keys, which, converted to symbols, will become the headers for the Table.
+  # Construct a FatTable::Table from the array of hashes +aoh+, which can be an
+  # array of any objects that respond to the #to_h method. With +hlines+ true,
+  # interpret nil separators as marking boundaries in the new Table. All hashes
+  # must have the same keys, which, converted to symbols, become the headers for
+  # the new Table.
   def self.from_aoh(aoh, hlines: false)
     Table.from_aoh(aoh, hlines: hlines)
   end
@@ -104,7 +110,8 @@ module FatTable
   end
 
   # Construct a Table by running a SQL query against the database set up with
-  # FatTable.set_db.  Return the Table with the query results as rows.
+  # FatTable.set_db. Return the Table with the query results as rows and the
+  # headers from the query, converted to symbols, as headers.
   def self.from_sql(query)
     Table.from_sql(query)
   end
@@ -113,19 +120,13 @@ module FatTable
   # Formatter
   ########################################################################
 
-  FORMATS = [:psv, :aoa, :aoh, :latex, :org, :term, :text].freeze
-
-  # Set a default output format to use when FatTable.to_format is invoked.
-  class << self
-    attr_accessor :format
-  end
-  self.format = :text
-
-  # Return a string or ruby object according to the format specified in
-  # FatTable.format.  If a block is given, it will yield a Formatter of the
-  # appropriate type to which format and footers can be applied. Otherwise, the
-  # default format for the type will be used.
-  def self.to_format(table, options = {})
+  # Return a string or ruby object formatting +table+ according to the format
+  # specified in +FatTable.format+. If a block is given, it will yield a
+  # +FatTable::Formatter+ of the appropriate type on which formatting and footer
+  # methods can be called. If no block is given, the default format for the type
+  # will be used. The +options+ are passed along to the FatTable::Formatter
+  # created to process the output.
+  def self.to_format(table, options = {}) # :yields: formatter
     if block_given?
       to_any(format, table, options, &Proc.new)
     else
@@ -133,11 +134,12 @@ module FatTable
     end
   end
 
-  # Return a string or ruby object according to the format given in the first
+  # Return a string or ruby object according to the format given in the +fmt+
   # argument. Valid formats are :psv, :aoa, :aoh, :latex, :org, :term, :text, or
-  # their string equivalents. If a block is given, it will yield a Formatter of
-  # the appropriate type to which format and footers can be applied. Otherwise,
-  # the default format for the type will be used.
+  # their string equivalents. If a block is given, it will yield a
+  # +FatTable::Formatter+ of the appropriate type on which formatting and footer
+  # methods can be called. If no block is given, the default format for the
+  # +fmt+ type will be used.
   def self.to_any(fmt, table, options = {})
     fmt = fmt.as_sym
     raise UserError, "unknown format '#{fmt}'" unless FORMATS.include?(fmt)
@@ -149,10 +151,11 @@ module FatTable
     end
   end
 
-  # Return the table as a string formatted as a pipe-separated values. If no
-  # block is given, default formatting is applies to the table's cells. If a
-  # block is given, it yields a Formatter to the block to which formatting
-  # instructions and footers can be added by calling methods on it.
+  # Return the +table+ as a string formatted as pipe-separated values, passing
+  # the +options+ to a new +FatTable::Formatter+ object. If no block is given,
+  # default formatting is applied to the +table+'s cells. If a block is given,
+  # it yields the +FatTable::Formatter+ to the block on which formatting
+  # and footer methods can be called.
   def self.to_psv(table, options = {})
     fmt = Formatter.new(table, options)
     yield fmt if block_given?

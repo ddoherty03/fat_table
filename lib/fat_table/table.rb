@@ -49,17 +49,22 @@ module FatTable
   # spaces converted to underscore and everything down-cased. So, the heading,
   # ~'Two Words'~ becomes the header ~:two_words~.
   class Table
-    attr_reader :columns
 
-    def initialize
-      @columns = []
-      @boundaries = []
-    end
+    # An Array of FatTable::Columns that constitute the table.
+    attr_reader :columns
 
     ###########################################################################
     # Constructors
     ###########################################################################
 
+    # :category: Constructors
+    # Return an empty FatTable::Table object.
+    def initialize
+      @columns = []
+      @boundaries = []
+    end
+
+    # :category: Constructors
     # Construct a Table from the contents of a CSV file.  Headers will be taken
     # from the first row and converted to symbols.
     def self.from_csv_file(fname)
@@ -68,11 +73,13 @@ module FatTable
       end
     end
 
+    # :category: Constructors
     # Construct a Table from a string, treated as the input from a CSV file.
     def self.from_csv_string(str)
       from_csv_io(StringIO.new(str))
     end
 
+    # :category: Constructors
     # Construct a Table from the first table found in the given Emacs org-mode
     # file. Headers are taken from the first row if the second row is an hrule.
     # Otherwise, synthetic headers of the form :col_1, :col_2, etc. are created.
@@ -82,12 +89,14 @@ module FatTable
       end
     end
 
+    # :category: Constructors
     # Construct a Table from a string, treated as the contents of an org-mode
     # file.
     def self.from_org_string(str)
       from_org_io(StringIO.new(str))
     end
 
+    # :category: Constructors
     # Construct a new table from an array of arrays. By default, with hlines
     # false, do not look for separators, i.e. nil or a string of dashes, just
     # treat the first row as headers. With hlines true, expect separators to
@@ -103,6 +112,7 @@ module FatTable
       from_array_of_arrays(aoa, hlines: hlines)
     end
 
+    # :category: Constructors
     # Construct a Table from an array of hashes, or any objects that respond to
     # the #to_h method.  All hashes must have the same keys, which, when
     # converted to symbols will become the headers for the Table.  If hlines is
@@ -117,12 +127,14 @@ module FatTable
       end
     end
 
+    # :category: Constructors
     # Construct a Table from another Table.  Inherit any group boundaries from
     # the input table.
     def self.from_table(table)
       table.deep_dup
     end
 
+    # :category: Constructors
     # Construct a Table by running a SQL query against the database set up with
     # FatTable.set_db.  Return the Table with the query results as rows.
     def self.from_sql(query)
@@ -262,16 +274,19 @@ module FatTable
     # Attributes
     ###########################################################################
 
+    # :category: Attributes
     # Return the column with the given header.
     def column(key)
       columns.detect { |c| c.header == key.as_sym }
     end
 
+    # :category: Attributes
     # Return the type of the column with the given header
     def type(key)
       column(key).type
     end
 
+    # :category: Attributes
     # Return the array of items of the column with the given header, or if the
     # index is an integer, return that row number.  So a table's rows can be
     # accessed by number, and its columns can be accessed by column header.
@@ -294,11 +309,13 @@ module FatTable
       end
     end
 
+    # :category: Attributes
     # Return true if the table has a column with the given header.
     def column?(key)
       headers.include?(key.as_sym)
     end
 
+    # :category: Attributes
     # Return a Hash of the Table's column symbols to types.
     def types
       result = {}
@@ -308,28 +325,33 @@ module FatTable
       result
     end
 
+    # :category: Attributes
     # Return the headers for the Table as an array of symbols.
     def headers
       columns.map(&:header)
     end
 
+    # :category: Attributes
     # Return the number of rows in the Table.
     def size
       return 0 if columns.empty?
       columns.first.size
     end
 
+    # :category: Attributes
     # Return the number of columns in the Table.
     def width
       return 0 if columns.empty?
       columns.size
     end
 
+    # :category: Attributes
     # Return whether this Table is empty.
     def empty?
       size.zero?
     end
 
+    # :category: Attributes
     # Return the rows of the Table as an array of hashes, keyed by the headers.
     def rows
       rows = []
@@ -347,6 +369,7 @@ module FatTable
 
     protected
 
+    # :category: Attributes
     # Return the rows from first to last.  We could just index #rows, but in a
     # large table, that would require that we construct all the rows for a range
     # of any size.
@@ -375,6 +398,8 @@ module FatTable
 
     include Enumerable
 
+    # :category: Attributes
+    # Yield each row of the table as a Hash with the column symbols as keys.
     def each
       rows.each do |row|
         yield row
@@ -436,6 +461,7 @@ module FatTable
       self
     end
 
+    # :category: Attributes
     # Return an array of an array of row hashes for the groups in this Table.
     def groups
       normalize_boundaries
@@ -493,7 +519,7 @@ module FatTable
       1
     end
 
-    def group_rows(k)
+    def group_rows(k) # :nodoc:
       normalize_boundaries
       return [] unless k < boundaries.size
       first = k.zero? ? 0 : boundaries[k - 1] + 1
@@ -508,6 +534,7 @@ module FatTable
 
     public
 
+    # :category: Operators
     # Return a new Table sorting the rows of this Table on the possibly multiple
     # keys given in the array of syms in headers. Append a ! to the symbol name
     # to indicate reverse sorting on that column. Resets groups.
@@ -535,6 +562,7 @@ module FatTable
       new_tab
     end
 
+    # :category: Operators
     # Return a Table having the selected column expressions. Each expression can
     # be either a (1) symbol, :old_col, representing a column in the current
     # table, (2) a hash of new_col: :old_col to rename an existing :old_col
@@ -581,6 +609,7 @@ module FatTable
       result
     end
 
+    # :category: Operators
     # Return a Table containing only rows matching the where expression.  Resets
     # groups.
     def where(expr)
@@ -602,6 +631,7 @@ module FatTable
       result
     end
 
+    # :category: Operators
     # Return this table with all duplicate rows eliminated. Resets groups.
     def distinct
       result = Table.new
@@ -612,11 +642,13 @@ module FatTable
       result
     end
 
+    # :category: Operators
     # Return this table with all duplicate rows eliminated. Resets groups.
     def uniq
       distinct
     end
 
+    # :category: Operators
     # Return a Table that combines this table with another table. In other
     # words, return the union of this table with the other. The headers of this
     # table are used in the result. There must be the same number of columns of
@@ -628,6 +660,7 @@ module FatTable
                     add_boundaries: true)
     end
 
+    # :category: Operators
     # Return a Table that combines this table with another table. In other
     # words, return the union of this table with the other. The headers of this
     # table are used in the result. There must be the same number of columns of
@@ -642,6 +675,7 @@ module FatTable
                     inherit_boundaries: true)
     end
 
+    # :category: Operators
     # Return a Table that includes the rows that appear in this table and in
     # another table. In other words, return the intersection of this table with
     # the other. The headers of this table are used in the result. There must be
@@ -652,6 +686,7 @@ module FatTable
       set_operation(other, :intersect, distinct: true)
     end
 
+    # :category: Operators
     # Return a Table that includes all the rows in this table that also occur in
     # other table. Note that the order of the operands matters. Duplicates in
     # this table will be included in the output, but duplicates in other will
@@ -663,6 +698,7 @@ module FatTable
       set_operation(other, :intersect, distinct: false)
     end
 
+    # :category: Operators
     # Return a Table that includes the rows of this table except for any rows
     # that are the same as those in another table. In other words, return the
     # set difference between this table an the other. The headers of this table
@@ -673,6 +709,7 @@ module FatTable
       set_operation(other, :difference, distinct: true)
     end
 
+    # :category: Operators
     # Return a Table that includes the rows of this table except for any rows
     # that are the same as those in another table. In other words, return the
     # set difference between this table an the other. The headers of this table
@@ -716,8 +753,10 @@ module FatTable
 
     public
 
+    # An Array of symbols for the valid join types.
     JOIN_TYPES = [:inner, :left, :right, :full, :cross].freeze
 
+    # :category: Operators
     # Return a table that joins this table to another based on one or more join
     # expressions. There are several possibilities for the join expressions:
     #
@@ -780,7 +819,6 @@ module FatTable
     #      have N and M rows respectively, the joined table will have N * M
     #      rows.
     # Resets groups.
-
     def join(other, *exps, join_type: :inner)
       unless other.is_a?(Table)
         raise UserError, 'need other table as first argument to join'
@@ -829,22 +867,32 @@ module FatTable
       result
     end
 
+    # :category: Operators
+    # Perform an inner join as described in FatTable::Table.join.
     def inner_join(other, *exps)
       join(other, *exps)
     end
 
+    # :category: Operators
+    # Perform a left join as described in FatTable::Table.join.
     def left_join(other, *exps)
       join(other, *exps, join_type: :left)
     end
 
+    # :category: Operators
+    # Perform a right join as described in FatTable::Table.join.
     def right_join(other, *exps)
       join(other, *exps, join_type: :right)
     end
 
+    # :category: Operators
+    # Perform a full join as described in FatTable::Table.join.
     def full_join(other, *exps)
       join(other, *exps, join_type: :full)
     end
 
+    # :category: Operators
+    # Perform a cross join as described in FatTable::Table.join.
     def cross_join(other)
       join(other, join_type: :cross)
     end
@@ -991,6 +1039,7 @@ module FatTable
 
     public
 
+    # :category: Operators
     # Return a Table with a single row for each group of rows in the input table
     # where the value of all columns named as simple symbols are equal. All
     # other columns are set to the result of aggregating the values of that
@@ -1043,6 +1092,7 @@ module FatTable
 
     public
 
+    # :category: Constructors
     # Add a row represented by a Hash having the headers as keys. If mark is
     # true, mark this row as a boundary. All tables should be built ultimately
     # using this method as a primitive.
@@ -1056,11 +1106,14 @@ module FatTable
       self
     end
 
+    # :category: Constructors
     # Add a row without marking.
     def <<(row)
       add_row(row)
     end
 
+    # :category: Constructors
+    # Add a FatTable::Column object +col+ to the table.
     def add_column(col)
       raise "Table already has a column with header '#{col.header}'" if column?(col.header)
       columns << col
@@ -1071,11 +1124,13 @@ module FatTable
     # Convenience output methods
     ############################################################################
 
+    # :category: Output
     # In the same spirit as the FatTable module-level functions do, the
     # following simply tee-up a Formatter for self so that the user need not
     # instantiate actual Formatter objects.  Thus, one of these methods can be
     # invoked as the last method in a chain of Table operations.
 
+    # :category: Output
     # Return a string or ruby object according to the format specified in
     # FatTable.format.  If a block is given, it will yield a Formatter of the
     # appropriate type to which format and footers can be applied. Otherwise, the
@@ -1088,6 +1143,7 @@ module FatTable
       end
     end
 
+    # :category: Output
     # Return a string or ruby object according to the format given in the first
     # argument. Valid formats are :psv, :aoa, :aoh, :latex, :org, :term, :text, or
     # their string equivalents. If a block is given, it will yield a Formatter of
@@ -1104,6 +1160,7 @@ module FatTable
       end
     end
 
+    # :category: Output
     # Return the table as a string formatted as a pipe-separated values. If no
     # block is given, default formatting is applies to the table's cells. If a
     # block is given, it yields a Formatter to the block to which formatting
@@ -1114,6 +1171,7 @@ module FatTable
       fmt.output
     end
 
+    # :category: Output
     # Return the table as an Array of Array of strings. If no block is given,
     # default formatting is applies to the table's cells. If a block is given, it
     # yields an AoaFormatter to the block to which formatting instructions and
@@ -1124,6 +1182,7 @@ module FatTable
       fmt.output
     end
 
+    # :category: Output
     # Return the table as an Array of Hashes. Each inner hash uses the Table's
     # columns as keys and it values are strings representing the cells of the
     # table. If no block is given, default formatting is applies to the table's
@@ -1135,6 +1194,7 @@ module FatTable
       fmt.output
     end
 
+    # :category: Output
     # Return the table as a string containing a LaTeX table. If no block is given,
     # default formatting applies to the table's cells. If a block is given, it
     # yields a LaTeXFormatter to the block to which formatting instructions and
@@ -1145,6 +1205,7 @@ module FatTable
       fmt.output
     end
 
+    # :category: Output
     # Return the table as a string containing an Emacs org-mode table. If no block
     # is given, default formatting applies to the table's cells. If a block is
     # given, it yields a OrgFormatter to the block to which formatting
@@ -1155,6 +1216,7 @@ module FatTable
       fmt.output
     end
 
+    # :category: Output
     # Return the table as a string containing ANSI terminal text representing
     # table. If no block is given, default formatting applies to the table's
     # cells. If a block is given, it yields a TermFormatter to the block to which
@@ -1165,6 +1227,7 @@ module FatTable
       fmt.output
     end
 
+    # :category: Output
     # Return the table as a string containing ordinary text representing table. If
     # no block is given, default formatting applies to the table's cells. If a
     # block is given, it yields a TextFormatter to the block to which formatting
