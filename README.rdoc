@@ -231,33 +231,38 @@ Items of input must be either one of the permissible ruby objects or strings. If
 they are strings, +FatTable+ attempts to parse them as one of the permissible
 types as follows:
 
-- Boolean :: the strings, 't', 'true', 'yes', or 'y', regardless of case, are
-     interpreted as +TrueClass+ and the strings, 'f', 'false', 'no', or 'n',
-     regardless of case, are interpreted as +FalseClass+, in either case
-     resulting in a Boolean column. Empty strings in a column already having a
-     Boolean type are converted to nil.
-- DateTime :: strings that contain patterns of 'yyyy-mm-dd' or 'yyyy/mm/dd' will
-     be interpreted as a +DateTime+ or a +Date+ (if there are no sub-day time
-     components present). The number of digits in the month and day can be one
-     or two, but the year component must be four digits. Any time components are
-     valid if they can be properly interpreted by +DateTime.parse+. Org mode
-     timestamps, active or inactive, are valid input strings for DateTime
-     columns. Empty strings in a column already having the DateTime type are
-     converted to nil.
-- Numeric :: all commas ',', underscores, '_', and '$' dollar signs are removed
-     from the string and if the remaining string can be interpreted as a
-     +Numeric+, it will be. It is interpreted as an +Integer+ if there are no
-     decimal places in the remaining string, as a +Rational+ if the string has
-     the form '<number>:<number>' or '<number>/<number>', or as a +BigDecimal+
-     if there is a decimal point in the remaining string. Empty strings in a
-     column already having the Numeric type are converted to nil.
-- String :: if all else fails, +FatTable+ applies +#to_s+ to the input value
-     and, treats it as an item of type +String+.  Empty strings in a column
-     already having the String type are kept as empty strings.
-- NilClass :: until the input contains a non-blank string that can be parsed as
-     one of the other types, it has this type, meaning that the type is still
-     open. A column comprised completely of blank strings or nils will retain
-     the +NilClass+ type.
+Boolean:: the strings, 't', 'true', 'yes', or 'y', regardless of case, are
+          interpreted as +TrueClass+ and the strings, 'f', 'false', 'no', or
+          'n', regardless of case, are interpreted as +FalseClass+, in either
+          case resulting in a Boolean column. Empty strings in a column already
+          having a Boolean type are converted to nil.
+
+DateTime:: strings that contain patterns of 'yyyy-mm-dd' or 'yyyy/mm/dd' will be
+           interpreted as a +DateTime+ or a +Date+ (if there are no sub-day time
+           components present). The number of digits in the month and day can be
+           one or two, but the year component must be four digits. Any time
+           components are valid if they can be properly interpreted by
+           +DateTime.parse+. Org mode timestamps, active or inactive, are valid
+           input strings for DateTime columns. Empty strings in a column already
+           having the DateTime type are converted to nil.
+
+Numeric:: all commas ',', underscores, '_', and '$' dollar signs are removed
+          from the string and if the remaining string can be interpreted as a
+          +Numeric+, it will be. It is interpreted as an +Integer+ if there are
+          no decimal places in the remaining string, as a +Rational+ if the
+          string has the form '<number>:<number>' or '<number>/<number>', or as
+          a +BigDecimal+ if there is a decimal point in the remaining string.
+          Empty strings in a column already having the Numeric type are
+          converted to nil.
+
+String:: if all else fails, +FatTable+ applies +#to_s+ to the input value and,
+         treats it as an item of type +String+. Empty strings in a column
+         already having the String type are kept as empty strings.
+
+NilClass:: until the input contains a non-blank string that can be parsed as one
+           of the other types, it has this type, meaning that the type is still
+           open. A column comprised completely of blank strings or nils will
+           retain the +NilClass+ type.
 
 === Headers
 
@@ -883,38 +888,52 @@ Here is a list of all the aggregate methods available.  If the description
 restricts the aggregate to particular column types, applying it to other types
 will raise an exception.
 
-- +first+ :: the first non-nil item in the column,
-- +last+ :: the last non-nil item in the column,
-- +rng+ :: form a string of the form "#{first}..#{last}" to show the range of
-     values in the column,
-- +sum+ :: for Numeric and String columns, apply '+' to all the non-nil values,
-- +count+ :: the number of non-nil values in the column,
-- +min+ :: for Numeric, String, and DateTime columns, return the minimum non-nil
-     value in the column,
-- +max+ :: for Numeric, String, and DateTime columns, return the maximum non-nil
-     value in the column,
-- +avg+ :: for Numeric and DateTime columns, return the arithmetic mean of the
-     non-nil values in the column; with respect to DateTime objects, each is
-     converted to a numeric Julian date, the average is calculated, and the
-     result converted back to a Date or DateTime object,
-- +var+ :: for Numeric and DateTime columns, compute the sample variance of the
-     non-nil values in the column, dates are converted to numbers as for the
-     :avg aggregate,
-- +pvar+ :: for Numeric and DateTime columns, compute the population variance of
-     the non-nil values in the column, dates are converted to numbers as for the
-     :avg aggregate,
-- +dev+ :: for Numeric and DateTime columns, compute the sample standard
-     deviation of the non-nil values in the column, dates are converted to
-     numbers as for the :avg aggregate,
-- +pdev+ :: for Numeric and DateTime columns, compute the population standard
-     deviation of the non-nil values in the column, dates are converted to
-     numbers as for the :avg aggregate,
-- +any?+ :: for Boolean columns only, return true if any non-nil value in the
-     column is true,
-- +none?+ :: for Boolean columns only, return true if no non-nil value in the
-     column is true,
-- +one?+ :: for Boolean columns only, return true if exactly one non-nil value in
-     the column is true,
++first+:: the first non-nil item in the column,
+
++last+:: the last non-nil item in the column,
+
++rng+:: form a string of the form "#{first}..#{last}" to show the range of
+        values in the column,
+
++sum+:: for Numeric and String columns, apply '+' to all the non-nil values,
+
++count+:: the number of non-nil values in the column,
+
++min+:: for Numeric, String, and DateTime columns, return the minimum non-nil
+        value in the column,
+
++max+:: for Numeric, String, and DateTime columns, return the maximum non-nil
+        value in the column,
+
++avg+:: for Numeric and DateTime columns, return the arithmetic mean of the
+        non-nil values in the column; with respect to DateTime objects, each is
+        converted to a numeric Julian date, the average is calculated, and the
+        result converted back to a Date or DateTime object,
+
++var+:: for Numeric and DateTime columns, compute the sample variance of the
+        non-nil values in the column, dates are converted to numbers as for the
+        :avg aggregate,
+
++pvar+:: for Numeric and DateTime columns, compute the population variance of
+         the non-nil values in the column, dates are converted to numbers as for
+         the :avg aggregate,
+
++dev+:: for Numeric and DateTime columns, compute the sample standard deviation
+        of the non-nil values in the column, dates are converted to numbers as
+        for the :avg aggregate,
+
++pdev+:: for Numeric and DateTime columns, compute the population standard
+         deviation of the non-nil values in the column, dates are converted to
+         numbers as for the :avg aggregate,
+
++any?+:: for Boolean columns only, return true if any non-nil value in the
+         column is true,
+
++none?+:: for Boolean columns only, return true if no non-nil value in the
+          column is true,
+
++one?+:: for Boolean columns only, return true if exactly one non-nil value in
+         the column is true,
 
 Perhaps surprisingly, the +group_by+ method ignores any groups in its input and
 results in no group boundaries in the output since each group formed by the
@@ -932,31 +951,35 @@ the method is called, +T2+ is the table supplied as the first parameter +other+,
 and +R1+ and +R2+ are rows in their respective tables being considered for
 inclusion in the joined output table.
 
-- +join(other, *jexps)+ :: Performs an "inner join" on the tables. For each row
-     R1 of T1, the joined table has a row for each row in T2 that satisfies the
-     join condition with R1.
+join(other, *jexps)::
+  Performs an "inner join" on the tables. For each row R1
+  of T1, the joined table has a row for each row in T2 that satisfies the join
+  condition with R1.
 
-- +left_join(other, *jexps)+ :: First, an inner join is performed. Then, for
-     each row in T1 that does not satisfy the join condition with any row in T2,
-     a joined row is added with null values in columns of T2. Thus, the joined
-     table always has at least one row for each row in T1.
+left_join(other, *jexps)::
+  First, an inner join is performed. Then, for each row in T1 that does not
+  satisfy the join condition with any row in T2, a joined row is added with null
+  values in columns of T2. Thus, the joined table always has at least one row
+  for each row in T1.
 
-- +right_join(other, *jexps)+ :: First, an inner join is performed. Then, for
-     each row in T2 that does not satisfy the join condition with any row in T1,
-     a joined row is added with null values in columns of T1. This is the
-     converse of a left join: the result table will always have a row for each
-     row in T2.
+right_join(other, *jexps)::
+  First, an inner join is performed. Then, for each row in T2 that does not
+  satisfy the join condition with any row in T1, a joined row is added with null
+  values in columns of T1. This is the converse of a left join: the result table
+  will always have a row for each row in T2.
 
-- +full_join(other, *jexps)+ :: First, an inner join is performed. Then, for
-     each row in T1 that does not satisfy the join condition with any row in T2,
-     a joined row is added with null values in columns of T2. Also, for each row
-     of T2 that does not satisfy the join condition with any row in T1, a joined
-     row with null values in the columns of T1 is added.
+full_join(other, *jexps)::
+  First, an inner join is performed. Then, for each row in T1 that does not
+  satisfy the join condition with any row in T2, a joined row is added with null
+  values in columns of T2. Also, for each row of T2 that does not satisfy the
+  join condition with any row in T1, a joined row with null values in the
+  columns of T1 is added.
 
-- +cross_join(other)+ :: For every possible combination of rows from T1 and T2
-     (i.e., a Cartesian product), the joined table will contain a row consisting
-     of all columns in T1 followed by all columns in T2. If the tables have N
-     and M rows respectively, the joined table will have N * M rows.
+cross_join(other)::
+  For every possible combination of rows from T1 and T2 (i.e., a Cartesian
+  product), the joined table will contain a row consisting of all columns in T1
+  followed by all columns in T2. If the tables have N and M rows respectively,
+  the joined table will have N * M rows.
 
 ==== Join Expressions
 
@@ -988,9 +1011,10 @@ local variables within the expression, but the instance variables +@row+ and
 
 ==== Join Examples
 
-The following examples are taken from a the [[https://www.tutorialspoint.com/postgresql/postgresql_using_joins.htm][Postgresql tutorial]], with some
-slight modifications. The examples will use the following two tables, which are
-also available in +ft_console+:
+The following examples are taken from a the {Postgres
+tutorial}[https://www.tutorialspoint.com/postgresql/postgresql_using_joins.htm],
+with some slight modifications. The examples will use the following two tables,
+which are also available in +ft_console+:
 
   require 'fat_table'
 
@@ -1481,20 +1505,25 @@ alignment are simply irrelevant.
 
 +FatTable+ supports the following output targets for its tables:
 
-- Text :: form the table with ACSII characters,
-- Org :: form the table with ASCII characters but in the form used by Emacs
-     org-mode for constructing tables,
-- Term :: form the table with ANSI terminal codes and unicode characters,
-     possibly including colored text and cell backgrounds,
-- LaTeX :: form the table as input for LaTeX's longtable environment,
-- Aoh :: output the table as a ruby data structure, building the table as an
-     array of hashes, and
-- Aoa :: output the table as a ruby data structure, building the table as an
-     array of array,
+Text:: form the table with ACSII characters,
 
-These are all implemented by classes that inherit from +FatTable::Formatter+
+Org:: form the table with ASCII characters but in the form used by Emacs
+      org-mode for constructing tables,
+
+Term:: form the table with ANSI terminal codes and unicode characters, possibly
+       including colored text and cell backgrounds,
+
+LaTeX:: form the table as input for LaTeX's longtable environment,
+
+Aoh:: output the table as a ruby data structure, building the table as an array
+      of hashes, and
+
+Aoa:: output the table as a ruby data structure, building the table as an array
+      of array,
+
+These are all implemented by classes that inherit from the FatTable::Formatter
 class by defining about a dozen methods that get called at various places during
-the construction of the output table.  The idea is that more classes can be
+the construction of the output table. The idea is that more classes can be
 defined by adding additional classes.
 
 === Table Locations
@@ -1503,13 +1532,18 @@ In the formatting methods, the table is divided into several "locations" for
 which separate formatting directives may be given.  These locations are
 identified with the following symbols:
 
-- :header :: the first row of the output table containing the headers,
-- :footer :: all rows of the table's footers,
-- :gfooter :: all rows of the table's group footers,
-- :body :: all the data rows of the table, that is, those that are neither part
-     of the header, footers, or gfooters,
-- :bfirst :: the first row of the table's body, and
-- :gfirst :: the first row in each group in the table's body.
+:header:: the first row of the output table containing the headers,
+
+:footer:: all rows of the table's footers,
+
+:gfooter:: all rows of the table's group footers,
+
+:body:: all the data rows of the table, that is, those that are neither part of
+        the header, footers, or gfooters,
+
+:bfirst:: the first row of the table's body, and
+
+:gfirst:: the first row in each group in the table's body.
 
 === Formatting Directives
 
@@ -1528,22 +1562,32 @@ For a string element, the following instructions are valid. Note that these can
 also be applied to all the other cell types as well since they are all converted
 to a string in forming the output.
 
-- u :: convert the element to all lowercase,
-- U :: convert the element to all uppercase,
-- t :: title case the element, that is, upcase the initial letter in
-    each word and lower case the other letters
-- B +B :: make the element bold, or turn off bold
-- I +I :: make the element italic, or turn off italic
-- R :: align the element on the right of the column
-- L :: align the element on the left of the column
-- C :: align the element in the center of the column
-- c[color] :: render the element in the given color; the color can have
-    the form fgcolor, fgcolor.bgcolor, or .bgcolor, to set the
-    foreground or background colors respectively, and each of those can
-    be an ANSI or X11 color name in addition to the special color,
-    'none', which keeps the terminal's default color.
-- _ +_ :: underline the element, or turn off underline
-- * +* :: cause the element to blink, or turn off blink
+u:: convert the element to all lowercase,
+
+U:: convert the element to all uppercase,
+
+t:: title case the element, that is, upcase the initial letter in each word and
+    lower case the other letters
+
+B or ~B:: make the element bold, or turn off bold
+
+I or ~I:: make the element italic, or turn off italic
+
+R:: align the element on the right of the column
+
+L:: align the element on the left of the column
+
+C:: align the element in the center of the column
+
+c[color]:: render the element in the given color; the color can have the form
+           fgcolor, fgcolor.bgcolor, or .bgcolor, to set the foreground or
+           background colors respectively, and each of those can be an ANSI or
+           X11 color name in addition to the special color, 'none', which keeps
+           the terminal's default color.
+
+_ or ~_:: underline the element, or turn off underline
+
+\* or ~*:: cause the element to blink, or turn off blink
 
 For example, the directive 'tCc[red.yellow]' would title-case the element,
 center it, and color it red on a yellow background. The directives that are
@@ -1556,17 +1600,19 @@ particular columns.
 For a numeric element, all the instructions valid for string are available, in
 addition to the following:
 
-- , +, :: insert grouping commas, or do not insert grouping commas,
-- $ +$ :: format the number as currency according to the locale, or not,
-- m.n :: include at least m digits before the decimal point, padding on
-    the left with zeroes as needed, and round the number to the n
-    decimal places and include n digits after the decimal point,
-    padding on the right with zeroes as needed,
-- H :: convert the number (assumed to be in units of seconds) to
-    HH:MM:SS.ss form.  So a column that is the result of subtracting
-    two :datetime forms will result in a :numeric expressed as seconds
-    and can be displayed in hours, minutes, and seconds with this
-    formatting instruction.
+, or ~,:: insert grouping commas, or do not insert grouping commas,
+
+$ or ~$:: format the number as currency according to the locale, or not,
+
+m.n:: include at least m digits before the decimal point, padding on the left
+      with zeroes as needed, and round the number to the n decimal places and
+      include n digits after the decimal point, padding on the right with zeroes
+      as needed,
+
+H:: convert the number (assumed to be in units of seconds) to HH:MM:SS.ss form.
+    So a column that is the result of subtracting two :datetime forms will
+    result in a :numeric expressed as seconds and can be displayed in hours,
+    minutes, and seconds with this formatting instruction.
 
 For example, the directive 'R5.0c[blue]' would right-align the numeric element,
 pad it on the left with zeros, and color it blue.
@@ -1576,14 +1622,15 @@ pad it on the left with zeros, and color it blue.
 For a datetime, all the instructions valid for string are available, in addition
 to the following:
 
-- d[fmt] :: apply the format to a datetime that is a whole day, that is that has
-     no or zero hour, minute, and second components, where fmt is a valid format
-     string for Date#strftime, otherwise, the datetime will be formatted as an
-     ISO 8601 string, YYYY-MM-DD.
-- D[fmt] :: apply the format to a datetime that has at least a non-zero
-    hour component where fmt is a valid format string for
-    Date#strftime, otherwise, the datetime will be formatted as an ISO
-    8601 string, YYYY-MM-DD.
+\d\[fmt\]:: apply the format to a datetime that is a whole day, that is that has
+            no or zero hour, minute, and second components, where fmt is a valid
+            format string for Date#strftime, otherwise, the datetime will be
+            formatted as an ISO 8601 string, YYYY-MM-DD.
+
+\D\[fmt\]:: apply the format to a datetime that has at least a non-zero hour
+            component where fmt is a valid format string for Date#strftime,
+            otherwise, the datetime will be formatted as an ISO 8601 string,
+            YYYY-MM-DD.
 
 For example, 'c[pink]d[%b %-d, %Y]C', would format a date element like 'Sep 22,
 1957', center it, and color it pink.
@@ -1591,16 +1638,20 @@ For example, 'c[pink]d[%b %-d, %Y]C', would format a date element like 'Sep 22,
 ==== Boolean
 
 For a boolean cell, all the instructions valid for string are available, in
-  addition to the following:
+addition to the following:
 
-- Y :: print true as 'Y' and false as 'N',
-- T :: print true as 'T' and false as 'F',
-- X :: print true as 'X' and false as '',
-- b[xxx,yyy] :: print true as the string given as xxx and false as the
-    string given as yyy,
-- c[tcolor,fcolor] :: color a true element with tcolor and a false
-    element with fcolor. Each of the colors may be specified in the
-    same manner as colors for strings described above.
+Y:: print true as 'Y' and false as 'N',
+
+T:: print true as 'T' and false as 'F',
+
+X:: print true as 'X' and false as '',
+
+\b\[xxx,yyy\]:: print true as the string given as xxx and false as the string
+                given as yyy,
+
+\c\[tcolor,fcolor\]:: color a true element with tcolor and a false element with
+                      fcolor. Each of the colors may be specified in the same
+                      manner as colors for strings described above.
 
 For example, the directive 'b[Yeppers,Nope]c[green.pink,red.pink]' would render
 a true boolean as 'Yeppers' colored green on pink and render a false boolean as
@@ -1612,7 +1663,7 @@ By default, nil elements are rendered as blank cells, but you can make them
 visible with the following, and in that case, all the formatting instructions
 valid for strings are also available:
 
-- n[niltext] :: render a nil item with the given text.
+\n\[niltext\]:: render a nil item with the given text.
 
 For example, you might want to use 'n[-]Cc[purple]' to make nils visible as a
 centered hyphen.
@@ -1622,46 +1673,57 @@ centered hyphen.
 You can call methods on  +Formatter+ objects to add footers and group footers.
 Their signatures are:
 
-- +footer(label, *sum_cols, **agg_cols)+ :: where +label+ is a label to be
-     placed in the first cell of the footer (unless that column is named as one
-     of the +sum_cols+ or +agg_cols+, in which case the label is ignored),
-     +*sum_cols+ are zero or more symbols for columns to be summed, and
-     +**agg_cols+ is zero or more hash-like parameters with a column symbol as a
-     key and a symbol for an aggregate method as the value. This causes a
-     table-wide header to be added at the bottom of the table applying the :sum
-     aggregate to the +sum_cols+ and the named aggregate method to the
-     +agg_cols+. A table can have any number of footers attached, and they will
-     appear at the bottom of the output table in the order they are given.
+footer(label, *sum_cols, **agg_cols)::
+  where +label+ is a label to be placed in the first cell of the footer (unless
+  that column is named as one of the +sum_cols+ or +agg_cols+, in which case the
+  label is ignored), +*sum_cols+ are zero or more symbols for columns to be
+  summed, and +**agg_cols+ is zero or more hash-like parameters with a column
+  symbol as a key and a symbol for an aggregate method as the value. This causes
+  a table-wide header to be added at the bottom of the table applying the :sum
+  aggregate to the +sum_cols+ and the named aggregate method to the +agg_cols+.
+  A table can have any number of footers attached, and they will appear at the
+  bottom of the output table in the order they are given.
 
-- +gfooter(label, *sum_cols, **agg_cols)+ :: where the parameters have the same
-     meaning as for the +footer+ method, but result in a footer for each group
-     in the table rather than the table as a whole. These will appear in the
-     output table just below each group.
+gfooter(label, *sum_cols, **agg_cols)::
+  where the parameters have the same meaning as for the +footer+ method, but
+  result in a footer for each group in the table rather than the table as a
+  whole. These will appear in the output table just below each group.
 
 There are also a number of convenience methods for adding common footers:
 
-- +sum_footer(*cols)+ :: Add a footer summing the given columns with the label
-     'Total'.
-- +sum_gfooter(*cols)+ :: Add a group footer summing the given columns with the
-     label 'Group Total'.
-- +avg_footer(*cols)+ :: Add a footer averaging the given columns with the label
-     'Average'.
-- +avg_gfooter(*cols)+ :: Add a group footer averaging the given columns with the label
-     'Group Average'.
-- +min_footer(*cols)+ :: Add a footer showing the minimum for the given columns
-     with the label 'Minimum'.
-- +min_gfooter(*cols)+ :: Add a group footer showing the minumum for the given
-     columns with the label 'Group Minimum'.
-- +max_footer(*cols)+ :: Add a footer showing the maximum for the given columns
-     with the label 'Maximum'.
-- +max_gfooter(*cols)+ :: Add a group footer showing the maximum for the given
-     columns with the label 'Group Maximum'.
+sum_footer(*cols)::
+  Add a footer summing the given columns with the label 'Total'.
+
+sum_gfooter(*cols)::
+  Add a group footer summing the given columns with the label 'Group Total'.
+
+avg_footer(*cols)::
+  Add a footer averaging the given columns with the label 'Average'.
+
+avg_gfooter(*cols)::
+  Add a group footer averaging the given columns with the label 'Group Average'.
+
+min_footer(*cols)::
+  Add a footer showing the minimum for the given columns with the label
+  'Minimum'.
+
+min_gfooter(*cols)::
+  Add a group footer showing the minumum for the given columns with the label
+  'Group Minimum'.
+
+max_footer(*cols)::
+  Add a footer showing the maximum for the given columns with the label
+  'Maximum'.
+
+max_gfooter(*cols)::
+  Add a group footer showing the maximum for the given columns with the label
+  'Group Maximum'.
 
 === Formatting Methods
 
-You can call methods on  +Formatter+ objects to specify formatting directives
-for specific columns or types.  There are two methods for doing so, +format_for+
-and +format+.
+You can call methods on Formatter objects to specify formatting directives for
+specific columns or types. There are two methods for doing so,
+Formatter::format_for and Formatter::format.
 
 ==== Instantiating a Formatter
 
@@ -1825,24 +1887,24 @@ Formatting for any given cell depends on its location in the table.  The
 +format_for+ method takes a location to which its formatting directive are
 restricted as the first argument.  It can be one of the following:
 
-- +:header+ :: directive apply only to the header row, that is the first row, of
-     the output table,
++:header+:: directive apply only to the header row, that is the first row, of
+            the output table,
 
-- +:footer+ :: directives apply to all the footer rows of the output table,
-     regardless of how many there are,
++:footer+:: directives apply to all the footer rows of the output table,
+            regardless of how many there are,
 
-- +gfooter+ :: directives apply to all group footer rows of the output tables,
-     regardless of how many there are,
++:gfooter+:: directives apply to all group footer rows of the output tables,
+            regardless of how many there are,
 
-- +:body+ :: directives apply to all rows in the body of the table unless the
-     row is the first row in the table or in a group and separate directives for
-     those have been given, in which case those directives apply,
++:body+:: directives apply to all rows in the body of the table unless the row
+          is the first row in the table or in a group and separate directives
+          for those have been given, in which case those directives apply,
 
-- +:gfirst+ :: directives apply to the first row in each group in the output
-     table, unless the row is also the first row in the table as a whole, in
-     which case the +:bfirst+ directives apply,
++:gfirst+:: directives apply to the first row in each group in the output table,
+            unless the row is also the first row in the table as a whole, in
+            which case the +:bfirst+ directives apply,
 
-- +:bfirst+ :: directives apply to the first row in the table.
++:bfirst+:: directives apply to the first row in the table.
 
 If you give directives for +:body+, they are copied to +:bfirst+ and +:gfirst+
 as well and can be overridden by directives for those locations.

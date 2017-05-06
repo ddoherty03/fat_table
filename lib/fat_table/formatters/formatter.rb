@@ -1,15 +1,15 @@
 module FatTable
-  ## A Formatter is for use in Table output routines, and provides methods for
-  ## adding group and table footers to the output and instructions for how the
-  ## table's cells ought to be formatted. The goal is to make subclasses of this
-  ## class handle different output targets, such as aoa for org tables, ansi
-  ## terminals, LaTeX, html, plain text, org mode table text, and so forth. Many
-  ## of the formatting options, such as color, will be no-ops for some output
-  ## targets, such as text, but will be valid nonetheless. Thus, the Formatter
-  ## subclass should provide the best implementation for each formatting request
-  ## available for the target. This base class will consist largely of methods
-  ## that format output as pipe-separated values, but implementations provided
-  ## by subclasses will override these for different output targets.
+  # A Formatter is for use in Table output routines, and provides methods for
+  # adding group and table footers to the output and instructions for how the
+  # table's cells ought to be formatted. The goal is to make subclasses of this
+  # class handle different output targets, such as aoa for org tables, ANSI
+  # terminals, LaTeX, plain text, org mode table text, and so forth. Many of
+  # the formatting options, such as color, will be no-ops for some output
+  # targets, such as text, but will be valid nonetheless. Thus, the Formatter
+  # subclass should provide the best implementation for each formatting request
+  # available for the target. This base class will consist largely of methods
+  # that format output as pipe-separated values, but implementations provided
+  # by subclasses will override these for different output targets.
   class Formatter
     # Valid locations in a Table as an array of symbols.
     LOCATIONS = [:header, :body, :bfirst, :gfirst, :gfooter, :footer].freeze
@@ -78,6 +78,8 @@ module FatTable
     class_attribute :valid_colors
     self.valid_colors = ['none']
 
+    # :category: Constructors
+
     # Return a new Formatter for the given +table+ which must be of the class
     # FatTable::Table. The +options+ hash can specify variants for the output
     # for specific subclasses of Formatter. This base class outputs the +table+
@@ -114,6 +116,8 @@ module FatTable
       yield self if block_given?
     end
 
+    # :category: Footers
+
     ############################################################################
     # Footer methods
     #
@@ -139,11 +143,6 @@ module FatTable
     # what footers you want on output of the table.  No actual calculation is
     # performed until the table is output.
     #
-    ############################################################################
-
-    public
-
-    # :category: Footers
     # Add a table footer to the table with a label given in the first parameter,
     # defaulting to 'Total'.  After the label, you can given any number of
     # headers (as symbols) for columns to be summed, and then any number of hash
@@ -183,25 +182,24 @@ module FatTable
     end
 
     # :category: Footers
+
     # Add a group footer to the table with a label given in the first parameter,
-    # defaulting to 'Total'.  After the label, you can given any number of
+    # defaulting to 'Total'. After the label, you can given any number of
     # headers (as symbols) for columns to be summed, and then any number of hash
-    # parameters for columns for with to apply an aggregate other than :sum.
-    # For example, these are valid gfooter definitions.
+    # parameters for columns for with to apply an aggregate other than :sum. For
+    # example, these are valid gfooter definitions.
     #
-    # Just sum the shares column with a label of 'Total'
-    #   tab.gfooter(:shares)
+    # Just sum the shares column with a label of 'Total' tab.gfooter(:shares)
     #
-    # Change the label and sum the :price column as well
-    #   tab.gfooter('Total', :shares, :price)
+    # Change the label and sum the :price column as well tab.gfooter('Total',
+    #   :shares, :price)
     #
     # Average then show standard deviation of several columns
     #   tab.gfooter.('Average', date: avg, shares: :avg, price: avg)
     #   tab.gfooter.('Sigma', date: dev, shares: :dev, price: :dev)
     #
     # Do some sums and some other aggregates: sum shares, average date and
-    # price.
-    #   tab.gfooter.('Summary', :shares, date: avg, price: avg)
+    # price. tab.gfooter.('Summary', :shares, date: avg, price: avg)
     def gfooter(label, *sum_cols, **agg_cols)
       label = label.to_s
       foot = {}
@@ -222,18 +220,21 @@ module FatTable
     end
 
     # :category: Footers
+
     # Add table footer to sum the +cols+ given as header symbols.
     def sum_footer(*cols)
       footer('Total', *cols)
     end
 
     # :category: Footers
+
     # Add group footer to sum the +cols+ given as header symbols.
     def sum_gfooter(*cols)
       gfooter('Group Total', *cols)
     end
 
     # :category: Footers
+
     # Add table footer to average the +cols+ given as header symbols.
     def avg_footer(*cols)
       hsh = {}
@@ -244,6 +245,7 @@ module FatTable
     end
 
     # :category: Footers
+
     # Add group footer to average the +cols+ given as header symbols.
     def avg_gfooter(*cols)
       hsh = {}
@@ -254,6 +256,7 @@ module FatTable
     end
 
     # :category: Footers
+
     # Add table footer to display the minimum value of the +cols+ given as
     # header symbols.
     def min_footer(*cols)
@@ -265,6 +268,7 @@ module FatTable
     end
 
     # :category: Footers
+
     # Add group footer to display the minimum value of the +cols+ given as
     # header symbols.
     def min_gfooter(*cols)
@@ -276,6 +280,7 @@ module FatTable
     end
 
     # :category: Footers
+
     # Add table footer to display the maximum value of the +cols+ given as
     # header symbols.
     def max_footer(*cols)
@@ -287,6 +292,7 @@ module FatTable
     end
 
     # :category: Footers
+
     # Add group footer to display the maximum value of the +cols+ given as
     # header symbols.
     def max_gfooter(*cols)
@@ -299,76 +305,112 @@ module FatTable
 
     ############################################################################
     # Formatting methods
-    ############################################################################
-
+    #
+    #
     # :category: Formatting
+    #
     # A Formatter can specify a hash to hold the formatting instructions for
     # columns by using the column head as a key and the value as the format
-    # instructions.  In addition, the keys, :numeric, :string, :datetime,
+    # instructions. In addition, the keys, :numeric, :string, :datetime,
     # :boolean, and :nil, can be used to specify the default format instructions
     # for columns of the given type is no other instructions have been given.
     #
     # Formatting instructions are strings, and what are valid strings depend on
     # the type of the column:
     #
-    # - string :: for string columns, the following instructions are valid:
-    #   + u :: convert the element to all lowercase,
-    #   + U :: convert the element to all uppercase,
-    #   + t :: title case the element, that is, upcase the initial letter in
-    #        each word and lower case the other letters
-    #   + B ~B :: make the element bold, or not
-    #   + I ~I :: make the element italic, or not
-    #   + R :: align the element on the right of the column
-    #   + L :: align the element on the left of the column
-    #   + C :: align the element in the center of the column
-    #   + c[color] :: render the element in the given color; the color can have
-    #        the form fgcolor, fgcolor.bgcolor, or .bgcolor, to set the
-    #        foreground or background colors respectively, and each of those can
-    #        be an ANSI or X11 color name in addition to the special color,
-    #        'none', which keeps the terminal's default color.
-    #   + _, ~_ :: underline the element, or not,
-    #   + *  ~* :: cause the element to blink, or not,
-    # - numeric :: for a numeric, all the instructions valid for string are
-    #      available, in addition to the following:
-    #   + , ~, :: insert grouping commas, or not,
-    #   + $ ~$ :: format the number as currency according to the locale, or not,
-    #   + m.n :: include at least m digits before the decimal point, padding on
-    #        the left with zeroes as needed, and round the number to the n
-    #        decimal places and include n digits after the decimal point,
-    #        padding on the right with zeroes as needed,
-    #   + H ~H :: convert the number (assumed to be in units of seconds) to
-    #        HH:MM:SS.ss form, or not.  So a column that is the result of subtracting
-    #        two :datetime forms will result in a :numeric expressed as seconds
-    #        and can be displayed in hours, minutes, and seconds with this
-    #        formatting instruction.
-    # - datetime :: for a datetime, all the instructions valid for string are
-    #      available, in addition to the following:
-    #   + d[fmt] :: apply the format to a datetime that has no or zero hour,
-    #        minute, second components, where fmt is a valid format string for
-    #        Date#strftime, otherwise, the datetime will be formatted as an ISO
-    #        8601 string, YYYY-MM-DD.
-    #   + D[fmt] :: apply the format to a datetime that has at least a non-zero
-    #        hour component where fmt is a valid format string for
-    #        Date#strftime, otherwise, the datetime will be formatted as an ISO
-    #        8601 string, YYYY-MM-DD.
-    # - boolean :: all the instructions valid for string are available, in
-    #      addition to the following:
-    #   + Y :: print true as 'Y' and false as 'N',
-    #   + T :: print true as 'T' and false as 'F',
-    #   + X :: print true as 'X' and false as '',
-    #   + b[xxx,yyy] :: print true as the string given as xxx and false as the
-    #        string given as yyy,
-    #   + c[tcolor,fcolor] :: color a true element with tcolor and a false
-    #        element with fcolor. Each of the colors may be specified in the
-    #        same manner as colors for strings described above.
-    # - nil :: by default, nil elements are rendered as blank cells, but you can
-    #      make them visible with the following, and in that case, all the
-    #      formatting instructions valid for strings are available:
-    #   + n[niltext] :: render a nil item with the given text.
+    # ==== String
     #
-    # In the foregoing, the earlier elements in each list will be available for
-    # all formatter subclasses, while the later elements may or may not have any
-    # effect on the output.
+    # For string columns, the following instructions are valid:
+    #
+    # u:: convert the element to all lowercase,
+    #
+    # U:: convert the element to all uppercase,
+    #
+    # t:: title case the element, that is, upcase the initial letter in each
+    #     word and lower case the other letters
+    #
+    # B or ~B:: make the element bold, or not
+    #
+    # I or ~I:: make the element italic, or not
+    #
+    # R:: align the element on the right of the column
+    #
+    # L:: align the element on the left of the column
+    #
+    # C:: align the element in the center of the column
+    #
+    # \c\[color\]:: render the element in the given color; the color can have
+    #               the form fgcolor, fgcolor.bgcolor, or .bgcolor, to set the
+    #               foreground or background colors respectively, and each of
+    #               those can be an ANSI or X11 color name in addition to the
+    #               special color, 'none', which keeps the terminal's default
+    #               color.
+    #
+    # \_ or ~\_:: underline the element, or not,
+    #
+    # \*  ~\*:: cause the element to blink, or not,
+    #
+    # ==== Numeric
+    #
+    # For a numeric, all the instructions valid for string are available, in
+    # addition to the following:
+    #
+    # , or ~, :: insert grouping commas, or not,
+    #
+    # $ or ~$:: format the number as currency according to the locale, or not,
+    #
+    # m.n:: include at least m digits before the decimal point, padding on the
+    #       left with zeroes as needed, and round the number to the n decimal
+    #       places and include n digits after the decimal point, padding on the
+    #       right with zeroes as needed,
+    #
+    # H or ~H:: convert the number (assumed to be in units of seconds) to
+    #           HH:MM:SS.ss form, or not. So a column that is the result of
+    #           subtracting two :datetime forms will result in a :numeric
+    #           expressed as seconds and can be displayed in hours, minutes, and
+    #           seconds with this formatting instruction.
+    #
+    # ==== DateTime
+    #
+    # For a DateTime column, all the instructions valid for string are
+    # available, in addition to the following:
+    #
+    # \d\[fmt\]:: apply the format to a datetime that has no or zero hour,
+    #             minute, second components, where fmt is a valid format string
+    #             for Date#strftime, otherwise, the datetime will be formatted
+    #             as an ISO 8601 string, YYYY-MM-DD.
+    #
+    # \D\[fmt\]:: apply the format to a datetime that has at least a non-zero
+    #             hour component where fmt is a valid format string for
+    #             Date#strftime, otherwise, the datetime will be formatted as an
+    #             ISO 8601 string, YYYY-MM-DD.
+    #
+    # ==== Boolean
+    #
+    # All the instructions valid for string are available, in addition to the
+    # following:
+    #
+    # Y:: print true as 'Y' and false as 'N',
+    #
+    # T:: print true as 'T' and false as 'F',
+    #
+    # X:: print true as 'X' and false as '',
+    #
+    # \b\[xxx,yyy\] :: print true as the string given as xxx and false as the
+    #                  string given as yyy,
+    #
+    # \c\[tcolor,fcolor\]:: color a true element with tcolor and a false element
+    #                       with fcolor. Each of the colors may be specified in
+    #                       the same manner as colors for strings described
+    #                       above.
+    #
+    # ==== NilClass
+    #
+    # By default, nil elements are rendered as blank cells, but you can make
+    # them visible with the following, and in that case, all the formatting
+    # instructions valid for strings are available:
+    #
+    # \n\[niltext\]:: render a nil item with the given text.
     def format(**fmts)
       [:header, :bfirst, :gfirst, :body, :footer, :gfooter].each do |loc|
         format_for(loc, fmts)
@@ -377,35 +419,49 @@ module FatTable
     end
 
     # :category: Formatting
-    # Define a format for the given location, :header, :body, :footer, :gfooter
-    # (the group footers), :bfirst (the first row in the table body), or :gfirst
-    # (the first rows in group bodies). Formats are specified with hash
-    # arguments where the keys are either (1) the name of a table column in
-    # symbol form, or (2) the name of a column type, i.e., :string, :numeric, or
-    # :datetime, :boolean, or :nil (for empty cells or untyped columns). The
-    # value given for the hash arguments should be strings that contain
-    # "directives" on how elements of that column, or that type are to be
+    #
+    # Define a formatting directives for the given location. The following are
+    # the valid +location+ symbols.
+    #
+    # :header:: instructions for the headers of the table,
+    #
+    # :bfirst:: instructions for the first row in the body of the table,
+    #
+    # :gfirst:: instructions for the cells in the first row of a group, to the
+    #           extent not governed by :bfirst.
+    #
+    # :body:: instructions for the cells in the body of the table, to the extent
+    #         they are not governed by :bfirst or :gfirst.
+    #
+    # :gfooter:: instructions for the cells of a group footer, and
+    #
+    # :footer:: instructions for the cells of a footer.
+    #
+    # Formatting directives are specified with hash arguments where the keys are
+    # either
+    #
+    # 1. the name of a table column in symbol form, or
+    #
+    # 2. the name of a column type in symbol form, i.e., :string, :numeric, or
+    #    :datetime, :boolean, or :nil (for empty cells or untyped columns).
+    #
+    # The value given for the hash arguments should be strings that contain
+    # "directives" on how elements of that column or of that type are to be
     # formatted on output. Formatting directives for a column name take
     # precedence over those specified by type. And more specific locations take
-    # precedence over less specific ones. For example, the first line of a table
-    # is part of :body, :gfirst, and :bfirst, but since its identity as the
-    # first row of the table is the most specific (there is only one of those,
-    # there may be many rows that qualify as :gfirst, and even more that qualify
-    # as :body rows). For purposes of formatting, all headers are considered of
-    # the :string type. All empty cells are considered to be of the :nilclass
-    # type. All other cells have the type of the column to which they belong,
-    # including all cells in group or table footers.
+    # precedence over less specific ones.
     #
-    # The hashes that can be specified to the formatter determine the formatting
-    # instructions for different parts of the output table:
+    # For example, the first line of a table is part of :body, :gfirst, and
+    # :bfirst, but since its identity as the first row of the table is the most
+    # specific (there is only one of those, there may be many rows that qualify
+    # as :gfirst, and even more that qualify as :body rows) any :bfirst
+    # specification would have priority over :gfirst or :body.
     #
-    # - header: :: instructions for the headers of the table,
-    # - bfirst :: instructions for the first row in the body of the table,
-    # - gfirst :: instructions for the cells in the first row of a group,
-    # - body :: instructions for the cells in the body of the table, to the
-    #      extent they are not governed by bfirst or gfirst.
-    # - gfooter :: instructions for the cells of a group footer, and
-    # - footer :: instructions for the cells of a footer.
+    # For purposes of formatting, all headers are considered of the :string type
+    # and all nil cells are considered to be of the :nilclass type. All other
+    # cells have the type of the column to which they belong, including all
+    # cells in group or table footers. See ::format for details on formatting
+    # directives.
     def format_for(location, **fmts)
       unless LOCATIONS.include?(location)
         raise UserError, "unknown format location '#{location}'"
@@ -854,6 +910,8 @@ module FatTable
     public
 
     # :startdoc:
+
+    # :category: Output
 
     # Return the +table+ as either a string in the target format or as a Ruby
     # data structure if that is the target.  In the latter case, all the cells

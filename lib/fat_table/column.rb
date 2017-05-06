@@ -30,6 +30,8 @@ module FatTable
     # Valid Column types as strings.
     TYPES = %w(NilClass Boolean DateTime Numeric String).freeze
 
+    # :category: Constructors
+
     # Create a new Column with the given +header+ and initialized with the given
     # +items+, as an array of either strings or ruby objects that are one of the
     # permissible types or strings parsable as one of the permissible types. If
@@ -98,10 +100,14 @@ module FatTable
     # Attributes
     ##########################################################################
 
+    # :category: Attributes
+
     # Return the item of the Column at the given index.
     def [](k)
       items[k]
     end
+
+    # :category: Attributes
 
     # Return a dupped Array of this Column's items. To get the non-dupped items,
     # just use the .items accessor.
@@ -109,15 +115,21 @@ module FatTable
       items.deep_dup
     end
 
+    # :category: Attributes
+
     # Return the size of the Column, including any nils.
     def size
       items.size
     end
 
+    # :category: Attributes
+
     # Return true if there are no items in the Column.
     def empty?
       items.empty?
     end
+
+    # :category: Attributes
 
     # Return the index of the last item in the Column.
     def last_i
@@ -130,6 +142,8 @@ module FatTable
 
     include Enumerable
 
+    # :category: Attributes
+
     # Yield each item in the Column in the order in which they appear in the
     # Column. This makes Columns Enumerable, so all the Enumerable methods are
     # available on a Column.
@@ -141,27 +155,37 @@ module FatTable
     # Aggregates
     ##########################################################################
 
+    # :category: Aggregates
+
     # The names of the known aggregate operations that can be performed on a
     # Column.
     VALID_AGGREGATES = %s(first last rng
                           sum count min max avg var dev
                           any? all? none? one?)
 
+    # :category: Aggregates
+
     # Return the first non-nil item in the Column.  Works with any Column type.
     def first
       items.compact.first
     end
+
+    # :category: Aggregates
 
     # Return the last non-nil item in the Column.  Works with any Column type.
     def last
       items.compact.last
     end
 
+    # :category: Aggregates
+
     # Return a string of the #first and #last non-nil values in the Column.
     # Works with any Column type.
     def rng
       "#{first}..#{last}"
     end
+
+    # :category: Aggregates
 
     # Return the sum of the non-nil items in the Column.  Works with numeric and
     # string Columns. For a string Column, it will return the concatenation of
@@ -171,11 +195,15 @@ module FatTable
       items.compact.sum
     end
 
+    # :category: Aggregates
+
     # Return a count of the non-nil items in the Column.  Works with any Column
     # type.
     def count
       items.compact.count.to_d
     end
+
+    # :category: Aggregates
 
     # Return the smallest non-nil item in the Column.  Works with numeric,
     # string, and datetime Columns.
@@ -184,12 +212,16 @@ module FatTable
       items.compact.min
     end
 
+    # :category: Aggregates
+
     # Return the largest non-nil item in the Column.  Works with numeric,
     # string, and datetime Columns.
     def max
       only_with('max', 'NilClass', 'Numeric', 'String', 'DateTime')
       items.compact.max
     end
+
+    # :category: Aggregates
 
     # Return the average value of the non-nil items in the Column.  Works with
     # numeric and datetime Columns.  For datetime Columns, it converts each date
@@ -204,6 +236,8 @@ module FatTable
         sum / items.compact.size.to_d
       end
     end
+
+    # :category: Aggregates
 
     # Return the sample variance (the unbiased estimator of the population
     # variance using a divisor of N-1) as the average squared deviation from the
@@ -228,6 +262,8 @@ module FatTable
       sq_dev / (n - 1)
     end
 
+    # :category: Aggregates
+
     # Return the population variance (the biased estimator of the population
     # variance using a divisor of N) as the average squared deviation from the
     # mean, of the non-nil items in the Column. Works with numeric and datetime
@@ -240,6 +276,8 @@ module FatTable
       var * ((n - 1) / n)
     end
 
+    # :category: Aggregates
+
     # Return the sample standard deviation (the unbiased estimator of the
     # population standard deviation using a divisor of N-1) as the square root
     # of the sample variance, of the non-nil items in the Column. Works with
@@ -250,6 +288,8 @@ module FatTable
       only_with('dev', 'DateTime', 'Numeric')
       var.sqrt(20)
     end
+
+    # :category: Aggregates
 
     # Return the population standard deviation (the biased estimator of the
     # population standard deviation using a divisor of N) as the square root of
@@ -262,12 +302,16 @@ module FatTable
       Math.sqrt(pvar)
     end
 
+    # :category: Aggregates
+
     # Return true if any of the items in the Column are true; otherwise return
     # false.  Works only with boolean Columns.
     def any?
       only_with('any?', 'Boolean')
       items.compact.any?
     end
+
+    # :category: Aggregates
 
     # Return true if all of the items in the Column are true; otherwise return
     # false.  Works only with boolean Columns.
@@ -276,12 +320,16 @@ module FatTable
       items.compact.all?
     end
 
+    # :category: Aggregates
+
     # Return true if none of the items in the Column are true; otherwise return
     # false.  Works only with boolean Columns.
     def none?
       only_with('none?', 'Boolean')
       items.compact.none?
     end
+
+    # :category: Aggregates
 
     # Return true if precisely one of the items in the Column is true;
     # otherwise return false.  Works only with boolean Columns.
@@ -303,12 +351,16 @@ module FatTable
     # Construction
     ##########################################################################
 
+    # :category: Constructors
+
     # Append +itm+ to end of the Column after converting it to the Column's
     # type. If the Column's type is still open, i.e. NilClass, attempt to fix
     # the Column's type based on the type of +itm+ as with Column.new.
     def <<(itm)
       items << convert_to_type(itm)
     end
+
+    # :category: Constructors
 
     # Return a new Column appending the items of other to this Column's items,
     # checking for type compatibility.  Use the header of this Column as the
