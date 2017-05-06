@@ -56,13 +56,31 @@ module FatTable
     Thistle3 Thistle4 Tomato1 Tomato2 Tomato3 Tomato4 Turquoise1 Turquoise2
     Turquoise3 Turquoise4 VioletRed1 VioletRed2 VioletRed3 VioletRed4 Wheat1
     Wheat2 Wheat3 Wheat4 Yellow1 Yellow2 Yellow3 Yellow4)
+
+    # LaTeX commands to load the needed packages based on the :environement
+    # option.  For now, just handles the default 'longtable' :environment.  The
+    # preamble always includes a command to load the xcolor package.
+    def preamble
+      result = ''
+      result +=
+        case @options[:environment]
+        when 'longtable'
+          "\\usepackage{longtable}\n"
+        else
+          ''
+        end
+      result += "\\usepackage[pdftex,x11names]{xcolor}\n"
+      result
+    end
+
     def color_valid?(clr)
       valid_colors.include?(clr)
     end
 
     def invalid_color_msg(clr)
       valid_colors_list = valid_colors.join(' ').wrap
-      "LaTeXFormatter invalid color '#{clr}'. Valid colors are:\n#{valid_colors_list}"
+      "LaTeXFormatter invalid color '#{clr}'. Valid colors are:\n" +
+        valid_colors_list
     end
 
     # Add LaTeX control sequences. Ignore background color, underline, and
@@ -70,7 +88,7 @@ module FatTable
     # account unless it's the same as the body alignment, since that is the
     # default.
     def decorate_string(str, istruct)
-      str = quote_for_decorate(str)
+      str = quote(str)
       result = ''
       result += '\\bfseries{}' if istruct.bold
       result += '\\itshape{}' if istruct.italic
@@ -83,23 +101,33 @@ module FatTable
       result
     end
 
-    def quote_for_decorate(str)
+    # Return +str+ with quote marks oriented and special TeX characters quoted.
+    def quote(str)
+      # Replace single and double quotes with TeX oriented quotes.
       result = str.gsub(/'([^']*)'/, "`\\1'")
       result = result.gsub(/"([^"]*)"/, "``\\1''")
+      # Escape special TeX characters, such as $ and %
       result.tex_quote
     end
 
-    def self.preamble
-      "\\usepackage{longtable}\n
-      \\usepackage[pdftex,x11names]{xcolor}\n"
-    end
-
     def pre_table
-      result = '\\begin{longtable}{'
+      result = ''
+      if @options[:document]
+        result += "\\documentclass{article}\n"
+        result += preamble
+        result += "\\begin{document}\n"
+      end
+      result += "\\begin{#{@options[:environment]}}{"
       table.headers.each do |h|
         result += alignment_code(format_at[:body][h].alignment)
       end
       result += "}\n"
+      result
+    end
+
+    def post_table
+      result = "\\end{#{@options[:environment]}}\n"
+      result += "\\end{document}\n" if @options[:document]
       result
     end
 
@@ -112,10 +140,6 @@ module FatTable
       else
         'l'
       end
-    end
-
-    def post_table
-      "\\end{longtable}\n"
     end
 
     def post_header(_widths)
@@ -149,13 +173,13 @@ module FatTable
     end
 
     # Hlines look to busy in a printed table
-    def hline(widths)
+    def hline(_widths)
       ''
     end
 
-    # Hlines look to busy in a printed table
-    def post_footers(widths)
-      '' #"\\hline\\hline\n"
+    # Hlines look too busy in a printed table
+    def post_footers(_widths)
+      ''
     end
   end
 end

@@ -37,14 +37,10 @@ module FatTable
 
       it 'should be able to output valid LaTeX with default formatting instructions' do
         tmp = File.open("#{__dir__}/../../tmp/example1.tex", 'w')
-        ltx = LaTeXFormatter.new(@tab).output
+        ltx = LaTeXFormatter.new(@tab, document: true).output
         result = false
         Dir.chdir(File.dirname(tmp.path)) do
-          tmp << "\\documentclass{article}\n"
-          tmp << LaTeXFormatter.preamble
-          tmp << "\\begin{document}\n"
           tmp << ltx
-          tmp << "\\end{document}\n"
           tmp.flush
           result = system("#{@ltxcmd} #{tmp.path} >/dev/null 2>&1")
           result &&= system("#{@ltxcmd} #{tmp.path} >/dev/null 2>&1")
@@ -54,7 +50,7 @@ module FatTable
       end
 
       it 'should be able to set format and output LaTeX with block' do
-        fmt = LaTeXFormatter.new(@tab) do |f|
+        fmt = LaTeXFormatter.new(@tab, document: true) do |f|
           f.format(ref: '5.0', code: 'C', raw: ',0.0', shares: ',0.0',
                    price: '0.3R', bool: 'CYc[green,red]', numeric: 'Rc[Goldenrod1]')
           f.format_for(:header, string: 'CB')
@@ -85,17 +81,7 @@ module FatTable
         tmp = File.open("#{__dir__}/../../tmp/example2.tex", 'w')
         result = false
         Dir.chdir(File.dirname(tmp.path)) do
-          tmp << "\\documentclass{article}\n"
-          tmp << LaTeXFormatter.preamble
-          tmp << "\\usepackage{geometry}\n"
-          tmp << "\\geometry{left=0.5in,right=0.5in}\n"
-          tmp << "\\begin{document}\n"
-          tmp << "\\begin{center}\n"
-          tmp << "\\begin{small}\n"
           tmp << ltx
-          tmp << "\\end{small}\n"
-          tmp << "\\end{center}\n"
-          tmp << "\\end{document}\n"
           tmp.flush
           result = system("#{@ltxcmd} #{tmp.path} >/dev/null 2>&1")
           result &&= system("#{@ltxcmd} #{tmp.path} >/dev/null 2>&1")
