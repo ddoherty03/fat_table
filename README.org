@@ -599,7 +599,7 @@ cut across all or many of the operations.
 
 First, tables are by and large immutable objects. Each operation creates a new
 table without affecting the input tables. The only exception is the ~degroup!~
-operation, which removes any group boundaries from the table.
+operation, which mutates the receiver table by removing its group boundaries.
 
 Second, because each operation returns a ~FatTable::Table~ object, the
 operations are chainable.
@@ -616,7 +616,7 @@ SQL.
 
 *** Example Input Table
 
-For illustration purposes assume that the following tables are read into a ruby
+For illustration purposes assume that the following tables are read into ruby
 variables called '~tab1~' and '~tab2~. We have given the table groups, marked by
 the hlines below, and some duplicate rows to illustrate the effect of certain
 operations on groups and duplicates.
