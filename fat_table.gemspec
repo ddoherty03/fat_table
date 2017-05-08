@@ -11,33 +11,33 @@ Gem::Specification.new do |spec|
 
   spec.summary       = %q{Provides tools for working with tables as a data type.}
   spec.description   = %q{
-~FatTable~ is a gem that treats tables as a data type. It provides methods for
+FatTable is a gem that treats tables as a data type. It provides methods for
 constructing tables from a variety of sources, building them row-by-row,
 extracting rows, columns, and cells, and performing aggregate operations on
 columns. It also provides as set of SQL-esque methods for manipulating table
-objects: ~select~ for filtering by columns or for creating new columns, ~where~
-for filtering by rows, ~order_by~ for sorting rows, ~distinct~ for eliminating
-duplicate rows, ~group_by~ for aggregating multiple rows into single rows and
-applying column aggregate methods to ungrouped columns, a collection of ~join~
+objects: select for filtering by columns or for creating new columns, where
+for filtering by rows, order_by for sorting rows, distinct for eliminating
+duplicate rows, group_by for aggregating multiple rows into single rows and
+applying column aggregate methods to ungrouped columns, a collection of join
 methods for combining tables, and more.
 
-Furthermore, ~FatTable~ provides methods for formatting tables and producing
+Furthermore, FatTable provides methods for formatting tables and producing
 output that targets various output media: text, ANSI terminals, ruby data
 structures, LaTeX tables, Emacs org-mode tables, and more. The formatting
 methods can specify cell formatting in a way that is uniform across all the
 output methods and can also decorate the output with any number of footers,
-including group footers. ~FatTable~ applies formatting directives to the extent
+including group footers. FatTable applies formatting directives to the extent
 they makes sense for the output medium and treats other formatting directives as
 no-ops.
 
-~FatTable~ can be used to perform operations on data that are naturally best
+FatTable can be used to perform operations on data that are naturally best
 conceived of as tables, which in my experience is quite often. It can also serve
 as a foundation for providing reporting functions where flexibility about the
-output medium can be quite useful. Finally ~FatTable~ can be used within Emacs
-~org-mode~ files in code blocks targeting the Ruby language. Org mode tables are
-presented to a ruby code block as an array of arrays, so ~FatTable~ can read
-them in with its ~.from_aoa~ constructor. A ~FatTable~ table can output as an
-array of arrays with its ~.to_aoa~ output function and will be rendered in an
+output medium can be quite useful. Finally FatTable can be used within Emacs
+org-mode files in code blocks targeting the Ruby language. Org mode tables are
+presented to a ruby code block as an array of arrays, so FatTable can read
+them in with its .from_aoa constructor. A FatTable table can output as an
+array of arrays with its .to_aoa output function and will be rendered in an
 org-mode buffer as an org-table, ready for processing by other code blocks.
 }
 
