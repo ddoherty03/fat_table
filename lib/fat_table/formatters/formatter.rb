@@ -2,14 +2,14 @@ module FatTable
   # A Formatter is for use in Table output routines, and provides methods for
   # adding group and table footers to the output and instructions for how the
   # table's cells ought to be formatted. The goal is to make subclasses of this
-  # class handle different output targets, such as aoa for org tables, ANSI
-  # terminals, LaTeX, plain text, org mode table text, and so forth. Many of
-  # the formatting options, such as color, will be no-ops for some output
-  # targets, such as text, but will be valid nonetheless. Thus, the Formatter
-  # subclass should provide the best implementation for each formatting request
-  # available for the target. This base class will consist largely of methods
-  # that format output as pipe-separated values, but implementations provided
-  # by subclasses will override these for different output targets.
+  # class handle different output targets, such as aoa for an Array of Arrays
+  # (useful in Emacs org-mode code blocks), ANSI terminals, LaTeX, plain text,
+  # org mode table text, and so forth. Many of the formatting options, such as
+  # color, will be no-ops for some output targets, such as text, but will be
+  # valid nonetheless. Thus, a Formatter subclass should provide the best
+  # implementation for each formatting request available for the target. This
+  # base class will format output as pipe-separated values, but implementations
+  # provided by subclasses will override these for different output targets.
   class Formatter
     # Valid locations in a Table as an array of symbols.
     LOCATIONS = [:header, :body, :bfirst, :gfirst, :gfooter, :footer].freeze
@@ -156,12 +156,12 @@ module FatTable
     #   tab.footer('Grand Total', :shares, :price)
     #
     # Average then show standard deviation of several columns
-    #   tab.footer.('Average', date: avg, shares: :avg, price: avg)
-    #   tab.footer.('Sigma', date: dev, shares: :dev, price: :dev)
+    #   tab.footer.('Average', date: :avg, shares: :avg, price: :avg)
+    #   tab.footer.('Sigma', date: :dev, shares: :dev, price: :dev)
     #
     # Do some sums and some other aggregates: sum shares, average date and
     # price.
-    #   tab.footer.('Summary', :shares, date: avg, price: avg)
+    #   tab.footer.('Summary', :shares, date: :avg, price: :avg)
     def footer(label, *sum_cols, **agg_cols)
       label = label.to_s
       foot = {}
@@ -195,11 +195,11 @@ module FatTable
     #   :shares, :price)
     #
     # Average then show standard deviation of several columns
-    #   tab.gfooter.('Average', date: avg, shares: :avg, price: avg)
+    #   tab.gfooter.('Average', date: :avg, shares: :avg, price: :avg)
     #   tab.gfooter.('Sigma', date: dev, shares: :dev, price: :dev)
     #
     # Do some sums and some other aggregates: sum shares, average date and
-    # price. tab.gfooter.('Summary', :shares, date: avg, price: avg)
+    # price. tab.gfooter.('Summary', :shares, date: :avg, price: :avg)
     def gfooter(label, *sum_cols, **agg_cols)
       label = label.to_s
       foot = {}
@@ -303,11 +303,10 @@ module FatTable
       gfooter('Group Maximum', hsh)
     end
 
+    # :category: Formatting
+
     ############################################################################
     # Formatting methods
-    #
-    #
-    # :category: Formatting
     #
     # A Formatter can specify a hash to hold the formatting instructions for
     # columns by using the column head as a key and the value as the format
@@ -419,7 +418,7 @@ module FatTable
     end
 
     # :category: Formatting
-    #
+
     # Define a formatting directives for the given location. The following are
     # the valid +location+ symbols.
     #
