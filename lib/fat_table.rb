@@ -1,5 +1,3 @@
-require "fat_table/version"
-
 # This module provides objects for treating tables as a data type on which you
 # can (1) perform operations, such as select, where, join, and others and (2)
 # output the tables in several formats, including text, ANSI terminal, LaTeX,
@@ -7,12 +5,17 @@ require "fat_table/version"
 # variety of input sources.  See, e.g., .from_csv_file,
 # FatTable.from_org_file, and FatTable.from_sql, for more details.
 module FatTable
-  require 'fat_core'
+  require 'fat_core/symbol'
+  require 'fat_core/array'
+  require 'fat_core/hash'
+  require 'fat_core/numeric'
+  require 'csv'
   require 'dbi'
   require 'active_support'
   require 'active_support/core_ext'
   require 'active_support/number_helper'
 
+  require 'fat_table/version'
   require 'fat_table/evaluator'
   require 'fat_table/column'
   require 'fat_table/table'

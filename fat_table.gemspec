@@ -70,7 +70,7 @@ org-mode buffer as an org-table, ready for processing by other code blocks.
   spec.add_development_dependency 'pry-byebug'
   spec.add_development_dependency 'rcodetools'
 
-  spec.add_runtime_dependency 'fat_core', '~> 2.0', '>= 2.0.1'
+  spec.add_runtime_dependency 'fat_core', '~> 3.0'
   spec.add_runtime_dependency 'activesupport'
   spec.add_runtime_dependency 'rainbow'
   spec.add_runtime_dependency 'dbi'
