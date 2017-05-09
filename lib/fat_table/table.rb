@@ -58,6 +58,7 @@ module FatTable
     ###########################################################################
 
     # :category: Constructors
+
     # Return an empty FatTable::Table object.
     def initialize
       @columns = []
@@ -65,8 +66,9 @@ module FatTable
     end
 
     # :category: Constructors
-    # Construct a Table from the contents of a CSV file.  Headers will be taken
-    # from the first row and converted to symbols.
+
+    # Construct a Table from the contents of a CSV file named +fname+. Headers
+    # will be taken from the first CSV row and converted to symbols.
     def self.from_csv_file(fname)
       File.open(fname, 'r') do |io|
         from_csv_io(io)
@@ -74,7 +76,9 @@ module FatTable
     end
 
     # :category: Constructors
-    # Construct a Table from a string, treated as the input from a CSV file.
+
+    # Construct a Table from a CSV string +str+, treated in the same manner as
+    # the input from a CSV file in ::from_org_file.
     def self.from_csv_string(str)
       from_csv_io(StringIO.new(str))
     end
@@ -82,9 +86,9 @@ module FatTable
     # :category: Constructors
 
     # Construct a Table from the first table found in the given Emacs org-mode
-    # file. Headers are taken from the first row if the second row is an hrule.
-    # Otherwise, synthetic headers of the form +:col_1+, +:col_2+, etc. are
-    # created.
+    # file named +fname+. Headers are taken from the first row if the second row
+    # is an hrule. Otherwise, synthetic headers of the form +:col_1+, +:col_2+,
+    # etc. are created.
     def self.from_org_file(fname)
       File.open(fname, 'r') do |io|
         from_org_io(io)
@@ -92,36 +96,39 @@ module FatTable
     end
 
     # :category: Constructors
-    # Construct a Table from a string, treated as the contents of an org-mode
-    # file.
+
+    # Construct a Table from a string +str+, treated in the same manner as the
+    # contents of an org-mode file in ::from_org_file.
     def self.from_org_string(str)
       from_org_io(StringIO.new(str))
     end
 
     # :category: Constructors
 
-    # Construct a new table from an array of arrays. By default, with +hlines+
-    # false, do not look for separators, i.e. nil or a string of dashes, just
-    # treat the first row as headers. With +hlines+ true, expect separators to
-    # mark the header row and any boundaries. If the second element of the array
-    # is a +nil+, interpret the first element of the array as a row of headers.
-    # Otherwise, synthesize headers of the form +:col_1+, +:col_2+, ... and so
-    # forth. The remaining elements are taken as the body of the table, except
-    # that if an element of the outer array is a +nil+, mark the preceding row
-    # as a boundary. Note: In org mode code blocks, by default (+:hlines no+)
-    # all hlines are stripped from the table, otherwise (+:hlines yes+) they are
-    # indicated with nil elements in the outer array.
+    # Construct a new table from an Array of Arrays +aoa+. By default, with
+    # +hlines+ set to false, do not look for separators, i.e. +nils+, just treat
+    # the first row as headers. With +hlines+ set true, expect +nil+ separators
+    # to mark the header row and any boundaries. If the second element of the
+    # array is a +nil+, interpret the first element of the array as a row of
+    # headers. Otherwise, synthesize headers of the form +:col_1+, +:col_2+, ...
+    # and so forth. The remaining elements are taken as the body of the table,
+    # except that if an element of the outer array is a +nil+, mark the
+    # preceding row as a group boundary. Note for Emacs users: In org mode code
+    # blocks when an org-mode table is passed in as a variable it is passed in
+    # as an Array of Arrays. By default (+ HEADER: :hlines no +) org-mode strips
+    # all from the table; otherwise (+ HEADER: :hlines yes +) they are indicated
+    # with nil elements in the outer array.
     def self.from_aoa(aoa, hlines: false)
       from_array_of_arrays(aoa, hlines: hlines)
     end
 
     # :category: Constructors
 
-    # Construct a Table from an array of hashes, or any objects that respond to
-    # the #to_h method.  All hashes must have the same keys, which, when
-    # converted to symbols will become the headers for the Table.  If hlines is
-    # set true, mark a group boundary whenever a nil, rather than a hash
-    # appears in the outer array.
+    # Construct a Table from +aoh+, an Array of Hashes or an Array of any
+    # objects that respond to the #to_h method. All hashes must have the same
+    # keys, which, when converted to symbols will become the headers for the
+    # Table. If hlines is set true, mark a group boundary whenever a nil, rather
+    # than a hash appears in the outer array.
     def self.from_aoh(aoh, hlines: false)
       if aoh.first.respond_to?(:to_h)
         from_array_of_hashes(aoh, hlines: hlines)
@@ -133,16 +140,16 @@ module FatTable
 
     # :category: Constructors
 
-    # Construct a Table from another Table.  Inherit any group boundaries from
-    # the input table.
+    # Construct a new table from another FatTable::Table object +table+. Inherit any
+    # group boundaries from the input table.
     def self.from_table(table)
       table.deep_dup
     end
 
     # :category: Constructors
 
-    # Construct a Table by running a SQL query against the database set up with
-    # FatTable.set_db.  Return the Table with the query results as rows.
+    # Construct a Table by running a SQL +query+ against the database set up
+    # with FatTable.set_db, with the rows of the query result as rows.
     def self.from_sql(query)
       raise UserError, 'FatTable.db must be set with FatTable.set_db' if FatTable.db.nil?
       result = Table.new
@@ -281,13 +288,16 @@ module FatTable
     ###########################################################################
 
     # :category: Attributes
-    # Return the Column with the given header.
+
+    # Return the table's Column with the given +key+ as its header.
     def column(key)
       columns.detect { |c| c.header == key.as_sym }
     end
 
     # :category: Attributes
-    # Return the type of the Column with the given header
+
+    # Return the type of the Column with the given +key+ as its
+    # header as a String.
     def type(key)
       column(key).type
     end
@@ -295,11 +305,11 @@ module FatTable
     # :category: Attributes
 
     # Return the array of items of the column with the given header symbol
-    # +key+, or if +key+ is an Integer, return that row number. So a table's
-    # rows can be accessed by number, and its columns can be accessed by column
-    # header. Also, double indexing works in either row-major or column-major
-    # order: \tab\[:id\]\[8\] returns the 9th item in the column headed :id and
-    # so does \tab\[8\]\[:id\].
+    # +key+, or if +key+ is an Integer, return that row at that index. So a
+    # table's rows can be accessed by number, and its columns can be accessed by
+    # column header. Also, double indexing works in either row-major or
+    # column-major order: \tab\[:id\]\[8\] returns the 9th item in the column
+    # headed :id and so does \tab\[8\]\[:id\].
     def [](key)
       case key
       when Integer
@@ -325,7 +335,7 @@ module FatTable
 
     # :category: Attributes
 
-    # Return a Hash of the Table's Column header symbols to types.
+    # Return a Hash of the Table's Column header symbols to type strings.
     def types
       result = {}
       columns.each do |c|
@@ -336,7 +346,7 @@ module FatTable
 
     # :category: Attributes
 
-    # Return the headers for the Table as an array of symbols.
+    # Return the headers for the Table as an Array of Symbols.
     def headers
       columns.map(&:header)
     end
@@ -461,7 +471,7 @@ module FatTable
     # boundaries would make no sense anyway. Likewise, #union, #intersection,
     # #except, and #join reset the boundaries to their default.
     #
-    # Return an array of an array of row hashes for the groups in this Table.
+    # Return an array of an Array of row Hashes for the groups in this Table.
     def groups
       normalize_boundaries
       groups = []
@@ -482,8 +492,9 @@ module FatTable
       self
     end
 
-    # Mark a boundary at k, and if k is nil, mark the last row in the table as a
-    # group boundary.  This is used for internal purposes.
+    # Mark a group boundary at row +k+, and if +k+ is +nil+, mark the last row
+    # in the table as a group boundary. This is mainly used for internal
+    # purposes.
     def mark_boundary(k = nil) # :nodoc:
       if k
         boundaries.push(k)
@@ -551,11 +562,11 @@ module FatTable
     # :category: Operators
 
     # Return a new Table sorting the rows of this Table on the possibly multiple
-    # keys given in the array of syms in headers. Append a ! to the symbol name
-    # to indicate reverse sorting on that column.
+    # keys given in +sort_heads+ as an Array of Symbols. Append a ! to the
+    # symbol name to indicate reverse sorting on that column.
     #
     #   tab.order_by(:ref, :date) => sorted table
-    #   tab.order_by(:date!)  => reverse sort on :date
+    #   tab.order_by(:date!) => reverse sort on :date
     #
     # After sorting, the output Table will have group boundaries added after
     # each row where the sort key changes.
@@ -588,23 +599,25 @@ module FatTable
     # Return a Table having the selected column expressions. Each expression can
     # be either a
     #
-    # 1. a symbol, +:old_col+, representing a column in the current table,
+    # 1. in +cols+, a symbol, +:old_col+, representing a column in the current
+    #    table,
     #
-    # 2. a hash of +new_col: :old_col+ to rename an existing +:old_col+ column as
-    #    +:new_col+, or
+    # 2. a hash in +new_cols+ of the form +new_col: :old_col+ to rename an
+    #    existing +:old_col+ column as +:new_col+, or
     #
-    # 3. a hash of +new_col: 'expression'+, to add a new column that is computed
-    #    as an arbitrary ruby expression of the existing columns (whether
-    #    selected for the output table or not) or any new_col defined earlier in
-    #    the argument list defined as local variables in the expression. The
-    #    expression string can also access the instance variable @row, as the row
-    #    number of the row being evaluated, and @group, as the group number of
-    #    the row being evaluated.
+    # 3. a hash in +new_cols+ of the form +new_col: 'expression'+, to add a new
+    #    column +new_col+ that is computed as an arbitrary ruby expression in
+    #    which there are local variables bound to the names of existing columns
+    #    (whether selected for the output table or not) as well as any +new_col+
+    #    defined earlier in the argument list. The expression string can also
+    #    access the instance variable @row, as the row number of the row being
+    #    evaluated, and @group, as the group number of the row being evaluated.
     #
-    # The bare symbol arguments (1) must precede any hash arguments (2) or (3).
-    # Each expression results in a column in the resulting Table in the order
-    # given. The expressions are evaluated in left-to-right order as well. The
-    # output table preserves any groups present in the input table.
+    # The bare symbol arguments +cols+ (1) must precede any hash arguments
+    # +new_cols+ (2 or 3). Each expression results in a column in the resulting
+    # Table in the order given in the argument list. The expressions are
+    # evaluated in left-to-right order as well. The output table preserves any
+    # groups present in the input table.
     #
     #   tab.select(:ref, :date, :shares) => table with only 3 columns selected
     #   tab.select(:ref, :date, shares: :quantity) => rename :shares->:quantity
@@ -676,7 +689,7 @@ module FatTable
 
     # :category: Operators
 
-    # Return this table with all duplicate rows eliminated. Resets groups. Same
+    # Return a new table with all duplicate rows eliminated. Resets groups. Same
     # as #uniq.
     def distinct
       result = Table.new
@@ -697,12 +710,12 @@ module FatTable
 
     # :category: Operators
 
-    # Return a Table that combines this table with +other+ table. In other
-    # words, return the union of this table with the other. The headers of this
-    # table are used in the result. There must be the same number of columns of
-    # the same type in the two tables, or an exception will be thrown.
-    # Duplicates are eliminated from the result.  Any groups present in either
-    # Table are eliminated in the output Table.
+    # Return a Table that combines this table with +other+ table, i.e., return
+    # the union of this table with the other. The headers of this table are used
+    # in the result. There must be the same number of columns of the same type
+    # in the two tables, otherwise an exception will be raised. Duplicates are
+    # eliminated from the result. Any groups present in either Table are
+    # eliminated in the output Table.
     def union(other)
       set_operation(other, :+,
                     distinct: true,
@@ -753,10 +766,10 @@ module FatTable
     # :category: Operators
 
     # Return a Table that includes the rows of this table except for any rows
-    # that are the same as those in another table. In other words, return the
-    # set difference between this table an the other. The headers of this table
+    # that are the same as those in Table +other+. In other words, return the
+    # set difference between this table and +other+. The headers of this table
     # are used in the result. There must be the same number of columns of the
-    # same type in the two tables, or an exception will be thrown. Duplicates
+    # same type in the two tables, or an exception will be raised. Duplicates
     # are eliminated from the result. Any groups present in either Table are
     # eliminated in the output Table.
     def except(other)
@@ -766,12 +779,12 @@ module FatTable
     # :category: Operators
 
     # Return a Table that includes the rows of this table except for any rows
-    # that are the same as those in +other+ Table. In other words, return the
+    # that are the same as those in Table +other+. In other words, return the
     # set difference between this table an the other. The headers of this table
     # are used in the result. There must be the same number of columns of the
     # same type in the two tables, or an exception will be thrown. Duplicates
-    # are not eliminated from the result. Any groups present in either Table are
-    # eliminated in the output Table.
+    # are /not/ eliminated from the result. Any groups present in either Table
+    # are eliminated in the output Table.
     def except_all(other)
       set_operation(other, :difference, distinct: false)
     end
@@ -814,8 +827,10 @@ module FatTable
 
     # :category: Operators
     #
-    # Return a table that joins this table to another based on one or more join
-    # expressions. There are several possibilities for the join expressions:
+    # Return a table that joins this Table to +other+ based on one or more join
+    # expressions +exps+ using the +join_type+ in determining the rows of the
+    # result table. There are several possible forms for the join expressions
+    # +exps+:
     #
     # 1. If no join expressions are given, the tables will be joined when all
     #    values with the same name in both tables have the same value, a
@@ -876,8 +891,8 @@ module FatTable
     #          the tables have N and M rows respectively, the joined table will
     #          have N * M rows.
     #
-    # Any groups present in either Table are eliminated in the output Table.
-    # See the README for examples.
+    # Any groups present in either Table are eliminated in the output Table. See
+    # the README for examples.
     def join(other, *exps, join_type: :inner)
       unless other.is_a?(Table)
         raise UserError, 'need other table as first argument to join'
@@ -927,31 +942,36 @@ module FatTable
     end
 
     # :category: Operators
-    # Perform an inner join as described in FatTable::Table.join.
+
+    # Perform an inner join as described in FatTable::Table#join.
     def inner_join(other, *exps)
       join(other, *exps)
     end
 
     # :category: Operators
-    # Perform a left join as described in FatTable::Table.join.
+
+    # Perform a left join as described in FatTable::Table#join.
     def left_join(other, *exps)
       join(other, *exps, join_type: :left)
     end
 
     # :category: Operators
-    # Perform a right join as described in FatTable::Table.join.
+
+    # Perform a right join as described in FatTable::Table#join.
     def right_join(other, *exps)
       join(other, *exps, join_type: :right)
     end
 
     # :category: Operators
-    # Perform a full join as described in FatTable::Table.join.
+
+    # Perform a full join as described in FatTable::Table#join.
     def full_join(other, *exps)
       join(other, *exps, join_type: :full)
     end
 
     # :category: Operators
-    # Perform a cross join as described in FatTable::Table.join.
+
+    # Perform a cross join as described in FatTable::Table#join.
     def cross_join(other)
       join(other, join_type: :cross)
     end
@@ -1099,23 +1119,24 @@ module FatTable
     public
 
     # :category: Operators
+
     # Return a Table with a single row for each group of rows in the input table
-    # where the value of all columns named as simple symbols are equal. All
-    # other columns are set to the result of aggregating the values of that
-    # column within the group according to a aggregate function (:count, :sum,
-    # :min, :max, etc.) that you can specify by adding a hash parameter with the
-    # column as the key and a symbol for the aggregate function as the value.
-    # For example, consider the following call:
+    # where the value of all columns +group_cols+ named as simple symbols are
+    # equal. All other columns, +agg_cols+, are set to the result of aggregating
+    # the values of that column within the group according to a aggregate
+    # function (:count, :sum, :min, :max, etc.) that you can specify by adding a
+    # hash parameter with the column as the key and a symbol for the aggregate
+    # function as the value. For example, consider the following call:
     #
     # tab.group_by(:date, :code, :price, shares: :sum).
     #
-    # The first three parameters are simple symbols, so the table is divided
-    # into groups of rows in which the value of :date, :code, and :price are
-    # equal. The shares: hash parameter is set to the aggregate function :sum,
-    # so it will appear in the result as the sum of all the :shares values in
-    # each group. Because of the way Ruby parses parameters to a method call,
-    # all the grouping symbols must appear first in the parameter list before
-    # any hash parameters.
+    # The first three parameters are simple symbols and count as +group_cols+,
+    # so the table is divided into groups of rows in which the value of :date,
+    # :code, and :price are equal. The shares: hash parameter is an +agg_col+
+    # parameter set to the aggregate function :sum, so it will appear in the
+    # result as the sum of all the :shares values in each group. Because of the
+    # way Ruby parses parameters to a method call, all the grouping symbols must
+    # appear first in the parameter list before any hash parameters.
     def group_by(*group_cols, **agg_cols)
       sorted_tab = order_by(group_cols)
       groups = sorted_tab.rows.group_by do |r|
@@ -1152,9 +1173,10 @@ module FatTable
     public
 
     # :category: Constructors
-    # Add a row represented by a Hash having the headers as keys. If mark is
-    # true, mark this row as a boundary. All tables should be built ultimately
-    # using this method as a primitive.
+
+    # Add a +row+ represented by a Hash having the headers as keys. If +mark:+
+    # is set true, mark this row as a boundary. All tables should be built
+    # ultimately using this method as a primitive.
     def add_row(row, mark: false)
       row.each_pair do |k, v|
         key = k.as_sym
@@ -1166,12 +1188,14 @@ module FatTable
     end
 
     # :category: Constructors
-    # Add a row without marking.
+
+    # Add a +row+ without marking it as a group boundary.
     def <<(row)
       add_row(row)
     end
 
     # :category: Constructors
+
     # Add a FatTable::Column object +col+ to the table.
     def add_column(col)
       raise "Table already has a column with header '#{col.header}'" if column?(col.header)
@@ -1193,12 +1217,12 @@ module FatTable
     # :category: Output
 
     # Return a string or ruby object according to the format specified in
-    # FatTable.format.  If a block is given, it will yield a Formatter of the
-    # appropriate type to which format and footers can be applied. Otherwise, the
-    # default format for the type will be used.
+    # FatTable.format, passing the +options+ on to the Formatter. If a block is
+    # given, it will yield a Formatter of the appropriate type to which format
+    # and footers can be applied. Otherwise, the default format for the type
+    # will be used.
     #
-    # :call-seq:
-    # to_format(options = {}) { |fmt| ... }
+    # :call-seq: to_format(options = {}) { |fmt| ... }
     #
     def to_format(options = {})
       if block_given?
@@ -1211,11 +1235,11 @@ module FatTable
     # :category: Output
 
     # Return a string or ruby object according to the format type +fmt_type+
-    # given in the first argument. Valid format types are :psv, :aoa, :aoh,
-    # :latex, :org, :term, :text, or their string equivalents. If a block is
-    # given, it will yield a Formatter of the appropriate type to which format
-    # and footers can be applied. Otherwise, the default format for the type
-    # will be used.
+    # given in the first argument, passing the +options+ on to the Formatter.
+    # Valid format types are :psv, :aoa, :aoh, :latex, :org, :term, :text, or
+    # their string equivalents. If a block is given, it will yield a Formatter
+    # of the appropriate type to which format and footers can be applied.
+    # Otherwise, the default format for the type will be used.
     #
     # :call-seq: to_any(fmt_type, options = {}) { |fmt| ... }
     #
@@ -1232,12 +1256,13 @@ module FatTable
 
     # :category: Output
 
-    # Return the table as a string formatted as a pipe-separated values. If no
-    # block is given, default formatting is applies to the table's cells. If a
-    # block is given, it yields a Formatter to the block to which formatting
-    # instructions and footers can be added by calling methods on it.  Since the
-    # pipe-separated format is the default format for Formatter, there is no
-    # class PsvFormatter as you might expect.
+    # Return the table as a string formatted as a pipe-separated values, passing
+    # the +options+ on to the Formatter. If no block is given, default
+    # formatting is applies to the table's cells. If a block is given, it yields
+    # a Formatter to the block to which formatting instructions and footers can
+    # be added by calling methods on it. Since the pipe-separated format is the
+    # default format for Formatter, there is no class PsvFormatter as you might
+    # expect.
     def to_psv(options = {})
       fmt = Formatter.new(self, options)
       yield fmt if block_given?
@@ -1246,10 +1271,11 @@ module FatTable
 
     # :category: Output
 
-    # Return the table as an Array of Array of Strings. If no block is given,
-    # default formatting is applies to the table's cells. If a block is given,
-    # it yields an AoaFormatter to the block to which formatting instructions
-    # and footers can be added by calling methods on it.
+    # Return the table as an Array of Array of Strings, passing the +options+ on
+    # to the AoaFormatter. If no block is given, default formatting is applies
+    # to the table's cells. If a block is given, it yields an AoaFormatter to
+    # the block to which formatting instructions and footers can be added by
+    # calling methods on it.
     def to_aoa(options = {})
       fmt = FatTable::AoaFormatter.new(self, options)
       yield fmt if block_given?
@@ -1258,12 +1284,12 @@ module FatTable
 
     # :category: Output
 
-    # Return the table as an Array of Hashes. Each inner hash uses the Table's
-    # columns as keys and it values are strings representing the cells of the
-    # table. If no block is given, default formatting is applies to the table's
-    # cells. If a block is given, it yields an AohFormatter to the block to
-    # which formatting instructions and footers can be added by calling methods
-    # on it.
+    # Return the table as an Array of Hashes, passing the +options+ on to the
+    # AohFormatter. Each inner hash uses the Table's columns as keys and it
+    # values are strings representing the cells of the table. If no block is
+    # given, default formatting is applies to the table's cells. If a block is
+    # given, it yields an AohFormatter to the block to which formatting
+    # instructions and footers can be added by calling methods on it.
     def to_aoh(options = {})
       fmt = AohFormatter.new(self, options)
       yield fmt if block_given?
@@ -1272,10 +1298,11 @@ module FatTable
 
     # :category: Output
 
-    # Return the table as a string containing a LaTeX table. If no block is
-    # given, default formatting applies to the table's cells. If a block is
-    # given, it yields a LaTeXFormatter to the block to which formatting
-    # instructions and footers can be added by calling methods on it.
+    # Return the table as a string containing a LaTeX table, passing the
+    # +options+ on to the LaTeXFormatter. If no block is given, default
+    # formatting applies to the table's cells. If a block is given, it yields a
+    # LaTeXFormatter to the block to which formatting instructions and footers
+    # can be added by calling methods on it.
     def to_latex(options = {})
       fmt = LaTeXFormatter.new(self, options)
       yield fmt if block_given?
@@ -1284,10 +1311,11 @@ module FatTable
 
     # :category: Output
 
-    # Return the table as a string containing an Emacs org-mode table. If no
-    # block is given, default formatting applies to the table's cells. If a
-    # block is given, it yields a OrgFormatter to the block to which formatting
-    # instructions and footers can be added by calling methods on it.
+    # Return the table as a string containing an Emacs org-mode table, passing
+    # the +options+ on to the OrgFormatter. If no block is given, default
+    # formatting applies to the table's cells. If a block is given, it yields a
+    # OrgFormatter to the block to which formatting instructions and footers can
+    # be added by calling methods on it.
     def to_org(options = {})
       fmt = OrgFormatter.new(self, options)
       yield fmt if block_given?
@@ -1297,10 +1325,10 @@ module FatTable
     # :category: Output
 
     # Return the table as a string containing ANSI terminal text representing
-    # table. If no block is given, default formatting applies to the table's
-    # cells. If a block is given, it yields a TermFormatter to the block to
-    # which formatting instructions and footers can be added by calling methods
-    # on it.
+    # table, passing the +options+ on to the TermFormatter. If no block is
+    # given, default formatting applies to the table's cells. If a block is
+    # given, it yields a TermFormatter to the block to which formatting
+    # instructions and footers can be added by calling methods on it.
     def to_term(options = {})
       fmt = TermFormatter.new(self, options)
       yield fmt if block_given?
@@ -1309,10 +1337,11 @@ module FatTable
 
     # :category: Output
 
-    # Return the table as a string containing ordinary text representing table.
-    # If no block is given, default formatting applies to the table's cells. If
-    # a block is given, it yields a TextFormatter to the block to which
-    # formatting instructions and footers can be added by calling methods on it.
+    # Return the table as a string containing ordinary text representing table,
+    # passing the +options+ on to the TextFormatter. If no block is given,
+    # default formatting applies to the table's cells. If a block is given, it
+    # yields a TextFormatter to the block to which formatting instructions and
+    # footers can be added by calling methods on it.
     def to_text(options = {})
       fmt = TextFormatter.new(self, options)
       yield fmt if block_given?
