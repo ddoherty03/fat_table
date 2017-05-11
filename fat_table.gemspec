@@ -59,6 +59,7 @@ org-mode buffer as an org-table, ready for processing by other code blocks.
   spec.bindir        = 'bin'
   spec.executables   = ['ft_console']
   spec.require_paths = ['lib']
+  spec.metadata['yard.run'] = 'yri' # use "yard" to build full HTML docs.
 
   spec.add_development_dependency 'simplecov'
   spec.add_development_dependency 'bundler', '~> 1.14'
@@ -68,7 +69,7 @@ org-mode buffer as an org-table, ready for processing by other code blocks.
   spec.add_development_dependency 'pry'
   spec.add_development_dependency 'pry-doc'
   spec.add_development_dependency 'pry-byebug'
-  spec.add_development_dependency 'rcodetools'
+  spec.add_development_dependency 'redcarpet'
 
   spec.add_runtime_dependency 'fat_core', '~> 3.0'
   spec.add_runtime_dependency 'activesupport'

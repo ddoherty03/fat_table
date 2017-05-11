@@ -1,0 +1,1 @@
+--no-private lib/**/*.rb --markup=markdown --main=README.rdoc - README.rdoc

@@ -1342,6 +1342,7 @@ module FatTable
     # default formatting applies to the table's cells. If a block is given, it
     # yields a TextFormatter to the block to which formatting instructions and
     # footers can be added by calling methods on it.
+    # @return [String]
     def to_text(options = {})
       fmt = TextFormatter.new(self, options)
       yield fmt if block_given?
