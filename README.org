@@ -148,8 +148,9 @@ the main features of ~FatTable~. See the detailed explanations further on down.
 
 When you install the fat_table gem, you have access to a program ~ft_console~
 which opens a ~pry~ session with ~fat_table~ loaded and the tables used in the
-examples in this README defined as local variables so you can experiment with
-them.
+examples in this README defined as instance variables so you can experiment with
+them.  Because they are defined as instance variables, you have to write ~tab1~
+as ~@tab1~ in ~ft_console~, but otherwise the examples should work.
 
 The examples in this ~README~ file are executed as code blocks within the
 ~README.org~ file, so they typically end with a call to ~.to_aoa~. That causes
@@ -162,21 +163,14 @@ To read in the table used in the Quick Start section above, you might do the
 following:
 
 #+BEGIN_EXAMPLE
-$ ft_console
-From: /home/ded/.rbenv/versions/2.3.0/lib/ruby/gems/2.3.0/gems/fat_table-0.2.1/bin/ft_console @ line 115 :
-
-    110:        [15, '2013-05-29', 'S', 15_900.00, 6685.95, 24.5802, 'YLEAC', 'T'],
-    111:        [16, '2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'YLEAC', 'T']]
-    112: tt = FatTable.from_aoa(AOA)
-    113:
-    114: binding.pry
- => 115: instr <<-EOS
-    116: FatTable console sets up some sample tables you can play with (see ls)
-    117:
-    118:   For example, try 'puts tab1.to_term'
-    119: EOS
-
-[1] pry(main)> table = FatTable.from_aoa(data)
+$ ft_console[1] pry(main)> ls
+ActiveSupport::ToJsonWithActiveSupportEncoder#methods: to_json
+self.methods: inspect  to_s
+instance variables:
+  @aoa   @tab1      @tab2      @tab_a      @tab_b      @tt
+  @data  @tab1_str  @tab2_str  @tab_a_str  @tab_b_str
+locals: _  __  _dir_  _ex_  _file_  _in_  _out_  _pry_  lib  str  version
+[2] pry(main)> table = FatTable.from_aoa(@data)
 => #<FatTable::Table:0x0055b40e6cd870
  @boundaries=[],
  @columns=
@@ -197,7 +191,7 @@ From: /home/ded/.rbenv/versions/2.3.0/lib/ruby/gems/2.3.0/gems/fat_table-0.2.1/b
     @raw_header=:info,
     @type="String">,
    #<FatTable::Column:0x0055b40e6d2668 @header=:ok, @items=[false, true, false, true, true, true, true, true, true, true, true, false], @raw_header=:ok, @type="Boolean">]>
-[2] pry(main)> puts table.to_text
+[3] pry(main)> puts table.to_text
 +============+======+==========+==========+=========+=========+====+
 | Date       | Code | Raw      | Shares   | Price   | Info    | Ok |
 +------------+------+----------+----------+---------+---------+----+
@@ -215,7 +209,7 @@ From: /home/ded/.rbenv/versions/2.3.0/lib/ruby/gems/2.3.0/gems/fat_table-0.2.1/b
 | 2013-05-23 | S    | 23054.0  | 9694.21  | 26.8015 | ENTITY3 | F  |
 +============+======+==========+==========+=========+=========+====+
 => nil
-[3] pry(main)>
+[4] pry(main)>
 #+END_EXAMPLE
 
 And if you use ~.to_term~, you can see the effect of the color formatting
