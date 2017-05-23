@@ -965,6 +965,8 @@ will raise an exception.
 - ~pdev~ :: for Numeric and DateTime columns, compute the population standard
      deviation of the non-nil values in the column, dates are converted to
      numbers as for the :avg aggregate,
+- ~all?~ :: for Boolean columns only, return true if all of the non-nil values
+     in the column are true,
 - ~any?~ :: for Boolean columns only, return true if any non-nil value in the
      column is true,
 - ~none?~ :: for Boolean columns only, return true if no non-nil value in the

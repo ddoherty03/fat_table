@@ -864,7 +864,7 @@ module FatTable
       end
       if istruct.commas
         # Commify the whole number part if not done already.
-        result = result.commify
+        result = result.commas
       end
       result
     end
@@ -879,7 +879,8 @@ module FatTable
         when :upper
           val.upcase
         when :title
-          val.entitle
+          # Note: fat_core entitle keeps all uppercase words as upper case,
+          val.downcase.entitle
         when :none
           val
         end
