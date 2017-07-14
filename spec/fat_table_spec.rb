@@ -18,11 +18,13 @@ RSpec.describe FatTable do
   it 'can invoke from_csv_string constructor' do
     str = <<-EOS
 Ref,Date,Code,RawShares,Shares,Price,Info
-1,2006-05-02,P,5000,5000,8.6000,2006-08-09-1-I
-2,2006-05-03,P,5000,5000,8.4200,2006-08-09-1-I
-3,2006-05-04,P,5000,5000,8.4000,2006-08-09-1-I
+1,5/2/2006,P,5000,5000,8.6000,2006-08-09-1-I
+2,05/03/2006,P,5000,5000,8.4200,2006-08-09-1-I
+3,5/4/2006,P,5000,5000,8.4000,2006-08-09-1-I
 EOS
-    expect(FatTable.from_csv_string(str).class).to eq(FatTable::Table)
+    tab = FatTable.from_csv_string(str)
+    expect(tab.class).to eq(FatTable::Table)
+    expect(tab.column(:date).type).to eq('DateTime')
   end
 
   it 'can construct from_org_file' do

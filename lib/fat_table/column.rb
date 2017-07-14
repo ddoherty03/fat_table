@@ -473,6 +473,9 @@ module FatTable
       end
     end
 
+    IS0_DATE_RE = %r{\b(\d\d\d\d)[-/](\d\d?)[-/](\d\d?)(T\d\d:\d\d:\d\d(\+\d\d:\d\d)?)?\b}
+    AMR_DATE_RE = %r{\b(\d\d?)[-/](\d\d?)[-/](\d\d\d\d)\b}
+
     # Convert the val to a DateTime if it is either a DateTime, a Date, or a
     # String that can be parsed as a DateTime, otherwise return nil. It only
     # recognizes strings that contain a something like '2016-01-14' or
@@ -485,8 +488,13 @@ module FatTable
       begin
         val = val.to_s.clean
         return nil if val.blank?
-        return nil unless val =~ %r{\b\d\d\d\d[-/]\d\d?[-/]\d\d?\b}
-        val = DateTime.parse(val.to_s.clean)
+        if val =~ IS0_DATE_RE
+          val = DateTime.parse(val)
+        elsif val =~ AMR_DATE_RE
+          val = DateTime.new($3.to_i, $1.to_i, $2.to_i)
+        else
+          return nil
+        end
         val = val.to_date if val.seconds_since_midnight.zero?
         val
       rescue ArgumentError
