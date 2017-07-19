@@ -87,7 +87,10 @@ module FatTable
 
     describe 'initialization of numeric' do
       it 'should initialize a good numeric column without trailing nils' do
-        items = [nil, nil, '$2_018', 3.14159, '1,957/9', '2:3', 64646464646]
+        items = [nil, nil, '$2_018', 3.14159, '1,957/9', '2:3', 64646464646,
+                 '$-2_018', -3.14159, '+1,957/-9', '-2:3', +64646464646,
+                 '-$2_018', +3.14159, '-1,957/+9', '+2:-3', -64646464646,
+                ]
         col = Column.new(header: 'junk', items: items)
         expect(col.header).to eq(:junk)
         expect(col.type).to eq('Numeric')
@@ -98,7 +101,17 @@ module FatTable
         expect(col[4]).to eq(Rational(1957, 9))
         expect(col[5]).to eq(Rational(2, 3))
         expect(col[6]).to eq(64646464646)
-        expect(col.size).to eq(7)
+        expect(col[7]).to eq(-2018)
+        expect(col[8]).to eq(-3.14159)
+        expect(col[9]).to eq(Rational(-1957, 9))
+        expect(col[10]).to eq(Rational(-2, 3))
+        expect(col[11]).to eq(64646464646)
+        expect(col[12]).to eq(-2018)
+        expect(col[13]).to eq(3.14159)
+        expect(col[14]).to eq(Rational(-1957, 9))
+        expect(col[15]).to eq(Rational(-2, 3))
+        expect(col[16]).to eq(-64646464646)
+        expect(col.size).to eq(17)
       end
 
       it 'should initialize a good numeric column with trailing nils' do

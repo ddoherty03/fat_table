@@ -514,11 +514,11 @@ module FatTable
       val = val.to_s.clean.gsub(clean_re, '')
       return nil if val.blank?
       case val
-      when /\A(\d+\.\d*)|(\d*\.\d+)\z/
+      when /\A[-+]?(\d+\.\d*)|(\d*\.\d+)\z/
         BigDecimal.new(val.to_s.clean)
-      when /\A[\d]+\z/
+      when /\A[-+]?[\d]+\z/
         val.to_i
-      when %r{\A(\d+)\s*[:/]\s*(\d+)\z}
+      when %r{\A([-+]?\d+)\s*[:/]\s*([-+]?\d+)\z}
         Rational($1, $2)
       end
     end
