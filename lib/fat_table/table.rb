@@ -626,9 +626,15 @@ module FatTable
     def select(*cols, **new_cols)
       result = Table.new
       normalize_boundaries
-      ev = Evaluator.new(vars: { row: 0, group: 1 },
-                         before: '@row = __row; @group = __group')
+      ev = Evaluator.new(vars: { row: 0, group: 0 },
+                         before: '@row += 1')
       rows.each_with_index do |old_row, old_k|
+        # Set the group number in the before hook and run the hook with the
+        # local variables set to the row before the new row is evaluated.
+        grp = row_index_to_group_index(old_k)
+        vars = old_row.merge(__group: grp)
+        ev.eval_before_hook(vars)
+        # Compute the new row.
         new_row = {}
         cols.each do |k|
           h = k.as_sym
@@ -638,8 +644,6 @@ module FatTable
         new_cols.each_pair do |key, val|
           key = key.as_sym
           vars = old_row.merge(new_row)
-          vars[:__row] = old_k + 1
-          vars[:__group] = row_index_to_group_index(old_k)
           case val
           when Symbol
             raise UserError, "Column '#{val}' in select does not exist" unless vars.keys.include?(val)
@@ -650,6 +654,10 @@ module FatTable
             raise UserError, 'Hash parameters to select must be a symbol or string'
           end
         end
+        # Set the group number and run the hook with the local variables set to
+        # the row after the new row is evaluated.
+        vars = new_row.merge(__group: grp)
+        ev.eval_after_hook(vars)
         result << new_row
       end
       result.boundaries = boundaries
@@ -675,13 +683,14 @@ module FatTable
         col = Column.new(header: h)
         result.add_column(col)
       end
-      ev = Evaluator.new(vars: { row: 0 },
-                         before: '@row = __row; @group = __group')
+      ev = Evaluator.new(vars: { row: 0, group: 0 },
+                         before: '@row += 1')
       rows.each_with_index do |row, k|
-        vars = row.dup
-        vars[:__row] = k + 1
-        vars[:__group] = row_index_to_group_index(k)
+        grp = row_index_to_group_index(k)
+        vars = row.merge(__group: grp)
+        ev.eval_before_hook(vars)
         result << row if ev.evaluate(expr, vars: vars)
+        ev.eval_after_hook(vars)
       end
       result.normalize_boundaries
       result

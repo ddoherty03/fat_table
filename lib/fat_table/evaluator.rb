@@ -23,18 +23,31 @@ module FatTable
       set_instance_vars(vars)
     end
 
+    # Run the before hook after setting the @group to grp, passed in as a
+    # parameter.  This is run before any column has been evaluated with the
+    # evaluate method.
+    def eval_before_hook(vars)
+      bdg = binding
+      set_local_vars(vars, bdg)
+      @group = vars[:__group]
+      eval(@before, bdg) if @before
+    end
+
+    # Run the after hook.  This is run after each column in the row has been
+    # evaluated with the evaluate method.
+    def eval_after_hook(vars)
+      bdg = binding
+      set_local_vars(vars, bdg)
+      eval(@after, bdg) if @after
+    end
+
     # Return the result of evaluating +expr+ as a Ruby expression in which the
     # instance variables set in Evaluator.new and any local variables set in the
-    # Hash parameter +vars+ are available to the expression. Call any +before+
-    # hook defined in Evaluator.new before evaluating +expr+ and any +after+
-    # hook defined in Evaluator.new after evaluating +expr+.
+    # Hash parameter +vars+ are available to the expression.
     def evaluate(expr = '', vars: {})
       bdg = binding
       set_local_vars(vars, bdg)
-      eval(@before, bdg) if @before
-      result = eval(expr, bdg)
-      eval(@after, bdg) if @after
-      result
+      eval(expr, bdg)
     end
 
     private
