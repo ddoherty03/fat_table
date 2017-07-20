@@ -624,10 +624,28 @@ module FatTable
     #   tab.select(:ref, :date, :shares, cost: 'price * shares') => new column
     #   tab.select(:ref, :date, :shares, seq: '@row') => add sequential nums
     def select(*cols, **new_cols)
+      # Set up the Evaluator
+      ivars = { row: 0, group: 0 }
+      if new_cols.key?(:ivars)
+        ivars = ivars.merge(new_cols[:ivars])
+        new_cols.delete(:ivars)
+      end
+      before_hook = '@row += 1'
+      if new_cols.key?(:before_hook)
+        before_hook += "; #{new_cols[:before_hook]}"
+        new_cols.delete(:before_hook)
+      end
+      after_hook = nil
+      if new_cols.key?(:after_hook)
+        after_hook = new_cols[:after_hook].to_s
+        new_cols.delete(:after_hook)
+      end
+      ev = Evaluator.new(ivars: ivars,
+                         before: before_hook,
+                         after: after_hook)
+      # Compute the new Table from this Table
       result = Table.new
       normalize_boundaries
-      ev = Evaluator.new(vars: { row: 0, group: 0 },
-                         before: '@row += 1')
       rows.each_with_index do |old_row, old_k|
         # Set the group number in the before hook and run the hook with the
         # local variables set to the row before the new row is evaluated.
@@ -683,7 +701,7 @@ module FatTable
         col = Column.new(header: h)
         result.add_column(col)
       end
-      ev = Evaluator.new(vars: { row: 0, group: 0 },
+      ev = Evaluator.new(ivars: { row: 0, group: 0 },
                          before: '@row += 1')
       rows.each_with_index do |row, k|
         grp = row_index_to_group_index(k)
