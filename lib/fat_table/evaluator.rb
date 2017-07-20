@@ -17,10 +17,10 @@ module FatTable
     # subsequent calls to Evaluator.evaluate. The strings +before+ and +after+
     # are string expressions that will be evaluated before and after each
     # subsequent call to Evaluator.evaluate.
-    def initialize(vars: {}, before: nil, after: nil)
+    def initialize(ivars: {}, before: nil, after: nil)
       @before = before
       @after = after
-      set_instance_vars(vars)
+      set_instance_vars(ivars)
     end
 
     # Run the before hook after setting the @group to grp, passed in as a
