@@ -679,6 +679,8 @@ With the ~select~ method, you can select which existing columns should appear in
 the output table and create new columns in the output table that are a function
 of existing and new columns.
 
+**** Selecting Existing Columns
+
 Here we select three existing columns by simply passing header symbols in the
 order we want them to appear in the output. Thus, one use of =select= is to
 filter and permute the order of existing columns. The =select= method preserves
@@ -715,6 +717,8 @@ any group boundaries present in the input table.
 |  7.75 | T015 |    500 |
 |  8.25 | T016 |    100 |
 #+END_EXAMPLE
+
+**** Adding New Columns
 
 More interesting is that ~select~ can take hash-like keyword arguments following
 all of the symbol arguments to create new columns in the output as functions of
@@ -810,9 +814,72 @@ second, chained call to ~select~:
 | T016 | 2016-11-02 |  8.25 |    100 |    825.0 |
 #+END_EXAMPLE
 
+**** Custom Instance Variables and Hooks
+
+As the above examples demonstrate, the instance variables ~@row~ and ~@group~
+are available when evaluating expressions that add new columns.  You can set up
+your own instance variables as well for keeping track of things that cross row
+boundaries, such as running sums.
+
+To declare instance variables, you can use the ~ivars:~ hash parameter to
+~select~.  Each key of the hash becomes an instance variable and each value
+becomes its initial value before any rows are evaluated.
+
+In addition, you can provide ~before_hook:~ and ~after_hook:~ parameters as
+strings that are evaluated as ruby expressions before and after each row is
+processed.  You can use these to update instance variables.  The values set in
+the ~before_hook:~ can be used in expressions for adding new columns by
+referencing them with the '@' prefix.
+
+For example, suppose we wanted to not only add a cost column, but a column that
+shows the cumulative cost after each transaction in our example table. The
+following example uses the ~ivars:~ and ~before_hook:~ parameters to keep track
+of the running cost of shares, then formats the table.
+
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
+#+BEGIN_SRC ruby
+  tab = tab1.select(:ref, :price, :shares, traded_on: :date, \
+              cost: 'price * shares', cumulative: '@total_cost', \
+              ivars: { total_cost: 0 }, \
+              before_hook: '@total_cost += price * shares')
+  FatTable.to_aoa(tab) do |f|
+    f.format(price: '0.4', shares: '0.0,', cost: '0.2,', cumulative: '0.2,')
+  end
+#+END_SRC
+
+#+RESULTS:
+#+BEGIN_EXAMPLE
+| Ref  |  Price | Shares |  Traded On |       Cost | Cumulative |
+|------+--------+--------+------------+------------+------------|
+| T001 | 7.7000 |    100 | 2016-11-01 |     770.00 |     770.00 |
+| T002 | 7.7500 |    200 | 2016-11-01 |   1,550.00 |   2,320.00 |
+| T003 | 7.5000 |    800 | 2016-11-01 |   6,000.00 |   8,320.00 |
+| T003 | 7.5000 |    800 | 2016-11-01 |   6,000.00 |  14,320.00 |
+|------+--------+--------+------------+------------+------------|
+| T004 | 7.5500 |  6,811 | 2016-11-01 |  51,423.05 |  65,743.05 |
+| T005 | 7.5000 |  4,000 | 2016-11-01 |  30,000.00 |  95,743.05 |
+| T006 | 7.6000 |  1,000 | 2016-11-01 |   7,600.00 | 103,343.05 |
+| T006 | 7.6000 |  1,000 | 2016-11-01 |   7,600.00 | 110,943.05 |
+| T007 | 7.6500 |    200 | 2016-11-01 |   1,530.00 | 112,473.05 |
+| T008 | 7.6500 |  2,771 | 2016-11-01 |  21,198.15 | 133,671.20 |
+| T009 | 7.6000 |  9,550 | 2016-11-01 |  72,580.00 | 206,251.20 |
+|------+--------+--------+------------+------------+------------|
+| T010 | 7.5500 |  3,175 | 2016-11-01 |  23,971.25 | 230,222.45 |
+| T011 | 7.4250 |    100 | 2016-11-02 |     742.50 | 230,964.95 |
+| T012 | 7.5500 |  4,700 | 2016-11-02 |  35,485.00 | 266,449.95 |
+| T012 | 7.5500 |  4,700 | 2016-11-02 |  35,485.00 | 301,934.95 |
+| T013 | 7.3500 | 53,100 | 2016-11-02 | 390,285.00 | 692,219.95 |
+|------+--------+--------+------------+------------+------------|
+| T014 | 7.4500 |  5,847 | 2016-11-02 |  43,560.15 | 735,780.10 |
+| T015 | 7.7500 |    500 | 2016-11-02 |   3,875.00 | 739,655.10 |
+| T016 | 8.2500 |    100 | 2016-11-02 |     825.00 | 740,480.10 |
+#+END_EXAMPLE
+
+**** Argument Order and Boundaries
 
 Notice that ~select~ can take any number of arguments but all the symbol
-arguments must come first followed by all the hash-like keyword arguments.
+arguments must come first followed by all the hash-like keyword arguments,
+including the special arguments for instance variables and hooks.
 
 As the example illustrates, ~.select~ transmits any group boundaries in its
 input table to the result table.
