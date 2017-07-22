@@ -847,7 +847,6 @@ of the running cost of shares, then formats the table.
   end
 #+END_SRC
 
-#+RESULTS:
 #+BEGIN_EXAMPLE
 | Ref  |  Price | Shares |  Traded On |       Cost | Cumulative |
 |------+--------+--------+------------+------------+------------|
