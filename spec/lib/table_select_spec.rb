@@ -120,11 +120,12 @@ module FatTable
           { a: '7', 'Two words' => '8',  s: '$1521', c: '$3_888' }
         ]
         tab = Table.from_aoh(aoh)
+        hook = '@cum_a += a; @avg_a = (@cum_a.to_f / @row.to_f).round(3)'
         tab2 = tab.select(
           :a, :two_words, number: '@row', group: '@group',
           ivars: { cum_a: 0, '@avg_a': 0 },
           sum_of_a: '@cum_a', average_a: '@avg_a',
-          before_hook: '@cum_a += a; @avg_a = (@cum_a.to_f / @row.to_f).round(3)',
+          before_hook: hook
         )
         expect(tab2.headers).to eq [:a, :two_words, :number,
                                     :group, :sum_of_a, :average_a]
