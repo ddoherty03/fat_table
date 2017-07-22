@@ -669,7 +669,7 @@ module FatTable
           when String
             new_row[key] = ev.evaluate(val, vars: vars)
           else
-            raise UserError, 'Hash parameters to select must be a symbol or string'
+            raise UserError, "Hash parameter '#{key}' to select must be a symbol or string"
           end
         end
         # Set the group number and run the hook with the local variables set to
