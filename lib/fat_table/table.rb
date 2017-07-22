@@ -595,7 +595,7 @@ module FatTable
     end
 
     # :category: Operators
-
+    #
     # Return a Table having the selected column expressions. Each expression can
     # be either a
     #
@@ -613,6 +613,12 @@ module FatTable
     #    access the instance variable @row, as the row number of the row being
     #    evaluated, and @group, as the group number of the row being evaluated.
     #
+    # 4. a hash in +new_cols+ with one of the special keys, +ivars: {literal
+    #    hash}+, +before_hook: 'ruby-code'+, or +after_hook: 'ruby-code'+ for
+    #    defining custom instance variables to be used during evaluation of
+    #    parameters described in point 3 and hooks of ruby code snippets to be
+    #    evaluated before and after processing each row.
+    #
     # The bare symbol arguments +cols+ (1) must precede any hash arguments
     # +new_cols+ (2 or 3). Each expression results in a column in the resulting
     # Table in the order given in the argument list. The expressions are
@@ -623,6 +629,54 @@ module FatTable
     #   tab.select(:ref, :date, shares: :quantity) => rename :shares->:quantity
     #   tab.select(:ref, :date, :shares, cost: 'price * shares') => new column
     #   tab.select(:ref, :date, :shares, seq: '@row') => add sequential nums
+    #
+    # The instance variables and hooks mentioned in point 4 above allow you to
+    # keep track of things that cross row boundaries, such as running sums or
+    # the values of columns before or after construction of the new row. You can
+    # define instance variables other than the default @row and @group variables
+    # to be available when evaluating normal string expressions for constructing
+    # a new row.
+    #
+    # You define custom instance variables by passing a Hash to the ivars
+    # parameter. The names of the instance variables will be the keys and their
+    # initial values will be the values. For example, you can keep track of a
+    # running sum of the cost of shares and the number of shares in the prior
+    # row by adding two custom instance variables and the appropriate hooks:
+    #
+    #   tab.select(:ref, :date, :shares, :price,
+    #              cost: 'shares * price', cumulative_cost: '@total_cost'
+    #              ivars: { total_cost: 0, prior_shares: 0},
+    #              before_hook: '@total_cost += shares * price,
+    #              after_hook: '@prior_shares = shares')
+    #
+    # Notice that in the +ivars:+ parameter, the '@' is not prefixed to the name
+    # since it is a symbol, but must be prefixed when the instance variable is
+    # referenced in an expression, otherwise it would be interpreted as a column
+    # name.  You could include the '@' if you use a string as a key, e.g., +{
+    # '@total_cost' => 0 }+  The ivars values are evaluated once, before the
+    # first row is processed with the select statement.
+    #
+    # For each row, the +before_hook+ is evaluated, then the +new_cols+
+    # expressions for setting the new value of columns, then the +after_hook+ is
+    # evaluated.
+    #
+    # In the before_hook, the values of all columns are available as local
+    # variables as they were before processing the row. The values of all
+    # instance variables are available as well with the values they had after
+    # processing the prior row of the table.
+    #
+    # In the string expressions for new columns, all the instance variables are
+    # available with the values they have after the before_hook is evaluated.
+    # You could also modify instance variables in the new_cols expression, but
+    # remember, they are evaluated once for each new column expression. Also,
+    # the new column is assigned the value of the entire expression, so you must
+    # ensure that the last expression is the one you want assigned to the new
+    # column. You might want to use a semicolon: +cost: '@total_cost += shares *
+    # price; shares * price'
+    #
+    # In the after_hook, the new, updated values of all columns, old and new are
+    # available as local variables, and the instance variables are available
+    # with the values they had after executing the before_hook.
     def select(*cols, **new_cols)
       # Set up the Evaluator
       ivars = { row: 0, group: 0 }
