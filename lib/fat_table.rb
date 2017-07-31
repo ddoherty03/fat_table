@@ -10,7 +10,7 @@ module FatTable
   require 'fat_core/hash'
   require 'fat_core/numeric'
   require 'csv'
-  require 'dbi'
+  require 'sequel'
   require 'active_support'
   require 'active_support/core_ext'
   require 'active_support/number_helper'

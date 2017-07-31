@@ -75,8 +75,8 @@ org-mode buffer as an org-table, ready for processing by other code blocks.
   spec.add_runtime_dependency 'fat_core', '~> 4.0', '>= 4.1'
   spec.add_runtime_dependency 'activesupport'
   spec.add_runtime_dependency 'rainbow'
-  spec.add_runtime_dependency 'dbi'
-  spec.add_runtime_dependency 'dbd-pg'
-  spec.add_runtime_dependency 'dbd-mysql'
-  spec.add_runtime_dependency 'dbd-sqlite3'
+  spec.add_runtime_dependency 'sequel'
+  spec.add_runtime_dependency 'pg'
+  spec.add_runtime_dependency 'sqlite3'
+  spec.add_runtime_dependency 'mysql2'
 end

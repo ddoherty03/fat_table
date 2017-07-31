@@ -153,9 +153,7 @@ module FatTable
     def self.from_sql(query)
       raise UserError, 'FatTable.db must be set with FatTable.set_db' if FatTable.db.nil?
       result = Table.new
-      sth = FatTable.db.prepare(query)
-      sth.execute
-      sth.fetch_hash do |h|
+      FatTable.db[query].each do |h|
         result << h
       end
       result

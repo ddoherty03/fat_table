@@ -42,32 +42,32 @@ module FatTable
   # Once called successfully, this establishes the database handle to use for
   # all subsequent calls to FatTable.from_sql or FatTable::Table.from_sql.  You
   # can then access the handle if needed with FatTable.db.
-  def self.set_db(driver: 'Pg',
+  def self.set_db(driver: 'postgres',
                   database:,
-                  user: nil,
+                  user: ENV['LOGNAME'],
                   password: nil,
                   host: 'localhost',
                   port: '5432',
                   socket: '/tmp/.s.PGSQL.5432')
     raise UserError, 'must supply database name to set_db' unless database
 
-    valid_drivers = ['Pg', 'Mysql', 'SQLite3']
+    valid_drivers = ['postgres', 'mysql', 'sqlite']
     unless valid_drivers.include?(driver)
-      raise UserError, "set_db driver must be one of #{valid_drivers.join(' or ')}"
+      raise UserError, "'#{driver}' driver must be one of #{valid_drivers.join(' or ')}"
     end
-    # In case port is given as an integer
-    port = port.to_s if port
+    if database.blank?
+      raise UserError, "must supply database parameter to set_db"
+    end
+    pw_part = password ? ":#{password}" : ''
+    hst_part = host ? "@#{host}" : ''
+    prt_part = port ? ":#{port}" : ''
+    dsn = "#{driver}:://#{user}#{pw_part}#{hst_part}#{prt_part}/#{database}"
 
     # Set the dsn for DBI
-    dsn =
-      if host == 'localhost'
-        "DBI:Pg:database=#{database};host=#{host};socket=#{socket}"
-      else
-        "DBI:Pg:database=#{database};host=#{host};port=#{port}"
-      end
     begin
-      self.handle = ::DBI.connect(dsn, user, password)
-    rescue DBI::OperationalError => ex
+      # DB = Sequel.connect(dsn)
+      self.handle = Sequel.connect(dsn)
+    rescue => ex
       raise TransientError, "#{dsn}: #{ex}"
     end
     handle
