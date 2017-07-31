@@ -60,7 +60,8 @@ module FatTable
     end
 
     def strip_ansi(str)
-      str&.gsub(/\e\[[0-9;]+m/, '')
+      return '' unless str
+      str.gsub(/\e\[[0-9;]+m/, '')
     end
 
     # Add ANSI codes to string to implement the given decorations
