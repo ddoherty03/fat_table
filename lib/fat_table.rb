@@ -16,6 +16,7 @@ module FatTable
   require 'active_support/number_helper'
 
   require 'fat_table/version'
+  require 'fat_table/patches'
   require 'fat_table/evaluator'
   require 'fat_table/column'
   require 'fat_table/table'
