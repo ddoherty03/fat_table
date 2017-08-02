@@ -1,6 +1,10 @@
 #+OPTIONS: :toc
 #+LATEX_HEADER: \usepackage[margin=0.75in]{geometry}
 
+#+BEGIN_EXAMPLE
+[![Build Status](https://travis-ci.org/ddoherty03/fat_table.svg?branch=master)](https://travis-ci.org/ddoherty03/fat_table)
+#+END_EXAMPLE
+
 * Introduction
 
 ~FatTable~ is a gem that treats tables as a data type. It provides methods for
