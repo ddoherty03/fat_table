@@ -1,5 +1,4 @@
 require 'spec_helper'
-require 'tempfile'
 
 module FatTable
   describe LaTeXFormatter do

@@ -1,4 +1,7 @@
 language: ruby
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y texlive-latex-base
 bundler_args: --without debug
 services:
   postgresql
