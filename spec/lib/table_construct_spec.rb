@@ -363,12 +363,16 @@ EOS
       end
 
       it 'should be create-able from a SQL query', :db do
-        ok = system("psql -q -c 'drop database if exists fat_table_spec' 2>/dev/null")
-        expect(ok).to be_truthy
-        ok = system("psql -q -c 'create database fat_table_spec' 2>/dev/null")
-        expect(ok).to be_truthy
+        outf = './spec/tmp/psql.out'
         sql_file = "#{__dir__}/../example_files/trades.sql"
-        if ok && system("psql -q -d fat_table_spec -f #{sql_file} 2>/dev/null")
+        drp_cmd = "psql -q -c 'drop database if exists fat_table_spec' >#{outf} 2>&1"
+        crt_cmd = "psql -q -c 'create database fat_table_spec' >>#{outf} 2>&1"
+        pop_cmd = "psql -q -d fat_table_spec -f #{sql_file} >>#{outf} 2&1"
+        ok = system(drp_cmd)
+        expect(ok).to be_truthy
+        ok = system(crt_cmd)
+        expect(ok).to be_truthy
+        if ok && system(pop_cmd)
           FatTable.set_db(database: 'fat_table_spec', host: 'localhost')
           query = <<EOQ
               SELECT ref, date, code, price, shares
