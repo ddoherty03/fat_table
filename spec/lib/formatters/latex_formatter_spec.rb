@@ -32,7 +32,7 @@ module FatTable
            [15, '2013-05-29', 'S', 15_900.00, 6685.95, 24.5802, 'ZMEAC', 'T'],
            [16, '2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'ZMEAC', 'T']]
         @tab = Table.from_aoa(@aoa).order_by(:date)
-        @ltxcmd = '/usr/bin/pdflatex -interaction nonstopmode'
+        @ltxcmd = 'pdflatex -interaction nonstopmode'
       end
 
       it 'should raise an error for an invalid color' do
