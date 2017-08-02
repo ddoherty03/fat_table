@@ -3,11 +3,11 @@ before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y texlive-latex-base
 after_failure:
-  "cat /home/travis/builds/ddoherty03/fat_table/spec/tmp/latex.err"
-  "cat /home/travis/builds/ddoherty03/fat_table/spec/tmp/example1.log"
+  - "cat /home/travis/builds/ddoherty03/fat_table/spec/tmp/latex.err"
+  - "cat /home/travis/builds/ddoherty03/fat_table/spec/tmp/example1.log"
 bundler_args: --without debug
 services:
-  postgresql
+  - postgresql
 rvm:
   - 2.2.2
   - 2.3
