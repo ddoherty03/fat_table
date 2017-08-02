@@ -5,6 +5,15 @@ module FatTable
   describe LaTeXFormatter do
     describe 'table output' do
       before :all do
+        tmp_dir = "#{__dir__}/../../tmp"
+        FileUtils.mkdir_p(tmp_dir)
+        xmpl_name = "#{__dir__}/../../example_files/example1.tex"
+        tmp_name = "#{__dir__}/../../tmp/example1.tex"
+        FileUtils.cp(xmpl_name, tmp_name)
+        xmpl_name = "#{__dir__}/../../example_files/example2.tex"
+        tmp_name = "#{__dir__}/../../tmp/example2.tex"
+        tmp_dir = "#{__dir__}/../../tmp"
+        FileUtils.cp(xmpl_name, tmp_name)
       end
 
       before :each do
