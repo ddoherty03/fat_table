@@ -50,8 +50,8 @@ module FatTable
         Dir.chdir(File.dirname(tmp.path)) do
           tmp << ltx
           tmp.flush
-          result = system("#{@ltxcmd} #{tmp.path} >/dev/null 2>&1")
-          result &&= system("#{@ltxcmd} #{tmp.path} >/dev/null 2>&1")
+          result = system("#{@ltxcmd} #{tmp.path} >latex.err 2>&1")
+          result &&= system("#{@ltxcmd} #{tmp.path} >>latex.err 2>&1")
         end
         expect(ltx.class).to eq(String)
         expect(result).to be true
