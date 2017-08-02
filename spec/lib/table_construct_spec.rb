@@ -363,11 +363,12 @@ EOS
       end
 
       it 'should be create-able from a SQL query', :db do
+        user = ENV['TRAVIS'] == 'true' ? '-U postgres' : ''
         outf = './spec/tmp/psql.out'
         sql_file = "#{__dir__}/../example_files/trades.sql"
-        drp_cmd = "psql -q -c 'drop database if exists fat_table_spec' >#{outf} 2>&1"
-        crt_cmd = "psql -q -c 'create database fat_table_spec' >>#{outf} 2>&1"
-        pop_cmd = "psql -q -d fat_table_spec -f #{sql_file} >>#{outf} 2&1"
+        drp_cmd = "psql -q -c 'drop database if exists fat_table_spec' #{user} >#{outf} 2>&1"
+        crt_cmd = "psql -q -c 'create database fat_table_spec' #{user} >>#{outf} 2>&1"
+        pop_cmd = "psql -q -d fat_table_spec -f #{sql_file} #{user} >>#{outf} 2&1"
         ok = system(drp_cmd)
         expect(ok).to be_truthy
         ok = system(crt_cmd)
