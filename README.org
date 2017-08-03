@@ -5,9 +5,7 @@
 [![Build Status](https://travis-ci.org/ddoherty03/fat_table.svg?branch=master)](https://travis-ci.org/ddoherty03/fat_table)
 #+END_COMMENT
 
-#+BEGIN_HTML
-https://travis-ci.org/ddoherty03/fat_table.svg?branch=master
-#+END_HTML
+[[https://travis-ci.org/ddoherty03/fat_table.svg?branch=master]]
 
 * Introduction
 
