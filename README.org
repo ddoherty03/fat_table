@@ -250,21 +250,24 @@ types as follows:
      regardless of case, are interpreted as ~FalseClass~, in either case
      resulting in a Boolean column. Empty strings in a column already having a
      Boolean type are converted to nil.
-- DateTime :: strings that contain patterns of 'yyyy-mm-dd' or 'yyyy/mm/dd' will
-     be interpreted as a ~DateTime~ or a ~Date~ (if there are no sub-day time
-     components present). The number of digits in the month and day can be one
-     or two, but the year component must be four digits. Any time components are
-     valid if they can be properly interpreted by ~DateTime.parse~. Org mode
-     timestamps, active or inactive, are valid input strings for DateTime
-     columns. Empty strings in a column already having the DateTime type are
-     converted to nil.
-- Numeric :: all commas ',', underscores, '_', and '$' dollar signs are removed
-     from the string and if the remaining string can be interpreted as a
-     ~Numeric~, it will be. It is interpreted as an ~Integer~ if there are no
-     decimal places in the remaining string, as a ~Rational~ if the string has
-     the form '<number>:<number>' or '<number>/<number>', or as a ~BigDecimal~
-     if there is a decimal point in the remaining string. Empty strings in a
-     column already having the Numeric type are converted to nil.
+- DateTime :: strings that contain patterns of 'yyyy-mm-dd' or 'yyyy/mm/dd' or
+     'mm-dd-yyy' or 'mm/dd/yyyy' or any of the foregoing with an added
+     'Thh:mm:ss' or 'Thh:mm' will be interpreted as a ~DateTime~ or a ~Date~ (if
+     there are no sub-day time components present). The number of digits in the
+     month and day can be one or two, but the year component must be four
+     digits. Any time components are valid if they can be properly interpreted
+     by ~DateTime.parse~. Org mode timestamps (any of the foregoing surrounded
+     by square '[]' or pointy '<>' brackets), active or inactive, are valid
+     input strings for DateTime columns. Empty strings in a column already
+     having the DateTime type are converted to nil.
+- Numeric :: all commas ',', underscores, '_', and '$' dollar signs (or other
+     currency symbol as set by ~FatTable.currency_symbol~ are removed from the
+     string and if the remaining string can be interpreted as a ~Numeric~, it
+     will be. It is interpreted as an ~Integer~ if there are no decimal places
+     in the remaining string, as a ~Rational~ if the string has the form
+     '<number>:<number>' or '<number>/<number>', or as a ~BigDecimal~ if there
+     is a decimal point in the remaining string. Empty strings in a column
+     already having the Numeric type are converted to nil.
 - String :: if all else fails, ~FatTable~ applies ~#to_s~ to the input value
      and, treats it as an item of type ~String~.  Empty strings in a column
      already having the String type are kept as empty strings.

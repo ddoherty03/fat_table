@@ -473,8 +473,8 @@ module FatTable
       end
     end
 
-    IS0_DATE_RE = %r{\b(\d\d\d\d)[-/](\d\d?)[-/](\d\d?)(T\d\d:\d\d:\d\d(\+\d\d:\d\d)?)?\b}
-    AMR_DATE_RE = %r{\b(\d\d?)[-/](\d\d?)[-/](\d\d\d\d)\b}
+    IS0_DATE_RE = %r{\b(\d\d\d\d)[-/](\d\d?)[-/](\d\d?)\s*(T\d\d:\d\d:\d\d(\+\d\d:\d\d)?)?\b}
+    AMR_DATE_RE = %r{\b(\d\d?)[-/](\d\d?)[-/](\d\d\d\d)\s*(T\d\d:\d\d:\d\d(\+\d\d:\d\d)?)?\b}
 
     # Convert the val to a DateTime if it is either a DateTime, a Date, or a
     # String that can be parsed as a DateTime, otherwise return nil. It only
