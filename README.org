@@ -34,9 +34,9 @@ as a foundation for providing reporting functions where flexibility about the
 output medium can be quite useful. Finally ~FatTable~ can be used within Emacs
 ~org-mode~ files in code blocks targeting the Ruby language. Org mode tables are
 presented to a ruby code block as an array of arrays, so ~FatTable~ can read
-them in with its ~.from_aoa~ constructor. A ~FatTable~ table can output as an
-array of arrays with its ~.to_aoa~ output function and will be rendered in an
-org-mode buffer as an org-table, ready for processing by other code blocks.
+them in with its ~.from_aoa~ constructor. A ~FatTable~ table output as an array
+of arrays with its ~.to_aoa~ output function will be rendered in an org-mode
+buffer as an org-table, ready for processing by other code blocks.
 
 * Installation
 
