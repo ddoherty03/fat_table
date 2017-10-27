@@ -506,10 +506,11 @@ or strings that can parsed into one of the permissible column types.
 *** From SQL queries
 
 Another way to initialize a ~FatTable~ table is with the results of a SQL query.
-~FatTable~ uses the ~dbi~ gem to query databases. You must first set the
+~FatTable~ uses the ~sequel~ gem to query databases. You must first set the
 database parameters to be used for the queries.
 
 #+BEGIN_SRC ruby
+  # This automatically requires sequel.
   require 'fat_table'
   FatTable.set_db(driver: 'Pg',
                   database: 'XXX_development',
@@ -530,6 +531,19 @@ required.
 The ~.set_db~ function need only be called once, and the database handle it
 creates will be used for all subsequent ~.from_sql~ calls until ~.set_db~ is
 called again.
+
+Alternatively, you can build the ~Sequel~ connection with ~Sequel.connect~ or
+with adapter-specific ~Sequel~ connection methods and let ~FatTable~ know to use
+that connection:
+
+#+BEGIN_SRC ruby
+  require 'fat_table'
+  FatTable.db = Sequel.connect('postgres://user:password@localhost/dbname')
+  FatTable.db = Sequel.ado(conn_string: 'Provider=Microsoft.ACE.OLEDB.12.0;Data Source=drive:\path\filename.accdb')
+#+END_SRC
+
+Consult ~Sequel's~ documentation for details on its connection methods.
+[[http://sequel.jeremyevans.net/rdoc/files/doc/opening_databases_rdoc.html]]
 
 *** Marking Groups in Input
 
