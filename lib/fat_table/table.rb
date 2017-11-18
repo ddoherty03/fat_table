@@ -682,9 +682,8 @@ module FatTable
         ivars = ivars.merge(new_cols[:ivars])
         new_cols.delete(:ivars)
       end
-      before_hook = '@row += 1'
       if new_cols.key?(:before_hook)
-        before_hook += "; #{new_cols[:before_hook]}"
+        before_hook = new_cols[:before_hook].to_s
         new_cols.delete(:before_hook)
       end
       after_hook = nil
@@ -702,8 +701,8 @@ module FatTable
         # Set the group number in the before hook and run the hook with the
         # local variables set to the row before the new row is evaluated.
         grp = row_index_to_group_index(old_k)
-        vars = old_row.merge(__group: grp)
-        ev.eval_before_hook(vars)
+        ev.update_ivars(row: old_k + 1, group: grp)
+        ev.eval_before_hook(locals: old_row)
         # Compute the new row.
         new_row = {}
         cols.each do |k|
@@ -711,23 +710,23 @@ module FatTable
           raise UserError, "Column '#{h}' in select does not exist" unless column?(h)
           new_row[h] = old_row[h]
         end
-        new_cols.each_pair do |key, val|
+        new_cols.each_pair do |key, expr|
           key = key.as_sym
           vars = old_row.merge(new_row)
-          case val
+          case expr
           when Symbol
-            raise UserError, "Column '#{val}' in select does not exist" unless vars.keys.include?(val)
-            new_row[key] = vars[val]
+            raise UserError, "Column '#{expr}' in select does not exist" unless vars.keys.include?(expr)
+            new_row[key] = vars[expr]
           when String
-            new_row[key] = ev.evaluate(val, vars: vars)
+            new_row[key] = ev.evaluate(expr, locals: vars)
           else
             raise UserError, "Hash parameter '#{key}' to select must be a symbol or string"
           end
         end
         # Set the group number and run the hook with the local variables set to
         # the row after the new row is evaluated.
-        vars = new_row.merge(__group: grp)
-        ev.eval_after_hook(vars)
+        # vars = new_row.merge(__group: grp)
+        ev.eval_after_hook(locals: new_row)
         result << new_row
       end
       result.boundaries = boundaries
@@ -753,14 +752,13 @@ module FatTable
         col = Column.new(header: h)
         result.add_column(col)
       end
-      ev = Evaluator.new(ivars: { row: 0, group: 0 },
-                         before: '@row += 1')
+      ev = Evaluator.new(ivars: { row: 0, group: 0 })
       rows.each_with_index do |row, k|
         grp = row_index_to_group_index(k)
-        vars = row.merge(__group: grp)
-        ev.eval_before_hook(vars)
-        result << row if ev.evaluate(expr, vars: vars)
-        ev.eval_after_hook(vars)
+        ev.update_ivars(row: k + 1, group: grp)
+        ev.eval_before_hook(locals: row)
+        result << row if ev.evaluate(expr, locals: row)
+        ev.eval_after_hook(locals: row)
       end
       result.normalize_boundaries
       result
@@ -993,7 +991,7 @@ module FatTable
           # Same as other_row, but with keys that are common with self and equal
           # in value, removed, so the output table need not repeat them.
           locals = build_locals_hash(row_a: self_row, row_b: other_row)
-          matches = ev.evaluate(join_expression, vars: locals)
+          matches = ev.evaluate(join_expression, locals: locals)
           next unless matches
           self_row_matched = other_row_matches[k] = true
           out_row = build_out_row(row_a: self_row, row_b: other_row,
