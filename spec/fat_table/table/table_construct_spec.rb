@@ -397,7 +397,7 @@ EOQ
 
       it 'should set T F columns to Boolean' do
         cwd = File.dirname(__FILE__)
-        dwtab = Table.from_org_file(cwd + '/../example_files/datawatch.org')
+        dwtab = Table.from_org_file(cwd + '/../../example_files/datawatch.org')
         expect(dwtab.column(:g10).type).to eq('Boolean')
         expect(dwtab.column(:qp10).type).to eq('Boolean')
         dwo = dwtab.where('qp10 || g10')
