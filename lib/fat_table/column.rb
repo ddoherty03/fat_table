@@ -415,7 +415,7 @@ module FatTable
         end
         new_val
       when 'Boolean'
-        if (val.is_a?(String) && val.blank? || val.nil?)
+        if val.is_a?(String) && val.blank? || val.nil?
           nil
         else
           new_val = convert_to_boolean(val)
@@ -502,7 +502,7 @@ module FatTable
       end
     end
 
-    # Convert the val to a Numeric if is already a Numberic or is a String that
+    # Convert the val to a Numeric if is already a Numeric or is a String that
     # looks like one. Any Float is promoted to a BigDecimal. Otherwise return
     # nil.
     def convert_to_numeric(val)

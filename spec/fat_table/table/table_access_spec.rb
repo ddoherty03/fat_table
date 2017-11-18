@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 module FatTable
   describe Table do
     describe 'accessing' do
