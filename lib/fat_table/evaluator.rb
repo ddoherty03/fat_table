@@ -28,29 +28,23 @@ module FatTable
       set_instance_vars(ivars)
     end
 
-    # Run the before any hook in the context of the given local variables.
+    # Run any before hook in the context of the given local variables.
     def eval_before_hook(locals: {})
       return if @before.blank?
-      bdg = binding
-      set_local_vars(locals, bdg)
-      eval(@before, bdg)
+      evaluate(@before, locals: locals)
     end
 
-    # Run the any after hook in the context of the given local variables.
+    # Run any after hook in the context of the given local variables.
     def eval_after_hook(locals: {})
       return if @after.blank?
-      bdg = binding
-      set_local_vars(locals, bdg)
-      eval(@after, bdg)
+      evaluate(@after, locals: locals)
     end
 
     # Return the result of evaluating +expr+ as a Ruby expression in which the
     # instance variables set in Evaluator.new and any local variables set in the
     # Hash parameter +locals+ are available to the expression.
     def evaluate(expr = '', locals: {})
-      bdg = binding
-      set_local_vars(locals, bdg)
-      eval(expr, bdg)
+      eval(expr, set_local_vars(locals, binding))
     end
 
     private
@@ -66,6 +60,7 @@ module FatTable
       vars.each_pair do |name, val|
         bnd.local_variable_set(name, val)
       end
+      bnd
     end
   end
 end
