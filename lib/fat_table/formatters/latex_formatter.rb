@@ -25,7 +25,7 @@ module FatTable
     end
 
     # Taken from the Rainbow gem's list of valid colors.
-    self.valid_colors = %w(
+    self.valid_colors = %w[
       none black blue brown cyan darkgray gray green lightgray lime magenta
       olive orange pink purple red teal violet white yellow AntiqueWhite1
       AntiqueWhite2 AntiqueWhite3 AntiqueWhite4 Aquamarine1 Aquamarine2
@@ -76,7 +76,7 @@ module FatTable
       Turquoise1 Turquoise2 Turquoise3 Turquoise4 VioletRed1 VioletRed2
       VioletRed3 VioletRed4 Wheat1 Wheat2 Wheat3 Wheat4 Yellow1 Yellow2 Yellow3
       Yellow4
-    )
+    ]
 
     # LaTeX commands to load the needed packages based on the :environement
     # option.  For now, just handles the default 'longtable' :environment.  The

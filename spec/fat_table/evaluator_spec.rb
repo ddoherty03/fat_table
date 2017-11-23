@@ -3,12 +3,11 @@ require 'spec_helper'
 module FatTable
   describe Evaluator do
     describe 'instance variables' do
-      let(:ev) {
+      let(:ev) do
         Evaluator.new(ivars: { group: 0, row: 1, junk: Date.parse('2017-09-22') },
                       before: '@group += 1; @row += 2',
-                      after:  '@group *= 2; @row *= 3'
-                     )
-      }
+                      after:  '@group *= 2; @row *= 3')
+      end
 
       it 'should be able to get instance variables' do
         expect(ev.evaluate('@group')).to eq(0)

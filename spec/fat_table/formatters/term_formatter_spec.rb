@@ -22,8 +22,10 @@ module FatTable
         @aoa =
           [['Ref', 'Date', 'Code', 'Raw', 'Shares', 'Price', 'Info', 'Bool'],
            [1, '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850, 'ZMPEF1', 'T'],
-           [2, '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500, 'ZMPEF1', 'T'],
-           [5, '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500, 'ZMPEF1\'s "Ent"', 'T'],
+           [2, '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500,
+            'ZMPEF1', 'T'],
+           [5, '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500,
+            'ZMPEF1\'s "Ent"', 'T'],
            [7, '2013-05-20', 'S', 12_000.00, 5046.00, 28.2804, 'ZMEAC', 'F'],
            [8, '2013-05-20', 'S', 85_000.00, 35_742.50, 28.3224, 'ZMEAC', 'T'],
            [9, '2013-05-20', 'S', 33_302.00, 14_003.49, 28.6383, 'ZMEAC', 'T'],
@@ -45,7 +47,7 @@ module FatTable
         }.to raise_error(/invalid color 'Yeller'/)
       end
 
-      it 'should be able to output unicode with default formatting instructions' do
+      it 'should output unicode with default formatting' do
         trm = TermFormatter.new(@tab).output
         expect(trm.class).to eq(String)
       end
@@ -80,7 +82,7 @@ module FatTable
         expect(trm).to match(/\bGrp Std Dev\b/)
       end
 
-      it 'should be able to output non-unicode with default formatting instructions' do
+      it 'should output non-unicode with default formatting' do
         trm = TermFormatter.new(@tab, unicode: false).output
         expect(trm.class).to eq(String)
       end

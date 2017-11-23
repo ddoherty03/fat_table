@@ -256,12 +256,13 @@ module FatTable
 
       it 'should be able to set element formats' do
         fmt = Formatter.new(@tab)
-                .format_for(:header, string: 'Uc[red]', ref: 'uc[blue.aquamarine]')
+                .format_for(:header, string: 'Uc[red]',
+                            ref: 'uc[blue.aquamarine]')
                 .format_for(:gfooter, string: 'B')
                 .format_for(:footer, date: 'Bd[%Y]')
                 .format_for(:body, numeric: ',0.2', shares: '0.4', ref: 'B',
                             price: '$,',
-                            bool: '  c[white.green, red.white]  b[  Yippers, Nah Sir]',
+                            bool: '  c[white.green, red.white] b[  Yippers, Nah Sir]',
                             nil: 'n[  Nothing to see here   ]')
         # Header color
         expect(fmt.format_at[:header][:ref].color).to eq('blue')
@@ -353,10 +354,6 @@ module FatTable
           expect(fmt.format_at[:footer][h].currency).to eq(false)
           expect(fmt.format_at[:footer][h].nil_text).to eq('')
         end
-        # .format_for(:body, numeric: ',0.2', shares: '0.4', ref: 'B',
-        #             price: '$,',
-        #             bool: '  c[white.green, red.white]  b[  Yippers, Nah Sir]',
-        #             nil: 'n[  Nothing to see here   ]')
         # Body, :raw (inherit numeric)
         expect(fmt.format_at[:body][:raw].commas).to eq(true)
         expect(fmt.format_at[:body][:raw].pre_digits).to eq(0)
@@ -464,7 +461,8 @@ module FatTable
         aoa =
           [['Ref', 'Date', 'Code', 'Raw', 'Shares', 'Price', 'Info', 'Bool'],
            [1, '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850, 'ZMPEF1', 'T'],
-           [2, '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500, 'ZMPEF1', 'T'],
+           [2, '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500,
+            'ZMPEF1', 'T'],
            [7, '2013-05-20', 'S', 12_000.00, 5046.00, 28.2804, 'ZMEAC', 'F'],
            [8, '2013-05-20', 'S', 85_000.00, 35_742.50, 28.3224, 'ZMEAC', 'T'],
            [9, '2013-05-20', 'S', 33_302.00, 14_003.49, 28.6383, 'ZMEAC', 'T'],
@@ -524,7 +522,8 @@ module FatTable
         aoa =
           [['Ref', 'Date', 'Code', 'Raw', 'Shares', 'Price', 'Info', 'Bool'],
            [1, '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850, 'ZMPEF1', 'T'],
-           [2, '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500, 'ZMPEF1', 'T'],
+           [2, '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500,
+            'ZMPEF1', 'T'],
            [7, '2013-05-20', 'S', 12_000.00, 5046.00, 28.2804, 'ZMEAC', 'F'],
            [8, '2013-05-20', 'S', 85_000.00, 35_742.50, 28.3224, 'ZMEAC', 'T'],
            [9, '2013-05-20', 'S', 33_302.00, 14_003.49, 28.6383, 'ZMEAC', 'T'],
@@ -538,7 +537,7 @@ module FatTable
         @tab = Table.from_aoa(aoa).order_by(:date)
       end
 
-      it 'should be able to output a table with default formatting instructions' do
+      it 'should output a table with default formatting' do
         str = Formatter.new(@tab).output
         expect(str.length).to be > 10
       end

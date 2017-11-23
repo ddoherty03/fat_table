@@ -5,21 +5,33 @@ module FatTable
     describe 'join' do
       # These tests are taken from https://www.tutorialspoint.com/postgresql/postgresql_using_joins.htm
       before :all do
-        @tab_a = Table.from_aoh([
-          { id: 1, name: 'Paul', age: 32, address: 'California', salary: 20000, join_date: '2001-07-13' },
-          { id: 3, name: 'Teddy', age: 23, address: 'Norway', salary: 20000},
-          { id: 4, name: 'Mark', age: 25, address: 'Rich-Mond', salary: 65000, join_date: '2007-12-13' },
-          { id: 5, name: 'David', age: 27, address: 'Texas', salary: 85000, join_date: '2007-12-13' },
-          { id: 2, name: 'Allen', age: 25, address: 'Texas', salary: nil, join_date: '2007-12-13' },
-          { id: 8, name: 'Paul', age: 24, address: 'Houston', salary: 20000, join_date: '2005-07-13' },
-          { id: 9, name: 'James', age: 44, address: 'Norway', salary: 5000, join_date: '2005-07-13' },
-          { id: 10, name: 'James', age: 45, address: 'Texas', salary: 5000, join_date: '2005-07-13' }
-        ])
-        @tab_b = Table.from_aoh([
-          { id: 1, dept: 'IT Billing', emp_id: 1 },
-          { id: 2, dept: 'Engineering', emp_id: 2 },
-          { id: 3, dept: 'Finance', emp_id: 7 }
-        ])
+        @tab_a = Table.from_aoh(
+          [
+            { id: 1, name: 'Paul', age: 32, address: 'California',
+              salary: 20000, join_date: '2001-07-13' },
+            { id: 3, name: 'Teddy', age: 23, address: 'Norway',
+              salary: 20000 },
+            { id: 4, name: 'Mark', age: 25, address: 'Rich-Mond',
+              salary: 65000, join_date: '2007-12-13' },
+            { id: 5, name: 'David', age: 27, address: 'Texas',
+              salary: 85000, join_date: '2007-12-13' },
+            { id: 2, name: 'Allen', age: 25, address: 'Texas',
+              salary: nil, join_date: '2007-12-13' },
+            { id: 8, name: 'Paul', age: 24, address: 'Houston',
+              salary: 20000, join_date: '2005-07-13' },
+            { id: 9, name: 'James', age: 44, address: 'Norway',
+              salary: 5000, join_date: '2005-07-13' },
+            { id: 10, name: 'James', age: 45, address: 'Texas',
+              salary: 5000, join_date: '2005-07-13' }
+          ]
+        )
+        @tab_b = Table.from_aoh(
+          [
+            { id: 1, dept: 'IT Billing', emp_id: 1 },
+            { id: 2, dept: 'Engineering', emp_id: 2 },
+            { id: 3, dept: 'Finance', emp_id: 7 }
+          ]
+        )
       end
 
       it 'should be able to do an inner join' do

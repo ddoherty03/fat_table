@@ -6,7 +6,6 @@ module FatTable
   # footers are included as extra Hashes of the output. AoaFormatter supports no
   # +options+
   class AohFormatter < Formatter
-
     private
 
     def evaluate?
@@ -39,7 +38,7 @@ module FatTable
     # eval'ed, we need to escape any single-quotes (') that appear in the
     # string.
     def quote_cell(v)
-      if v =~ /'/
+      if v.match?(/'/)
         # Use a negative look-behind to only quote single-quotes that are not
         # already preceded by a backslash
         v.gsub(/(?<!\\)'/, "'" => "\\'")

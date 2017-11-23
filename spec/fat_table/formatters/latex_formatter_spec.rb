@@ -11,16 +11,18 @@ module FatTable
         FileUtils.cp(xmpl_name, tmp_name)
         xmpl_name = "#{__dir__}/../../example_files/example2.tex"
         tmp_name = "#{__dir__}/../../tmp/example2.tex"
-        tmp_dir = "#{__dir__}/../../tmp"
         FileUtils.cp(xmpl_name, tmp_name)
       end
 
       before :each do
         @aoa =
           [['Ref', 'Date', 'Code', 'Raw', 'Shares', 'Price', 'Info', 'Bool'],
-           [1, '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850, 'ZMPEF1 $100', 'T'],
-           [2, '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500, 'ZMPEF1', 'T'],
-           [5, '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500, 'ZMPEF1\'s "Ent"', 'T'],
+           [1, '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850,
+            'ZMPEF1 $100', 'T'],
+           [2, '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500,
+            'ZMPEF1', 'T'],
+           [5, '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500,
+            'ZMPEF1\'s "Ent"', 'T'],
            [7, '2013-05-20', 'S', 12_000.00, 5046.00, 28.2804, 'ZMEAC', 'F'],
            [8, '2013-05-20', 'S', 85_000.00, 35_742.50, 28.3224, 'ZMEAC', 'T'],
            [9, '2013-05-20', 'S', 33_302.00, 14_003.49, 28.6383, 'ZMEAC', 'T'],
@@ -37,13 +39,13 @@ module FatTable
 
       it 'should raise an error for an invalid color' do
         expect {
-        LaTeXFormatter.new(@tab) do |f|
-          f.format_for(:body, date: 'c[Yeller]')
-        end
+          LaTeXFormatter.new(@tab) do |f|
+            f.format_for(:body, date: 'c[Yeller]')
+          end
         }.to raise_error(/invalid color 'Yeller'/)
       end
 
-      it 'should be able to output valid LaTeX with default formatting instructions' do
+      it 'should output valid LaTeX with default formatting' do
         tmp = File.open("#{__dir__}/../../tmp/example1.tex", 'w')
         ltx = LaTeXFormatter.new(@tab, document: true).output
         result = false
@@ -60,7 +62,8 @@ module FatTable
       it 'should be able to set format and output LaTeX with block' do
         fmt = LaTeXFormatter.new(@tab, document: true) do |f|
           f.format(ref: '5.0', code: 'C', raw: ',0.0', shares: ',0.0',
-                   price: '0.3R', bool: 'CYc[green,red]', numeric: 'Rc[Goldenrod1]')
+                   price: '0.3R', bool: 'CYc[green,red]',
+                   numeric: 'Rc[Goldenrod1]')
           f.format_for(:header, string: 'CB')
           f.format_for(:footer, string: 'B')
           f.sum_gfooter(:price, :raw, :shares)

@@ -44,7 +44,7 @@ module FatTable
     # instance variables set in Evaluator.new and any local variables set in the
     # Hash parameter +locals+ are available to the expression.
     def evaluate(expr = '', locals: {})
-      eval(expr, set_local_vars(locals, binding))
+      eval(expr, set_local_vars(binding, locals))
     end
 
     private
@@ -56,7 +56,7 @@ module FatTable
       end
     end
 
-    def set_local_vars(vars = {}, bnd)
+    def set_local_vars(bnd, vars = {})
       vars.each_pair do |name, val|
         bnd.local_variable_set(name, val)
       end

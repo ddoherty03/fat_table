@@ -28,7 +28,7 @@ module FatTable
     attr_reader :items
 
     # Valid Column types as strings.
-    TYPES = %w(NilClass Boolean DateTime Numeric String).freeze
+    TYPES = %w[NilClass Boolean DateTime Numeric String].freeze
 
     # :category: Constructors
 
@@ -36,8 +36,8 @@ module FatTable
     # +items+, as an array of either strings or ruby objects that are one of the
     # permissible types or strings parsable as one of the permissible types. If
     # no +items+ are passed, returns an empty Column to which items may be added
-    # with the Column#<< method. The item types must be one of the following types or
-    # strings parseable as one of them:
+    # with the Column#<< method. The item types must be one of the following
+    # types or strings parseable as one of them:
     #
     # Boolean::
     #     an object of type TrueClass or FalseClass or a string that is either
@@ -48,9 +48,8 @@ module FatTable
     #      an object of class Date, DateTime, or a string that matches
     #      +/\d\d\d\d[-\/]\d\d?[-\/]\d\d?/+ and is parseable by DateTime.parse.
     #
-    # Numeric::
-    #      on object that is of class Numeric, or a string that looks
-    #      like a number after removing '+$+', '+,+', and '+_+' as well as Rationals
+    # Numeric:: on object that is of class Numeric, or a string that looks like
+    #      a number after removing '+$+', '+,+', and '+_+' as well as Rationals
     #      in the form /<number>:<number>/ or <number>/<number>, where <number>
     #      is an integer.
     #
@@ -466,9 +465,9 @@ module FatTable
       return val if val.is_a?(TrueClass) || val.is_a?(FalseClass)
       val = val.to_s.clean
       return nil if val.blank?
-      if val =~ /\A(false|f|n|no)\z/i
+      if val.match?(/\A(false|f|n|no)\z/i)
         false
-      elsif val =~ /\A(true|t|y|yes)\z/i
+      elsif val.match?(/\A(true|t|y|yes)\z/i)
         true
       end
     end

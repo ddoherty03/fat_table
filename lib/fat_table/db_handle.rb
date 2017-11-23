@@ -18,9 +18,9 @@ module FatTable
   #    http://sequel.jeremyevans.net/rdoc/files/doc/opening_databases_rdoc.html
   #
   # +driver+::
-  #    One of 'pg' (for Postgresql), 'mysql' or 'mysql2' (for Mysql), or 'sqlite' (for
-  #    SQLite3) to specify the +Sequel+ driver to use.  You may have to install the
-  #    driver to make this work.  By default use 'Pg'.
+  #    One of 'pg' (for Postgresql), 'mysql' or 'mysql2' (for Mysql), or
+  #    'sqlite' (for SQLite3) to specify the +Sequel+ driver to use. You may
+  #    have to install the driver to make this work. By default use 'Pg'.
   #
   # +database+::
   #    The name of the database to access. There is no default for this.
@@ -62,12 +62,12 @@ module FatTable
     else
       raise UserError, 'must supply database name to set_db' unless database
 
-      valid_drivers = ['postgres', 'mysql', 'mysql2', 'sqlite']
+      valid_drivers = %w[postgres mysql mysql2 sqlite]
       unless valid_drivers.include?(driver)
         raise UserError, "'#{driver}' driver must be one of #{valid_drivers.join(' or ')}"
       end
       if database.blank?
-        raise UserError, "must supply database parameter to set_db"
+        raise UserError, 'must supply database parameter to set_db'
       end
 
       if driver == 'sqlite'
@@ -83,7 +83,7 @@ module FatTable
       begin
         # DB = Sequel.connect(dsn)
         self.handle = Sequel.connect(dsn)
-      rescue => ex
+      rescue Sequel::Error => ex
         raise TransientError, "#{dsn}: #{ex}"
       end
     end

@@ -4,10 +4,9 @@ module FatTable
   # timestamps and the connector at the beginning of hlines is a '|' rather than
   # a '+' as for text tables.
   class OrgFormatter < Formatter
-
     self.default_format = default_format.dup
-    self.default_format[:date_fmt] = '[%F]'
-    self.default_format[:datetime_fmt] = '[%F %a %H:%M:%S]'
+    default_format[:date_fmt] = '[%F]'
+    default_format[:datetime_fmt] = '[%F %a %H:%M:%S]'
 
     private
 
@@ -20,7 +19,7 @@ module FatTable
 
     def pre_header(widths)
       result = '|'
-      widths.values.each do |w|
+      widths.each_value do |w|
         result += '-' * (w + 2) + '+'
       end
       result[-1] = '|'
@@ -53,7 +52,7 @@ module FatTable
 
     def hline(widths)
       result = '|'
-      widths.values.each do |w|
+      widths.each_value do |w|
         result += '-' * (w + 2) + '+'
       end
       result[-1] = '|'
@@ -62,7 +61,7 @@ module FatTable
 
     def post_footers(widths)
       result = '|'
-      widths.values.each do |w|
+      widths.each_value do |w|
         result += '-' * (w + 2) + '+'
       end
       result[-1] = '|'

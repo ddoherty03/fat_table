@@ -4,7 +4,6 @@ module FatTable
   # connector at the beginning of hlines is a '+' rather than a '|' as for org
   # tables.
   class TextFormatter < Formatter
-
     private
 
     # Does this Formatter require a second pass over the cells to align the
@@ -16,7 +15,7 @@ module FatTable
 
     def pre_header(widths)
       result = '+'
-      widths.values.each do |w|
+      widths.each_value do |w|
         result += '=' * (w + 2) + '+'
       end
       result[-1] = '+'
@@ -49,7 +48,7 @@ module FatTable
 
     def hline(widths)
       result = '+'
-      widths.values.each do |w|
+      widths.each_value do |w|
         result += '-' * (w + 2) + '+'
       end
       result[-1] = '+'
@@ -82,7 +81,7 @@ module FatTable
 
     def post_footers(widths)
       result = '+'
-      widths.values.each do |w|
+      widths.each_value do |w|
         result += '=' * (w + 2) + '+'
       end
       result[-1] = '+'

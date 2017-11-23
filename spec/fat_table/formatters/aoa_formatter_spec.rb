@@ -7,8 +7,10 @@ module FatTable
         @aoa =
           [['Ref', 'Date', 'Code', 'Raw', 'Shares', 'Price', 'Info', 'Bool'],
            [1, '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850, 'ZMPEF1', 'T'],
-           [2, '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500, 'ZMPEF1', 'T'],
-           [5, '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500, 'ZMPEF1\'s "Ent"', 'T'],
+           [2, '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500,
+            'ZMPEF1', 'T'],
+           [5, '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500,
+            'ZMPEF1\'s "Ent"', 'T'],
            [7, '2013-05-20', 'S', 12_000.00, 5046.00, 28.2804, 'ZMEAC', 'F'],
            [8, '2013-05-20', 'S', 85_000.00, 35_742.50, 28.3224, 'ZMEAC', 'T'],
            [9, '2013-05-20', 'S', 33_302.00, 14_003.49, 28.6383, 'ZMEAC', 'T'],
@@ -22,13 +24,13 @@ module FatTable
         @tab = Table.from_aoa(@aoa).order_by(:date)
       end
 
-      it 'should be able to output a table with default formatting instructions' do
+      it 'should output table with default formatting' do
         aoa = AoaFormatter.new(@tab).output
         expect(aoa.class).to eq(Array)
         expect(aoa.first.class).to eq(Array)
       end
 
-      it 'should be able to set format and output by method calls' do
+      it 'should set format and output by method calls' do
         fmt = AoaFormatter.new(@tab)
         fmt.format(ref: '5.0', code: 'C', raw: ',0.0R', shares: ',0.0R',
                    price: '0.3', bool: 'Y')

@@ -3,7 +3,8 @@ require 'spec_helper'
 module FatTable
   describe Column do
     before :all do
-      @bool_items = [ nil, 't', 'true', 'False', 'nO', 'y', nil, 'Y', 'yEs', 'yippers' ]
+      @bool_items = [nil, 't', 'true', 'False', 'nO',
+                     'y', nil, 'Y', 'yEs', 'yippers']
     end
 
     describe 'initialization of boolean' do
@@ -89,8 +90,7 @@ module FatTable
       it 'should initialize a good numeric column without trailing nils' do
         items = [nil, nil, '$2_018', 3.14159, '1,957/9', '2:3', 64646464646,
                  '$-2_018', -3.14159, '+1,957/-9', '-2:3', +64646464646,
-                 '-$2_018', +3.14159, '-1,957/+9', '+2:-3', -64646464646,
-                ]
+                 '-$2_018', +3.14159, '-1,957/+9', '+2:-3', -64646464646]
         col = Column.new(header: 'junk', items: items)
         expect(col.header).to eq(:junk)
         expect(col.type).to eq('Numeric')
@@ -115,7 +115,8 @@ module FatTable
       end
 
       it 'should initialize a good numeric column with trailing nils' do
-        items = [nil, nil, '2018', 3.14159, '1957/9', nil, '', '2:3', 64646464646]
+        items = [nil, nil, '2018', 3.14159, '1957/9',
+                 nil, '', '2:3', 64646464646]
         col = Column.new(header: 'junk', items: items)
         expect(col.header).to eq(:junk)
         expect(col.type).to eq('Numeric')
@@ -132,7 +133,8 @@ module FatTable
       end
 
       it 'should raise an error for a datetime column with trailing boolean' do
-        items = [nil, nil, '2018', 3.14159, '1957/9', 'True', '', '2:3', 64646464646]
+        items = [nil, nil, '2018', 3.14159, '1957/9',
+                 'True', '', '2:3', 64646464646]
         expect {
           Column.new(header: 'junk', items: items)
         }.to raise_error(/already typed as Numeric/)
@@ -141,7 +143,8 @@ module FatTable
 
     describe 'initialization of string' do
       it 'should initialize a good string column without trailing nils' do
-        items = [nil, nil, 'hello', 'world77', 'about 1957/9', '2::3', '64646464646']
+        items = [nil, nil, 'hello', 'world77',
+                 'about 1957/9', '2::3', '64646464646']
         col = Column.new(header: 'junk', items: items)
         expect(col.header).to eq(:junk)
         expect(col.type).to eq('String')
@@ -156,7 +159,8 @@ module FatTable
       end
 
       it 'should initialize a good numeric column with trailing nils' do
-        items = [nil, nil, 'hello', 'world77', '', nil, 'about 1957/9', '2::3', '64646464646']
+        items = [nil, nil, 'hello', 'world77',
+                 '', nil, 'about 1957/9', '2::3', '64646464646']
         col = Column.new(header: 'junk', items: items)
         expect(col.header).to eq(:junk)
         expect(col.type).to eq('String')
@@ -190,7 +194,8 @@ module FatTable
 
     describe 'attribute access' do
       before :all do
-        items = [nil, nil, '2018', 3.14159, '1957/9', nil, '', '2:3', 64646464646]
+        items = [nil, nil, '2018', 3.14159,
+                 '1957/9', nil, '', '2:3', 64646464646]
         @col = Column.new(header: 'junk Header 88', items: items)
       end
 

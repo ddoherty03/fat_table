@@ -49,7 +49,6 @@ module FatTable
   # spaces converted to underscore and everything down-cased. So, the heading,
   # 'Two Words' becomes the header +:two_words+.
   class Table
-
     # An Array of FatTable::Columns that constitute the table.
     attr_reader :columns
 
@@ -140,8 +139,8 @@ module FatTable
 
     # :category: Constructors
 
-    # Construct a new table from another FatTable::Table object +table+. Inherit any
-    # group boundaries from the input table.
+    # Construct a new table from another FatTable::Table object +table+. Inherit
+    # any group boundaries from the input table.
     def self.from_table(table)
       table.deep_dup
     end
@@ -166,15 +165,15 @@ module FatTable
     class << self
       private
 
-      # Construct table from an array of hashes or an array of any object that can
-      # respond to #to_h.  If an array element is a nil, mark it as a group
+      # Construct table from an array of hashes or an array of any object that
+      # can respond to #to_h. If an array element is a nil, mark it as a group
       # boundary in the Table.
       def from_array_of_hashes(hashes, hlines: false)
         result = new
         hashes.each do |hsh|
           if hsh.nil?
             unless hlines
-              raise UserError, 'found an hline in input with hlines false; try setting hlines true'
+              raise UserError, 'found an hline in input: try setting hlines true'
             end
             result.mark_boundary
             next
@@ -219,7 +218,7 @@ module FatTable
         rows[first_data_row..-1].each do |row|
           if row.nil?
             unless hlines
-              raise UserError, 'found an hline in input with hlines false; try setting hlines true'
+              raise UserError, 'found an hline in input: try setting hlines true'
             end
             result.mark_boundary
             next
@@ -253,15 +252,15 @@ module FatTable
         io.each do |line|
           unless table_found
             # Skip through the file until a table is found
-            next unless line =~ table_re
-            unless line =~ hrule_re
+            next unless line.match?(table_re)
+            unless line.match?(hrule_re)
               line = line.sub(/\A\s*\|/, '').sub(/\|\s*\z/, '')
               rows << line.split('|').map(&:clean)
             end
             table_found = true
             next
           end
-          break unless line =~ table_re
+          break unless line.match?(table_re)
           if !header_found && line =~ hrule_re
             rows << nil
             header_found = true
@@ -311,7 +310,7 @@ module FatTable
     def [](key)
       case key
       when Integer
-        raise UserError, "index '#{key}' out of range" unless (0..size-1).cover?(key.abs)
+        raise UserError, "index '#{key}' out of range" unless (0..size - 1).cover?(key.abs)
         rows[key]
       when String
         raise UserError, "header '#{key}' not in table" unless headers.include?(key)

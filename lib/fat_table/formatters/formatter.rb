@@ -45,8 +45,9 @@ module FatTable
     # footer content. The value is Hash in which the keys are column symbols and
     # the values are symbols for the aggregate method to be applied to the
     # group's column to provide a value in the group footer for that column.
-    # Thus, +gfooters['Average'][:shares]+ might be set to +:avg+ to indicate that
-    # the +:shares+ column is to be averaged in the group footer labeled 'Average'.
+    # Thus, +gfooters['Average'][:shares]+ might be set to +:avg+ to indicate
+    # that the +:shares+ column is to be averaged in the group footer labeled
+    # 'Average'.
     attr_reader :gfooters
 
     class_attribute :default_format
@@ -98,10 +99,10 @@ module FatTable
       @options = options
       @footers = {}
       @gfooters = {}
-      # Formatting instructions for various "locations" within the Table, as
-      # a hash of hashes.  The outer hash is keyed on the location, and each
-      # inner hash is keyed on either a column sym or a type sym, :string, :numeric,
-      # :datetime, :boolean, or :nil.  The value of the inner hashes are
+      # Formatting instructions for various "locations" within the Table, as a
+      # hash of hashes. The outer hash is keyed on the location, and each inner
+      # hash is keyed on either a column sym or a type sym, :string, :numeric,
+      # :datetime, :boolean, or :nil. The value of the inner hashes are
       # OpenStruct structs.
       @format_at = {}
       [:header, :bfirst, :gfirst, :body, :footer, :gfooter].each do |loc|
@@ -205,13 +206,13 @@ module FatTable
       foot = {}
       sum_cols.each do |h|
         unless table.headers.include?(h)
-          raise UserError, "No '#{h}' column in table to sum in the group footer"
+          raise UserError, "No '#{h}' column in table for group sum footer"
         end
         foot[h] = :sum
       end
       agg_cols.each do |h, agg|
         unless table.headers.include?(h)
-          raise UserError, "No '#{h}' column in table to #{agg} in the group footer"
+          raise UserError, "No '#{h}' column in table for #{agg} group footer"
         end
         foot[h] = agg
       end
@@ -465,7 +466,8 @@ module FatTable
       unless LOCATIONS.include?(location)
         raise UserError, "unknown format location '#{location}'"
       end
-      valid_keys = table.headers + [:string, :numeric, :datetime, :boolean, :nil]
+      valid_keys = table.headers +
+                   [:string, :numeric, :datetime, :boolean, :nil]
       invalid_keys = (fmts.keys - valid_keys).uniq
       unless invalid_keys.empty?
         msg = "invalid #{location} column or type: #{invalid_keys.join(',')}"
@@ -504,14 +506,15 @@ module FatTable
         end
         if fmts[h]
           # Merge in column formatting
-          col_fmt = send(parse_typ_method_name, fmts[h], strict: location != :header)
+          col_fmt = send(parse_typ_method_name, fmts[h],
+                         strict: location != :header)
           format_h = format_h.merge(col_fmt)
         end
 
         if location == :body
           # Copy :body formatting for column h to :bfirst and :gfirst if they
-          # still have the default formatting. Can be overridden with a format_for
-          # call with those locations.
+          # still have the default formatting. Can be overridden with a
+          # format_for call with those locations.
           format_h.each_pair do |k, v|
             if format_at[:bfirst][h].send(k) == default_format[k]
               format_at[:bfirst][h].send("#{k}=", v)
@@ -538,9 +541,9 @@ module FatTable
       self
     end
 
-    ###############################################################################
+    ############################################################################
     # Parsing and validation routines
-    ###############################################################################
+    ############################################################################
 
     private
 
@@ -836,7 +839,7 @@ module FatTable
         result = val.secs_to_hms
         istruct.commas = false
       elsif istruct.currency
-        prec = istruct.post_digits == 0 ? 2 : istruct.post_digits
+        prec = istruct.post_digits.zero? ? 2 : istruct.post_digits
         delim = istruct.commas ? ',' : ''
         result = val.to_s(:currency, precision: prec, delimiter: delim,
                           unit: FatTable.currency_symbol)
@@ -903,9 +906,9 @@ module FatTable
       val
     end
 
-    ###############################################################################
+    ############################################################################
     # Output routines
-    ###############################################################################
+    ############################################################################
 
     public
 
@@ -1016,7 +1019,7 @@ module FatTable
     # Return a hash mapping the table's headers to their formatted versions. If
     # a hash of column widths is given, perform alignment within the given field
     # widths.
-    def build_formatted_headers(widths = {})
+    def build_formatted_headers(_widths = {})
       # Don't decorate if this Formatter calls for alignment.  It will be done
       # in the second pass.
       decorate = !aligned?
@@ -1058,7 +1061,8 @@ module FatTable
             grp_col[h] ||= Column.new(header: h)
             grp_col[h] << row[h]
             istruct = format_at[location][h]
-            new_row[h] = [row[h], format_cell(row[h], istruct, decorate: decorate)]
+            new_row[h] = [row[h], format_cell(row[h], istruct,
+                                              decorate: decorate)]
           end
           new_rows << [location, new_row]
           tbl_row_k += 1

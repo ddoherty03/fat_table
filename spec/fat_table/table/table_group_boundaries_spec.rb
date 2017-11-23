@@ -4,37 +4,63 @@ module FatTable
   describe Table do
     describe 'group boundaries' do
       before :all do
-        @tab_a = Table.from_aoh([
-          { id: 1, name: 'Paul', age: 32, address: 'California', salary: 20000, join_date: '2001-07-13' },
-          { id: 3, name: 'Teddy', age: 23, address: 'Norway', salary: 20000},
-          { id: 4, name: 'Mark', age: 25, address: 'Rich-Mond', salary: 65000, join_date: '2007-12-13' },
-          { id: 5, name: 'David', age: 27, address: 'Texas', salary: 85000, join_date: '2007-12-13' },
-          { id: 2, name: 'Allen', age: 25, address: 'Texas', salary: nil, join_date: '2007-12-13' },
-          { id: 8, name: 'Paul', age: 24, address: 'Houston', salary: 20000, join_date: '2005-07-13' },
-          { id: 9, name: 'James', age: 44, address: 'Norway', salary: 5000, join_date: '2005-07-13' },
-          { id: 10, name: 'James', age: 45, address: 'Texas', salary: 5000, join_date: '2005-07-13' }
-        ])
+        @tab_a = Table.from_aoh(
+          [
+            { id: 1, name: 'Paul', age: 32, address: 'California',
+              salary: 20000, join_date: '2001-07-13' },
+            { id: 3, name: 'Teddy', age: 23, address: 'Norway',
+              salary: 20000 },
+            { id: 4, name: 'Mark', age: 25, address: 'Rich-Mond',
+              salary: 65000, join_date: '2007-12-13' },
+            { id: 5, name: 'David', age: 27, address: 'Texas',
+              salary: 85000, join_date: '2007-12-13' },
+            { id: 2, name: 'Allen', age: 25, address: 'Texas',
+              salary: nil, join_date: '2007-12-13' },
+            { id: 8, name: 'Paul', age: 24, address: 'Houston',
+              salary: 20000, join_date: '2005-07-13' },
+            { id: 9, name: 'James', age: 44, address: 'Norway',
+              salary: 5000, join_date: '2005-07-13' },
+            { id: 10, name: 'James', age: 45, address: 'Texas',
+              salary: 5000, join_date: '2005-07-13' }
+          ]
+        )
         # Union compatible with tab_a
-        @tab_a1 = Table.from_aoh([
-          { id: 21, name: 'Paula', age: 23, address: 'Kansas', salary: 20000, join_date: '2001-07-13' },
-          { id: 23, name: 'Jenny', age: 32, address: 'Missouri', salary: 20000},
-          { id: 24, name: 'Forrest', age: 52, address: 'Richmond', salary: 65000, join_date: '2007-12-13' },
-          { id: 25, name: 'Syrano', age: 72, address: 'Nebraska', salary: 85000, join_date: '2007-12-13' },
-          # Next four are the same as row as in @tab_a
-          { id: 2, name: 'Allen', age: 25, address: 'Texas', salary: nil, join_date: '2007-12-13' },
-          { id: 8, name: 'Paul', age: 24, address: 'Houston', salary: 20000, join_date: '2005-07-13' },
-          { id: 9, name: 'James', age: 44, address: 'Norway', salary: 5000, join_date: '2005-07-13' },
-          { id: 10, name: 'James', age: 45, address: 'Texas', salary: 5000, join_date: '2005-07-13' },
-          { id: 22, name: 'Paula', age: 52, address: 'Iowa', salary: nil, join_date: '2007-12-13' },
-          { id: 28, name: 'Paula', age: 42, address: 'Oklahoma', salary: 20000, join_date: '2005-07-13' },
-          { id: 29, name: 'Patrick', age: 44, address: 'Lindsbourg', salary: 5000, join_date: '2005-07-13' },
-          { id: 30, name: 'James', age: 54, address: 'Ottawa', salary: 5000, join_date: '2005-07-13' }
-        ])
-        @tab_b = Table.from_aoh([
-          { id: 1, dept: 'IT Billing', emp_id: 1 },
-          { id: 2, dept: 'Engineering', emp_id: 2 },
-          { id: 3, dept: 'Finance', emp_id: 7 }
-        ])
+        @tab_a1 = Table.from_aoh(
+          [
+            { id: 21, name: 'Paula', age: 23, address: 'Kansas',
+              salary: 20000, join_date: '2001-07-13' },
+            { id: 23, name: 'Jenny', age: 32, address: 'Missouri',
+              salary: 20000 },
+            { id: 24, name: 'Forrest', age: 52, address: 'Richmond',
+              salary: 65000, join_date: '2007-12-13' },
+            { id: 25, name: 'Syrano', age: 72, address: 'Nebraska',
+              salary: 85000, join_date: '2007-12-13' },
+            # Next four are the same as row as in @tab_a
+            { id: 2, name: 'Allen', age: 25, address: 'Texas',
+              salary: nil, join_date: '2007-12-13' },
+            { id: 8, name: 'Paul', age: 24, address: 'Houston',
+              salary: 20000, join_date: '2005-07-13' },
+            { id: 9, name: 'James', age: 44, address: 'Norway',
+              salary: 5000, join_date: '2005-07-13' },
+            { id: 10, name: 'James', age: 45, address: 'Texas',
+              salary: 5000, join_date: '2005-07-13' },
+            { id: 22, name: 'Paula', age: 52, address: 'Iowa',
+              salary: nil, join_date: '2007-12-13' },
+            { id: 28, name: 'Paula', age: 42, address: 'Oklahoma',
+              salary: 20000, join_date: '2005-07-13' },
+            { id: 29, name: 'Patrick', age: 44, address: 'Lindsbourg',
+              salary: 5000, join_date: '2005-07-13' },
+            { id: 30, name: 'James', age: 54, address: 'Ottawa',
+              salary: 5000, join_date: '2005-07-13' }
+          ]
+        )
+        @tab_b = Table.from_aoh(
+          [
+            { id: 1, dept: 'IT Billing', emp_id: 1 },
+            { id: 2, dept: 'Engineering', emp_id: 2 },
+            { id: 3, dept: 'Finance', emp_id: 7 }
+          ]
+        )
         @aoa =
           [['Ref', 'Date', 'Code', 'Raw', 'Shares', 'Price', 'Info', 'Bool'],
            nil,
@@ -54,17 +80,24 @@ module FatTable
            nil,
            [16, '2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'ZMEAC', 'T']]
         @aoh = [
-          { id: 1, name: 'Paul', age: 32, address: 'California', salary: 20000, join_date: '2001-07-13' },
+          { id: 1, name: 'Paul', age: 32, address: 'California', salary: 20000,
+            join_date: '2001-07-13' },
           nil,
-          { id: 3, name: 'Teddy', age: 23, address: 'Norway', salary: 20000},
-          { id: 4, name: 'Mark', age: 25, address: 'Rich-Mond', salary: 65000, join_date: '2007-12-13' },
-          { id: 5, name: 'David', age: 27, address: 'Texas', salary: 85000, join_date: '2007-12-13' },
+          { id: 3, name: 'Teddy', age: 23, address: 'Norway', salary: 20000 },
+          { id: 4, name: 'Mark', age: 25, address: 'Rich-Mond', salary: 65000,
+            join_date: '2007-12-13' },
+          { id: 5, name: 'David', age: 27, address: 'Texas', salary: 85000,
+            join_date: '2007-12-13' },
           nil,
-          { id: 2, name: 'Allen', age: 25, address: 'Texas', salary: nil, join_date: '2007-12-13' },
-          { id: 8, name: 'Paul', age: 24, address: 'Houston', salary: 20000, join_date: '2005-07-13' },
-          { id: 9, name: 'James', age: 44, address: 'Norway', salary: 5000, join_date: '2005-07-13' },
+          { id: 2, name: 'Allen', age: 25, address: 'Texas', salary: nil,
+            join_date: '2007-12-13' },
+          { id: 8, name: 'Paul', age: 24, address: 'Houston', salary: 20000,
+            join_date: '2005-07-13' },
+          { id: 9, name: 'James', age: 44, address: 'Norway', salary: 5000,
+            join_date: '2005-07-13' },
           nil,
-          { id: 10, name: 'James', age: 45, address: 'Texas', salary: 5000, join_date: '2005-07-13' }
+          { id: 10, name: 'James', age: 45, address: 'Texas', salary: 5000,
+            join_date: '2005-07-13' }
         ]
       end
 
@@ -129,7 +162,7 @@ module FatTable
         expect(tab.size).to eq(20)
         expect(tab.groups.size).to eq(tab1.groups.size + tab2.groups.size)
         tab.groups.each do |grp|
-          names = grp.map {|r| r[:name]}
+          names = grp.map { |r| r[:name] }
           expect(names.uniq.size).to eq(1)
         end
       end
