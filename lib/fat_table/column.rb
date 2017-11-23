@@ -487,7 +487,7 @@ module FatTable
       begin
         val = val.to_s.clean
         return nil if val.blank?
-        if val =~ IS0_DATE_RE
+        if val.match?(IS0_DATE_RE)
           val = DateTime.parse(val)
         elsif val =~ AMR_DATE_RE
           val = DateTime.new($3.to_i, $1.to_i, $2.to_i)
