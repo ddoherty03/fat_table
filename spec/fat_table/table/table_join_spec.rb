@@ -40,8 +40,8 @@ module FatTable
         expect(join_tab.size).to eq(2)
         expect(join_tab[:name]).to include('Paul')
         expect(join_tab[:name]).to include('Allen')
-        expect(join_tab.headers).to eq([:id, :name, :age, :address, :salary,
-                                        :join_date, :id_b, :dept])
+        expect(join_tab.headers).to eq(%i[id name age address salary
+                                          join_date id_b dept])
       end
 
       it 'should be able to do an inner join on a string exp' do
@@ -50,8 +50,8 @@ module FatTable
         expect(join_tab.size).to eq(2)
         expect(join_tab[:name]).to include('Paul')
         expect(join_tab[:name]).to include('Allen')
-        expect(join_tab.headers).to eq([:id, :name, :age, :address, :salary,
-                                        :join_date, :id_b, :dept, :emp_id])
+        expect(join_tab.headers).to eq(%i[id name age address salary
+                                          join_date id_b dept emp_id])
       end
 
       it 'should be able to do a left join' do
@@ -64,8 +64,8 @@ module FatTable
         expect(join_tab[:name]).to include('Mark')
         expect(join_tab[:name]).to include('David')
         expect(join_tab[:name]).to include('James')
-        expect(join_tab.headers).to eq([:id, :name, :age, :address, :salary,
-                                        :join_date, :id_b, :dept, :emp_id])
+        expect(join_tab.headers).to eq(%i[id name age address salary join_date
+                                          id_b dept emp_id])
       end
 
       it 'should be able to do a right join' do
@@ -77,8 +77,8 @@ module FatTable
         expect(join_tab[:dept]).to include('IT Billing')
         expect(join_tab[:dept]).to include('Engineering')
         expect(join_tab[:dept]).to include('Finance')
-        expect(join_tab.headers).to eq([:id, :name, :age, :address, :salary,
-                                        :join_date, :id_b, :dept, :emp_id])
+        expect(join_tab.headers).to eq(%i[id name age address salary
+                                          join_date id_b dept emp_id])
       end
 
       it 'should be able to do a full join' do
@@ -94,8 +94,8 @@ module FatTable
         expect(join_tab[:dept]).to include('IT Billing')
         expect(join_tab[:dept]).to include('Engineering')
         expect(join_tab[:dept]).to include('Finance')
-        expect(join_tab.headers).to eq([:id, :name, :age, :address, :salary,
-                                        :join_date, :id_b, :dept, :emp_id])
+        expect(join_tab.headers).to eq(%i[id name age address salary
+                                          join_date id_b dept emp_id])
       end
 
       it 'should be able to do a cross join' do
@@ -111,8 +111,8 @@ module FatTable
         expect(join_tab[:dept]).to include('IT Billing')
         expect(join_tab[:dept]).to include('Engineering')
         expect(join_tab[:dept]).to include('Finance')
-        expect(join_tab.headers).to eq([:id, :name, :age, :address, :salary,
-                                        :join_date, :id_b, :dept, :emp_id])
+        expect(join_tab.headers).to eq(%i[id name age address salary
+                                          join_date id_b dept emp_id])
       end
     end
   end

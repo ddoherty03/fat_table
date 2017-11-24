@@ -4,7 +4,8 @@ module FatTable
   describe Evaluator do
     describe 'instance variables' do
       let(:ev) do
-        Evaluator.new(ivars: { group: 0, row: 1, junk: Date.parse('2017-09-22') },
+        Evaluator.new(ivars: { group: 0, row: 1,
+                               junk: Date.parse('2017-09-22') },
                       before: '@group += 1; @row += 2',
                       after:  '@group *= 2; @row *= 3')
       end
@@ -29,7 +30,8 @@ module FatTable
 
     describe 'before hook' do
       let(:ev) do
-        Evaluator.new(ivars: { group: 0, row: 1, junk: Date.parse('2017-09-22') },
+        Evaluator.new(ivars: { group: 0, row: 1,
+                               junk: Date.parse('2017-09-22') },
                       before: '@group += 1; @row += 2')
       end
 
@@ -55,7 +57,8 @@ module FatTable
 
     describe 'after hook' do
       let(:ev) do
-        Evaluator.new(ivars: { group: 1, row: 1, junk: Date.parse('2017-09-22') },
+        Evaluator.new(ivars: { group: 1, row: 1,
+                               junk: Date.parse('2017-09-22') },
                       after:  '@group *= 2; @row *= 3; @junk = @junk + 1.year')
       end
 

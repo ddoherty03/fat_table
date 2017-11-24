@@ -25,7 +25,7 @@ module FatTable
   require 'fat_table/errors'
 
   # Valid output formats as symbols.
-  FORMATS = [:psv, :aoa, :aoh, :latex, :org, :term, :text].freeze
+  FORMATS = %i[psv aoa aoh latex org term text].freeze
 
   class << self
     # Set a default output format to use when FatTable.to_format is invoked.

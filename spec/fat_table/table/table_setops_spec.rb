@@ -93,25 +93,25 @@ module FatTable
         expect(itab.groups.size).to eq(1)
       end
 
-      it 'should throw exception for intersect with different sized tables' do
+      it 'throw exception for intersect with different sized tables' do
         expect {
           @tab1.intersect(@tab3)
         }.to raise_error(/different number of columns/)
       end
 
-      it 'should throw an exception for intersect with different types' do
+      it 'throw an exception for intersect with different types' do
         expect {
           @tab1.intersect(@tab4)
         }.to raise_error(/different column types/)
       end
 
-      it 'should throw exception for intersect_all with different size tables' do
+      it 'throw exception for intersect_all with different size tables' do
         expect {
           @tab1.intersect_all(@tab3)
         }.to raise_error(/different number of columns/)
       end
 
-      it 'should throw an exception for intersect_all with different types' do
+      it 'throw an exception for intersect_all with different types' do
         expect {
           @tab1.intersect_all(@tab4)
         }.to raise_error(/different column types/)

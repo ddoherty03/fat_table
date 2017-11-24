@@ -51,6 +51,7 @@ module FatTable
   class Table
     # An Array of FatTable::Columns that constitute the table.
     attr_reader :columns
+    attr_accessor :boundaries
 
     ###########################################################################
     # Constructors
@@ -150,7 +151,8 @@ module FatTable
     # Construct a Table by running a SQL +query+ against the database set up
     # with FatTable.set_db, with the rows of the query result as rows.
     def self.from_sql(query)
-      raise UserError, 'FatTable.db must be set with FatTable.set_db' if FatTable.db.nil?
+      msg = 'FatTable.db must be set with FatTable.set_db'
+      raise UserError, msg if FatTable.db.nil?
       result = Table.new
       FatTable.db[query].each do |h|
         result << h
@@ -173,7 +175,8 @@ module FatTable
         hashes.each do |hsh|
           if hsh.nil?
             unless hlines
-              raise UserError, 'found an hline in input: try setting hlines true'
+              msg = 'found an hline in input: try setting hlines true'
+              raise UserError, msg
             end
             result.mark_boundary
             next
@@ -218,7 +221,8 @@ module FatTable
         rows[first_data_row..-1].each do |row|
           if row.nil?
             unless hlines
-              raise UserError, 'found an hline in input: try setting hlines true'
+              msg = 'found an hline in input: try setting hlines true'
+              raise UserError, msg
             end
             result.mark_boundary
             next
@@ -310,13 +314,16 @@ module FatTable
     def [](key)
       case key
       when Integer
-        raise UserError, "index '#{key}' out of range" unless (0..size - 1).cover?(key.abs)
+        msg = "index '#{key}' out of range"
+        raise UserError, msg unless (0..size - 1).cover?(key.abs)
         rows[key]
       when String
-        raise UserError, "header '#{key}' not in table" unless headers.include?(key)
+        msg = "header '#{key}' not in table"
+        raise UserError, msg unless headers.include?(key)
         column(key).items
       when Symbol
-        raise UserError, "header ':#{key}' not in table" unless headers.include?(key)
+        msg = "header ':#{key}' not in table"
+        raise UserError, msg unless headers.include?(key)
         column(key).items
       else
         raise UserError, "cannot index table with a #{key.class}"
@@ -412,9 +419,9 @@ module FatTable
       rows
     end
 
-    #############################################################################
+    ############################################################################
     # Enumerable
-    #############################################################################
+    ############################################################################
 
     public
 
@@ -428,9 +435,6 @@ module FatTable
         yield row
       end
     end
-
-
-    public
 
     # :category: Attributes
 
@@ -503,16 +507,6 @@ module FatTable
     protected
 
     # :stopdoc:
-
-    # Reader for boundaries, but not public.
-    def boundaries
-      @boundaries
-    end
-
-    # Writer for boundaries, but not public.
-    def boundaries=(bounds)
-      @boundaries = bounds
-    end
 
     # Make sure size - 1 is last boundary and that they are unique and sorted.
     def normalize_boundaries
@@ -706,7 +700,8 @@ module FatTable
         new_row = {}
         cols.each do |k|
           h = k.as_sym
-          raise UserError, "Column '#{h}' in select does not exist" unless column?(h)
+          msg = "Column '#{h}' in select does not exist"
+          raise UserError, msg unless column?(h)
           new_row[h] = old_row[h]
         end
         new_cols.each_pair do |key, expr|
@@ -714,12 +709,14 @@ module FatTable
           vars = old_row.merge(new_row)
           case expr
           when Symbol
-            raise UserError, "Column '#{expr}' in select does not exist" unless vars.keys.include?(expr)
+            msg = "Column '#{expr}' in select does not exist"
+            raise UserError, msg unless vars.keys.include?(expr)
             new_row[key] = vars[expr]
           when String
             new_row[key] = ev.evaluate(expr, locals: vars)
           else
-            raise UserError, "Hash parameter '#{key}' to select must be a symbol or string"
+            msg = "Hash parameter '#{key}' to select must be a symbol or string"
+            raise UserError, msg
           end
         end
         # Set the group number and run the hook with the local variables set to
@@ -875,10 +872,12 @@ module FatTable
                       add_boundaries: true,
                       inherit_boundaries: false)
       unless columns.size == other.columns.size
-        raise UserError, 'Cannot apply a set operation to tables with a different number of columns.'
+        msg = "can't apply set ops to tables with a different number of columns"
+        raise UserError, msg
       end
       unless columns.map(&:type) == other.columns.map(&:type)
-        raise UserError, 'Cannot apply a set operation to tables with different column types.'
+        msg = "can't apply a set ops to tables with different column types."
+        raise UserError, msg
       end
       other_rows = other.rows.map { |r| r.replace_keys(headers) }
       result = Table.new
@@ -899,7 +898,7 @@ module FatTable
     public
 
     # An Array of symbols for the valid join types.
-    JOIN_TYPES = [:inner, :left, :right, :full, :cross].freeze
+    JOIN_TYPES = %i[inner left right full cross].freeze
 
     # :category: Operators
     #
@@ -979,7 +978,8 @@ module FatTable
       # These may be needed for outer joins.
       self_row_nils = headers.map { |h| [h, nil] }.to_h
       other_row_nils = other.headers.map { |h| [h, nil] }.to_h
-      join_expression, other_common_heads = build_join_expression(exps, other, join_type)
+      join_exp, other_common_heads =
+        build_join_expression(exps, other, join_type)
       ev = Evaluator.new
       result = Table.new
       other_rows = other.rows
@@ -990,7 +990,7 @@ module FatTable
           # Same as other_row, but with keys that are common with self and equal
           # in value, removed, so the output table need not repeat them.
           locals = build_locals_hash(row_a: self_row, row_b: other_row)
-          matches = ev.evaluate(join_expression, locals: locals)
+          matches = ev.evaluate(join_exp, locals: locals)
           next unless matches
           self_row_matched = other_row_matches[k] = true
           out_row = build_out_row(row_a: self_row, row_b: other_row,
@@ -998,19 +998,18 @@ module FatTable
                                   type: join_type)
           result << out_row
         end
-        if join_type == :left || join_type == :full
-          unless self_row_matched
-            out_row = build_out_row(row_a: self_row, row_b: other_row_nils, type: join_type)
-            result << out_row
-          end
-        end
+        next unless %i[left full].include?(join_type)
+        next if self_row_matched
+        result << build_out_row(row_a: self_row,
+                                row_b: other_row_nils,
+                                type: join_type)
       end
-      if join_type == :right || join_type == :full
+      if %i[right full].include?(join_type)
         other_rows.each_with_index do |other_row, k|
-          unless other_row_matches[k]
-            out_row = build_out_row(row_a: self_row_nils, row_b: other_row, type: join_type)
-            result << out_row
-          end
+          next if other_row_matches[k]
+          result << build_out_row(row_a: self_row_nils,
+                                  row_b: other_row,
+                                  type: join_type)
         end
       end
       result.normalize_boundaries
@@ -1097,8 +1096,8 @@ module FatTable
       b_common_heads = []
       if exps.empty?
         if common_heads.empty?
-          raise UserError,
-                'A non-cross join with no common column names requires join expressions'
+          msg = "#{type}-join with no common column names needs join expression"
+          raise UserError, msg
         else
           # A Natural join on all common heads
           common_heads.each do |h|
@@ -1123,7 +1122,9 @@ module FatTable
               end
               if partial_result
                 # Second of a pair
-                ensure_common_types!(self_h: a_head, other_h: last_sym, other: other)
+                ensure_common_types!(self_h: a_head,
+                                     other_h: last_sym,
+                                     other: other)
                 partial_result << "#{a_head}_a)"
                 and_conds << partial_result
                 partial_result = nil
@@ -1139,7 +1140,9 @@ module FatTable
               end
               if partial_result
                 # Second of a pair
-                ensure_common_types!(self_h: last_sym, other_h: b_head, other: other)
+                ensure_common_types!(self_h: last_sym,
+                                     other_h: b_head,
+                                     other: other)
                 partial_result << "#{b_head}_b)"
                 and_conds << partial_result
                 partial_result = nil
@@ -1155,12 +1158,13 @@ module FatTable
                 # We were expecting the second of a modified pair, but got an
                 # unmodified symbol instead.
                 msg =
-                  "must follow '#{last_sym}' by qualified exp from the other table"
+                  "follow '#{last_sym}' by qualified exp from the other table"
                 raise UserError, msg
               end
               # We have an unqualified symbol that must appear in both tables
               unless common_heads.include?(exp)
-                raise UserError, "unqualified column '#{exp}' must occur in both tables"
+                msg = "unqualified column '#{exp}' must occur in both tables"
+                raise UserError, msg
               end
               ensure_common_types!(self_h: exp, other_h: exp, other: other)
               and_conds << "(#{exp}_a == #{exp}_b)"
@@ -1171,7 +1175,8 @@ module FatTable
             # qualified.
             and_conds << "(#{exp})"
           else
-            raise UserError, "invalid join expression '#{exp}' of class #{exp.class}"
+            msg = "invalid join expression '#{exp}' of class #{exp.class}"
+            raise UserError, msg
           end
         end
         [and_conds.join(' && '), b_common_heads]
@@ -1182,15 +1187,15 @@ module FatTable
     # have the same types.
     def ensure_common_types!(self_h:, other_h:, other:)
       unless column(self_h).type == other.column(other_h).type
-        raise UserError,
-              "type of column '#{self_h}' does not match type of column '#{other_h}"
+        msg = "column '#{self_h}' type does not match column '#{other_h}"
+        raise UserError, msg
       end
       self
     end
 
-    ###################################################################################
+    ############################################################################
     # Group By
-    ###################################################################################
+    ############################################################################
 
     public
 
@@ -1274,7 +1279,8 @@ module FatTable
 
     # Add a FatTable::Column object +col+ to the table.
     def add_column(col)
-      raise "Table already has a column with header '#{col.header}'" if column?(col.header)
+      msg = "Table already has a column with header '#{col.header}'"
+      raise msg if column?(col.header)
       columns << col
       self
     end
@@ -1321,7 +1327,8 @@ module FatTable
     #
     def to_any(fmt_type, options = {})
       fmt = fmt_type.as_sym
-      raise UserError, "unknown format '#{fmt}'" unless FatTable::FORMATS.include?(fmt)
+      msg = "unknown format '#{fmt}'"
+      raise UserError, msg unless FatTable::FORMATS.include?(fmt)
       method = "to_#{fmt}"
       if block_given?
         send method, options, &Proc.new

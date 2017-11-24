@@ -46,7 +46,7 @@ module FatTable
       end
 
       it 'should be able to report its headers' do
-        expect(@tab.headers).to eq [:a, :two_words, :c, :d]
+        expect(@tab.headers).to eq %i[a two_words c d]
       end
 
       it 'should be able to report the table size' do

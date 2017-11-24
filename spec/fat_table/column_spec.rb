@@ -31,7 +31,7 @@ module FatTable
         expect(col.size).to eq(10)
       end
 
-      it 'should raise an error initializing a boolean column with trailing numeric' do
+      it 'raise error initializing a boolean column with trailing numeric' do
         items = [nil, 't', 'true', 'False', 'nO', '32.8', 'y', nil, 'Y', 'yEs']
         expect {
           Column.new(header: 'junk', items: items)
@@ -288,7 +288,7 @@ module FatTable
       end
 
       it 'should properly apply the min aggregate' do
-        expect(@nums.min).to eq(2/3r)
+        expect(@nums.min).to eq(Rational(2, 3))
         expect { @bools.min }.to raise_error(/cannot be applied/)
         expect(@dates.min).to eq(Date.parse('1957-09-22'))
         expect(@strs.min).to eq('ago')

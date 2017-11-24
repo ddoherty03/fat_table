@@ -3,8 +3,7 @@ require 'spec_helper'
 module FatTable
   describe Table do
     before :all do
-
-      @csv_file_body = <<~EOS
+      @csv_file_body = <<~CSV
         Ref,Date,Code,RawShares,Shares,Price,Info
         1,2006-05-02,P,5000,5000,8.6000,2006-08-09-1-I
         2,2006-05-03,P,5000,5000,8.4200,2006-08-09-1-I
@@ -97,9 +96,9 @@ module FatTable
         89,2007-04-23,P,5000,5000,23.4500,2007-04-27-2-I
         90,2007-04-24,P,5000,5000,24.3000,2007-04-27-2-I
         91,2007-04-25,S,10000,10000,25.7000,2007-04-27-2-I
-      EOS
+      CSV
 
-      @org_file_body = <<~EOS
+      @org_file_body = <<~ORG
 
         * Morgan Transactions
         :PROPERTIES:
@@ -125,9 +124,9 @@ module FatTable
         |  42 | 2013-05-30 | S    |   6,679 |     18 | 25.04710 | ZMEAC  |
 
         * Another Heading
-      EOS
+      ORG
 
-      @org_file_body_with_groups = <<~EOS
+      @org_file_body_with_groups = <<~ORG
 
         #+TBLNAME: morgan_tab
         |-----+------------+------+---------+--------+----------+--------|
@@ -152,7 +151,7 @@ module FatTable
         |  42 | 2013-05-30 | S    |   6,679 |     18 | 25.04710 | ZMEAC  |
         |-----+------------+------+---------+--------+----------+--------|
 
-      EOS
+      ORG
     end
 
     describe 'construction' do
@@ -161,7 +160,7 @@ module FatTable
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to be > 20
         expect(tab.headers.sort)
-          .to eq [:code, :date, :info, :price, :rawshares, :ref, :shares]
+          .to eq %i[code date info price rawshares ref shares]
         tab.rows.each do |row|
           row.each_pair do |k, _v|
             expect(k.class).to eq Symbol
@@ -182,7 +181,7 @@ module FatTable
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to be > 10
         expect(tab.headers.sort)
-          .to eq [:code, :date, :info, :price, :raw, :ref, :shares]
+          .to eq %i[code date info price raw ref shares]
         tab.rows.each do |row|
           row.each_pair do |k, _v|
             expect(k.class).to eq Symbol
@@ -204,7 +203,7 @@ module FatTable
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to be > 10
         expect(tab.headers.sort)
-          .to eq [:code, :date, :info, :price, :raw, :ref, :shares]
+          .to eq %i[code date info price raw ref shares]
         tab.rows.each do |row|
           row.each_pair do |k, _v|
             expect(k.class).to eq Symbol
@@ -227,7 +226,7 @@ module FatTable
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to be > 20
         expect(tab.headers.sort)
-          .to eq [:code, :date, :info, :price, :rawshares, :ref, :shares]
+          .to eq %i[code date info price rawshares ref shares]
         tab.rows.each do |row|
           row.each_pair do |k, _v|
             expect(k.class).to eq Symbol
@@ -250,7 +249,7 @@ module FatTable
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to be > 10
         expect(tab.rows[0].keys.sort)
-          .to eq [:code, :date, :info, :price, :raw, :ref, :shares]
+          .to eq %i[code date info price raw ref shares]
         tab.rows.each do |row|
           row.each_pair do |k, _v|
             expect(k.class).to eq Symbol
@@ -281,7 +280,7 @@ module FatTable
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to eq(4)
         expect(tab.groups.size).to eq(1)
-        expect(tab.rows[0].keys.sort).to eq [:first, :second, :third]
+        expect(tab.rows[0].keys.sort).to eq %i[first second third]
         tab.rows.each do |row|
           row.each_pair do |k, _v|
             expect(k.class).to eq Symbol
@@ -305,7 +304,7 @@ module FatTable
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to eq(4)
         expect(tab.groups.size).to eq(1)
-        expect(tab.headers.sort).to eq [:first, :second, :third]
+        expect(tab.headers.sort).to eq %i[first second third]
         tab.rows.each do |row|
           row.each_pair do |k, _v|
             expect(k.class).to eq Symbol
@@ -330,7 +329,7 @@ module FatTable
         tab = Table.from_aoa(aoa, hlines: true)
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to eq(4)
-        expect(tab.headers.sort).to eq [:col_1, :col_2, :col_3]
+        expect(tab.headers.sort).to eq %i[col_1 col_2 col_3]
         tab.rows.each do |row|
           row.each_pair do |k, _v|
             expect(k.class).to eq Symbol
@@ -351,7 +350,7 @@ module FatTable
         tab = Table.from_aoh(aoh)
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to eq(4)
-        expect(tab.rows[0].keys.sort).to eq [:a, :c, :two_words]
+        expect(tab.rows[0].keys.sort).to eq %i[a c two_words]
         tab.rows.each do |row|
           row.each_pair do |k, _v|
             expect(k.class).to eq Symbol
@@ -371,11 +370,11 @@ module FatTable
         expect(ok).to be_truthy
         if ok
           FatTable.set_db(database: 'fat_table_spec', host: 'localhost')
-          query = <<~EOQ
+          query = <<~SQL
             SELECT ref, date, code, price, shares
             FROM trades
             WHERE shares > 1000;
-          EOQ
+          SQL
           tab = Table.from_sql(query)
           expect(tab.class).to eq(Table)
           expect(tab.rows.size).to be > 100

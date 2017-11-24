@@ -11,7 +11,7 @@ module FatTable
         ]
         tab1 = Table.from_aoh(aoh)
         tab2 = tab1.select(:s, :a, :c)
-        expect(tab2.headers).to eq [:s, :a, :c]
+        expect(tab2.headers).to eq %i[s a c]
       end
 
       it 'should be able to select by column names renaming columns' do
@@ -22,7 +22,7 @@ module FatTable
         ]
         tab1 = Table.from_aoh(aoh)
         tab2 = tab1.select(former_s: :s, new_a: :a, renew_c: :c)
-        expect(tab2.headers).to eq [:former_s, :new_a, :renew_c]
+        expect(tab2.headers).to eq %i[former_s new_a renew_c]
       end
 
       it 'should be able to select new columns computed from prior' do
@@ -34,10 +34,10 @@ module FatTable
         tab1 = Table.from_aoh(aoh)
         tab2 = tab1.select(:two_words, row: '@row', s_squared: 's * s',
                            arb: 's_squared / (a + c).to_d')
-        expect(tab2.headers).to eq [:two_words, :row, :s_squared, :arb]
+        expect(tab2.headers).to eq %i[two_words row s_squared arb]
       end
 
-      it 'should be able to use old value of current column to compute new value' do
+      it 'should use old value of current column to compute new value' do
         aoh = [
           { a: '5', 'Two words' => '20', s: '5_143', c: '3123' },
           { a: '4', 'Two words' => '5',  s: 412,     c: 6412 },
@@ -45,7 +45,7 @@ module FatTable
         ]
         tab1 = Table.from_aoh(aoh)
         tab2 = tab1.select(:two_words, s: 's * s', nc: 'c + c', c: 'nc+nc')
-        expect(tab2.headers).to eq [:two_words, :s, :nc, :c]
+        expect(tab2.headers).to eq %i[two_words s nc c]
         expect(tab2[:s]).to eq([26450449, 169744, 3316041])
         expect(tab2[:c]).to eq([12492, 25648, 7552])
       end
@@ -64,7 +64,7 @@ module FatTable
         ]
         tab = Table.from_aoh(aoh).order_by(:a, :two_words)
         tab2 = tab.select(:a, :two_words, number: '@row', group: '@group')
-        expect(tab2.headers).to eq [:a, :two_words, :number, :group]
+        expect(tab2.headers).to eq %i[a two_words number group]
         expect(tab2[:number]).to eq([1, 2, 3, 4, 5, 6, 7, 8, 9])
         expect(tab2[:group]).to eq([1, 1, 1, 2, 2, 2, 3, 3, 3])
       end
@@ -89,8 +89,8 @@ module FatTable
           before_hook: '@cum_a += a',
           after_hook: '@avg_a = (@cum_a.to_f / @row.to_f).round(3)'
         )
-        expect(tab2.headers).to eq [:a, :two_words, :number,
-                                    :group, :sum_of_a, :average_a]
+        expect(tab2.headers).to eq %i[a two_words number group sum_of_a
+                                      average_a]
         expect(tab2[:sum_of_a]).to eq([5, 9, 16, 21, 25, 32, 37, 41, 48])
         # Note the average is the average for the prior row because we are
         # computing the average in the after hook. See the next example for how
@@ -127,8 +127,8 @@ module FatTable
           sum_of_a: '@cum_a', average_a: '@avg_a',
           before_hook: hook
         )
-        expect(tab2.headers).to eq [:a, :two_words, :number,
-                                    :group, :sum_of_a, :average_a]
+        expect(tab2.headers).to eq %i[a two_words number
+                                      group sum_of_a average_a]
         expect(tab2[:sum_of_a]).to eq([5, 9, 16, 21, 25, 32, 37, 41, 48])
         expect(tab2[:average_a][0]).to eq(5.0)   # 5/1
         expect(tab2[:average_a][1]).to eq(4.5)   # 9/2

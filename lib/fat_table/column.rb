@@ -90,7 +90,8 @@ module FatTable
           @raw_header.to_s.as_sym
         end
       @type = 'NilClass'
-      raise UserError, "Unknown column type '#{type}" unless TYPES.include?(@type.to_s)
+      msg = "unknown column type '#{type}"
+      raise UserError, msg unless TYPES.include?(@type.to_s)
       @items = []
       items.each { |i| self << i }
     end
@@ -341,7 +342,8 @@ module FatTable
 
     def only_with(agg, *valid_types)
       return self if valid_types.include?(type)
-      raise UserError, "Aggregate '#{agg}' cannot be applied to a #{type} column"
+      msg = "aggregate '#{agg}' cannot be applied to a #{type} column"
+      raise UserError, msg
     end
 
     public
@@ -365,7 +367,8 @@ module FatTable
     # checking for type compatibility.  Use the header of this Column as the
     # header of the new Column.
     def +(other)
-      raise UserError, 'Cannot combine columns with different types' unless type == other.type
+      msg = 'cannot combine columns with different types'
+      raise UserError, msg unless type == other.type
       Column.new(header: header, items: items + other.items)
     end
 
@@ -400,7 +403,7 @@ module FatTable
               bool_val
             end
           @type =
-            if new_val == true || new_val == false
+            if [true, false].include?(new_val)
               'Boolean'
             elsif new_val.is_a?(Date) || new_val.is_a?(DateTime)
               'DateTime'
@@ -409,7 +412,8 @@ module FatTable
             elsif new_val.is_a?(String)
               'String'
             else
-              raise UserError, "Cannot add #{val} of type #{new_val.class.name} to a column"
+              msg = "can't add #{val} of type #{new_val.class.name} to a column"
+              raise UserError, msg
             end
         end
         new_val
@@ -419,7 +423,8 @@ module FatTable
         else
           new_val = convert_to_boolean(val)
           if new_val.nil?
-            raise UserError, "Attempt to add '#{val}' to a column already typed as #{type}"
+            msg = "attempt to add '#{val}' to a column already typed as #{type}"
+            raise UserError, msg
           end
           new_val
         end
@@ -429,7 +434,8 @@ module FatTable
         else
           new_val = convert_to_date_time(val)
           if new_val.nil?
-            raise UserError, "Attempt to add '#{val}' to a column already typed as #{type}"
+            msg = "attempt to add '#{val}' to a column already typed as #{type}"
+            raise UserError, msg
           end
           new_val
         end
@@ -439,7 +445,8 @@ module FatTable
         else
           new_val = convert_to_numeric(val)
           if new_val.nil?
-            raise UserError, "Attempt to add '#{val}' to a column already typed as #{type}"
+            msg = "attempt to add '#{val}' to a column already typed as #{type}"
+            raise UserError, msg
           end
           new_val
         end
@@ -449,7 +456,8 @@ module FatTable
         else
           new_val = convert_to_string(val)
           if new_val.nil?
-            raise UserError, "Attempt to add '#{val}' to a column already typed as #{type}"
+            msg = "attempt to add '#{val}' to a column already typed as #{type}"
+            raise UserError, msg
           end
           new_val
         end
@@ -472,8 +480,10 @@ module FatTable
       end
     end
 
-    IS0_DATE_RE = %r{\b(\d\d\d\d)[-/](\d\d?)[-/](\d\d?)\s*(T\d\d:\d\d:\d\d(\+\d\d:\d\d)?)?\b}
-    AMR_DATE_RE = %r{\b(\d\d?)[-/](\d\d?)[-/](\d\d\d\d)\s*(T\d\d:\d\d:\d\d(\+\d\d:\d\d)?)?\b}
+    IS0_DATE_RE = %r{\b(\d\d\d\d)[-/](\d\d?)[-/](\d\d?)\s*
+                     (T\d\d:\d\d:\d\d(\+\d\d:\d\d)?)?\b}x
+    AMR_DATE_RE = %r{\b(\d\d?)[-/](\d\d?)[-/](\d\d\d\d)\s*
+                     (T\d\d:\d\d:\d\d(\+\d\d:\d\d)?)?\b}x
 
     # Convert the val to a DateTime if it is either a DateTime, a Date, or a
     # String that can be parsed as a DateTime, otherwise return nil. It only

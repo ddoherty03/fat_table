@@ -12,7 +12,7 @@ module FatTable
   # provided by subclasses will override these for different output targets.
   class Formatter
     # Valid locations in a Table as an array of symbols.
-    LOCATIONS = [:header, :body, :bfirst, :gfirst, :gfooter, :footer].freeze
+    LOCATIONS = %i[header body bfirst gfirst gfooter footer].freeze
 
     # The table that is the subject of the Formatter.
     attr_reader :table
@@ -105,7 +105,7 @@ module FatTable
       # :datetime, :boolean, or :nil. The value of the inner hashes are
       # OpenStruct structs.
       @format_at = {}
-      [:header, :bfirst, :gfirst, :body, :footer, :gfooter].each do |loc|
+      %i[header bfirst gfirst body footer gfooter].each do |loc|
         @format_at[loc] = {}
         table.headers.each do |h|
           fmt_hash = self.class.default_format
@@ -412,7 +412,7 @@ module FatTable
     #
     # \n\[niltext\]:: render a nil item with the given text.
     def format(**fmts)
-      [:header, :bfirst, :gfirst, :body, :footer, :gfooter].each do |loc|
+      %i[header bfirst gfirst body footer gfooter].each do |loc|
         format_for(loc, fmts)
       end
       self
@@ -466,8 +466,7 @@ module FatTable
       unless LOCATIONS.include?(location)
         raise UserError, "unknown format location '#{location}'"
       end
-      valid_keys = table.headers +
-                   [:string, :numeric, :datetime, :boolean, :nil]
+      valid_keys = table.headers + %i[string numeric datetime boolean nil]
       invalid_keys = (fmts.keys - valid_keys).uniq
       unless invalid_keys.empty?
         msg = "invalid #{location} column or type: #{invalid_keys.join(',')}"
@@ -594,11 +593,11 @@ module FatTable
         fmt = fmt.sub($&, '')
       end
       if fmt =~ /(~\s*)?B/
-        fmt_hash[:bold] = !!!$1
+        fmt_hash[:bold] = !$1
         fmt = fmt.sub($&, '')
       end
       if fmt =~ /(~\s*)?I/
-        fmt_hash[:italic] = !!!$1
+        fmt_hash[:italic] = !$1
         fmt = fmt.sub($&, '')
       end
       if fmt =~ /R/
@@ -614,11 +613,11 @@ module FatTable
         fmt = fmt.sub($&, '')
       end
       if fmt =~ /(~\s*)?_/
-        fmt_hash[:underline] = !!!$1
+        fmt_hash[:underline] = !$1
         fmt = fmt.sub($&, '')
       end
       if fmt =~ /(~\s*)?\*/
-        fmt_hash[:blink] = !!!$1
+        fmt_hash[:blink] = !$1
         fmt = fmt.sub($&, '')
       end
       [fmt_hash, fmt]
@@ -655,15 +654,15 @@ module FatTable
         fmt = fmt.sub($&, '')
       end
       if fmt =~ /(~\s*)?,/
-        fmt_hash[:commas] = !!!$1
+        fmt_hash[:commas] = !$1
         fmt = fmt.sub($&, '')
       end
       if fmt =~ /(~\s*)?\$/
-        fmt_hash[:currency] = !!!$1
+        fmt_hash[:currency] = !$1
         fmt = fmt.sub($&, '')
       end
       if fmt =~ /(~\s*)?H/
-        fmt_hash[:hms] = !!!$1
+        fmt_hash[:hms] = !$1
         fmt = fmt.sub($&, '')
       end
       unless fmt.blank? || !strict
@@ -690,7 +689,8 @@ module FatTable
         fmt = fmt.sub($&, '')
       end
       unless fmt.blank? || !strict
-        raise UserError, "unrecognized datetime formatting instructions '#{fmt}'"
+        msg = "unrecognized datetime formatting instructions '#{fmt}'"
+        raise UserError, msg
       end
       fmt_hash
     end
@@ -711,7 +711,8 @@ module FatTable
       end
       # Since true_text, false_text and nil_text may want to have internal
       # spaces, defer removing extraneous spaces until after they are parsed.
-      if fmt =~ /c\[(#{CLR_RE})(\.(#{CLR_RE}))?,\s*(#{CLR_RE})(\.(#{CLR_RE}))?\]/
+      if fmt =~ /c\[(#{CLR_RE})(\.(#{CLR_RE}))?,
+                 \s*(#{CLR_RE})(\.(#{CLR_RE}))?\]/x
         fmt_hash[:true_color] = $1 unless $1.blank?
         fmt_hash[:true_bgcolor] = $3 unless $3.blank?
         fmt_hash[:false_color] = $4 unless $4.blank?
@@ -741,9 +742,9 @@ module FatTable
       fmt_hash
     end
 
-    ###############################################################################
+    ############################################################################
     # Applying formatting
-    ###############################################################################
+    ############################################################################
 
     public
 
