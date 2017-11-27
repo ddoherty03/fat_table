@@ -2,8 +2,8 @@ language: ruby
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y texlive-latex-base texlive-latex-recommended
-before_script:
-  - psql -c 'create database travis;' -U postgres
+# before_script:
+#   - psql -c 'create database travis;' -U postgres
 after_failure:
   - "pwd"
   - "cat ./spec/tmp/latex.err"
