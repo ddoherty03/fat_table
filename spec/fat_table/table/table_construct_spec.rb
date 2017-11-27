@@ -366,9 +366,9 @@ module FatTable
         sql_file = Pathname("#{__dir__}/../../example_files/trades.sql").cleanpath
         create_cmd =
           if ENV['TRAVIS'] == 'true'
-            "psql -f #{sql_file} -U postgres >>#{out_file} 2>&1"
+            "psql -e -f #{sql_file} -U postgres >>#{out_file} 2>&1"
           else
-            "psql -f #{sql_file} >>#{out_file} 2>&1"
+            "psql -e -f #{sql_file} >>#{out_file} 2>&1"
           end
         system("echo Create command: #{create_cmd} >#{out_file}")
         ok = system(create_cmd)
