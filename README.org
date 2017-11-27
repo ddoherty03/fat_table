@@ -1846,18 +1846,18 @@ For example, ~'c[pink]d[%b %-d, %Y]C'~, would format a date element like 'Sep
 For a boolean cell, all the instructions valid for string are available, in
 addition to the following:
 
-- Y :: print true as ~'Y'~ and false as ~'N'~,
-- T :: print true as ~'T'~ and false as ~'F'~,
-- X :: print true as ~'X'~ and false as an empty string ~''~,
+- Y :: print true as '~Y~' and false as '~N~',
+- T :: print true as '~T~' and false as '~F~',
+- X :: print true as '~X~' and false as an empty string '',
 - b[xxx,yyy] :: print true as the string given as ~xxx~ and false as the string
      given as ~yyy~,
 - c[tcolor,fcolor] :: color a true element with ~tcolor~ and a false element
      with ~fcolor~. Each of the colors may be specified in the same manner as
      colors for strings described above.
 
-For example, the directive ~'b[Yeppers,Nope]c[green.pink,red.pink]'~ would
-render a true boolean as ~'Yeppers'~ colored green on pink and render a false
-boolean as ~'Nope'~ colored red on pink. See [[https://www.youtube.com/watch?v=oLdFFD8II8U][Yeppers]] for additional information.
+For example, the directive '~b[Yeppers,Nope]c[green.pink,red.pink]~' would
+render a true boolean as '~Yeppers~' colored green on pink and render a false
+boolean as '~Nope~' colored red on pink. See [[https://www.youtube.com/watch?v=oLdFFD8II8U][Yeppers]] for additional information.
 
 **** NilClass
 
