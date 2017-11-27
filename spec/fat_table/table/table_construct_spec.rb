@@ -362,14 +362,21 @@ module FatTable
       end
 
       it 'should be create-able from a SQL query', :db do
-        user = ENV['TRAVIS'] == 'true' ? '-U postgres' : ''
+        user = ENV['TRAVIS'] == 'true' ? 'postgres' : ENV['LOGNAME']
         out_file = "#{__dir__}/../../tmp/psql.out"
         sql_file = "#{__dir__}/../../example_files/trades.sql"
-        create_cmd = "psql -q -f #{sql_file} #{user} >#{out_file} 2>&1"
+        create_cmd =
+          if ENV['TRAVIS'] == 'true'
+            "psql -q -f #{sql_file} -U postgres >#{out_file} 2>&1"
+          else
+            "psql -q -f #{sql_file} >#{out_file} 2>&1"
+          end
         ok = system(create_cmd)
         expect(ok).to be_truthy
         if ok
-          FatTable.set_db(database: 'fat_table_spec', host: 'localhost')
+          FatTable.set_db(database: 'fat_table_spec',
+                          host: 'localhost',
+                          user: user)
           query = <<~SQL
             SELECT ref, date, code, price, shares
             FROM trades
