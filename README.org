@@ -152,11 +152,11 @@ the main features of ~FatTable~. See the detailed explanations further on down.
 
 ** A Word About the Examples
 
-When you install the fat_table gem, you have access to a program ~ft_console~
+When you install the ~fat_table~ gem, you have access to a program ~ft_console~
 which opens a ~pry~ session with ~fat_table~ loaded and the tables used in the
-examples in this README defined as instance variables so you can experiment with
-them.  Because they are defined as instance variables, you have to write ~tab1~
-as ~@tab1~ in ~ft_console~, but otherwise the examples should work.
+examples in this ~README~ defined as instance variables so you can experiment
+with them. Because they are defined as instance variables, you have to write
+~tab1~ as ~@tab1~ in ~ft_console~, but otherwise the examples should work.
 
 The examples in this ~README~ file are executed as code blocks within the
 ~README.org~ file, so they typically end with a call to ~.to_aoa~. That causes
@@ -228,52 +228,52 @@ directives.
 Each ~Column~ has a header, a type, and an array of items, all of the given type
 or nil. There are only five permissible types for a ~Column~:
 
-1. Boolean (for holding ruby ~TrueClass~ and ~FalseClass~ objects),
-2. DateTime (for holding ruby ~DateTime~ or ~Date~ objects),
-3. Numeric (for holding ruby ~Integer~, ~Rational~, or ~BigDecimal~ objects),
-4. String (for ruby String objects), or
-5. NilClass (for the undetermined column type).
+1. *Boolean* (for holding ruby ~TrueClass~ and ~FalseClass~ objects),
+2. *DateTime* (for holding ruby ~DateTime~ or ~Date~ objects),
+3. *Numeric* (for holding ruby ~Integer~, ~Rational~, or ~BigDecimal~ objects),
+4. *String* (for ruby ~String~ objects), or
+5. *NilClass* (for the undetermined column type).
 
 When a ~Table~ is constructed from an external source, all ~Columns~ start out
 having a type of ~NilClass~, that is, their type is as yet undetermined. When a
 string or object of one of the four determined types is added to a ~Column~, it
 fixes the type of the column and all further items added to the ~Column~ must
-either be nil (indicating no value) or be capable of being coerced to the
+either be ~nil~ (indicating no value) or be capable of being coerced to the
 column's type. Otherwise, ~FatTable~ raises an exception.
 
 Items of input must be either one of the permissible ruby objects or strings. If
 they are strings, ~FatTable~ attempts to parse them as one of the permissible
 types as follows:
 
-- Boolean :: the strings, 't', 'true', 'yes', or 'y', regardless of case, are
-     interpreted as ~TrueClass~ and the strings, 'f', 'false', 'no', or 'n',
-     regardless of case, are interpreted as ~FalseClass~, in either case
-     resulting in a Boolean column. Empty strings in a column already having a
-     Boolean type are converted to nil.
-- DateTime :: strings that contain patterns of 'yyyy-mm-dd' or 'yyyy/mm/dd' or
-     'mm-dd-yyy' or 'mm/dd/yyyy' or any of the foregoing with an added
-     'Thh:mm:ss' or 'Thh:mm' will be interpreted as a ~DateTime~ or a ~Date~ (if
-     there are no sub-day time components present). The number of digits in the
-     month and day can be one or two, but the year component must be four
+- Boolean :: the strings, ~'t'~, ~'true'~, ~'yes'~, or ~'y'~, regardless of
+     case, are interpreted as ~TrueClass~ and the strings, ~'f'~, ~'false'~,
+     ~'no'~, or ~'n'~, regardless of case, are interpreted as ~FalseClass~, in
+     either case resulting in a Boolean column. Empty strings in a column
+     already having a Boolean type are converted to ~nil~.
+- DateTime :: strings that contain patterns of ~'yyyy-mm-dd'~ or ~'yyyy/mm/dd'~
+     or ~'mm-dd-yyy'~ or ~'mm/dd/yyyy'~ or any of the foregoing with an added
+     ~'Thh:mm:ss'~ or ~'Thh:mm'~ will be interpreted as a ~DateTime~ or a ~Date~
+     (if there are no sub-day time components present). The number of digits in
+     the month and day can be one or two, but the year component must be four
      digits. Any time components are valid if they can be properly interpreted
      by ~DateTime.parse~. Org mode timestamps (any of the foregoing surrounded
-     by square '[]' or pointy '<>' brackets), active or inactive, are valid
-     input strings for DateTime columns. Empty strings in a column already
-     having the DateTime type are converted to nil.
-- Numeric :: all commas ',', underscores, '_', and '$' dollar signs (or other
-     currency symbol as set by ~FatTable.currency_symbol~ are removed from the
-     string and if the remaining string can be interpreted as a ~Numeric~, it
-     will be. It is interpreted as an ~Integer~ if there are no decimal places
-     in the remaining string, as a ~Rational~ if the string has the form
-     '<number>:<number>' or '<number>/<number>', or as a ~BigDecimal~ if there
-     is a decimal point in the remaining string. Empty strings in a column
+     by square '~[]~' or pointy '~<>~' brackets), active or inactive, are valid
+     input strings for ~DateTime~ columns. Empty strings in a column already
+     having the ~DateTime~ type are converted to ~nil~.
+- Numeric :: all commas ~','~, underscores, ~'_'~, and ~'$'~ dollar signs (or
+     other currency symbol as set by ~FatTable.currency_symbol~ are removed from
+     the string and if the remaining string can be interpreted as a ~Numeric~,
+     it will be. It is interpreted as an ~Integer~ if there are no decimal
+     places in the remaining string, as a ~Rational~ if the string has the form
+     '~<number>:<number>~' or '~<number>/<number>~', or as a ~BigDecimal~ if
+     there is a decimal point in the remaining string. Empty strings in a column
      already having the Numeric type are converted to nil.
 - String :: if all else fails, ~FatTable~ applies ~#to_s~ to the input value
-     and, treats it as an item of type ~String~.  Empty strings in a column
-     already having the String type are kept as empty strings.
+     and, treats it as an item of type ~String~. Empty strings in a column
+     already having the ~String~ type are kept as empty strings.
 - NilClass :: until the input contains a non-blank string that can be parsed as
      one of the other types, it has this type, meaning that the type is still
-     open. A column comprised completely of blank strings or nils will retain
+     open. A column comprised completely of blank strings or ~nils~ will retain
      the ~NilClass~ type.
 
 *** Headers
@@ -282,23 +282,23 @@ Headers for the columns are formed from the input. No two columns in a table can
 have the same header. Headers in the input are converted to symbols by
 
 - converting the header to a string with ~#to_s~,
-- converting any run of blanks to an underscore '_',
+- converting any run of blanks to an underscore ~_~,
 - removing any characters that are not letters, numbers, or underscores, and
 - lowercasing all remaining letters
 
-Thus, a header of 'Date' becomes ~:date~, a header of 'Id Number' becomes,
+Thus, a header of ~'Date'~ becomes ~:date~, a header of ~'Id Number'~ becomes,
 ~:id_number~, etc. When referring to a column in code, you must use the symbol
 form of the header.
 
 If no sensible headers can be discerned from the input, headers of the form
-:col_1, :col_2, etc., are synthesized.
+~:col_1~, ~:col_2~, etc., are synthesized.
 
 *** Groups
 
 The rows of a ~FatTable~ table can be sub-divided into groups, either from
 markers in the input or as a result of certain operations. There is only one
 level of grouping, so ~FatTable~ has no concept of sub-groups. Groups can be
-shown on output with rules or 'hlines' that underline the last row in each
+shown on output with rules or "hlines" that underline the last row in each
 group, and you can decorate the output with group footers that summarize the
 columns in each group.
 
@@ -310,7 +310,7 @@ You can create an empty table with ~FatTable.new~, and then add rows with the
 
 #+BEGIN_SRC ruby
   tab = FatTable.new
-  tab << { a: 1, b: 2, c: '<2017-01-21>', d: 'f', e: '' }
+  tab << { a: 1, b: 2, c: "<2017-01-21>', d: 'f', e: '' }
   tab << { a: 3.14, b: 2.17, c: '[2016-01-21 Thu]', d: 'Y', e: nil }
   tab.to_aoa
 #+END_SRC
@@ -325,7 +325,7 @@ in org-mode time stamps.
 
 Tables can also be read from ~.csv~ files or files containing ~org-mode~ tables.
 In the case of org-mode files, ~FatTable~ skips through the file until it finds
-a line that look like a table, that is it begins with any number of spaces
+a line that look like a table, that is, it begins with any number of spaces
 followed by ~|-~. Only the first table in an ~.org~ file is read.
 
 For both ~.csv~ and ~.org~ files, the first row in the tables is taken as the
@@ -383,21 +383,22 @@ You can also initialize a table directly from ruby data structures. You can, for
 example, build a table from an array of arrays:
 
 #+BEGIN_SRC ruby
-  aoa =
-    [['Ref', 'Date', 'Code', 'Raw', 'Shares', 'Price', 'Info', 'Bool'],
-     [1, '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850, 'ENTITY1', 'T'],
-     [2, '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500, 'ENTITY1', 'T'],
-     [7, '2013-05-20', 'S', 12_000.00, 5046.00, 28.2804, 'ENTITY3', 'F'],
-     [8, '2013-05-20', 'S', 85_000.00, 35_742.50, 28.3224, 'ENTITY3', 'T'],
-     [9, '2013-05-20', 'S', 33_302.00, 14_003.49, 28.6383, 'ENTITY3', 'T'],
-     [10, '2013-05-23', 'S', 8000.00, 3364.00, 27.1083, 'ENTITY3', 'T'],
-     [11, '2013-05-23', 'S', 23_054.00, 9694.21, 26.8015, 'ENTITY3', 'F'],
-     [12, '2013-05-23', 'S', 39_906.00, 16_780.47, 25.1749, 'ENTITY3', 'T'],
-     [13, '2013-05-29', 'S', 13_459.00, 5659.51, 24.7464, 'ENTITY3', 'T'],
-     [14, '2013-05-29', 'S', 15_700.00, 6601.85, 24.7790, 'ENTITY3', 'F'],
-     [15, '2013-05-29', 'S', 15_900.00, 6685.95, 24.5802, 'ENTITY3', 'T'],
-     [16, '2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'ENTITY3', 'T']]
-tab = FatTable.from_aoa(aoa)
+  aoa = [
+    ['Ref', 'Date', 'Code', 'Raw', 'Shares', 'Price', 'Info', 'Bool'],
+    [1, '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850, 'ENTITY1', 'T'],
+    [2, '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500, 'ENTITY1', 'T'],
+    [7, '2013-05-20', 'S', 12_000.00, 5046.00, 28.2804, 'ENTITY3', 'F'],
+    [8, '2013-05-20', 'S', 85_000.00, 35_742.50, 28.3224, 'ENTITY3', 'T'],
+    [9, '2013-05-20', 'S', 33_302.00, 14_003.49, 28.6383, 'ENTITY3', 'T'],
+    [10, '2013-05-23', 'S', 8000.00, 3364.00, 27.1083, 'ENTITY3', 'T'],
+    [11, '2013-05-23', 'S', 23_054.00, 9694.21, 26.8015, 'ENTITY3', 'F'],
+    [12, '2013-05-23', 'S', 39_906.00, 16_780.47, 25.1749, 'ENTITY3', 'T'],
+    [13, '2013-05-29', 'S', 13_459.00, 5659.51, 24.7464, 'ENTITY3', 'T'],
+    [14, '2013-05-29', 'S', 15_700.00, 6601.85, 24.7790, 'ENTITY3', 'F'],
+    [15, '2013-05-29', 'S', 15_900.00, 6685.95, 24.5802, 'ENTITY3', 'T'],
+    [16, '2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'ENTITY3', 'T']
+  ]
+  tab = FatTable.from_aoa(aoa)
 #+END_SRC
 
 Notice that the values can either be ruby objects, such as the Integer ~85_000~,
@@ -453,7 +454,7 @@ arrays is displayed as an org-mode table:
 
 This example illustrates several things:
 
-1. The named org-mode table, 'trades1', can be passed into a ruby code block
+1. The named org-mode table, ~trades1~, can be passed into a ruby code block
    using the ~:var tab=trades1~ header argument to the code block; that makes
    the variable ~tab~ available to the code block as an array of arrays, which
    ~FatTable~ then uses to initialize the table.
@@ -465,7 +466,7 @@ This example illustrates several things:
 4. ~FatTable~ passes back to org-mode an array of arrays using the ~.to_aoa~
    method. In an ~org-mode~ buffer, these are rendered as tables. We'll often
    apply ~.to_aoa~ at the end of example blocks to render the results inside
-   this README.org file. As we'll see below, this method can also take a block
+   this ~README.org~ file. As we'll see below, this method can also take a block
    to which formatting directives and footers can be attached.
 
 *** From Arrays of Hashes
@@ -473,10 +474,12 @@ This example illustrates several things:
 A second ruby data structure that can be used to initialize a ~FatTable~ table
 is an array of ruby Hashes. Each hash represents a row of the table, and the
 headers of the table are take from the keys of the hashes. Accordingly, all the
-hashes should have the same keys. This same method can in fact take an array of
-any objects that can be converted to a Hash with the ~#to_h~ method, so you can
-use an array of your own objects to initialize a table, provided that you define
-a suitable ~#to_h~ method for the objects' class.
+hashes should have the same keys.
+
+This same method can in fact take an array of any objects that can be converted
+to a Hash with the ~#to_h~ method, so you can use an array of your own objects
+to initialize a table, provided that you define a suitable ~#to_h~ method for
+the objects' class.
 
 #+BEGIN_SRC ruby
 aoh = [
@@ -522,11 +525,11 @@ database parameters to be used for the queries.
 #+END_SRC
 
 Some of the parameters to the ~.set_db~ function have defaults. The driver
-defaults to 'Pg' for postgresql and the socket defaults to ~/tmp/.s.PGSQL.5432~
-if the host is 'localhost', which it is by default. If the host is not
-'localhost', the dsn uses a port rather than a socket and defaults to port
-'5432'. While user and password default to nil, the database parameter is
-required.
+defaults to ~'Pg'~ for postgresql and the socket defaults to
+~/tmp/.s.PGSQL.5432~ if the host is 'localhost', which it is by default. If the
+host is not ~'localhost'~, the dsn uses a port rather than a socket and defaults
+to port ~'5432'~. While user and password default to nil, the database parameter
+is required.
 
 The ~.set_db~ function need only be called once, and the database handle it
 creates will be used for all subsequent ~.from_sql~ calls until ~.set_db~ is
@@ -569,8 +572,8 @@ recognizes hlines in the input, so it takes no ~hlines:~ keyword parameter.
 *** Rows
 
 A ~FatTable~ table is an Enumerable, yielding each row of the table as a Hash
-keyed on the header symbols.  The method ~Table#rows~ returns an Array of the rows as
-Hashes as well.
+keyed on the header symbols. The method ~Table#rows~ returns an Array of the
+rows as Hashes as well.
 
 You can also use indexing to access a row of the table by number. Using an
 integer index returns a Hash of the given row. Thus, ~tab[20]~ returns the 21st
@@ -635,8 +638,8 @@ SQL.
 
 For illustration purposes assume that the following tables are read into ruby
 variables called '~tab1~' and '~tab2~. We have given the table groups, marked by
-the hlines below, and some duplicate rows to illustrate the effect of certain
-operations on groups and duplicates.
+the hlines below, and included some duplicate rows to illustrate the effect of
+certain operations on groups and duplicates.
 
 #+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
@@ -743,12 +746,13 @@ any group boundaries present in the input table.
 
 **** Adding New Columns
 
-More interesting is that ~select~ can take hash-like keyword arguments following
-all of the symbol arguments to create new columns in the output as functions of
-other columns. For each hash-like parameter, the keyword given must be a symbol,
-which becomes the header for the new column, and the value must be either: (1) a
-symbol representing an existing column or (2) a string representing a ruby
-expression for the value of the new column.
+More interesting is that ~select~ can take hash-like keyword arguments after the
+symbol arguments to create new columns in the output as functions of other
+columns. For each hash-like parameter, the keyword given must be a symbol, which
+becomes the header for the new column, and the value must be either: (1) a
+symbol representing an existing column, which has the effect of renaming an
+existing column, or (2) a string representing a ruby expression for the value of
+a new column.
 
 Within the string expression, the names of existing or already-specified columns
 are available as local variables, as well as the instance variables '@row' and
@@ -759,8 +763,8 @@ access to local variables ~ref~, ~date~, ~code~, ~price~, ~g10~, ~qp10~,
 their respective columns for each row in the input table and the instance
 variables are set the number of the current row and group respectively.
 
-For example, if we want to rename the :date column and compute the cost of
-shares, we could do the following:
+For example, if we want to rename the ~:date~ column and add a new column to
+compute the cost of shares, we could do the following:
 
 #+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
@@ -840,18 +844,18 @@ second, chained call to ~select~:
 **** Custom Instance Variables and Hooks
 
 As the above examples demonstrate, the instance variables ~@row~ and ~@group~
-are available when evaluating expressions that add new columns.  You can set up
-your own instance variables as well for keeping track of things that cross row
-boundaries, such as running sums.
+are available when evaluating expressions that add new columns. You can also set
+up your own instance variables as well for keeping track of things that cross
+row boundaries, such as running sums.
 
 To declare instance variables, you can use the ~ivars:~ hash parameter to
 ~select~.  Each key of the hash becomes an instance variable and each value
 becomes its initial value before any rows are evaluated.
 
-In addition, you can provide ~before_hook:~ and ~after_hook:~ parameters as
-strings that are evaluated as ruby expressions before and after each row is
-processed.  You can use these to update instance variables.  The values set in
-the ~before_hook:~ can be used in expressions for adding new columns by
+In addition, you can provide ~before_hook:~ and ~after_hook:~ parameters to
+~select~ as strings that are evaluated as ruby expressions before and after each
+row is processed. You can use these to update instance variables. The values set
+in the ~before_hook:~ can be used in expressions for adding new columns by
 referencing them with the '@' prefix.
 
 For example, suppose we wanted to not only add a cost column, but a column that
@@ -996,7 +1000,8 @@ which the grouping parameters are equal containing those columns and an
 aggregate column for each of the aggregating parameters.
 
 For example, let's summarize the ~trades~ table by ~:code~ and ~:price~ again,
-and determine total shares, average price, and other features of each group:
+and determine total shares, average price, and a few other features of each
+group:
 
 #+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
@@ -1030,38 +1035,39 @@ will raise an exception.
 
 - ~first~ :: the first non-nil item in the column,
 - ~last~ :: the last non-nil item in the column,
-- ~rng~ :: form a string of the form "#{first}..#{last}" to show the range of
+- ~rng~ :: form a string of the form ~"#{first}..#{last}"~ to show the range of
      values in the column,
-- ~sum~ :: for Numeric and String columns, apply '+' to all the non-nil values,
+- ~sum~ :: for ~Numeric~ and ~String~ columns, apply '+' to all the non-nil
+     values,
 - ~count~ :: the number of non-nil values in the column,
-- ~min~ :: for Numeric, String, and DateTime columns, return the minimum non-nil
-     value in the column,
-- ~max~ :: for Numeric, String, and DateTime columns, return the maximum non-nil
-     value in the column,
-- ~avg~ :: for Numeric and DateTime columns, return the arithmetic mean of the
-     non-nil values in the column; with respect to DateTime objects, each is
-     converted to a numeric Julian date, the average is calculated, and the
-     result converted back to a Date or DateTime object,
-- ~var~ :: for Numeric and DateTime columns, compute the sample variance of the
-     non-nil values in the column, dates are converted to numbers as for the
-     :avg aggregate,
-- ~pvar~ :: for Numeric and DateTime columns, compute the population variance of
-     the non-nil values in the column, dates are converted to numbers as for the
-     :avg aggregate,
-- ~dev~ :: for Numeric and DateTime columns, compute the sample standard
+- ~min~ :: for ~Numeric~, ~String~, and ~DateTime~ columns, return the smallest
+     non-nil value in the column,
+- ~max~ :: for ~Numeric~, ~String~, and ~DateTime~ columns, return the largest
+     non-nil value in the column,
+- ~avg~ :: for ~Numeric~ and ~DateTime~ columns, return the arithmetic mean of
+     the non-nil values in the column; with respect to ~Date~ or ~DateTime~
+     objects, each is converted to a numeric Julian date, the average is
+     calculated, and the result converted back to a ~Date~ or ~DateTime~ object,
+- ~var~ :: for ~Numeric~ and ~DateTime~ columns, compute the sample variance of
+     the non-nil values in the column, dates are converted to Julian date
+     numbers as for the ~:avg~ aggregate,
+- ~pvar~ :: for ~Numeric~ and ~DateTime~ columns, compute the population
+     variance of the non-nil values in the column, dates are converted to Julian
+     date numbers as for the ~:avg~ aggregate,
+- ~dev~ :: for ~Numeric~ and ~DateTime~ columns, compute the sample standard
      deviation of the non-nil values in the column, dates are converted to
-     numbers as for the :avg aggregate,
-- ~pdev~ :: for Numeric and DateTime columns, compute the population standard
-     deviation of the non-nil values in the column, dates are converted to
-     numbers as for the :avg aggregate,
-- ~all?~ :: for Boolean columns only, return true if all of the non-nil values
+     Julian date numbers as for the ~:avg~ aggregate,
+- ~pdev~ :: for ~Numeric~ and ~DateTime~ columns, compute the population
+     standard deviation of the non-nil values in the column, dates are converted
+     to numbers as for the ~:avg~ aggregate,
+- ~all?~ :: for ~Boolean~ columns only, return true if all of the non-nil values
      in the column are true,
-- ~any?~ :: for Boolean columns only, return true if any non-nil value in the
+- ~any?~ :: for ~Boolean~ columns only, return true if any non-nil value in the
      column is true,
-- ~none?~ :: for Boolean columns only, return true if no non-nil value in the
+- ~none?~ :: for ~Boolean~ columns only, return true if no non-nil value in the
      column is true,
-- ~one?~ :: for Boolean columns only, return true if exactly one non-nil value in
-     the column is true,
+- ~one?~ :: for ~Boolean~ columns only, return true if exactly one non-nil value
+     in the column is true,
 
 Perhaps surprisingly, the ~group_by~ method ignores any groups in its input and
 results in no group boundaries in the output since each group formed by the
@@ -1073,36 +1079,37 @@ implicit ~order_by~ on the grouping columns is collapsed into a single row.
 So far, all the operations have operated on a single table. ~FatTable~ provides
 several ~join~ methods for combining two tables, each of which takes as
 parameters (1) a second table and (2) except in the case of ~cross_join~, zero
-or more "join expressions".  In the descriptions below, T1 is the table on which
-the method is called, ~T2~ is the table supplied as the first parameter ~other~,
-and ~R1~ and ~R2~ are rows in their respective tables being considered for
-inclusion in the joined output table.
+or more "join expressions". In the descriptions below, ~T1~ is the table on
+which the method is called, ~T2~ is the table supplied as the first parameter
+~other~, and ~R1~ and ~R2~ are rows in their respective tables being considered
+for inclusion in the joined output table.
 
 - ~join(other, *jexps)~ :: Performs an "inner join" on the tables. For each row
-     R1 of T1, the joined table has a row for each row in T2 that satisfies the
-     join condition with R1.
+     ~R1~ of ~T1~, the joined table has a row for each row in ~T2~ that
+     satisfies the join condition with ~R1~.
 
 - ~left_join(other, *jexps)~ :: First, an inner join is performed. Then, for
-     each row in T1 that does not satisfy the join condition with any row in T2,
-     a joined row is added with null values in columns of T2. Thus, the joined
-     table always has at least one row for each row in T1.
+     each row in ~T1~ that does not satisfy the join condition with any row in
+     ~T2~, a joined row is added with null values in columns of ~T2~. Thus, the
+     joined table always has at least one row for each row in ~T1~.
 
 - ~right_join(other, *jexps)~ :: First, an inner join is performed. Then, for
-     each row in T2 that does not satisfy the join condition with any row in T1,
-     a joined row is added with null values in columns of T1. This is the
-     converse of a left join: the result table will always have a row for each
-     row in T2.
+     each row in ~T2~ that does not satisfy the join condition with any row in
+     ~T1~, a joined row is added with null values in columns of ~T1~. This is
+     the converse of a left join: the result table will always have a row for
+     each row in ~T2~.
 
 - ~full_join(other, *jexps)~ :: First, an inner join is performed. Then, for
-     each row in T1 that does not satisfy the join condition with any row in T2,
-     a joined row is added with null values in columns of T2. Also, for each row
-     of T2 that does not satisfy the join condition with any row in T1, a joined
-     row with null values in the columns of T1 is added.
+     each row in ~T1~ that does not satisfy the join condition with any row in
+     ~T2~, a joined row is added with null values in columns of ~T2~. Also, for
+     each row of ~T2~ that does not satisfy the join condition with any row in
+     ~T1~, a joined row with null values in the columns of ~T1~ is added.
 
-- ~cross_join(other)~ :: For every possible combination of rows from T1 and T2
-     (i.e., a Cartesian product), the joined table will contain a row consisting
-     of all columns in T1 followed by all columns in T2. If the tables have N
-     and M rows respectively, the joined table will have N * M rows.
+- ~cross_join(other)~ :: For every possible combination of rows from ~T1~ and
+     ~T2~ (i.e., a Cartesian product), the joined table will contain a row
+     consisting of all columns in ~T1~ followed by all columns in ~T2~. If the
+     tables have ~N~ and ~M~ rows respectively, the joined table will have ~N *
+     M~ rows.
 
 **** Join Expressions
 
@@ -1116,8 +1123,8 @@ that the values of both tables are equal for all columns named by the symbols. A
 column that appears in both tables can be given without modification and will be
 assumed to require equality on that column. If an unmodified symbol is not a
 name that appears in both tables, an exception will be raised. Column names that
-are unique to the first table must have a '_a' appended to the column name and
-column names that are unique to the other table must have a '_b' appended to the
+are unique to the first table must have a ~_a~ appended to the column name and
+column names that are unique to the other table must have a ~_b~ appended to the
 column name. These disambiguated column names must come in pairs, one for the
 first table and one for the second, and they will imply a join condition that
 the columns must be equal on those columns. Several such symbol expressions will
@@ -1126,7 +1133,7 @@ be met.
 
 Finally, a join expression can be a string that contains an arbitrary ruby
 expression that will be evaluated for truthiness. Within the string, /all/
-column names must be disambiguated with the '_a' or '_b' modifiers whether they
+column names must be disambiguated with the ~_a~ or ~_b~ modifiers whether they
 are common to both tables or not. As with ~select~ and ~where~ methods, the
 names of the columns in both tables (albeit disambiguated) are available as
 local variables within the expression, but the instance variables ~@row~ and
@@ -1134,9 +1141,9 @@ local variables within the expression, but the instance variables ~@row~ and
 
 **** Join Examples
 
-The following examples are taken from a the [[https://www.tutorialspoint.com/postgresql/postgresql_using_joins.htm][Postgresql tutorial]], with some
-slight modifications. The examples will use the following two tables, which are
-also available in ~ft_console~:
+The following examples are taken from the [[https://www.tutorialspoint.com/postgresql/postgresql_using_joins.htm][Postgresql tutorial]], with some slight
+modifications. The examples will use the following two tables, which are also
+available in ~ft_console~ as ~@tab_a~ and ~@tab_b~:
 
 #+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
@@ -1326,10 +1333,10 @@ Finally, a cross join outputs every row of ~tab_a~ augmented with every row of
 
 *** Set Operations
 
-~FatTable~ can perform several set operations on tables.  In order for two
-tables to be used this way, they must have the same number of columns with the
-same types or an exception will be raised.  We'll call two tables that qualify
-for combining with set operations "set-compatible."
+~FatTable~ can perform several set operations on tables. In order for two tables
+to be used this way, they must have the same number of columns with the same
+types or an exception will be raised. We'll call two tables that qualify for
+combining with set operations "set-compatible."
 
 We'll use the following two set-compatible tables in the examples. They each
 have some duplicates and some group boundaries so you can see the effect of the
@@ -1400,7 +1407,7 @@ set operations on duplicates and groups.
 Two tables that are set-compatible can be combined with the ~union~ or
 ~union_all~ methods so that the rows of both tables appear in the output. In the
 output table, the headers of the receiver table are used. You can use ~select~
-to change or re-order the headers if you prefer.  The ~union~ method eliminates
+to change or re-order the headers if you prefer. The ~union~ method eliminates
 duplicate rows in the result table, the ~union_all~ method does not.
 
 Any group boundaries in the input tables are destroyed by ~union~ but are
@@ -1511,7 +1518,7 @@ eliminating any duplicate rows in the result.
 #+END_EXAMPLE
 
 With ~intersect_all~, all the rows of the first table, including duplicates, are
-included in the result if they also occur in the second table.  However,
+included in the result if they also occur in the second table. However,
 duplicates in the second table do not appear.
 
 #+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
@@ -1710,21 +1717,20 @@ receiver table by removing its groups.
 ** Formatting Tables
 
 Besides creating and operating on tables, you may want to display the resulting
-table.  ~FatTable~ seeks to provide a set of formatting directives that are the
-most common across many output media.  It provides directives for alignment, for
+table. ~FatTable~ seeks to provide a set of formatting directives that are the
+most common across many output media. It provides directives for alignment, for
 color, for adding currency symbols and grouping commas to numbers, for padding
 numbers, and for formatting dates and booleans.
 
 In addition, you can add any number of footers to a table, which appear at the
 end of the table, and any number of group footers, which appear after each group
-in the table.  These also can be formatted independently of the table body.
+in the table. These can be formatted independently of the table body.
 
 If the target output medium does not support a formatting directive or the
-directive simply does not make sense, it is simply ignored.  For example, you
-can output an ~org-mode~ table as a String, and since ~org-mode~ does not
-support colors, any color directives are simply ignored.  Some of the output
-targets are not strings, but ruby data structures, and for them, things such as
-alignment are simply irrelevant.
+directive does not make sense, it is simply ignored. For example, you can output
+an ~org-mode~ table as a String, and since ~org-mode~ does not support colors,
+any color directives are ignored. Some of the output targets are not strings,
+but ruby data structures, and for them, things such as alignment are irrelevant.
 
 *** Available Formatters
 
@@ -1743,13 +1749,13 @@ alignment are simply irrelevant.
 
 These are all implemented by classes that inherit from ~FatTable::Formatter~
 class by defining about a dozen methods that get called at various places during
-the construction of the output table.  The idea is that more classes can be
+the construction of the output table. The idea is that more classes can be
 defined by adding additional classes.
 
 *** Table Locations
 
 In the formatting methods, the table is divided into several "locations" for
-which separate formatting directives may be given.  These locations are
+which separate formatting directives may be given. These locations are
 identified with the following symbols:
 
 - :header :: the first row of the output table containing the headers,
@@ -1794,8 +1800,8 @@ to a string in forming the output.
 - _ ~_ :: underline the element, or turn off underline
 - * ~* :: cause the element to blink, or turn off blink
 
-For example, the directive 'tCc[red.yellow]' would title-case the element,
-center it, and color it red on a yellow background.  The directives that are
+For example, the directive ~'tCc[red.yellow]'~ would title-case the element,
+center it, and color it red on a yellow background. The directives that are
 boolean have negating forms so that, for example, if bold is turned on for all
 columns of a given type, it can be countermanded in formatting directives for
 particular columns.
@@ -1811,65 +1817,63 @@ addition to the following:
     the left with zeroes as needed, and round the number to the n
     decimal places and include n digits after the decimal point,
     padding on the right with zeroes as needed,
-- H :: convert the number (assumed to be in units of seconds) to
-    HH:MM:SS.ss form.  So a column that is the result of subtracting
-    two :datetime forms will result in a :numeric expressed as seconds
-    and can be displayed in hours, minutes, and seconds with this
-    formatting instruction.
+- H :: convert the number (assumed to be in units of seconds) to ~HH:MM:SS.ss~
+     form. So a column that is the result of subtracting two :datetime forms
+     will result in a :numeric expressed as seconds and can be displayed in
+     hours, minutes, and seconds with this formatting instruction.
 
-For example, the directive 'R5.0c[blue]' would right-align the numeric element,
-pad it on the left with zeros, and color it blue.
+For example, the directive ~'R5.0c[blue]'~ would right-align the numeric
+element, pad it on the left with zeros, and color it blue.
 
 **** DateTime
 
-For a datetime, all the instructions valid for string are available, in addition
-to the following:
+For a ~DateTime~, all the instructions valid for string are available, in
+addition to the following:
 
-- d[fmt] :: apply the format to a datetime that is a whole day, that is that has
-     no or zero hour, minute, and second components, where fmt is a valid format
-     string for Date#strftime, otherwise, the datetime will be formatted as an
-     ISO 8601 string, YYYY-MM-DD.
-- D[fmt] :: apply the format to a datetime that has at least a non-zero
-    hour component where fmt is a valid format string for
-    Date#strftime, otherwise, the datetime will be formatted as an ISO
-    8601 string, YYYY-MM-DD.
+- d[fmt] :: apply the format to a ~Date~ or a  ~DateTime~ that is a whole day,
+     that is that has no or zero hour, minute, and second components, where fmt
+     is a valid format string for ~Date#strftime~, otherwise, the datetime will
+     be formatted as an ISO 8601 string, YYYY-MM-DD.
+- D[fmt] :: apply the format to a datetime that has at least a non-zero hour
+     component where fmt is a valid format string for Date#strftime, otherwise,
+     the datetime will be formatted as an ISO 8601 string, YYYY-MM-DD.
 
-For example, 'c[pink]d[%b %-d, %Y]C', would format a date element like 'Sep 22,
-1957', center it, and color it pink.
+For example, ~'c[pink]d[%b %-d, %Y]C'~, would format a date element like 'Sep
+22, 1957', center it, and color it pink.
 
 **** Boolean
 
 For a boolean cell, all the instructions valid for string are available, in
-  addition to the following:
+addition to the following:
 
-- Y :: print true as 'Y' and false as 'N',
-- T :: print true as 'T' and false as 'F',
-- X :: print true as 'X' and false as '',
-- b[xxx,yyy] :: print true as the string given as xxx and false as the
-    string given as yyy,
-- c[tcolor,fcolor] :: color a true element with tcolor and a false
-    element with fcolor. Each of the colors may be specified in the
-    same manner as colors for strings described above.
+- Y :: print true as ~'Y'~ and false as ~'N'~,
+- T :: print true as ~'T'~ and false as ~'F'~,
+- X :: print true as ~'X'~ and false as an empty string ~''~,
+- b[xxx,yyy] :: print true as the string given as ~xxx~ and false as the string
+     given as ~yyy~,
+- c[tcolor,fcolor] :: color a true element with ~tcolor~ and a false element
+     with ~fcolor~. Each of the colors may be specified in the same manner as
+     colors for strings described above.
 
-For example, the directive 'b[Yeppers,Nope]c[green.pink,red.pink]' would render
-a true boolean as 'Yeppers' colored green on pink and render a false boolean as
-'Nope' colored red on pink. See [[https://www.youtube.com/watch?v=oLdFFD8II8U][Yeppers]].
+For example, the directive ~'b[Yeppers,Nope]c[green.pink,red.pink]'~ would
+render a true boolean as ~'Yeppers'~ colored green on pink and render a false
+boolean as ~'Nope'~ colored red on pink. See [[https://www.youtube.com/watch?v=oLdFFD8II8U][Yeppers]] for additional information.
 
 **** NilClass
 
-By default, nil elements are rendered as blank cells, but you can make them
+By default, ~nil~ elements are rendered as blank cells, but you can make them
 visible with the following, and in that case, all the formatting instructions
 valid for strings are also available:
 
-- n[niltext] :: render a nil item with the given text.
+- n[niltext] :: render a ~nil~ item with the given niltext.
 
-For example, you might want to use 'n[-]Cc[purple]' to make nils visible as a
-centered hyphen.
+For example, you might want to use ~'n[-]Cc[purple]'~ to make nils visible as a
+centered purple hyphen.
 
 *** Footers Methods
 
-You can call methods on  ~Formatter~ objects to add footers and group footers.
-Their signatures are:
+You can call the ~footer~ and ~gfooter~ methods on ~Formatter~ objects to add
+footers and group footers. Their signatures are:
 
 - ~footer(label, *sum_cols, **agg_cols)~ :: where ~label~ is a label to be
      placed in the first cell of the footer (unless that column is named as one
@@ -1877,8 +1881,8 @@ Their signatures are:
      ~*sum_cols~ are zero or more symbols for columns to be summed, and
      ~**agg_cols~ is zero or more hash-like parameters with a column symbol as a
      key and a symbol for an aggregate method as the value. This causes a
-     table-wide header to be added at the bottom of the table applying the :sum
-     aggregate to the ~sum_cols~ and the named aggregate method to the
+     table-wide header to be added at the bottom of the table applying the
+     ~:sum~ aggregate to the ~sum_cols~ and the named aggregate method to the
      ~agg_cols~. A table can have any number of footers attached, and they will
      appear at the bottom of the output table in the order they are given.
 
@@ -1915,10 +1919,10 @@ and ~format~.
 **** Instantiating a Formatter
 
 There are several ways to invoke the formatting methods on a table. First, you
-can instantiate a ~XXXFormatter~ object an feed it a table. There is a Formatter
-subclass for each target output medium, for example, ~AoaFormatter~ will produce
-a ruby array of arrays. You can then call the ~output~ method on the
-~XXXFormatter~.
+can instantiate a ~XXXFormatter~ object and feed it a table as a parameter.
+There is a Formatter subclass for each target output medium, for example,
+~AoaFormatter~ will produce a ruby array of arrays. You can then call the
+~output~ method on the ~XXXFormatter~.
 
 #+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
@@ -2072,12 +2076,12 @@ Other than that first parameter, the two methods take the same types of
 parameters. The remaining parameters are hash-like parameters that use either a
 column name or a type as the key and a string with the formatting directives to
 apply as the value. The following example says to set the formatting for all
-locations in the table and to set all numeric fields are rounded to whole
-numbers (the '0.0' part), that are right-aligned (the 'R' part), and have
-grouping commas inserted (the ',' part). But the ~:id~ column is numeric, and
-the second parameter overrides the formatting for numerics in general and calls
-for the ~:id~ column to be padded to three digits with zeros on the left (the
-'3.0' part) and to be centered (the 'C' part).
+locations in the table and to format all numeric fields as strings that are
+rounded to whole numbers (the '0.0' part), that are right-aligned (the 'R'
+part), and have grouping commas inserted (the ',' part). But the ~:id~ column is
+numeric, and the second parameter overrides the formatting for numerics in
+general and calls for the ~:id~ column to be padded to three digits with zeros
+on the left (the '3.0' part) and to be centered (the 'C' part).
 
 #+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
@@ -2100,14 +2104,14 @@ for the ~:id~ column to be padded to three digits with zeros on the left (the
 #+END_EXAMPLE
 
 The ~numeric:~ directive affected the ~:age~ and ~:salary~ columns and the ~id:~
-directive affected only the ~:id~ column.  All the other cells in the table had
+directive affected only the ~:id~ column. All the other cells in the table had
 the default formatting applied.
 
 **** Location priority
 
-Formatting for any given cell depends on its location in the table.  The
+Formatting for any given cell depends on its location in the table. The
 ~format_for~ method takes a location to which its formatting directive are
-restricted as the first argument.  It can be one of the following:
+restricted as the first argument. It can be one of the following:
 
 - ~:header~ :: directive apply only to the header row, that is the first row, of
      the output table,
@@ -2122,11 +2126,11 @@ restricted as the first argument.  It can be one of the following:
      row is the first row in the table or in a group and separate directives for
      those have been given, in which case those directives apply,
 
-- ~:gfirst~ :: directives apply to the first row in each group in the output
-     table, unless the row is also the first row in the table as a whole, in
+- ~:gfirst~ :: directives apply to the first row in each group in the body of
+     the table, unless the row is also the first row in the table as a whole, in
      which case the ~:bfirst~ directives apply,
 
-- ~:bfirst~ :: directives apply to the first row in the table.
+- ~:bfirst~ :: directives apply to the first row in the body of the table.
 
 If you give directives for ~:body~, they are copied to ~:bfirst~ and ~:gfirst~
 as well and can be overridden by directives for those locations.
@@ -2171,7 +2175,8 @@ require 'fat_table'
 
 The ~string: 'R'~ directive causes all the cells to be right-aligned except
 ~:id~ which specifies centering for the ~:id~ column only. The ~n[N/A]~
-directive for nil text can be used with the numeric column, ~:salary~.
+directive for specifies how nil are displayed in the numeric column, ~:salary~,
+but not for other nils, such as in the last row of the ~:join_date~ column.
 
 * Development
 
