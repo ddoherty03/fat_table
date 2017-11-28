@@ -387,11 +387,11 @@ module FatTable
 
     describe 'from SQL' do
       before :all do
+        @out_file = Pathname("#{__dir__}/../../tmp/psql.out").cleanpath
         # Create the db
-        ok = system "createdb fat_table_spec"
+        ok = system "createdb -e fat_table_spec >#{@out_file} 2>&1"
         expect(ok).to be_truthy
         # Populate the db
-        @out_file = Pathname("#{__dir__}/../../tmp/psql.out").cleanpath
         sql_file = Pathname("#{__dir__}/../../example_files/trades.sql").cleanpath
         ok = system "psql -a -d fat_table_spec -f #{sql_file} >>#{@out_file} 2>&1"
         expect(ok).to be_truthy
@@ -399,7 +399,7 @@ module FatTable
 
       after :all do
         # Drop the db
-        ok = system 'dropdb fat_table_spec'
+        ok = system "dropdb -e fat_table_spec >>#{@out_file} 2>&1"
         expect(ok).to be_truthy
       end
 

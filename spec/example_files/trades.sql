@@ -3,6 +3,8 @@
 
 drop table if exists trades;
 
+select current_user, current_database(), current_schema();
+
 create table trades (
 Ref char(4) not null,
 Date date,
