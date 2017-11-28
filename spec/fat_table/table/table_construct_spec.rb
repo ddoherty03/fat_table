@@ -399,15 +399,13 @@ module FatTable
 
       after :all do
         # Drop the db
-        ok = system "dropdb fat_table_spec"
+        ok = system 'dropdb fat_table_spec'
         expect(ok).to be_truthy
       end
 
       it 'should be create-able from a SQL query', :db do
-        user = ENV['TRAVIS'] == 'true' ? 'postgres' : ENV['LOGNAME']
         FatTable.set_db(database: 'fat_table_spec',
-                        host: 'localhost',
-                        user: user)
+                        host: 'localhost')
         system("echo URI: #{FatTable.db.uri} >>#{@out_file}")
         system("echo Tables: #{FatTable.db.tables} >>#{@out_file}")
         query = <<~SQL

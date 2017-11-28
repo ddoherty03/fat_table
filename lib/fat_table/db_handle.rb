@@ -84,7 +84,6 @@ module FatTable
 
       # Set the dsn for Sequel
       begin
-        # DB = Sequel.connect(dsn)
         self.handle = Sequel.connect(dsn)
       rescue Sequel::Error => ex
         raise TransientError, "#{dsn}: #{ex}"
