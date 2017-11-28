@@ -1,5 +1,5 @@
-drop database if exists fat_table_spec;
-create database fat_table_spec;
+-- drop database if exists fat_table_spec;
+-- create database fat_table_spec;
 
 drop table if exists trades;
 

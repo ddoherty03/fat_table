@@ -361,36 +361,6 @@ module FatTable
         end
       end
 
-      it 'should be create-able from a SQL query', :db do
-        out_file = Pathname("#{__dir__}/../../tmp/psql.out").cleanpath
-        sql_file = Pathname("#{__dir__}/../../example_files/trades.sql").cleanpath
-        create_cmd =
-          if ENV['TRAVIS'] == 'true'
-            "psql -e -U postgres -f #{sql_file} >>#{out_file} 2>&1"
-          else
-            "psql -e -f #{sql_file} >>#{out_file} 2>&1"
-          end
-        system("echo Create command: #{create_cmd} >#{out_file}")
-        ok = system(create_cmd)
-        expect(ok).to be_truthy
-        if ok
-          user = ENV['TRAVIS'] == 'true' ? 'postgres' : ENV['LOGNAME']
-          FatTable.set_db(database: 'fat_table_spec',
-                          host: 'localhost',
-                          user: user)
-          system("echo URI: #{FatTable.db.uri} >>#{out_file}")
-          system("echo Tables: #{FatTable.db.tables} >>#{out_file}")
-          query = <<~SQL
-            SELECT ref, date, code, price, shares
-            FROM trades
-            WHERE shares > 1000;
-          SQL
-          tab = Table.from_sql(query)
-          expect(tab.class).to eq(Table)
-          expect(tab.rows.size).to be > 100
-        end
-      end
-
       it 'add group boundaries on reading from org text' do
         tab = Table.from_org_string(@org_file_body_with_groups)
         expect(tab.groups.size).to eq(4)
@@ -409,6 +379,54 @@ module FatTable
         dwo.rows.each do |row|
           expect(row[:qp10].class.to_s).to match(/TrueClass|FalseClass/)
         end
+      end
+    end
+
+    describe 'SQL commands' do
+      before :all do
+        user_switch =
+          if ENV['TRAVIS'] == 'true'
+            '-U postgres'
+          else
+            ''
+          end
+        # Create the db
+        ok = system "createdb #{user_switch} fat_table_spec"
+        expect(ok).to be_truthy
+        # Populate the db
+        @out_file = Pathname("#{__dir__}/../../tmp/psql.out").cleanpath
+        sql_file = Pathname("#{__dir__}/../../example_files/trades.sql").cleanpath
+        ok = system "psql -a #{user_switch} -d fat_table_spec -f #{sql_file} >>#{@out_file} 2>&1"
+        expect(ok).to be_truthy
+      end
+
+      after :all do
+        user_switch =
+          if ENV['TRAVIS'] == 'true'
+            '-U postgres'
+          else
+            ''
+          end
+        # Drop the db
+        ok = system "dropdb #{user_switch} fat_table_spec"
+        expect(ok).to be_truthy
+      end
+
+      it 'should be create-able from a SQL query', :db do
+        user = ENV['TRAVIS'] == 'true' ? 'postgres' : ENV['LOGNAME']
+        FatTable.set_db(database: 'fat_table_spec',
+                        host: 'localhost',
+                        user: user)
+        system("echo URI: #{FatTable.db.uri} >>#{@out_file}")
+        system("echo Tables: #{FatTable.db.tables} >>#{@out_file}")
+        query = <<~SQL
+          SELECT ref, date, code, price, shares
+          FROM trades
+          WHERE shares > 1000;
+        SQL
+        tab = Table.from_sql(query)
+        expect(tab.class).to eq(Table)
+        expect(tab.rows.size).to be > 100
       end
     end
   end
