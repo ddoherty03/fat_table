@@ -382,33 +382,21 @@ module FatTable
       end
     end
 
-    describe 'SQL commands' do
+    describe 'from SQL' do
       before :all do
-        user_switch =
-          if ENV['TRAVIS'] == 'true'
-            '-U postgres'
-          else
-            ''
-          end
         # Create the db
-        ok = system "createdb #{user_switch} fat_table_spec"
+        ok = system "createdb fat_table_spec"
         expect(ok).to be_truthy
         # Populate the db
         @out_file = Pathname("#{__dir__}/../../tmp/psql.out").cleanpath
         sql_file = Pathname("#{__dir__}/../../example_files/trades.sql").cleanpath
-        ok = system "psql -a #{user_switch} -d fat_table_spec -f #{sql_file} >>#{@out_file} 2>&1"
+        ok = system "psql -a -d fat_table_spec -f #{sql_file} >>#{@out_file} 2>&1"
         expect(ok).to be_truthy
       end
 
       after :all do
-        user_switch =
-          if ENV['TRAVIS'] == 'true'
-            '-U postgres'
-          else
-            ''
-          end
         # Drop the db
-        ok = system "dropdb #{user_switch} fat_table_spec"
+        ok = system "dropdb fat_table_spec"
         expect(ok).to be_truthy
       end
 
