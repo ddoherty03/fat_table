@@ -408,6 +408,7 @@ module FatTable
                         host: 'localhost')
         system("echo URI: #{FatTable.db.uri} >>#{@out_file}")
         system("echo Tables: #{FatTable.db.tables} >>#{@out_file}")
+        system "psql -a -d fat_table_spec -c 'select * from trades where shares > 10000;' >>#{@out_file} 2>&1"
         query = <<~SQL
           SELECT ref, date, code, price, shares
           FROM trades
