@@ -4,7 +4,7 @@ module FatTable
   describe Table do
     describe 'from CSV' do
       before :all do
-        @csv_file_body = <<~CSV
+        @csv_file_body = <<-CSV.strip_heredoc
           Ref,Date,Code,RawShares,Shares,Price,Info
           1,2006-05-02,P,5000,5000,8.6000,2006-08-09-1-I
           2,2006-05-03,P,5000,5000,8.4200,2006-08-09-1-I
@@ -147,7 +147,7 @@ module FatTable
 
     describe 'from Org' do
       before :all do
-        @org_file_body = <<~ORG
+        @org_file_body = <<-ORG.strip_heredoc
             * Morgan Transactions
             :PROPERTIES:
             :TABLE_EXPORT_FILE: morgan.csv
@@ -173,7 +173,7 @@ module FatTable
 
             * Another Heading
           ORG
-        @org_file_body_with_groups = <<~ORG
+        @org_file_body_with_groups = <<-ORG.strip_heredoc
 
             #+TBLNAME: morgan_tab
             |-----+------------+------+---------+--------+----------+--------|
@@ -410,7 +410,7 @@ module FatTable
         system("echo URI: #{FatTable.db.uri} >>#{@out_file}")
         system("echo Tables: #{FatTable.db.tables} >>#{@out_file}")
         system "psql -a -d fat_table_spec -c 'select * from trades where shares > 10000;' >>#{@out_file} 2>&1"
-        query = <<~SQL
+        query = <<-SQL.strip_heredoc
           SELECT ref, date, code, price, shares
           FROM trades
           WHERE shares > 1000;

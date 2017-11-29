@@ -16,7 +16,7 @@ RSpec.describe FatTable do
   end
 
   it 'can invoke from_csv_string constructor' do
-    str = <<~CSV
+    str = <<-CSV.strip_heredoc
       Ref,Date,Code,RawShares,Shares,Price,Info
       1,5/2/2006,P,5000,5000,8.6000,2006-08-09-1-I
       2,05/03/2006,P,5000,5000,8.4200,2006-08-09-1-I
@@ -34,7 +34,7 @@ RSpec.describe FatTable do
   end
 
   it 'can construct from_org_string' do
-    str = <<-TABLE
+    str = <<-TABLE.strip_heredoc
       #+CAPTION: Goldberg
       #+ATTR_LATEX: :font \footnotesize
       #+NAME: goldberg

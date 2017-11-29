@@ -1,6 +1,8 @@
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'fat_table/version'
+require 'active_support'
+require 'active_support/core_ext/string'
 
 Gem::Specification.new do |spec|
   spec.name          = 'fat_table'
@@ -9,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.email         = ['ded-law@ddoherty.net']
 
   spec.summary       = 'Provides tools for working with tables as a data type.'
-  spec.description   = <<~DESC
+  spec.description   = <<-DESC.strip_heredoc
     FatTable is a gem that treats tables as a data type. It provides methods for
     constructing tables from a variety of sources, building them row-by-row,
     extracting rows, columns, and cells, and performing aggregate operations on
@@ -43,7 +45,7 @@ Gem::Specification.new do |spec|
   spec.homepage = 'https://github.com/ddoherty03/fat_table'
 
   # Use of squiggle heredocs knocks out older versions.
-  spec.required_ruby_version = '>= 2.3'
+  spec.required_ruby_version = '>= 2.2.2'
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the
   # 'allowed_push_host' to allow pushing to a single host or delete this section
@@ -73,7 +75,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rspec', '~> 3.0'
   spec.add_development_dependency 'simplecov'
 
-  spec.add_runtime_dependency 'activesupport'
+  spec.add_runtime_dependency 'activesupport', '>3.0'
   spec.add_runtime_dependency 'fat_core', '~> 4.0', '>= 4.1'
   spec.add_runtime_dependency 'mysql2'
   spec.add_runtime_dependency 'pg'
