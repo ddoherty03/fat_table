@@ -399,13 +399,14 @@ module FatTable
 
       after :all do
         # Drop the db
+        FatTable.db.disconnect
         ok = system "dropdb -e fat_table_spec >>#{@out_file} 2>&1"
         expect(ok).to be_truthy
       end
 
       it 'should be create-able from a SQL query', :db do
-        FatTable.set_db(database: 'fat_table_spec',
-                        host: 'localhost')
+        FatTable.set_db(adapter: 'postgres',
+                        database: 'fat_table_spec')
         system("echo URI: #{FatTable.db.uri} >>#{@out_file}")
         system("echo Tables: #{FatTable.db.tables} >>#{@out_file}")
         system "psql -a -d fat_table_spec -c 'select * from trades where shares > 10000;' >>#{@out_file} 2>&1"
