@@ -29,7 +29,16 @@ unless //.respond_to?(:match?)
   # Add Regexp#match? to pre-2.4 ruby
   class Regexp
     def match?(str)
-      self =~ re
+      self =~ str
+    end
+  end
+end
+
+unless ''.respond_to?(:strip_heredoc)
+  class String
+    def strip_heredoc
+      indent = chomp.scan(/^\s*/).min.size
+      gsub(/^\s{#{indent}}/, '')
     end
   end
 end

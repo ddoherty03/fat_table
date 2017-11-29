@@ -1,8 +1,7 @@
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'fat_table/version'
-require 'active_support'
-require 'active_support/core_ext/string'
+require 'fat_table/patches'
 
 Gem::Specification.new do |spec|
   spec.name          = 'fat_table'
