@@ -13,7 +13,6 @@ bundler_args: --without debug
 services:
   - postgresql
 rvm:
-  - 2.2.2
   - 2.3
   - 2.4
   - ruby-head

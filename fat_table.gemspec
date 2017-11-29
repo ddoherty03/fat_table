@@ -42,6 +42,9 @@ Gem::Specification.new do |spec|
 
   spec.homepage = 'https://github.com/ddoherty03/fat_table'
 
+  # Use of squiggle heredocs knocks out older versions.
+  spec.required_ruby_version = '>= 2.3'
+
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the
   # 'allowed_push_host' to allow pushing to a single host or delete this section
   # to allow pushing to any host.
