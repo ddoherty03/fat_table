@@ -15,3 +15,21 @@ unless { a: 1 }.respond_to?(:fetch_values)
     end
   end
 end
+
+unless ''.respond_to?(:match?)
+  # Add String#match? to pre-2.4 ruby
+  class String
+    def match?(re)
+      self =~ re
+    end
+  end
+end
+
+unless //.respond_to?(:match?)
+  # Add Regexp#match? to pre-2.4 ruby
+  class Regexp
+    def match?(str)
+      self =~ re
+    end
+  end
+end
