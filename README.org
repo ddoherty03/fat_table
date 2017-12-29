@@ -40,6 +40,19 @@ buffer as an org-table, ready for processing by other code blocks.
 
 * Installation
 
+** Prerequisites
+The ~fat_table~ gem depends on several libraries being available for building,
+mostly those concerned with accessing databases.  On an ubuntu system, the
+following packages should be installed before you install the ~fat_table~ gem:
+
+- ruby-dev
+- build-essential
+- libsqlite3-dev
+- libpq-dev
+- libmysqlclient-dev
+
+** Installing the gem
+
 Add this line to your application's Gemfile:
 
 #+BEGIN_SRC ruby
