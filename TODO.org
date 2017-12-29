@@ -1,3 +1,10 @@
+* DONE Ensure that columns resulting from aggregates have proper type
+CLOSED: [2017-12-29 Fri 05:34]
+- State "WAIT"       from "TODO"       [2017-12-29 Fri 05:34]
+- State "TODO"       from              [2017-11-27 Mon 04:46]
+After applying avg, does the column have the proper Numeric or Date, or DateTime
+type.  How about Boolean aggregates?
+
 * TODO Conversion to Spreadsheets
 - State "TODO"       from              [2017-04-21 Fri 10:36]
 This is a [[https://github.com/westonganger/spreadsheet_architect][gem]] that I can include into the Table model to convert a table into
