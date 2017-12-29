@@ -1,4 +1,4 @@
 module FatTable
   # The current version of FatTable
-  VERSION = '0.2.6'.freeze
+  VERSION = '0.2.7'.freeze
 end
