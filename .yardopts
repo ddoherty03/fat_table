@@ -1,1 +1,5 @@
---no-private lib/**/*.rb --markup=markdown --main=README.rdoc - README.rdoc
+--no-private lib/**/*.rb
+--markup=markdown
+--main=md/README.md
+-
+md/README.md

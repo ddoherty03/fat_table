@@ -2,7 +2,11 @@
 #+LATEX_HEADER: \usepackage[margin=0.75in]{geometry}
 
 #+BEGIN_COMMENT
+This is for markdown output:
+
 [![Build Status](https://travis-ci.org/ddoherty03/fat_table.svg?branch=master)](https://travis-ci.org/ddoherty03/fat_table)
+
+The following is for org.
 #+END_COMMENT
 
 [[https://travis-ci.org/ddoherty03/fat_table.svg?branch=master]]

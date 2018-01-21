@@ -44,8 +44,7 @@
 4.  [Development](#org62e325b)
 5.  [Contributing](#orgf51a2c9)
 
-<https://travis-ci.org/ddoherty03/fat_table.svg?branch=master>
-
+[![Build Status](https://travis-ci.org/ddoherty03/fat_table.svg?branch=v0.2.7)](https://travis-ci.org/ddoherty03/fat_table)
 
 <a id="org23d768e"></a>
 
