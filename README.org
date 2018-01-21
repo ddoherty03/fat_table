@@ -16,7 +16,7 @@ The following is for org.
 ~FatTable~ is a gem that treats tables as a data type. It provides methods for
 constructing tables from a variety of sources, building them row-by-row,
 extracting rows, columns, and cells, and performing aggregate operations on
-columns. It also provides as set of SQL-esque methods for manipulating table
+columns. It also provides a set of SQL-esque methods for manipulating table
 objects: ~select~ for filtering by columns or for creating new columns, ~where~
 for filtering by rows, ~order_by~ for sorting rows, ~distinct~ for eliminating
 duplicate rows, ~group_by~ for aggregating multiple rows into single rows and
@@ -35,7 +35,7 @@ no-ops.
 ~FatTable~ can be used to perform operations on data that are naturally best
 conceived of as tables, which in my experience is quite often. It can also serve
 as a foundation for providing reporting functions where flexibility about the
-output medium can be quite useful. Finally ~FatTable~ can be used within Emacs
+output medium can be useful. Finally ~FatTable~ can be used within Emacs
 ~org-mode~ files in code blocks targeting the Ruby language. Org mode tables are
 presented to a ruby code block as an array of arrays, so ~FatTable~ can read
 them in with its ~.from_aoa~ constructor. A ~FatTable~ table output as an array
@@ -80,7 +80,7 @@ Or install it yourself as:
 
 ~FatTable~ provides table objects as a data type that can be constructed and
 operated on in a number of ways. Here's a quick example to illustrate the use of
-the main features of ~FatTable~. See the detailed explanations further on down.
+~FatTable~. See the detailed explanations further on down.
 
 #+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
@@ -169,11 +169,12 @@ the main features of ~FatTable~. See the detailed explanations further on down.
 
 ** A Word About the Examples
 
-When you install the ~fat_table~ gem, you have access to a program ~ft_console~
+When you install the ~fat_table~ gem, you have access to a program ~ft_console~,
 which opens a ~pry~ session with ~fat_table~ loaded and the tables used in the
 examples in this ~README~ defined as instance variables so you can experiment
 with them. Because they are defined as instance variables, you have to write
-~tab1~ as ~@tab1~ in ~ft_console~, but otherwise the examples should work.
+~tab1~ as ~@tab1~ in ~ft_console~, but otherwise the examples should work as
+shown in this ~README~.
 
 The examples in this ~README~ file are executed as code blocks within the
 ~README.org~ file, so they typically end with a call to ~.to_aoa~. That causes
@@ -235,7 +236,7 @@ locals: _  __  _dir_  _ex_  _file_  _in_  _out_  _pry_  lib  str  version
 [4] pry(main)>
 #+END_EXAMPLE
 
-And if you use ~.to_term~, you can see the effect of the color formatting
+If you use ~puts table.to_term~, you can see the effect of the color formatting
 directives.
 
 ** Anatomy of a Table
@@ -482,15 +483,15 @@ This example illustrates several things:
    where the number of shares is greater than 500.  More on that later.
 4. ~FatTable~ passes back to org-mode an array of arrays using the ~.to_aoa~
    method. In an ~org-mode~ buffer, these are rendered as tables. We'll often
-   apply ~.to_aoa~ at the end of example blocks to render the results inside
-   this ~README.org~ file. As we'll see below, this method can also take a block
-   to which formatting directives and footers can be attached.
+   apply ~.to_aoa~ at the end of example blocks in this ~README~ to render the
+   results as a table inside this file. As we'll see below, ~.to_aoa~ can also
+   take a block to which formatting and footer directives can be attached.
 
 *** From Arrays of Hashes
 
 A second ruby data structure that can be used to initialize a ~FatTable~ table
 is an array of ruby Hashes. Each hash represents a row of the table, and the
-headers of the table are take from the keys of the hashes. Accordingly, all the
+headers of the table are taken from the keys of the hashes. Accordingly, all the
 hashes should have the same keys.
 
 This same method can in fact take an array of any objects that can be converted
@@ -521,7 +522,7 @@ tab = FatTable.from_aoh(aoh)
 #+END_SRC
 
 Notice, again, that the values can either be ruby objects, such as ~Date.today~,
-or strings that can parsed into one of the permissible column types.
+or strings that can be parsed into one of the permissible column types.
 
 *** From SQL queries
 
@@ -536,25 +537,15 @@ database parameters to be used for the queries.
                   database: 'XXX_development',
                   user: 'dtd',
                   password: 'slflpowert',
-                  host: 'localhost',
-                  socket: '/tmp/.s.PGSQL.5432')
+                  host: 'localhost')
   tab = FatTable.from_sql('select * from trades;')
 #+END_SRC
 
-Some of the parameters to the ~.set_db~ function have defaults. The driver
-defaults to ~'Pg'~ for postgresql and the socket defaults to
-~/tmp/.s.PGSQL.5432~ if the host is 'localhost', which it is by default. If the
-host is not ~'localhost'~, the dsn uses a port rather than a socket and defaults
-to port ~'5432'~. While user and password default to nil, the database parameter
-is required.
-
-The ~.set_db~ function need only be called once, and the database handle it
-creates will be used for all subsequent ~.from_sql~ calls until ~.set_db~ is
-called again.
-
-Alternatively, you can build the ~Sequel~ connection with ~Sequel.connect~ or
-with adapter-specific ~Sequel~ connection methods and let ~FatTable~ know to use
-that connection:
+The arguments to ~set_db~ are simply passed on to ~sequel~'s connect method, so
+any set of arguments that work for it should work for ~set_db~. Alternatively,
+you can build the ~Sequel~ connection directly with ~Sequel.connect~ or with
+adapter-specific ~Sequel~ connection methods and let ~FatTable~ know to use that
+connection:
 
 #+BEGIN_SRC ruby
   require 'fat_table'
@@ -565,7 +556,14 @@ that connection:
 Consult ~Sequel's~ documentation for details on its connection methods.
 [[http://sequel.jeremyevans.net/rdoc/files/doc/opening_databases_rdoc.html]]
 
+The ~.set_db~ function need only be called once, and the database handle it
+creates will be used for all subsequent ~.from_sql~ calls until ~.set_db~ is
+called again.
+
 *** Marking Groups in Input
+
+~FatTable~ tables has a concept of "groups" of rows that play a role in many of
+the methods for operating on them as explained [[Groups][below]].
 
 The ~.from_aoa~ and ~.from_aoh~ functions take an optional keyword parameter
 ~hlines:~ that, if set to ~true~, causes them to mark group boundaries in the
@@ -586,6 +584,7 @@ beginning with something like '~|---~'. The ~.from_org_...~ functions always
 recognizes hlines in the input, so it takes no ~hlines:~ keyword parameter.
 
 ** Accessing Parts of Tables
+
 *** Rows
 
 A ~FatTable~ table is an Enumerable, yielding each row of the table as a Hash
@@ -641,6 +640,7 @@ operation, which mutates the receiver table by removing its group boundaries.
 Second, because each operation returns a ~FatTable::Table~ object, the
 operations are chainable.
 
+<<Groups>>
 Third, ~FatTable::Table~ objects can have "groups" of rows within the table.
 These can be decorated with hlines and group footers on output. Some of these
 operations result in marking group boundaries in the result table, others remove
