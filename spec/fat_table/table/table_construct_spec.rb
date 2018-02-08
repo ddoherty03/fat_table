@@ -388,6 +388,8 @@ module FatTable
     describe 'from SQL' do
       before :all do
         @out_file = Pathname("#{__dir__}/../../tmp/psql.out").cleanpath
+        # Make sure there is no old db from a failed prior run
+        system "dropdb -e fat_table_spec >>#{@out_file} 2>&1"
         # Create the db
         ok = system "createdb -e fat_table_spec >#{@out_file} 2>&1"
         expect(ok).to be_truthy
