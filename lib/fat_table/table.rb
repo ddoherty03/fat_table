@@ -1270,7 +1270,7 @@ module FatTable
 
     # :category: Constructors
 
-    # Add a +row+ without marking it as a group boundary.
+    # Add a +row+ to this Table without marking it as a group boundary.
     def <<(row)
       add_row(row)
     end
