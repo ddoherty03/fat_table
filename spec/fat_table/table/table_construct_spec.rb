@@ -100,7 +100,7 @@ module FatTable
         CSV
       end
 
-      it 'should be create-able from a CSV string' do
+      it 'creates a Table from a CSV string' do
         tab = Table.from_csv_string(@csv_file_body)
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to be > 20
@@ -121,7 +121,7 @@ module FatTable
         end
       end
 
-      it 'should be create-able from a CSV file' do
+      it 'creates a Table from a CSV file' do
         File.open('/tmp/junk.csv', 'w') { |f| f.write(@csv_file_body) }
         tab = Table.from_csv_file('/tmp/junk.csv')
         expect(tab.class).to eq(Table)
