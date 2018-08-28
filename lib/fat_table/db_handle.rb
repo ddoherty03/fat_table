@@ -18,7 +18,7 @@ module FatTable
   #    Sequel's adapter-specific connection methods.
   #    http://sequel.jeremyevans.net/rdoc/files/doc/opening_databases_rdoc.html
   #
-  # +driver+::
+  # +adapter+::
   #    One of 'pg' (for Postgresql), 'mysql' or 'mysql2' (for Mysql), or
   #    'sqlite' (for SQLite3) to specify the +Sequel+ driver to use. You may
   #    have to install the driver to make this work. By default use 'Pg'.
@@ -60,46 +60,6 @@ module FatTable
     end
     handle
   end
-
-  # def self.set_db(adapter: 'postgres',
-  #                 database:,
-  #                 user: ENV['LOGNAME'],
-  #                 password: nil,
-  #                 host: 'localhost',
-  #                 port: nil,
-  #                 socket: '/tmp/.s.PGSQL.5432')
-  #   if db
-  #     self.handle = db
-  #   else
-  #     raise UserError, 'must supply database name to set_db' unless database
-
-  #     valid_drivers = %w[postgres mysql mysql2 sqlite]
-  #     unless valid_drivers.include?(driver)
-  #       msg = "'#{driver}' driver must be one of #{valid_drivers.join(' or ')}"
-  #       raise UserError, msg
-  #     end
-  #     if database.blank?
-  #       raise UserError, 'must supply database parameter to set_db'
-  #     end
-
-  #     if driver == 'sqlite'
-  #       dsn = "sqlite://#{database}"
-  #     else
-  #       pw_part = password ? ":#{password}" : ''
-  #       hst_part = host ? "@#{host}" : ''
-  #       prt_part = port ? ":#{port}" : ''
-  #       dsn = "#{driver}:://#{user}#{pw_part}#{hst_part}#{prt_part}/#{database}"
-  #     end
-
-  #     # Set the dsn for Sequel
-  #     begin
-  #       self.handle = Sequel.connect(dsn)
-  #     rescue Sequel::Error => ex
-  #       raise TransientError, "#{dsn}: #{ex}"
-  #     end
-  #   end
-  #   handle
-  # end
 
   # Return the +Sequel+ database handle.
   def self.db

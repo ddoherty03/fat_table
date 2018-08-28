@@ -533,11 +533,11 @@ database parameters to be used for the queries.
 #+BEGIN_SRC ruby
   # This automatically requires sequel.
   require 'fat_table'
-  FatTable.set_db(driver: 'Pg',
+  FatTable.set_db(adapter: 'postgres',
                   database: 'XXX_development',
-                  user: 'dtd',
-                  password: 'slflpowert',
-                  host: 'localhost')
+                  user: 'ken',
+                  password: 'imsecret',
+                  host: 'db.lan')
   tab = FatTable.from_sql('select * from trades;')
 #+END_SRC
 
