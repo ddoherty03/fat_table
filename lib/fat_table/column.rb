@@ -21,7 +21,7 @@ module FatTable
     attr_reader :type
 
     # An Array of the items of this Column, all of which must be values of the
-    # Columns type or a nil.  This Array contains the value of the item after
+    # Column's type or a nil.  This Array contains the value of the item after
     # conversion to a native Ruby type, such as TrueClass, Date, DateTime,
     # Integer, String, etc.  Thus, you can perform operations on the items,
     # perhaps after removing nils with +.items.compact+.
@@ -92,6 +92,7 @@ module FatTable
       @type = 'NilClass'
       msg = "unknown column type '#{type}"
       raise UserError, msg unless TYPES.include?(@type.to_s)
+
       @items = []
       items.each { |i| self << i }
     end
@@ -229,11 +230,13 @@ module FatTable
     # average back to a DateTime.
     def avg
       only_with('avg', 'DateTime', 'Numeric')
+      itms = items.compact
+      size = itms.size.to_d
       if type == 'DateTime'
-        avg_jd = items.compact.map(&:jd).sum / items.compact.size.to_d
+        avg_jd = itms.map(&:jd).sum / size
         DateTime.jd(avg_jd)
       else
-        sum / items.compact.size.to_d
+        itms.sum / size
       end
     end
 

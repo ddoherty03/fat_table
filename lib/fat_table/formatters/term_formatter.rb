@@ -27,6 +27,7 @@ module FatTable
       @options[:unicode] = options.fetch(:unicode, true)
       @options[:framecolor] = options.fetch(:framecolor, 'none.none')
       return unless @options[:framecolor] =~ /([-_a-zA-Z]*)(\.([-_a-zA-Z]*))/
+
       @options[:frame_fg] = $1.downcase unless $1.blank?
       @options[:frame_bg] = $3.downcase unless $3.blank?
     end
@@ -59,6 +60,7 @@ module FatTable
 
     def strip_ansi(str)
       return '' unless str
+
       str.gsub(/\e\[[0-9;]+m/, '')
     end
 
@@ -73,18 +75,19 @@ module FatTable
       result
     end
 
-    def colorize(str, fg, bg)
-      fg = nil if fg == 'none'
-      bg = nil if bg == 'none'
-      return str unless fg || bg
+    def colorize(str, fg_color, bg_color)
+      fg_color = nil if fg_color == 'none'
+      bg_color = nil if bg_color == 'none'
+      return str unless fg_color || bg_color
+
       result = Rainbow(str)
-      if fg
-        fg = fg.tr(' ', '').downcase.as_sym
-        result = result.color(fg) if fg
+      if fg_color
+        fg_color = fg_color.tr(' ', '').downcase.as_sym
+        result = result.color(fg_color) if fg_color
       end
-      if bg
-        bg = bg.tr(' ', '').downcase.as_sym
-        result = result.bg(bg) if bg
+      if bg_color
+        bg_color = bg_color.tr(' ', '').downcase.as_sym
+        result = result.bg(bg_color) if bg_color
       end
       result
     end
@@ -229,12 +232,12 @@ module FatTable
       frame_colorize(vertical_rule)
     end
 
-    def pre_cell(_h)
+    def pre_cell(_head)
       ''
     end
 
-    def quote_cell(v)
-      v
+    def quote_cell(val)
+      val
     end
 
     def post_cell

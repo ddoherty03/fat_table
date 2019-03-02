@@ -533,7 +533,7 @@ database parameters to be used for the queries.
 #+BEGIN_SRC ruby
   # This automatically requires sequel.
   require 'fat_table'
-  FatTable.set_db(adapter: 'postgres',
+  FatTable.connect(adapter: 'postgres',
                   database: 'XXX_development',
                   user: 'ken',
                   password: 'imsecret',
@@ -541,8 +541,8 @@ database parameters to be used for the queries.
   tab = FatTable.from_sql('select * from trades;')
 #+END_SRC
 
-The arguments to ~set_db~ are simply passed on to ~sequel~'s connect method, so
-any set of arguments that work for it should work for ~set_db~. Alternatively,
+The arguments to ~connect~ are simply passed on to ~sequel~'s connect method, so
+any set of arguments that work for it should work for ~connect~. Alternatively,
 you can build the ~Sequel~ connection directly with ~Sequel.connect~ or with
 adapter-specific ~Sequel~ connection methods and let ~FatTable~ know to use that
 connection:
@@ -556,8 +556,8 @@ connection:
 Consult ~Sequel's~ documentation for details on its connection methods.
 [[http://sequel.jeremyevans.net/rdoc/files/doc/opening_databases_rdoc.html]]
 
-The ~.set_db~ function need only be called once, and the database handle it
-creates will be used for all subsequent ~.from_sql~ calls until ~.set_db~ is
+The ~.connect~ function need only be called once, and the database handle it
+creates will be used for all subsequent ~.from_sql~ calls until ~.connect~ is
 called again.
 
 *** Marking Groups in Input

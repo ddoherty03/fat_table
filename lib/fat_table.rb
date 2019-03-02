@@ -114,7 +114,7 @@ module FatTable
   end
 
   # Construct a Table by running a SQL query against the database set up with
-  # FatTable.set_db. Return the Table with the query results as rows and the
+  # FatTable.connect. Return the Table with the query results as rows and the
   # headers from the query, converted to symbols, as headers.
   def self.from_sql(query)
     Table.from_sql(query)

@@ -407,7 +407,7 @@ module FatTable
       end
 
       it 'should be create-able from a SQL query', :db do
-        FatTable.set_db(adapter: 'postgres',
+        FatTable.connect(adapter: 'postgres',
                         database: 'fat_table_spec')
         system("echo URI: #{FatTable.db.uri} >>#{@out_file}")
         system("echo Tables: #{FatTable.db.tables} >>#{@out_file}")

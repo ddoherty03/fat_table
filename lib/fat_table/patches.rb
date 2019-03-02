@@ -19,8 +19,8 @@ end
 unless ''.respond_to?(:match?)
   # Add String#match? to pre-2.4 ruby
   class String
-    def match?(re)
-      self =~ re
+    def match?(regexp)
+      self =~ regexp
     end
   end
 end
@@ -35,6 +35,7 @@ unless //.respond_to?(:match?)
 end
 
 unless ''.respond_to?(:strip_heredoc)
+  # Patch String to provide heredocs with whitespace stripped
   class String
     def strip_heredoc
       indent = chomp.scan(/^\s*/).min.size

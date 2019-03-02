@@ -20,23 +20,25 @@ module FatTable
     def initialize(ivars: {}, before: nil, after: nil)
       @before = before
       @after = after
-      set_instance_vars(ivars)
+      instance_vars(ivars)
     end
 
     # Set the @group instance variable to the given value.
     def update_ivars(ivars)
-      set_instance_vars(ivars)
+      instance_vars(ivars)
     end
 
     # Run any before hook in the context of the given local variables.
     def eval_before_hook(locals: {})
       return if @before.blank?
+
       evaluate(@before, locals: locals)
     end
 
     # Run any after hook in the context of the given local variables.
     def eval_after_hook(locals: {})
       return if @after.blank?
+
       evaluate(@after, locals: locals)
     end
 
@@ -44,19 +46,21 @@ module FatTable
     # instance variables set in Evaluator.new and any local variables set in the
     # Hash parameter +locals+ are available to the expression.
     def evaluate(expr = '', locals: {})
-      eval(expr, set_local_vars(binding, locals))
+      eval(expr, local_vars(binding, locals))
     end
 
     private
 
-    def set_instance_vars(vars = {})
+    # Set the instance variables according to Hash vars.
+    def instance_vars(vars = {})
       vars.each_pair do |name, val|
         name = "@#{name}" unless name.to_s.start_with?('@')
         instance_variable_set(name, val)
       end
     end
 
-    def set_local_vars(bnd, vars = {})
+    # Set the local variables within the binding bnd according to Hash vars.
+    def local_vars(bnd, vars = {})
       vars.each_pair do |name, val|
         bnd.local_variable_set(name, val)
       end

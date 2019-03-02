@@ -149,10 +149,11 @@ module FatTable
     # :category: Constructors
 
     # Construct a Table by running a SQL +query+ against the database set up
-    # with FatTable.set_db, with the rows of the query result as rows.
+    # with FatTable.connect, with the rows of the query result as rows.
     def self.from_sql(query)
-      msg = 'FatTable.db must be set with FatTable.set_db'
+      msg = 'FatTable.db must be set with FatTable.connect'
       raise UserError, msg if FatTable.db.nil?
+
       result = Table.new
       FatTable.db[query].each do |h|
         result << h
@@ -257,6 +258,7 @@ module FatTable
           unless table_found
             # Skip through the file until a table is found
             next unless line.match?(table_re)
+
             unless line.match?(hrule_re)
               line = line.sub(/\A\s*\|/, '').sub(/\|\s*\z/, '')
               rows << line.split('|').map(&:clean)
@@ -265,6 +267,7 @@ module FatTable
             next
           end
           break unless line.match?(table_re)
+
           if !header_found && line =~ hrule_re
             rows << nil
             header_found = true
@@ -272,7 +275,7 @@ module FatTable
           elsif header_found && line =~ hrule_re
             # Mark the boundary with a nil
             rows << nil
-          elsif line !~ table_re
+          elsif !line.match?(table_re)
             # Stop reading at the second hline
             break
           else
@@ -316,14 +319,17 @@ module FatTable
       when Integer
         msg = "index '#{key}' out of range"
         raise UserError, msg unless (0..size - 1).cover?(key.abs)
+
         rows[key]
       when String
         msg = "header '#{key}' not in table"
         raise UserError, msg unless headers.include?(key)
+
         column(key).items
       when Symbol
         msg = "header ':#{key}' not in table"
         raise UserError, msg unless headers.include?(key)
+
         column(key).items
       else
         raise UserError, "cannot index table with a #{key.class}"
@@ -360,6 +366,7 @@ module FatTable
     # Return the number of rows in the Table.
     def size
       return 0 if columns.empty?
+
       columns.first.size
     end
 
@@ -368,6 +375,7 @@ module FatTable
     # Return the number of Columns in the Table.
     def width
       return 0 if columns.empty?
+
       columns.size
     end
 
@@ -406,6 +414,7 @@ module FatTable
       last ||= size - 1
       last = [last, 0].max
       raise UserError, 'first must be <= last' unless first <= last
+
       rows = []
       unless columns.empty?
         first.upto(last) do |rnum|
@@ -493,12 +502,12 @@ module FatTable
       self
     end
 
-    # Mark a group boundary at row +k+, and if +k+ is +nil+, mark the last row
-    # in the table as a group boundary. This is mainly used for internal
+    # Mark a group boundary at row +row+, and if +row+ is +nil+, mark the last
+    # row in the table as a group boundary. This is mainly used for internal
     # purposes.
-    def mark_boundary(k = nil) # :nodoc:
-      if k
-        boundaries.push(k)
+    def mark_boundary(row = nil) # :nodoc:
+      if row
+        boundaries.push(row)
       else
         boundaries.push(size - 1)
       end
@@ -524,20 +533,21 @@ module FatTable
       @boundaries += bounds.map { |k| k + shift }
     end
 
-    # Return the group number to which row k belongs. Groups, from the user's
-    # point of view are indexed starting at 1.
-    def row_index_to_group_index(k)
+    # Return the group number to which row ~row~ belongs. Groups, from the
+    # user's point of view are indexed starting at 1.
+    def row_index_to_group_index(row)
       boundaries.each_with_index do |b_last, g_num|
-        return (g_num + 1) if k <= b_last
+        return (g_num + 1) if row <= b_last
       end
       1
     end
 
-    def group_rows(k) # :nodoc:
+    def group_rows(row) # :nodoc:
       normalize_boundaries
-      return [] unless k < boundaries.size
-      first = k.zero? ? 0 : boundaries[k - 1] + 1
-      last = boundaries[k]
+      return [] unless row < boundaries.size
+
+      first = row.zero? ? 0 : boundaries[row - 1] + 1
+      last = boundaries[row]
       rows_range(first, last)
     end
 
@@ -702,6 +712,7 @@ module FatTable
           h = k.as_sym
           msg = "Column '#{h}' in select does not exist"
           raise UserError, msg unless column?(h)
+
           new_row[h] = old_row[h]
         end
         new_cols.each_pair do |key, expr|
@@ -710,7 +721,8 @@ module FatTable
           case expr
           when Symbol
             msg = "Column '#{expr}' in select does not exist"
-            raise UserError, msg unless vars.keys.include?(expr)
+            raise UserError, msg unless vars.key?(expr)
+
             new_row[key] = vars[expr]
           when String
             new_row[key] = ev.evaluate(expr, locals: vars)
@@ -864,10 +876,10 @@ module FatTable
 
     private
 
-    # Apply the set operation given by op between this table and the other table
-    # given in the first argument.  If distinct is true, eliminate duplicates
-    # from the result.
-    def set_operation(other, op = :+,
+    # Apply the set operation given by ~oper~ between this table and the other
+    # table given in the first argument.  If distinct is true, eliminate
+    # duplicates from the result.
+    def set_operation(other, oper = :+,
                       distinct: true,
                       add_boundaries: true,
                       inherit_boundaries: false)
@@ -881,7 +893,7 @@ module FatTable
       end
       other_rows = other.rows.map { |r| r.replace_keys(headers) }
       result = Table.new
-      new_rows = rows.send(op, other_rows)
+      new_rows = rows.send(oper, other_rows)
       new_rows.each_with_index do |row, k|
         result << row
         result.mark_boundary if k == size - 1 && add_boundaries
@@ -975,6 +987,7 @@ module FatTable
       unless JOIN_TYPES.include?(join_type)
         raise UserError, "join_type may only be: #{JOIN_TYPES.join(', ')}"
       end
+
       # These may be needed for outer joins.
       self_row_nils = headers.map { |h| [h, nil] }.to_h
       other_row_nils = other.headers.map { |h| [h, nil] }.to_h
@@ -992,6 +1005,7 @@ module FatTable
           locals = build_locals_hash(row_a: self_row, row_b: other_row)
           matches = ev.evaluate(join_exp, locals: locals)
           next unless matches
+
           self_row_matched = other_row_matches[k] = true
           out_row = build_out_row(row_a: self_row, row_b: other_row,
                                   common_heads: other_common_heads,
@@ -1000,6 +1014,7 @@ module FatTable
         end
         next unless %i[left full].include?(join_type)
         next if self_row_matched
+
         result << build_out_row(row_a: self_row,
                                 row_b: other_row_nils,
                                 type: join_type)
@@ -1007,6 +1022,7 @@ module FatTable
       if %i[right full].include?(join_type)
         other_rows.each_with_index do |other_row, k|
           next if other_row_matches[k]
+
           result << build_out_row(row_a: self_row_nils,
                                   row_b: other_row,
                                   type: join_type)
@@ -1090,6 +1106,7 @@ module FatTable
     # and all the headers in the other table with '_b' appended.
     def build_join_expression(exps, other, type)
       return ['true', []] if type == :cross
+
       a_heads = headers
       b_heads = other.headers
       common_heads = a_heads & b_heads
@@ -1120,6 +1137,7 @@ module FatTable
               unless a_heads.include?(a_head)
                 raise UserError, "no column '#{a_head}' in table"
               end
+
               if partial_result
                 # Second of a pair
                 ensure_common_types!(self_h: a_head,
@@ -1138,6 +1156,7 @@ module FatTable
               unless b_heads.include?(b_head)
                 raise UserError, "no column '#{b_head}' in second table"
               end
+
               if partial_result
                 # Second of a pair
                 ensure_common_types!(self_h: last_sym,
@@ -1281,6 +1300,7 @@ module FatTable
     def add_column(col)
       msg = "Table already has a column with header '#{col.header}'"
       raise msg if column?(col.header)
+
       columns << col
       self
     end
@@ -1329,6 +1349,7 @@ module FatTable
       fmt = fmt_type.as_sym
       msg = "unknown format '#{fmt}'"
       raise UserError, msg unless FatTable::FORMATS.include?(fmt)
+
       method = "to_#{fmt}"
       if block_given?
         send method, options, &Proc.new

@@ -30,20 +30,20 @@ module FatTable
       '['
     end
 
-    def pre_cell(_h)
+    def pre_cell(_val)
       "'"
     end
 
     # Because the cell, after conversion to a single-quoted string will be
     # eval'ed, we need to escape any single-quotes (') that appear in the
     # string.
-    def quote_cell(v)
-      if v.match?(/'/)
+    def quote_cell(val)
+      if val.match?(/'/)
         # Use a negative look-behind to only quote single-quotes that are not
         # already preceded by a backslash
-        v.gsub(/(?<!\\)'/, "'" => "\\'")
+        val.gsub(/(?<!\\)'/, "'" => "\\'")
       else
-        v
+        val
       end
     end
 

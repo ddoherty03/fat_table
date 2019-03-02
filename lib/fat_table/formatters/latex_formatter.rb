@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FatTable
   # A subclass of Formatter for rendering the table as a LaTeX table. It allows
   # foreground colors through LaTeX's xcolor package but ignores background
@@ -17,7 +19,6 @@ module FatTable
     #   LaTeX tabular-like environment to use for the table. The default is good
     #   for tables that might continue over multiple pages since it repeats the
     #   header at the top of each continuation page.
-
     def initialize(table = Table.new, **options)
       super
       @options[:document] = options.fetch(:document, false)
@@ -115,7 +116,8 @@ module FatTable
       result = ''
       result += '\\bfseries{}' if istruct.bold
       result += '\\itshape{}' if istruct.italic
-      result += "\\color{#{istruct.color}}" if istruct.color && istruct.color != 'none'
+      result += "\\color{#{istruct.color}}" if istruct.color &&
+                                               istruct.color != 'none'
       result = "#{result}#{str}"
       unless istruct.alignment == format_at[:body][istruct._h].alignment
         ac = alignment_code(istruct.alignment)
@@ -173,14 +175,14 @@ module FatTable
       ''
     end
 
-    def pre_cell(_h)
+    def pre_cell(_head)
       ''
     end
 
     # We do quoting before applying decoration, so do not re-quote here.  We
     # will have LaTeX commands in v.
-    def quote_cell(v)
-      v
+    def quote_cell(val)
+      val
     end
 
     def post_cell

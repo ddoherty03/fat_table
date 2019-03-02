@@ -51,7 +51,7 @@ module FatTable
   # successfully, this establishes the database handle to use for all subsequent
   # calls to FatTable.from_sql or FatTable::Table.from_sql. You can then access
   # the handle if needed with FatTable.db.
-  def self.set_db(args)
+  def self.connect(args)
     # Set the dsn for Sequel
     begin
       self.handle = Sequel.connect(args)
@@ -67,7 +67,7 @@ module FatTable
   end
 
   # Directly set the db handle to a Sequel connection formed without
-  # FatTable.set_db.
+  # FatTable.connect.
   def self.db=(db)
     self.handle = db
   end

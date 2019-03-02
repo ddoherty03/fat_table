@@ -485,7 +485,7 @@ Another way to initialize a +FatTable+ table is with the results of a SQL query.
 database parameters to be used for the queries.
 
   require 'fat_table'
-  FatTable.set_db(driver: 'Pg',
+  FatTable.connect(driver: 'Pg',
                   database: 'XXX_development',
                   user: 'dtd',
                   password: 'slflpowert',
@@ -493,15 +493,15 @@ database parameters to be used for the queries.
                   socket: '/tmp/.s.PGSQL.5432')
   tab = FatTable.from_sql('select * from trades;')
 
-Some of the parameters to the +.set_db+ function have defaults. The driver
+Some of the parameters to the +.connect+ function have defaults. The driver
 defaults to 'Pg' for postgresql and the socket defaults to +/tmp/.s.PGSQL.5432+
 if the host is 'localhost', which it is by default. If the host is not
 'localhost', the dsn uses a port rather than a socket and defaults to port
 '5432'. While user and password default to nil, the database parameter is
 required.
 
-The +.set_db+ function need only be called once, and the database handle it
-creates will be used for all subsequent +.from_sql+ calls until +.set_db+ is
+The +.connect+ function need only be called once, and the database handle it
+creates will be used for all subsequent +.from_sql+ calls until +.connect+ is
 called again.
 
 === Marking Groups in Input

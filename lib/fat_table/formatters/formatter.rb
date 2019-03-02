@@ -92,9 +92,10 @@ module FatTable
     # Formatter is yielded to the block so that methods for formatting and
     # adding footers can be called on it.
     def initialize(table = Table.new, **options)
-      unless table && table.is_a?(Table)
+      unless table&.is_a?(Table)
         raise UserError, 'must initialize Formatter with a Table'
       end
+
       @table = table
       @options = options
       @footers = {}
@@ -170,12 +171,14 @@ module FatTable
         unless table.headers.include?(h)
           raise UserError, "No '#{h}' column in table to sum in the footer"
         end
+
         foot[h] = :sum
       end
       agg_cols.each do |h, agg|
         unless table.headers.include?(h)
           raise UserError, "No '#{h}' column in table to #{agg} in the footer"
         end
+
         foot[h] = agg
       end
       @footers[label] = foot
@@ -208,12 +211,14 @@ module FatTable
         unless table.headers.include?(h)
           raise UserError, "No '#{h}' column in table for group sum footer"
         end
+
         foot[h] = :sum
       end
       agg_cols.each do |h, agg|
         unless table.headers.include?(h)
           raise UserError, "No '#{h}' column in table for #{agg} group footer"
         end
+
         foot[h] = agg
       end
       @gfooters[label] = foot
@@ -466,6 +471,7 @@ module FatTable
       unless LOCATIONS.include?(location)
         raise UserError, "unknown format location '#{location}'"
       end
+
       valid_keys = table.headers + %i[string numeric datetime boolean nil]
       invalid_keys = (fmts.keys - valid_keys).uniq
       unless invalid_keys.empty?
@@ -487,18 +493,18 @@ module FatTable
           # Merge in string and nil formatting, but not in header.  Header is
           # always typed a string, so it will get formatted in type-based
           # formatting below. And headers are never nil.
-          if fmts.keys.include?(:string)
+          if fmts.key?(:string)
             typ_fmt = parse_string_fmt(fmts[:string])
             format_h = format_h.merge(typ_fmt)
           end
-          if fmts.keys.include?(:nil)
+          if fmts.key?(:nil)
             typ_fmt = parse_nil_fmt(fmts[:nil]).first
             format_h = format_h.merge(typ_fmt)
           end
         end
         typ = location == :header ? :string : table.type(h).as_sym
         parse_typ_method_name = 'parse_' + typ.to_s + '_fmt'
-        if fmts.keys.include?(typ)
+        if fmts.key?(typ)
           # Merge in type-based formatting
           typ_fmt = send(parse_typ_method_name, fmts[typ])
           format_h = format_h.merge(typ_fmt)
@@ -547,7 +553,7 @@ module FatTable
     private
 
     # Re to match a color name
-    CLR_RE = /(?:[-_a-zA-Z0-9 ]*)/
+    CLR_RE = /(?:[-_a-zA-Z0-9 ]*)/.freeze
 
     # Return a hash that reflects the formatting instructions given in the
     # string fmt. Raise an error if it contains invalid formatting instructions.
@@ -558,6 +564,7 @@ module FatTable
       unless fmt.blank? || !strict
         raise UserError, "unrecognized string formatting instructions '#{fmt}'"
       end
+
       format
     end
 
@@ -668,6 +675,7 @@ module FatTable
       unless fmt.blank? || !strict
         raise UserError, "unrecognized numeric formatting instructions '#{fmt}'"
       end
+
       fmt_hash
     end
 
@@ -739,6 +747,7 @@ module FatTable
       unless fmt.blank? || !strict
         raise UserError, "unrecognized boolean formatting instructions '#{fmt}'"
       end
+
       fmt_hash
     end
 
@@ -810,6 +819,7 @@ module FatTable
     # specializing this method.
     def format_boolean(val, istruct)
       return istruct.nil_text if val.nil?
+
       val ? istruct.true_text : istruct.false_text
     end
 
@@ -820,6 +830,7 @@ module FatTable
     # specializing this method.
     def format_datetime(val, istruct)
       return istruct.nil_text if val.nil?
+
       if val.to_date == val
         # It is a Date, with no time component.
         val.strftime(istruct.date_fmt)
@@ -835,6 +846,7 @@ module FatTable
     # specializing this method.
     def format_numeric(val, istruct)
       return istruct.nil_text if val.nil?
+
       val = val.round(istruct.post_digits) if istruct.post_digits >= 0
       if istruct.hms
         result = val.secs_to_hms
@@ -998,6 +1010,7 @@ module FatTable
       new_rows.each do |loc_row|
         result += hline(widths) if loc_row.nil?
         next if loc_row.nil?
+
         _loc, row = *loc_row
         result += pre_row
         cells = []
@@ -1140,6 +1153,7 @@ module FatTable
       end
       rows.each do |loc_row|
         next if loc_row.nil?
+
         _loc, row = *loc_row
         row.each_pair do |h, (_v, fmt_v)|
           widths[h] ||= 0
@@ -1222,12 +1236,12 @@ module FatTable
       ''
     end
 
-    def pre_cell(_h)
+    def pre_cell(_head)
       ''
     end
 
-    def quote_cell(v)
-      v
+    def quote_cell(val)
+      val
     end
 
     def post_cell

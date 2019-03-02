@@ -26,12 +26,12 @@ module FatTable
       '|'
     end
 
-    def pre_cell(_h)
+    def pre_cell(_head)
       ''
     end
 
-    def quote_cell(v)
-      v
+    def quote_cell(val)
+      val
     end
 
     def post_cell
