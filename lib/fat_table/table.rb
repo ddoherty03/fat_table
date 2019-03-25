@@ -106,18 +106,19 @@ module FatTable
     # :category: Constructors
 
     # Construct a new table from an Array of Arrays +aoa+. By default, with
-    # +hlines+ set to false, do not look for separators, i.e. +nils+, just treat
-    # the first row as headers. With +hlines+ set true, expect +nil+ separators
-    # to mark the header row and any boundaries. If the second element of the
-    # array is a +nil+, interpret the first element of the array as a row of
-    # headers. Otherwise, synthesize headers of the form +:col_1+, +:col_2+, ...
-    # and so forth. The remaining elements are taken as the body of the table,
-    # except that if an element of the outer array is a +nil+, mark the
-    # preceding row as a group boundary. Note for Emacs users: In org mode code
-    # blocks when an org-mode table is passed in as a variable it is passed in
-    # as an Array of Arrays. By default (+ HEADER: :hlines no +) org-mode strips
-    # all from the table; otherwise (+ HEADER: :hlines yes +) they are indicated
-    # with nil elements in the outer array.
+    # +hlines+ set to false, do not look for separators, i.e. +nils+, just
+    # treat the first row as headers. With +hlines+ set true, expect +nil+
+    # separators to mark the header row and any boundaries. If the second
+    # element of the array is a +nil+, interpret the first element of the
+    # array as a row of headers. Otherwise, synthesize headers of the form
+    # +:col_1+, +:col_2+, ...  and so forth. The remaining elements are taken
+    # as the body of the table, except that if an element of the outer array
+    # is a +nil+, mark the preceding row as a group boundary. Note for Emacs
+    # users: In org mode code blocks when an org-mode table is passed in as a
+    # variable it is passed in as an Array of Arrays. By default (+ HEADER:
+    # :hlines no +) org-mode strips all hrules from the table; otherwise (+
+    # HEADER: :hlines yes +) they are indicated with nil elements in the outer
+    # array.
     def self.from_aoa(aoa, hlines: false)
       from_array_of_arrays(aoa, hlines: hlines)
     end
