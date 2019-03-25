@@ -104,8 +104,8 @@ module FatTable
     # :category: Attributes
 
     # Return the item of the Column at the given index.
-    def [](k)
-      items[k]
+    def [](idx)
+      items[idx]
     end
 
     # :category: Attributes

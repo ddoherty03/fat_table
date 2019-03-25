@@ -1,10 +1,11 @@
 require 'spec_helper'
 
+# Specs to test the building of Table from various inputs.
 module FatTable
   describe Table do
     describe 'from CSV' do
-      before :all do
-        @csv_file_body = <<-CSV.strip_heredoc
+      let(:csv_body) do
+        <<~CSV
           Ref,Date,Code,RawShares,Shares,Price,Info
           1,2006-05-02,P,5000,5000,8.6000,2006-08-09-1-I
           2,2006-05-03,P,5000,5000,8.4200,2006-08-09-1-I
@@ -101,7 +102,7 @@ module FatTable
       end
 
       it 'creates a Table from a CSV string' do
-        tab = Table.from_csv_string(@csv_file_body)
+        tab = Table.from_csv_string(csv_body)
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to be > 20
         expect(tab.headers.sort)
@@ -122,7 +123,7 @@ module FatTable
       end
 
       it 'creates a Table from a CSV file' do
-        File.open('/tmp/junk.csv', 'w') { |f| f.write(@csv_file_body) }
+        File.open('/tmp/junk.csv', 'w') { |f| f.write(csv_body) }
         tab = Table.from_csv_file('/tmp/junk.csv')
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to be > 20
@@ -146,9 +147,9 @@ module FatTable
     end
 
     describe 'from Org' do
-      before :all do
-        @org_file_body = <<-ORG.strip_heredoc
-            * Morgan Transactions
+      let(:org_body) do
+        <<~ORG
+          * Morgan Transactions
             :PROPERTIES:
             :TABLE_EXPORT_FILE: morgan.csv
             :END:
@@ -171,37 +172,39 @@ module FatTable
             |  41 | 2013-05-29 | S    |  15,900 |     42 | 24.58020 | ZMEAC  |
             |  42 | 2013-05-30 | S    |   6,679 |     18 | 25.04710 | ZMEAC  |
 
-            * Another Heading
-          ORG
-        @org_file_body_with_groups = <<-ORG.strip_heredoc
-
-            #+TBLNAME: morgan_tab
-            |-----+------------+------+---------+--------+----------+--------|
-            | Ref |       Date | Code |     Raw | Shares |    Price | Info   |
-            |-----+------------+------+---------+--------+----------+--------|
-            |  29 | 2013-05-02 | P    | 795,546 |  2,609 |  1.18500 | ZMPEF1 |
-            |-----+------------+------+---------+--------+----------+--------|
-            |  30 | 2013-05-02 | P    | 118,186 |    388 | 11.85000 | ZMPEF1 |
-            |  31 | 2013-05-02 | P    | 340,948 |  1,926 |  1.18500 | ZMPEF2 |
-            |  32 | 2013-05-02 | P    |  50,651 |    286 | 11.85000 | ZMPEF2 |
-            |-----+------------+------+---------+--------+----------+--------|
-            |  33 | 2013-05-20 | S    |  12,000 |     32 | 28.28040 | ZMEAC  |
-            |  34 | 2013-05-20 | S    |  85,000 |    226 | 28.32240 | ZMEAC  |
-            |  35 | 2013-05-20 | S    |  33,302 |     88 | 28.63830 | ZMEAC  |
-            |  36 | 2013-05-23 | S    |   8,000 |     21 | 27.10830 | ZMEAC  |
-            |  37 | 2013-05-23 | S    |  23,054 |     61 | 26.80150 | ZMEAC  |
-            |  38 | 2013-05-23 | S    |  39,906 |    106 | 25.17490 | ZMEAC  |
-            |  39 | 2013-05-29 | S    |  13,459 |     36 | 24.74640 | ZMEAC  |
-            |-----+------------+------+---------+--------+----------+--------|
-            |  40 | 2013-05-29 | S    |  15,700 |     42 | 24.77900 | ZMEAC  |
-            |  41 | 2013-05-29 | S    |  15,900 |     42 | 24.58020 | ZMEAC  |
-            |  42 | 2013-05-30 | S    |   6,679 |     18 | 25.04710 | ZMEAC  |
-            |-----+------------+------+---------+--------+----------+--------|
-      ORG
+          * Another Heading
+        ORG
       end
 
-      it 'should be create-able from an Org string' do
-        tab = Table.from_org_string(@org_file_body)
+      let(:org_body_with_groups) do
+        <<~ORG
+          #+TBLNAME: morgan_tab
+          |-----+------------+------+---------+--------+----------+--------|
+          | Ref |       Date | Code |     Raw | Shares |    Price | Info   |
+          |-----+------------+------+---------+--------+----------+--------|
+          |  29 | 2013-05-02 | P    | 795,546 |  2,609 |  1.18500 | ZMPEF1 |
+          |-----+------------+------+---------+--------+----------+--------|
+          |  30 | 2013-05-02 | P    | 118,186 |    388 | 11.85000 | ZMPEF1 |
+          |  31 | 2013-05-02 | P    | 340,948 |  1,926 |  1.18500 | ZMPEF2 |
+          |  32 | 2013-05-02 | P    |  50,651 |    286 | 11.85000 | ZMPEF2 |
+          |-----+------------+------+---------+--------+----------+--------|
+          |  33 | 2013-05-20 | S    |  12,000 |     32 | 28.28040 | ZMEAC  |
+          |  34 | 2013-05-20 | S    |  85,000 |    226 | 28.32240 | ZMEAC  |
+          |  35 | 2013-05-20 | S    |  33,302 |     88 | 28.63830 | ZMEAC  |
+          |  36 | 2013-05-23 | S    |   8,000 |     21 | 27.10830 | ZMEAC  |
+          |  37 | 2013-05-23 | S    |  23,054 |     61 | 26.80150 | ZMEAC  |
+          |  38 | 2013-05-23 | S    |  39,906 |    106 | 25.17490 | ZMEAC  |
+          |  39 | 2013-05-29 | S    |  13,459 |     36 | 24.74640 | ZMEAC  |
+          |-----+------------+------+---------+--------+----------+--------|
+          |  40 | 2013-05-29 | S    |  15,700 |     42 | 24.77900 | ZMEAC  |
+          |  41 | 2013-05-29 | S    |  15,900 |     42 | 24.58020 | ZMEAC  |
+          |  42 | 2013-05-30 | S    |   6,679 |     18 | 25.04710 | ZMEAC  |
+          |-----+------------+------+---------+--------+----------+--------|
+        ORG
+      end
+
+      it 'creates from an Org string' do
+        tab = Table.from_org_string(org_body)
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to be > 10
         expect(tab.headers.sort)
@@ -222,8 +225,8 @@ module FatTable
         end
       end
 
-      it 'should be create-able from an Org string with groups' do
-        tab = Table.from_org_string(@org_file_body)
+      it 'creates from an Org string with groups' do
+        tab = Table.from_org_string(org_body_with_groups)
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to be > 10
         expect(tab.headers.sort)
@@ -244,8 +247,8 @@ module FatTable
         end
       end
 
-      it 'should be create-able from an Org file' do
-        File.open('/tmp/junk.org', 'w') { |f| f.write(@org_file_body) }
+      it 'creates from an Org file' do
+        File.open('/tmp/junk.org', 'w') { |f| f.write(org_body) }
         tab = Table.from_org_file('/tmp/junk.org')
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to be > 10
@@ -267,8 +270,8 @@ module FatTable
         end
       end
 
-      it 'add group boundaries on reading from org text' do
-        tab = Table.from_org_string(@org_file_body_with_groups)
+      it 'adds group boundaries on reading from org text' do
+        tab = Table.from_org_string(org_body_with_groups)
         expect(tab.groups.size).to eq(4)
         expect(tab.groups[0].size).to eq(1)
         expect(tab.groups[1].size).to eq(3)
@@ -276,7 +279,7 @@ module FatTable
         expect(tab.groups[3].size).to eq(3)
       end
 
-      it 'should set T F columns to Boolean' do
+      it 'sets T F columns to Boolean' do
         cwd = File.dirname(__FILE__)
         dwtab = Table.from_org_file(cwd + '/../../example_files/datawatch.org')
         expect(dwtab.column(:g10).type).to eq('Boolean')
@@ -289,9 +292,9 @@ module FatTable
     end
 
     describe 'from ruby data structures' do
-      it 'should create from an Array of Arrays with header and hrule' do
-        # rubocop:disable Style/WordArray
-        aoa = [
+      let(:aoa_with_nil_hrule) do
+        [
+          # rubocop:disable Style/WordArray
           ['First', 'Second', 'Third'],
           nil,
           ['1', '2', '3.2'],
@@ -299,31 +302,10 @@ module FatTable
           ['7', '8', '9.0'],
           [10, 11, 12.1]
         ]
-        tab = Table.from_aoa(aoa, hlines: true)
-        expect(tab.class).to eq(Table)
-        expect(tab.rows.size).to eq(4)
-        expect(tab.groups.size).to eq(1)
-        expect(tab.rows[0].keys.sort).to eq %i[first second third]
-        tab.rows.each do |row|
-          row.each_pair do |k, _v|
-            expect(k.class).to eq Symbol
-          end
-          expect(row[:first].is_a?(Numeric)).to be true
-          expect(row[:second].is_a?(Numeric)).to be true
-          expect(row[:third].is_a?(BigDecimal)).to be true
-        end
       end
 
-      it 'should create from an Array of Arrays with nil-marked header' do
-        aoa = [
-          ['First', 'Second', 'Third'],
-          nil,
-          ['1', '2', '3.2'],
-          ['4', '5', '6.4'],
-          ['7', '8', '9.0'],
-          [10, 11, 12.1]
-        ]
-        tab = Table.from_aoa(aoa, hlines: true)
+      it 'creates from an Array of Arrays with nil-marked header' do
+        tab = Table.from_aoa(aoa_with_nil_hrule, hlines: true)
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to eq(4)
         expect(tab.groups.size).to eq(1)
@@ -338,18 +320,19 @@ module FatTable
         end
       end
 
-      it 'should be create-able from an Array of Arrays sans Header' do
-        aoa = [
+      let(:aoa_sans_header) do
+        [
           ['1', '2', '3.2'],
           ['4', '5', '6.4'],
           ['7', '8', '9.0'],
           [7, 8, 9.3]
         ]
-        # rubocop:enable Style/WordArray
+      end
 
+      it 'creates from an Array of Arrays sans Header' do
         # Set second param to true to say headers must be marked by an hline,
         # otherwise headers will be synthesized.
-        tab = Table.from_aoa(aoa, hlines: true)
+        tab = Table.from_aoa(aoa_sans_header, hlines: true)
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to eq(4)
         expect(tab.headers.sort).to eq %i[col_1 col_2 col_3]
@@ -363,7 +346,7 @@ module FatTable
         end
       end
 
-      it 'should be create-able from an Array of Hashes' do
+      it 'creates from an Array of Hashes' do
         aoh = [
           { a: '1', 'Two words' => '2', c: '3.2' },
           { a: '4', 'Two words' => '5', c: '6.4' },
@@ -386,7 +369,7 @@ module FatTable
     end
 
     describe 'from SQL' do
-      before :all do
+      before :context do
         @out_file = Pathname("#{__dir__}/../../tmp/psql.out").cleanpath
         # Make sure there is no old db from a failed prior run
         system "dropdb -e fat_table_spec >>#{@out_file} 2>&1"
@@ -399,14 +382,14 @@ module FatTable
         expect(ok).to be_truthy
       end
 
-      after :all do
+      after :context do
         # Drop the db
         FatTable.db.disconnect
         ok = system "dropdb -e fat_table_spec >>#{@out_file} 2>&1"
         expect(ok).to be_truthy
       end
 
-      it 'should be create-able from a SQL query', :db do
+      it 'creates from a SQL query', :db do
         FatTable.connect(adapter: 'postgres',
                         database: 'fat_table_spec')
         system("echo URI: #{FatTable.db.uri} >>#{@out_file}")
