@@ -518,7 +518,7 @@ module FatTable
     # looks like one. Any Float is promoted to a BigDecimal. Otherwise return
     # nil.
     def convert_to_numeric(val)
-      return BigDecimal.new(val, Float::DIG) if val.is_a?(Float)
+      return BigDecimal(val, Float::DIG) if val.is_a?(Float)
       return val if val.is_a?(Numeric)
       # Eliminate any commas, $'s (or other currency symbol), or _'s.
       cursym = Regexp.quote(FatTable.currency_symbol)
@@ -527,7 +527,7 @@ module FatTable
       return nil if val.blank?
       case val
       when /(\A[-+]?\d+\.\d*\z)|(\A[-+]?\d*\.\d+\z)/
-        BigDecimal.new(val.to_s.clean)
+        BigDecimal(val.to_s.clean)
       when /\A[-+]?[\d]+\z/
         val.to_i
       when %r{\A([-+]?\d+)\s*[:/]\s*([-+]?\d+)\z}
