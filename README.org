@@ -963,27 +963,20 @@ You can sort a table on any number of columns with ~order_by~. The ~order_by~
 method takes any number of symbol arguments for the columns to sort on. If you
 specify more than one column, the sort is performed on the first column, then
 all columns that are equal with respect to the first column are sorted by the
-second column, and so on. All columns of the input table are included in the
-output.
+second column, and so on. Ordering is done is ascending order for each of the
+columns, but can be reversed by adding a '!' to the end a symbol argument.
+All columns of the input table are included in the output.
 
-Let's sort our table first by ~:code~, then by ~:date~.
+Let's sort our table first by ~:code~, then in reverse order of ~:date~.
 
 #+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
-  tab1.order_by(:code, :date) \
+  tab1.order_by(:code, :date!) \
     .to_aoa
 #+END_SRC
 
-#+BEGIN_EXAMPLE
+#+begin_EXAMPLE
 | Ref  |       Date | Code | Price | G10 | QP10 | Shares |   Lp |    Qp |   Iplp |   Ipqp |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
-| T001 | 2016-11-01 | P    |   7.7 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 |
-| T002 | 2016-11-01 | P    |  7.75 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 |
-| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 |
-| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 |
-| T008 | 2016-11-01 | P    |  7.65 | F   | F    |   2771 |  393 |  2378 | 0.2453 | 0.1924 |
-| T009 | 2016-11-01 | P    |   7.6 | F   | F    |   9550 | 1363 |  8187 | 0.2453 | 0.1924 |
-| T010 | 2016-11-01 | P    |  7.55 | F   | T    |   3175 |  451 |  2724 | 0.2453 | 0.1924 |
 |------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
 | T011 | 2016-11-02 | P    | 7.425 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 |
 | T012 | 2016-11-02 | P    |  7.55 | F   | F    |   4700 |  677 |  4023 | 0.2453 | 0.1924 |
@@ -993,12 +986,20 @@ Let's sort our table first by ~:code~, then by ~:date~.
 | T015 | 2016-11-02 | P    |  7.75 | F   | F    |    500 |   72 |   428 | 0.2453 | 0.1924 |
 | T016 | 2016-11-02 | P    |  8.25 | T   | T    |    100 |   14 |    86 | 0.2453 | 0.1924 |
 |------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
+| T001 | 2016-11-01 | P    |   7.7 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 |
+| T002 | 2016-11-01 | P    |  7.75 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 |
+| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 |
+| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 |
+| T008 | 2016-11-01 | P    |  7.65 | F   | F    |   2771 |  393 |  2378 | 0.2453 | 0.1924 |
+| T009 | 2016-11-01 | P    |   7.6 | F   | F    |   9550 | 1363 |  8187 | 0.2453 | 0.1924 |
+| T010 | 2016-11-01 | P    |  7.55 | F   | T    |   3175 |  451 |  2724 | 0.2453 | 0.1924 |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
 | T004 | 2016-11-01 | S    |  7.55 | T   | F    |   6811 |  966 |  5845 | 0.2453 | 0.1924 |
 | T005 | 2016-11-01 | S    |   7.5 | F   | F    |   4000 |  572 |  3428 | 0.2453 | 0.1924 |
 | T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 |
 | T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 |
 | T007 | 2016-11-01 | S    |  7.65 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 |
-#+END_EXAMPLE
+#+end_EXAMPLE
 
 The interesting thing about ~order_by~ is that, while it ignores groups in its
 input, it adds group boundaries in the output table at those rows where the sort
