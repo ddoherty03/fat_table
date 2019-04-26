@@ -975,6 +975,10 @@ Let's sort our table first by ~:code~, then in reverse order of ~:date~.
     .to_aoa
 #+END_SRC
 
+<<<<<<< HEAD
+=======
+#+RESULTS:
+>>>>>>> 19603d7f3d14287f48426cf9360c157f0d06792c
 #+begin_EXAMPLE
 | Ref  |       Date | Code | Price | G10 | QP10 | Shares |   Lp |    Qp |   Iplp |   Ipqp |
 |------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
