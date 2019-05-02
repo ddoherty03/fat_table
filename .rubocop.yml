@@ -1,0 +1,3 @@
+inherit_from: ~/.rubocop.yml
+require: rubocop-rspec
+require: rubocop-performance

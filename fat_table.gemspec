@@ -73,6 +73,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'redcarpet'
   spec.add_development_dependency 'rspec', '~> 3.0'
   spec.add_development_dependency 'rubocop-rspec'
+  spec.add_development_dependency 'rubocop-performance'
   spec.add_development_dependency 'simplecov'
 
   spec.add_runtime_dependency 'activesupport', '>3.0'
