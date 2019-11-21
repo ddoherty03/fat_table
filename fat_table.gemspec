@@ -1,7 +1,6 @@
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'fat_table/version'
-require 'fat_table/patches'
 
 Gem::Specification.new do |spec|
   spec.name          = 'fat_table'
@@ -10,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.email         = ['ded-law@ddoherty.net']
 
   spec.summary       = 'Provides tools for working with tables as a data type.'
-  spec.description   = <<-DESC.strip_heredoc
+  spec.description   = <<~DESC
     FatTable is a gem that treats tables as a data type. It provides methods for
     constructing tables from a variety of sources, building them row-by-row,
     extracting rows, columns, and cells, and performing aggregate operations on
