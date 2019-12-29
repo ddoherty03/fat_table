@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.email         = ['ded-law@ddoherty.net']
 
   spec.summary       = 'Provides tools for working with tables as a data type.'
-  spec.description   = <<~DESC
+  spec.description   = <<-DESC
     FatTable is a gem that treats tables as a data type. It provides methods for
     constructing tables from a variety of sources, building them row-by-row,
     extracting rows, columns, and cells, and performing aggregate operations on
