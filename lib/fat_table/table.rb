@@ -1369,7 +1369,7 @@ module FatTable
     # default format for Formatter, there is no class PsvFormatter as you might
     # expect.
     def to_psv(options = {})
-      fmt = Formatter.new(self, options)
+      fmt = Formatter.new(self, **options)
       yield fmt if block_given?
       fmt.output
     end
@@ -1382,7 +1382,7 @@ module FatTable
     # the block to which formatting instructions and footers can be added by
     # calling methods on it.
     def to_aoa(options = {})
-      fmt = FatTable::AoaFormatter.new(self, options)
+      fmt = FatTable::AoaFormatter.new(self, **options)
       yield fmt if block_given?
       fmt.output
     end
@@ -1396,7 +1396,7 @@ module FatTable
     # given, it yields an AohFormatter to the block to which formatting
     # instructions and footers can be added by calling methods on it.
     def to_aoh(options = {})
-      fmt = AohFormatter.new(self, options)
+      fmt = AohFormatter.new(self, **options)
       yield fmt if block_given?
       fmt.output
     end
@@ -1409,7 +1409,7 @@ module FatTable
     # LaTeXFormatter to the block to which formatting instructions and footers
     # can be added by calling methods on it.
     def to_latex(options = {})
-      fmt = LaTeXFormatter.new(self, options)
+      fmt = LaTeXFormatter.new(self, **options)
       yield fmt if block_given?
       fmt.output
     end
@@ -1422,7 +1422,7 @@ module FatTable
     # OrgFormatter to the block to which formatting instructions and footers can
     # be added by calling methods on it.
     def to_org(options = {})
-      fmt = OrgFormatter.new(self, options)
+      fmt = OrgFormatter.new(self, **options)
       yield fmt if block_given?
       fmt.output
     end
@@ -1435,7 +1435,7 @@ module FatTable
     # given, it yields a TermFormatter to the block to which formatting
     # instructions and footers can be added by calling methods on it.
     def to_term(options = {})
-      fmt = TermFormatter.new(self, options)
+      fmt = TermFormatter.new(self, **options)
       yield fmt if block_given?
       fmt.output
     end
@@ -1449,7 +1449,7 @@ module FatTable
     # footers can be added by calling methods on it.
     # @return [String]
     def to_text(options = {})
-      fmt = TextFormatter.new(self, options)
+      fmt = TextFormatter.new(self, **options)
       yield fmt if block_given?
       fmt.output
     end

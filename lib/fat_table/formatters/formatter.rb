@@ -247,7 +247,7 @@ module FatTable
       cols.each do |c|
         hsh[c] = :avg
       end
-      footer('Average', hsh)
+      footer('Average', **hsh)
     end
 
     # :category: Footers
@@ -258,7 +258,7 @@ module FatTable
       cols.each do |c|
         hsh[c] = :avg
       end
-      gfooter('Group Average', hsh)
+      gfooter('Group Average', **hsh)
     end
 
     # :category: Footers
@@ -270,7 +270,7 @@ module FatTable
       cols.each do |c|
         hsh[c] = :min
       end
-      footer('Minimum', hsh)
+      footer('Minimum', **hsh)
     end
 
     # :category: Footers
@@ -282,7 +282,7 @@ module FatTable
       cols.each do |c|
         hsh[c] = :min
       end
-      gfooter('Group Minimum', hsh)
+      gfooter('Group Minimum', **hsh)
     end
 
     # :category: Footers
@@ -294,7 +294,7 @@ module FatTable
       cols.each do |c|
         hsh[c] = :max
       end
-      footer('Maximum', hsh)
+      footer('Maximum', **hsh)
     end
 
     # :category: Footers
@@ -306,7 +306,7 @@ module FatTable
       cols.each do |c|
         hsh[c] = :max
       end
-      gfooter('Group Maximum', hsh)
+      gfooter('Group Maximum', **hsh)
     end
 
     # :category: Formatting
@@ -418,7 +418,7 @@ module FatTable
     # \n\[niltext\]:: render a nil item with the given text.
     def format(**fmts)
       %i[header bfirst gfirst body footer gfooter].each do |loc|
-        format_for(loc, fmts)
+        format_for(loc, **fmts)
       end
       self
     end
