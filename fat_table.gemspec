@@ -77,9 +77,7 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency 'activesupport', '>3.0'
   spec.add_runtime_dependency 'fat_core', '>= 4.1'
-  spec.add_runtime_dependency 'mysql2'
   spec.add_runtime_dependency 'pg'
   spec.add_runtime_dependency 'rainbow'
   spec.add_runtime_dependency 'sequel'
-  spec.add_runtime_dependency 'sqlite3'
 end
