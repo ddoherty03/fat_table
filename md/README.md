@@ -89,16 +89,17 @@ buffer as an org-table, ready for processing by other code blocks.
 
 ## Prerequisites
 
+** Prerequisites
 The `fat_table` gem depends on several libraries being available for building,
-mostly those concerned with accessing databases.  On an ubuntu system, the
-following packages should be installed before you install the `fat_table` gem:
+mostly those concerned with accessing databases. Postgresql is the default database
+ adapter, but the `mysql2` and `sqlite3` gems can also be used. On an ubuntu system, the
+following packages should be installed before you install the ~fat_table~ gem:
 
--   ruby-dev
--   build-essential
--   libsqlite3-dev
--   libpq-dev
--   libmysqlclient-dev
-
+- ruby-dev
+- build-essential
+- libpq-dev
+- libsqlite3-dev (if using sqlite3)
+- libmysqlclient-dev (if using mysql)
 
 <a id="orga19109b"></a>
 
