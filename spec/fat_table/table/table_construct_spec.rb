@@ -384,14 +384,32 @@ module FatTable
 
       after :context do
         # Drop the db
-        FatTable.db.disconnect
-        ok = system "dropdb -e fat_table_spec >>#{@out_file} 2>&1"
-        expect(ok).to be_truthy
+        if FatTable.db
+          FatTable.db.disconnect
+          ok = system "dropdb -e fat_table_spec >>#{@out_file} 2>&1"
+          expect(ok).to be_truthy
+        end
+      end
+
+      it 'raises exception if adapter not present', :db do
+        ['pg', 'mysql', 'sqlite'].each do |adapter|
+          unless system("gem path #{adapter} >/dev/null 2>&1")
+            expect {
+              FatTable.connect(adapter: adapter,
+                               database: 'fat_table_spec')
+            }.to raise_error FatTable::TransientError, /need to install/
+          end
+        end
+        expect {
+          FatTable.connect(adapter: 'jdbc',
+                           database: 'fat_table_spec')
+        }.to raise_error Sequel::AdapterNotFound, /cannot load/
       end
 
       it 'creates from a SQL query', :db do
+        # FatTable.db = Sequel.postgres(database: 'fat_table_spec')
         FatTable.connect(adapter: 'postgres',
-                        database: 'fat_table_spec')
+                         database: 'fat_table_spec')
         system("echo URI: #{FatTable.db.uri} >>#{@out_file}")
         system("echo Tables: #{FatTable.db.tables} >>#{@out_file}")
         system "psql -a -d fat_table_spec -c 'select * from trades where shares > 10000;' >>#{@out_file} 2>&1"

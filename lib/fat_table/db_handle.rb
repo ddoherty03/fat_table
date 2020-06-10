@@ -20,8 +20,9 @@ module FatTable
   #
   # +adapter+::
   #    One of 'pg' (for Postgresql), 'mysql' or 'mysql2' (for Mysql), or
-  #    'sqlite' (for SQLite3) to specify the +Sequel+ driver to use. You may
-  #    have to install the driver to make this work. By default use 'Pg'.
+  #    'sqlite' (for SQLite3) (or any other adapter supported by the +Sequel+
+  #    gem) to specify the driver to use. You may have to install the
+  #    appropriate driver to make this work.
   #
   # +database+::
   #    The name of the database to access. There is no default for this.
@@ -55,8 +56,17 @@ module FatTable
     # Set the dsn for Sequel
     begin
       self.handle = Sequel.connect(args)
-    rescue Sequel::Error => ex
-      raise TransientError, "#{args}: #{ex}"
+    rescue Sequel::AdapterNotFound => ex
+      case ex.to_s
+      when /pg/
+        raise TransientError, 'You need to install the postgres adapter pg'
+      when /mysql/
+        raise TransientError, 'You need to install the mysql adapter'
+      when /sqlite/
+        raise TransientError, 'You need to install the sqlite adapter'
+      else
+        raise ex
+      end
     end
     handle
   end

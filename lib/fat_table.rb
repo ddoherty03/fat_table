@@ -24,6 +24,13 @@ module FatTable
   require 'fat_table/db_handle'
   require 'fat_table/errors'
 
+  # Add paths for common db gems to the load paths
+  %w[pg mysql2 sqlite].each do |gem_name|
+    path = Dir.glob("#{ENV['GEM_HOME']}/gems/pg*").sort.last
+    path = File.join(path, 'lib')
+    $: << path unless $:.include?(path)
+  end
+
   # Valid output formats as symbols.
   FORMATS = %i[psv aoa aoh latex org term text].freeze
 
