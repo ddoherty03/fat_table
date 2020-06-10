@@ -392,8 +392,13 @@ module FatTable
       end
 
       it 'raises exception if adapter not present', :db do
-        ['pg', 'mysql', 'sqlite'].each do |adapter|
-          unless system("gem path #{adapter} >/dev/null 2>&1")
+        ['pg', 'mysql2', 'sqlite3'].each do |adapter|
+          begin
+            got_gem = require adapter
+          rescue LoadError
+            got_gem = false
+          end
+          unless got_gem
             expect {
               FatTable.connect(adapter: adapter,
                                database: 'fat_table_spec')
