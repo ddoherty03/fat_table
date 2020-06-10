@@ -481,7 +481,7 @@ This example illustrates several things:
 A second ruby data structure that can be used to initialize a ~FatTable~ table
 is an array of ruby Hashes. Each hash represents a row of the table, and the
 headers of the table are taken from the keys of the hashes. Accordingly, all the
-hashes should have the same keys.
+hashes must have the same keys.
 
 This same method can in fact take an array of any objects that can be converted
 to a Hash with the ~#to_h~ method, so you can use an array of your own objects
@@ -768,17 +768,18 @@ symbol representing an existing column, which has the effect of renaming an
 existing column, or (2) a string representing a ruby expression for the value of
 a new column.
 
-Within the string expression, the names of existing or already-specified columns
-are available as local variables, as well as the instance variables '@row' and
-'@group'. So for our example table, the string expressions for new columns have
-access to local variables ~ref~, ~date~, ~code~, ~price~, ~g10~, ~qp10~,
+Within the string expression, the names of existing or already-specified
+columns are available as local variables.  In addition the instance variables
+'@row' and '@group' are available as the row number and group number of the
+new value. So for our example table, the string expressions for new columns
+have access to local variables ~ref~, ~date~, ~code~, ~price~, ~g10~, ~qp10~,
 ~shares~, ~lp~, ~qp~, ~iplp~, and ~ipqp~ as well as the instance variables
 ~@row~ and ~@group~. The local variables are set to the values of the cell in
-their respective columns for each row in the input table and the instance
-variables are set the number of the current row and group respectively.
+their respective columns for each row in the input table, and the instance
+variables are set the number of the current row and group number respectively.
 
-For example, if we want to rename the ~:date~ column and add a new column to
-compute the cost of shares, we could do the following:
+For example, if we want to rename the ~traded_on~ column to ~:date~ and add a
+new column to compute the cost of shares, we could do the following:
 
 #+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
@@ -1041,8 +1042,10 @@ the value is a symbol for one of several aggregating methods that
 to the :price column so that the output shows the average price in each group.
 The ~:shares~, ~:lp~, and ~:qp~ columns are summed, and the ~:any?~ aggregate is
 applied to one of the boolean fields, that is, it is ~true~ if any of the values
-in that column are ~true~. The column names in the output of the aggregated
-columns have the name of the aggregating method pre-pended to the column name.
+in that column are ~true~.
+
+Note that the column names in the output of the aggregated columns have the
+name of the aggregating method pre-pended to the column name.
 
 Here is a list of all the aggregate methods available.  If the description
 restricts the aggregate to particular column types, applying it to other types
@@ -1311,6 +1314,7 @@ table where the join expression is satisfied and augmented with nils otherwise.
 Finally, a cross join outputs every row of ~tab_a~ augmented with every row of
 ~tab_b~, in other words, the Cartesian product of the two tables. If ~tab_a~ has
 ~N~ rows and ~tab_b~ has ~M~ rows, the output table will have ~N * M~ rows.
+So be careful lest you consume all your computer's memory.
 
 #+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
@@ -1348,10 +1352,10 @@ Finally, a cross join outputs every row of ~tab_a~ augmented with every row of
 
 *** Set Operations
 
-~FatTable~ can perform several set operations on tables. In order for two tables
-to be used this way, they must have the same number of columns with the same
-types or an exception will be raised. We'll call two tables that qualify for
-combining with set operations "set-compatible."
+~FatTable~ can perform several set operations on pairs of tables. In order for
+two tables to be used this way, they must have the same number of columns with
+the same types or an exception will be raised. We'll call two tables that
+qualify for combining with set operations "set-compatible."
 
 We'll use the following two set-compatible tables in the examples. They each
 have some duplicates and some group boundaries so you can see the effect of the
@@ -1763,9 +1767,9 @@ but ruby data structures, and for them, things such as alignment are irrelevant.
      array of array,
 
 These are all implemented by classes that inherit from ~FatTable::Formatter~
-class by defining about a dozen methods that get called at various places during
-the construction of the output table. The idea is that more classes can be
-defined by adding additional classes.
+class by defining about a dozen methods that get called at various places
+during the construction of the output table. The idea is that more output
+formats can be defined by adding additional classes.
 
 *** Table Locations
 
