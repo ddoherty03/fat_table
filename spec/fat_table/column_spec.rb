@@ -316,7 +316,9 @@ module FatTable
       end
 
       it 'should properly apply the pvar aggregate' do
-        expect(@nums.pvar.round(1)).to eq(BigDecimal('580439629313335424769.0'))
+        expect(@nums.pvar.round(1))
+          .to be_within(1)
+                .percent_of(BigDecimal('580439629313335424769.0'))
         expect { @bools.pvar }.to raise_error(/cannot be applied/)
         expect(@dates.pvar).to eq(77700423.1875)
         expect { @strs.pvar }.to raise_error(/cannot be applied/)
