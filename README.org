@@ -44,17 +44,6 @@ buffer as an org-table, ready for processing by other code blocks.
 
 * Installation
 
-** Prerequisites
-The ~fat_table~ gem depends on several libraries being available for building,
-mostly those concerned with accessing databases.  On an ubuntu system, the
-following packages should be installed before you install the ~fat_table~ gem:
-
-- ruby-dev
-- build-essential
-- libsqlite3-dev
-- libpq-dev
-- libmysqlclient-dev
-
 ** Installing the gem
 
 Add this line to your application's Gemfile:
@@ -526,9 +515,17 @@ or strings that can be parsed into one of the permissible column types.
 
 *** From SQL queries
 
-Another way to initialize a ~FatTable~ table is with the results of a SQL query.
-~FatTable~ uses the ~sequel~ gem to query databases. You must first set the
-database parameters to be used for the queries.
+Another way to initialize a ~FatTable~ table is with the results of a SQL
+query.  Before you can connect to a database, you need to make sure that the required
+adapter for your database is installed.  ~FatTable~ uses the ~sequel~ gem
+under the hood, so any database that it supports can be used.  For example, if
+you are accessing a Postgres database, you must install the ~pg~ gem with
+
+#+begin_src sh
+$ gem install pg
+#+end_src
+
+You must first set the database parameters to be used for the queries.
 
 #+BEGIN_SRC ruby
   # This automatically requires sequel.
