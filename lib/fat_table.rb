@@ -26,9 +26,11 @@ module FatTable
 
   # Add paths for common db gems to the load paths
   %w[pg mysql2 sqlite].each do |gem_name|
-    path = Dir.glob("#{ENV['GEM_HOME']}/gems/pg*").sort.last
-    path = File.join(path, 'lib')
-    $: << path unless $:.include?(path)
+    path = Dir.glob("#{ENV['GEM_HOME']}/gems/#{gem_name}*").sort.last
+    if path
+      path = File.join(path, 'lib')
+      $: << path unless $:.include?(path)
+    end
   end
 
   # Valid output formats as symbols.
