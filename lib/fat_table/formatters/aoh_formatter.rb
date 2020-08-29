@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FatTable
   # A subclass of Formatter for rendering the table as a Ruby Array of Hashes.
   # Each row of the Array is a Hash representing one row of the table with the

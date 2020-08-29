@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FatTable
   # A subclass of Formatter for rendering the table as a Ruby Array of Arrays.
   # Each cell is formatted as a string in accordance with the formatting

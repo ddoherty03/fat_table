@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FatTable
   # Raised when the caller of the code made an error that the caller can
   # correct.

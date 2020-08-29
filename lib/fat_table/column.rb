@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FatTable
   # Column objects are a thin wrapper around an Array to allow columns to be
   # summed and have other aggregate operations performed on them, but compacting
@@ -483,34 +485,41 @@ module FatTable
       end
     end
 
-    IS0_DATE_RE = %r{\b(\d\d\d\d)[-/](\d\d?)[-/](\d\d?)\s*
-                     (T\d\d:\d\d:\d\d(\+\d\d:\d\d)?)?\b}x
-    AMR_DATE_RE = %r{\b(\d\d?)[-/](\d\d?)[-/](\d\d\d\d)\s*
-                     (T\d\d:\d\d:\d\d(\+\d\d:\d\d)?)?\b}x
+    ISO_DATE_RE = %r{(?<yr>\d\d\d\d)[-\/]
+                (?<mo>\d\d?)[-\/]
+                (?<dy>\d\d?)\s*
+                (T?\s*\d\d:\d\d(:\d\d)?
+                ([-+](\d\d?)(:\d\d?))?)?}x
 
-    # Convert the val to a DateTime if it is either a DateTime, a Date, or a
+    AMR_DATE_RE = %r{(?<dy>\d\d?)[-/](?<mo>\d\d?)[-/](?<yr>\d\d\d\d)\s*
+                     (?<tm>T\d\d:\d\d:\d\d(\+\d\d:\d\d)?)?}x
+
+    # Convert the val to a DateTime if it is either a DateTime, a Date, a Time, or a
     # String that can be parsed as a DateTime, otherwise return nil. It only
-    # recognizes strings that contain a something like '2016-01-14' or
-    # '2/12/1985' within them, otherwise DateTime.parse would treat many bare
-    # numbers as dates, such as '2841381', which it would recognize as a valid
-    # date, but the user probably does not intend it to be so treated.
+    # recognizes strings that contain a something like '2016-01-14' or '2/12/1985'
+    # within them, otherwise DateTime.parse would treat many bare numbers as dates,
+    # such as '2841381', which it would recognize as a valid date, but the user
+    # probably does not intend it to be so treated.
     def convert_to_date_time(val)
       return val if val.is_a?(DateTime)
       return val if val.is_a?(Date)
       begin
-        val = val.to_s.clean
-        return nil if val.blank?
-        if val.match?(IS0_DATE_RE)
-          val = DateTime.parse(val)
-        elsif val =~ AMR_DATE_RE
-          val = DateTime.new($3.to_i, $1.to_i, $2.to_i)
+        str = val.to_s.clean
+        return nil if str.blank?
+
+        if str.match(ISO_DATE_RE)
+          date = DateTime.parse(val)
+        elsif str =~ AMR_DATE_RE
+          date = DateTime.new(Regexp.last_match[:yr].to_i,
+                         Regexp.last_match[:mo].to_i,
+                         Regexp.last_match[:dy].to_i)
         else
           return nil
         end
-        val = val.to_date if val.seconds_since_midnight.zero?
-        val
+        # val = val.to_date if
+        date.seconds_since_midnight.zero? ? date.to_date : date
       rescue ArgumentError
-        return nil
+        nil
       end
     end
 
@@ -530,8 +539,8 @@ module FatTable
         BigDecimal(val.to_s.clean)
       when /\A[-+]?[\d]+\z/
         val.to_i
-      when %r{\A([-+]?\d+)\s*[:/]\s*([-+]?\d+)\z}
-        Rational($1, $2)
+      when %r{\A(?<nm>[-+]?\d+)\s*[:/]\s*(?<dn>[-+]?\d+)\z}
+        Rational(Regexp.last_match[:nm], Regexp.last_match[:dn])
       end
     end
 

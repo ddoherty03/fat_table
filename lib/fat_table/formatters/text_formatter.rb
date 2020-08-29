@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FatTable
   # Output the table as plain text. This is almost identical to OrgFormatter
   # except that dates do not get formatted as inactive timestamps and the

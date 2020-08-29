@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # This module provides objects for treating tables as a data type on which you
 # can (1) perform operations, such as select, where, join, and others and (2)
 # output the tables in several formats, including text, ANSI terminal, LaTeX,
@@ -29,7 +31,7 @@ module FatTable
     path = Dir.glob("#{ENV['GEM_HOME']}/gems/#{gem_name}*").sort.last
     if path
       path = File.join(path, 'lib')
-      $: << path unless $:.include?(path)
+      $LOAD_PATH << path unless $LOAD_PATH.include?(path)
     end
   end
 
@@ -158,9 +160,9 @@ module FatTable
     raise UserError, "unknown format '#{fmt}'" unless FORMATS.include?(fmt)
     method = "to_#{fmt}"
     if block_given?
-      send method, table, options, &Proc.new
+      send(method, table, options, &Proc.new)
     else
-      send method, table, options
+      send(method, table, options)
     end
   end
 

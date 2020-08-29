@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FatTable
   # A container for a two-dimensional table. All cells in the table must be a
   # String, a DateTime (or Date), a Numeric (Bignum, Integer, or BigDecimal), or
@@ -880,10 +882,7 @@ module FatTable
     # Apply the set operation given by ~oper~ between this table and the other
     # table given in the first argument.  If distinct is true, eliminate
     # duplicates from the result.
-    def set_operation(other, oper = :+,
-                      distinct: true,
-                      add_boundaries: true,
-                      inherit_boundaries: false)
+    def set_operation(other, oper = :+, distinct: true, add_boundaries: true, inherit_boundaries: false)
       unless columns.size == other.columns.size
         msg = "can't apply set ops to tables with a different number of columns"
         raise UserError, msg
@@ -1083,10 +1082,10 @@ module FatTable
       # Translate any remaining row_b heads to append '_b' if they have the
       # same name as a row_a key.
       a_heads = row_a.keys
-      row_b = row_b.to_a.each.map { |k, v|
+      row_b = row_b.to_a.each.map do |k, v|
         [a_heads.include?(k) ? "#{k}_b".to_sym : k, v]
-      }.to_h
-      row_a.merge(row_b)
+      end
+      row_a.merge(row_b.to_h)
     end
 
     # Return a hash for the local variables of a join expression in which all
@@ -1125,7 +1124,7 @@ module FatTable
           [nat_exp, common_heads]
         end
       else
-        # We have expressions to evaluate
+        # We have join expressions to evaluate
         and_conds = []
         partial_result = nil
         last_sym = nil
@@ -1133,8 +1132,8 @@ module FatTable
           case exp
           when Symbol
             case exp.to_s.clean
-            when /\A(.*)_a\z/
-              a_head = $1.to_sym
+            when /\A(?<sy>.*)_a\z/
+              a_head = Regexp.last_match[:sy].to_sym
               unless a_heads.include?(a_head)
                 raise UserError, "no column '#{a_head}' in table"
               end
@@ -1149,11 +1148,11 @@ module FatTable
                 partial_result = nil
               else
                 # First of a pair of _a or _b
-                partial_result = "(#{a_head}_a == "
+                partial_result = String.new("(#{a_head}_a == ")
               end
               last_sym = a_head
-            when /\A(.*)_b\z/
-              b_head = $1.to_sym
+            when /\A(?<sy>.*)_b\z/
+              b_head = Regexp.last_match[:sy].to_sym
               unless b_heads.include?(b_head)
                 raise UserError, "no column '#{b_head}' in second table"
               end
@@ -1168,7 +1167,7 @@ module FatTable
                 partial_result = nil
               else
                 # First of a pair of _a or _b
-                partial_result = "(#{b_head}_b == "
+                partial_result = String.new("(#{b_head}_b == ")
               end
               b_common_heads << b_head
               last_sym = b_head
@@ -1353,9 +1352,9 @@ module FatTable
 
       method = "to_#{fmt}"
       if block_given?
-        send method, options, &Proc.new
+        send(method, options, &Proc.new)
       else
-        send method, options
+        send(method, options)
       end
     end
 

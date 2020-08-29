@@ -77,7 +77,7 @@ module FatTable
         expect(col.size).to eq(8)
       end
 
-      it 'should raise an error for a datetime column with trailing numeric' do
+      it 'should raise an error for a datetime column with numeric' do
         items = [nil, nil, '2018-01-21', '36.8', nil, Date.parse('1957/9/22'),
                  '1957/9/22', '1956-03-16 08:21:13']
         expect {

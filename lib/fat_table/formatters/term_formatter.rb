@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rainbow'
 
 module FatTable
@@ -26,10 +28,10 @@ module FatTable
       super
       @options[:unicode] = options.fetch(:unicode, true)
       @options[:framecolor] = options.fetch(:framecolor, 'none.none')
-      return unless @options[:framecolor] =~ /([-_a-zA-Z]*)(\.([-_a-zA-Z]*))/
+      return unless @options[:framecolor] =~ /(?<co>[-_a-zA-Z]*)(\.(?<bg>[-_a-zA-Z]*))/
 
-      @options[:frame_fg] = $1.downcase unless $1.blank?
-      @options[:frame_bg] = $3.downcase unless $3.blank?
+      @options[:frame_fg] = Regexp.last_match[:co].downcase unless Regexp.last_match[:co].blank?
+      @options[:frame_bg] = Regexp.last_match[:bg].downcase unless Regexp.last_match[:bg].blank?
     end
 
     # Valid colors for ANSI terminal using the rainbow gem's X11ColorNames.
@@ -101,18 +103,18 @@ module FatTable
     # Unicode line-drawing characters. We use double lines before and after the
     # table and single lines for the sides and hlines between groups and
     # footers.
-    UPPER_LEFT = "\u2552".freeze
-    UPPER_RIGHT = "\u2555".freeze
-    DOUBLE_RULE = "\u2550".freeze
-    UPPER_TEE = "\u2564".freeze
-    VERTICAL_RULE = "\u2502".freeze
-    LEFT_TEE = "\u251C".freeze
-    HORIZONTAL_RULE = "\u2500".freeze
-    SINGLE_CROSS = "\u253C".freeze
-    RIGHT_TEE = "\u2524".freeze
-    LOWER_LEFT = "\u2558".freeze
-    LOWER_RIGHT = "\u255B".freeze
-    LOWER_TEE = "\u2567".freeze
+    UPPER_LEFT = "\u2552"
+    UPPER_RIGHT = "\u2555"
+    DOUBLE_RULE = "\u2550"
+    UPPER_TEE = "\u2564"
+    VERTICAL_RULE = "\u2502"
+    LEFT_TEE = "\u251C"
+    HORIZONTAL_RULE = "\u2500"
+    SINGLE_CROSS = "\u253C"
+    RIGHT_TEE = "\u2524"
+    LOWER_LEFT = "\u2558"
+    LOWER_RIGHT = "\u255B"
+    LOWER_TEE = "\u2567"
     # :startdoc:
 
     def upper_left

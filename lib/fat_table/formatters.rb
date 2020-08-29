@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'fat_table/formatters/formatter'
 require 'fat_table/formatters/aoa_formatter'
 require 'fat_table/formatters/aoh_formatter'

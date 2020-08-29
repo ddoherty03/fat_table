@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FatTable
   # A Formatter is for use in Table output routines, and provides methods for
   # adding group and table footers to the output and instructions for how the
@@ -73,7 +75,7 @@ module FatTable
       false_color: 'none',
       false_bgcolor: 'none',
       underline: false,
-      blink: false
+      blink: false,
     }
 
     class_attribute :valid_colors
@@ -577,9 +579,9 @@ module FatTable
       # parse, we remove the matched construct from fmt.  At the end, any
       # remaining characters in fmt should be invalid.
       fmt_hash = {}
-      if fmt =~ /c\[(#{CLR_RE})(\.(#{CLR_RE}))?\]/
-        fmt_hash[:color] = $1 unless $1.blank?
-        fmt_hash[:bgcolor] = $3 unless $3.blank?
+      if fmt =~ /c\[(?<co>#{CLR_RE})(\.(?<bg>#{CLR_RE}))?\]/
+        fmt_hash[:color] = Regexp.last_match[:co] unless Regexp.last_match[:co].blank?
+        fmt_hash[:bgcolor] = Regexp.last_match[:bg] unless Regexp.last_match[:bg].blank?
         validate_color(fmt_hash[:color])
         validate_color(fmt_hash[:bgcolor])
         fmt = fmt.sub($&, '')
@@ -599,12 +601,12 @@ module FatTable
         fmt_hash[:case] = :title
         fmt = fmt.sub($&, '')
       end
-      if fmt =~ /(~\s*)?B/
-        fmt_hash[:bold] = !$1
+      if fmt =~ /(?<neg>~\s*)?B/
+        fmt_hash[:bold] = !Regexp.last_match[:neg]
         fmt = fmt.sub($&, '')
       end
-      if fmt =~ /(~\s*)?I/
-        fmt_hash[:italic] = !$1
+      if fmt =~ /(?<neg>~\s*)?I/
+        fmt_hash[:italic] = !Regexp.last_match[:neg]
         fmt = fmt.sub($&, '')
       end
       if fmt =~ /R/
@@ -619,12 +621,12 @@ module FatTable
         fmt_hash[:alignment] = :left
         fmt = fmt.sub($&, '')
       end
-      if fmt =~ /(~\s*)?_/
-        fmt_hash[:underline] = !$1
+      if fmt =~ /(?<neg>~\s*)?_/
+        fmt_hash[:underline] = !Regexp.last_match[:neg]
         fmt = fmt.sub($&, '')
       end
-      if fmt =~ /(~\s*)?\*/
-        fmt_hash[:blink] = !$1
+      if fmt =~ /(?<neg>~\s*)?\*/
+        fmt_hash[:blink] = !Regexp.last_match[:neg]
         fmt = fmt.sub($&, '')
       end
       [fmt_hash, fmt]
@@ -639,9 +641,9 @@ module FatTable
       # parse, we remove the matched construct from fmt.  At the end, any
       # remaining characters in fmt should be invalid.
       fmt_hash = {}
-      if fmt =~ /n\[\s*([^\]]*)\s*\]/
-        fmt_hash[:nil_text] = $1.clean
-        fmt = fmt.sub($&, '')
+      if fmt =~ /n\[\s*(?<bdy>[^\]]*)\s*\]/
+        fmt_hash[:nil_text] = Regexp.last_match[:bdy].clean
+        fmt = fmt.sub(Regexp.last_match[0], '')
       end
       [fmt_hash, fmt]
     end
@@ -655,22 +657,22 @@ module FatTable
       # parse, we remove the matched construct from fmt.  At the end, any
       # remaining characters in fmt should be invalid.
       fmt_hash, fmt = parse_str_fmt(fmt)
-      if fmt =~ /(\d+).(\d+)/
-        fmt_hash[:pre_digits] = $1.to_i
-        fmt_hash[:post_digits] = $2.to_i
-        fmt = fmt.sub($&, '')
+      if fmt =~ /(?<pre>\d+).(?<post>\d+)/
+        fmt_hash[:pre_digits] = Regexp.last_match[:pre].to_i
+        fmt_hash[:post_digits] = Regexp.last_match[:post].to_i
+        fmt = fmt.sub(Regexp.last_match[0], '')
       end
-      if fmt =~ /(~\s*)?,/
-        fmt_hash[:commas] = !$1
-        fmt = fmt.sub($&, '')
+      if fmt =~ /(?<neg>~\s*)?,/
+        fmt_hash[:commas] = !Regexp.last_match[:neg]
+        fmt = fmt.sub(Regexp.last_match[0], '')
       end
-      if fmt =~ /(~\s*)?\$/
-        fmt_hash[:currency] = !$1
-        fmt = fmt.sub($&, '')
+      if fmt =~ /(?<neg>~\s*)?\$/
+        fmt_hash[:currency] = !Regexp.last_match[:neg]
+        fmt = fmt.sub(Regexp.last_match[0], '')
       end
-      if fmt =~ /(~\s*)?H/
-        fmt_hash[:hms] = !$1
-        fmt = fmt.sub($&, '')
+      if fmt =~ /(?<neg>~\s*)?H/
+        fmt_hash[:hms] = !Regexp.last_match[:neg]
+        fmt = fmt.sub(Regexp.last_match[0], '')
       end
       unless fmt.blank? || !strict
         raise UserError, "unrecognized numeric formatting instructions '#{fmt}'"
@@ -688,13 +690,13 @@ module FatTable
       # parse, we remove the matched construct from fmt.  At the end, any
       # remaining characters in fmt should be invalid.
       fmt_hash, fmt = parse_str_fmt(fmt)
-      if fmt =~ /d\[([^\]]*)\]/
-        fmt_hash[:date_fmt] = $1
-        fmt = fmt.sub($&, '')
+      if fmt =~ /d\[(?<bdy>[^\]]*)\]/
+        fmt_hash[:date_fmt] = Regexp.last_match[:bdy]
+        fmt = fmt.sub(Regexp.last_match[0], '')
       end
-      if fmt =~ /D\[([^\]]*)\]/
-        fmt_hash[:date_fmt] = $1
-        fmt = fmt.sub($&, '')
+      if fmt =~ /D\[(?<bdy>[^\]]*)\]/
+        fmt_hash[:date_fmt] = Regexp.last_match[:bdy]
+        fmt = fmt.sub(Regexp.last_match[0], '')
       end
       unless fmt.blank? || !strict
         msg = "unrecognized datetime formatting instructions '#{fmt}'"
@@ -712,37 +714,38 @@ module FatTable
       # parse, we remove the matched construct from fmt.  At the end, any
       # remaining characters in fmt should be invalid.
       fmt_hash = {}
-      if fmt =~ /b\[\s*([^\],]*),([^\]]*)\s*\]/
-        fmt_hash[:true_text] = $1.clean
-        fmt_hash[:false_text] = $2.clean
-        fmt = fmt.sub($&, '')
+      if fmt =~ /b\[\s*(?<t>[^\],]*),(?<f>[^\]]*)\s*\]/
+        fmt_hash[:true_text] = Regexp.last_match[:t].clean
+        fmt_hash[:false_text] = Regexp.last_match[:f].clean
+        fmt = fmt.sub(Regexp.last_match[0], '')
       end
       # Since true_text, false_text and nil_text may want to have internal
       # spaces, defer removing extraneous spaces until after they are parsed.
       if fmt =~ /c\[(#{CLR_RE})(\.(#{CLR_RE}))?,
                  \s*(#{CLR_RE})(\.(#{CLR_RE}))?\]/x
-        fmt_hash[:true_color] = $1 unless $1.blank?
-        fmt_hash[:true_bgcolor] = $3 unless $3.blank?
-        fmt_hash[:false_color] = $4 unless $4.blank?
-        fmt_hash[:false_bgcolor] = $6 unless $6.blank?
-        fmt = fmt.sub($&, '')
+        tco, _, tbg, fco, _, fbg = Regexp.last_match.captures
+        fmt_hash[:true_color] = tco unless tco.blank?
+        fmt_hash[:true_bgcolor] = tbg unless tbg.blank?
+        fmt_hash[:false_color] = fco unless fco.blank?
+        fmt_hash[:false_bgcolor] = fbg unless fbg.blank?
+        fmt = fmt.sub(Regexp.last_match[0], '')
       end
       str_fmt_hash, fmt = parse_str_fmt(fmt)
       fmt_hash = fmt_hash.merge(str_fmt_hash)
       if fmt =~ /Y/
         fmt_hash[:true_text] = 'Y'
         fmt_hash[:false_text] = 'N'
-        fmt = fmt.sub($&, '')
+        fmt = fmt.sub(Regexp.last_match[0], '')
       end
       if fmt =~ /T/
         fmt_hash[:true_text] = 'T'
         fmt_hash[:false_text] = 'F'
-        fmt = fmt.sub($&, '')
+        fmt = fmt.sub(Regexp.last_match[0], '')
       end
       if fmt =~ /X/
         fmt_hash[:true_text] = 'X'
         fmt_hash[:false_text] = ''
-        fmt = fmt.sub($&, '')
+        fmt = fmt.sub(Regexp.last_match[0], '')
       end
       unless fmt.blank? || !strict
         raise UserError, "unrecognized boolean formatting instructions '#{fmt}'"

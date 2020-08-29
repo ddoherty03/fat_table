@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FatTable
   # Output the table in the same way as org-mode for emacs does. This is almost
   # identical to TextFormatter except that dates do get formatted as inactive

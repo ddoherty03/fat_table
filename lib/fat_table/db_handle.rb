@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Set and access a database by module-level methods.
 module FatTable
   class << self

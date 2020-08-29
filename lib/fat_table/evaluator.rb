@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FatTable
   # The Evaluator class provides a class for evaluating Ruby expressions based
   # on variable settings provided at runtime. If the same Evaluator object is
