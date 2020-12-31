@@ -1,7 +1,6 @@
 require 'bundler/setup'
 require 'fat_table'
 require 'pry'
-require 'ruby_jard'
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
