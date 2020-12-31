@@ -18,5 +18,5 @@ rvm:
   - 2.5
   - 2.6
   - 2.7
-  - ruby-head
+  - 3.0
   - truffleruby
