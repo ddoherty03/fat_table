@@ -297,6 +297,8 @@ module FatTable
     # :category: Attributes
 
     # Return the table's Column with the given +key+ as its header.
+    # @param key [Symbol] symbol for header of column to return
+    # @return [FatTable::Column]
     def column(key)
       columns.detect { |c| c.header == key.as_sym }
     end
@@ -980,6 +982,11 @@ module FatTable
     #
     # Any groups present in either Table are eliminated in the output Table. See
     # the README for examples.
+    # @param other [FatTable::Table] table to join with self
+    # @param exps [Array<String>, Array<Symbol>] table to join with self
+    # @param join_type [Array<String>, Array<Symbol>] type of join :inner, :left, :right, :full, :cross
+    # @return [FatTable::Table] result of joining self to other
+    #
     def join(other, *exps, join_type: :inner)
       unless other.is_a?(Table)
         raise UserError, 'need other table as first argument to join'
