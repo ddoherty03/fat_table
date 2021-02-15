@@ -417,11 +417,11 @@ module FatTable
                          database: 'fat_table_spec')
         system("echo URI: #{FatTable.db.uri} >>#{@out_file}")
         system("echo Tables: #{FatTable.db.tables} >>#{@out_file}")
-        system "psql -a -d fat_table_spec -c 'select * from trades where shares > 10000;' >>#{@out_file} 2>&1"
+        system "psql -a -d fat_table_spec -c 'select * from trades where shares > 10000' >>#{@out_file} 2>&1"
         query = <<-SQL.strip_heredoc
           SELECT ref, date, code, price, shares
           FROM trades
-          WHERE shares > 1000;
+          WHERE shares > 1000
         SQL
         tab = Table.from_sql(query)
         expect(tab.class).to eq(Table)
