@@ -158,7 +158,8 @@ module FatTable
       raise UserError, msg if FatTable.db.nil?
 
       result = Table.new
-      FatTable.db[query].each do |h|
+      rows = FatTable.db[query]
+      rows.each do |h|
         result << h
       end
       result

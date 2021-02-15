@@ -494,6 +494,15 @@ module FatTable
     AMR_DATE_RE = %r{(?<dy>\d\d?)[-/](?<mo>\d\d?)[-/](?<yr>\d\d\d\d)\s*
                      (?<tm>T\d\d:\d\d:\d\d(\+\d\d:\d\d)?)?}x
 
+    # A Date like 'Tue, 01 Nov 2016' or 'Tue 01 Nov 2016' or '01 Nov 2016'.
+    # These are emitted by Postgresql, so it makes from_sql constructor
+    # possible without special formatting of the dates.
+    INV_DATE_RE = %r{((mon|tue|wed|thu|fri|sat|sun)[a-zA-z]*,?)?\s+  # looks like dow
+    (?<dy>\d\d?)\s+  # one or two-digit day
+    (?<mo_name>[jfmasondJFMASOND][A-Za-z]{2,})\s+  # looks like a month name
+    (?<yr>\d\d\d\d) # and a 4-digit year
+    }xi
+
     # Convert the val to a DateTime if it is either a DateTime, a Date, a Time, or a
     # String that can be parsed as a DateTime, otherwise return nil. It only
     # recognizes strings that contain a something like '2016-01-14' or '2/12/1985'
@@ -513,6 +522,10 @@ module FatTable
           date = DateTime.new(Regexp.last_match[:yr].to_i,
                          Regexp.last_match[:mo].to_i,
                          Regexp.last_match[:dy].to_i)
+        elsif str =~ INV_DATE_RE
+          mo = Date.mo_name_to_num(last_match[:mo_name])
+          date = DateTime.new(Regexp.last_match[:yr].to_i, mo,
+                              Regexp.last_match[:dy].to_i)
         else
           return nil
         end
