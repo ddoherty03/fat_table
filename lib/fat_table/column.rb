@@ -512,6 +512,7 @@ module FatTable
     def convert_to_date_time(val)
       return val if val.is_a?(DateTime)
       return val if val.is_a?(Date)
+      return val.to_datetime if val.is_a?(Time)
       begin
         str = val.to_s.clean
         return nil if str.blank?
