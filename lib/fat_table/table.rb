@@ -1282,6 +1282,15 @@ module FatTable
 
     # :category: Constructors
 
+    # Add a group boundary mark at the given row, or at the end of the table
+    # by default.
+    def add_boundary(at_row = nil)
+      row = at_row || (size - 1)
+      @boundaries << row
+    end
+
+    # :category: Constructors
+
     # Add a +row+ represented by a Hash having the headers as keys. If +mark:+
     # is set true, mark this row as a boundary. All tables should be built
     # ultimately using this method as a primitive.
@@ -1291,7 +1300,7 @@ module FatTable
         columns << Column.new(header: k) unless column?(k)
         column(key) << v
       end
-      @boundaries << (size - 1) if mark
+      add_boundary if mark
       self
     end
 

@@ -119,6 +119,24 @@ module FatTable
         expect(tab.groups[3].size).to eq(1)
       end
 
+      it 'add group boundaries explicity' do
+        # As in prior example
+        tab = Table.from_aoa(@aoa, hlines: true)
+        expect(tab.groups.size).to eq(4)
+        expect(tab.groups[0].size).to eq(1)
+        expect(tab.groups[1].size).to eq(3)
+        expect(tab.groups[2].size).to eq(7)
+        expect(tab.groups[3].size).to eq(1)
+        # Now add a boundary after row 8, spliting group 2 at that point.
+        tab.add_boundary(8)
+        expect(tab.groups.size).to eq(5)
+        expect(tab.groups[0].size).to eq(1)
+        expect(tab.groups[1].size).to eq(3)
+        expect(tab.groups[2].size).to eq(5)
+        expect(tab.groups[3].size).to eq(2)
+        expect(tab.groups[4].size).to eq(1)
+      end
+
       it 'add group boundaries on reading from aoh' do
         tab = Table.from_aoh(@aoh, hlines: true)
         expect(tab.groups.size).to eq(4)
