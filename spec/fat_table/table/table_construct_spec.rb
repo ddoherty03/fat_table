@@ -3,6 +3,34 @@ require 'spec_helper'
 # Specs to test the building of Table from various inputs.
 module FatTable
   describe Table do
+    describe 'by direct construction' do
+      it 'by adding columns' do
+        headers = [:a, :b, :c, :d]
+        tab = Table.new
+        headers.each do |h|
+          tab.add_column(Column.new(header: h))
+        end
+        expect(tab.headers).to eq headers
+        expect(tab.columns.size).to eq 4
+      end
+
+      it 'by adding rows' do
+        rows = [
+          { a: 1, b: 2, c: 3, d: 4 },
+          { a: 11, b: 12, c: 13, d: 14 },
+          { a: 21, b: 22, c: 23, d: 24 },
+          { a: 31, b: 32, c: 33, d: 34 },
+          { a: 41, b: 42, c: 43, d: 44 },
+        ]
+        tab = Table.new
+        rows.each do |r|
+          tab << r
+        end
+        expect(tab.size).to eq 5
+      end
+
+    end
+
     describe 'from CSV' do
       let(:csv_body) do
         <<~CSV
