@@ -314,6 +314,15 @@ module FatTable
 
     # :category: Attributes
 
+    # Set the column type for Column with the given +key+ as a String type,
+    # but only if empty.  Otherwise, we would have to worry about converting
+    # existing items in the column to String.  Perhaps that's a TODO.
+    def set_column_to_string_type(key)
+      column(key).force_to_string_type
+    end
+
+    # :category: Attributes
+
     # Return the array of items of the column with the given header symbol
     # +key+, or if +key+ is an Integer, return that row at that index. So a
     # table's rows can be accessed by number, and its columns can be accessed by

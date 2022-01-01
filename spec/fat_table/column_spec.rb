@@ -190,6 +190,42 @@ module FatTable
         # Like this:
         expect(col[4]).to eq('25')
       end
+
+      it 'should be able to force the String type on any column' do
+        # Dates
+        items = [nil, nil, '2018-01-21', Date.parse('1957/9/22'), '1957/9/22',
+                 '1956-03-16 08:21:13', '[2017-04-22 Sat]', '<2017-04-23>']
+        col = Column.new(header: 'junk', items: items)
+        expect(col.header).to eq(:junk)
+        expect(col.type).to eq('DateTime')
+        col.force_to_string_type
+        expect(col.type).to eq('String')
+        col.each do |it|
+          expect(it.class).to eq(String)
+        end
+        # Booleans
+        items = [nil, 't', 'true', 'False', 'nO', 'y', 'Y', 'yEs']
+        col = Column.new(header: 'junk', items: items)
+        expect(col.header).to eq(:junk)
+        expect(col.type).to eq('Boolean')
+        col.force_to_string_type
+        expect(col.type).to eq('String')
+        col.each do |it|
+          expect(it.class).to eq(String)
+        end
+        # Numerics
+        items = [nil, nil, '$2_018', 3.14159, '1,957/9', '2:3', 64646464646,
+                 '$-2_018', -3.14159, '+1,957/-9', '-2:3', +64646464646,
+                 '-$2_018', +3.14159, '-1,957/+9', '+2:-3', -64646464646]
+        col = Column.new(header: 'junk', items: items)
+        expect(col.header).to eq(:junk)
+        expect(col.type).to eq('Numeric')
+        col.force_to_string_type
+        expect(col.type).to eq('String')
+        col.each do |it|
+          expect(it.class).to eq(String)
+        end
+      end
     end
 
     describe 'attribute access' do
