@@ -129,6 +129,30 @@ module FatTable
         expect(trm).to match(/\e\[31m\e\[43m F    \e\[0m/)
         expect(trm).to match(/\e\[32m\e\[43m T    \e\[0m/)
       end
+
+      it 'should be able to display to term after forcing a column to string' do
+        rows = [
+          {ref: 1, date: '2013-05-02', code: 'P', raw: 795_546.20,
+           shares: 795_546.2, price: 1.1850, info: 'ZMPEF1', bool: 'T'},
+          {ref: 2, date: '2013-05-02', code: 'P', raw: 'ChgToStr',
+           shares: 118_186.4, price: 11.8500, info: 'ZMPEF1', bool: 'T'},
+          {ref: 5, date: '2013-05-02', code: 'P', raw: 118_186.40,
+           shares: 118_186.4, price: 11.8500, info: 'ZMPEF1\'s "Ent"', bool: 'T'},
+          {ref: 16, date: '2013-05-30', code: 'S', raw: 6_679.00,
+           shares: 2808.52, price: 25.0471, info: 'ZMEAC', bool: 'T'}
+        ]
+        heads = rows[0].keys
+        tab = Table.new
+        heads.each do |h|
+          tab.add_column(Column.new(header: h))
+        end
+        tab.set_column_to_string_type(:raw)
+        tab.set_column_to_string_type(:shares)
+        rows.each do |r|
+          tab << r
+        end
+        expect(tab.to_term).to match(/118186\.4/)
+      end
     end
   end
 end

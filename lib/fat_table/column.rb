@@ -83,7 +83,7 @@ module FatTable
     #   col.type #=> 'Numeric'
     #   col.header #=> :prices
     #   col.sum #=> 18376.75
-    def initialize(header:, items: [])
+    def initialize(header:, items: [], type: 'NilClass')
       @raw_header = header
       @header =
         if @raw_header.is_a?(Symbol)
@@ -91,7 +91,7 @@ module FatTable
         else
           @raw_header.to_s.as_sym
         end
-      @type = 'NilClass'
+      @type = type
       msg = "unknown column type '#{type}"
       raise UserError, msg unless TYPES.include?(@type.to_s)
 

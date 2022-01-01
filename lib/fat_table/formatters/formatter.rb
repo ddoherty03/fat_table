@@ -1075,7 +1075,10 @@ module FatTable
               :body
             end
           table.headers.each do |h|
-            grp_col[h] ||= Column.new(header: h)
+            # We set the column type here in case the column type was forced
+            # to String.
+            # grp_col[h] ||= Column.new(header: h)
+            grp_col[h] ||= Column.new(header: h, type: table.type(h))
             grp_col[h] << row[h]
             istruct = format_at[location][h]
             new_row[h] = [row[h], format_cell(row[h], istruct,
