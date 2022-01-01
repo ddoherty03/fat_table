@@ -64,9 +64,8 @@ Gem::Specification.new do |spec|
   spec.metadata['yard.run'] = 'yri' # use "yard" to build full HTML docs.
 
   spec.add_development_dependency 'bundler'
-  spec.add_development_dependency 'byebug'
+  spec.add_development_dependency 'debug', '>= 1.0.0'
   spec.add_development_dependency 'pry'
-  spec.add_development_dependency 'pry-byebug'
   spec.add_development_dependency 'pry-doc'
   spec.add_development_dependency 'rake', '~> 13.0'
   spec.add_development_dependency 'redcarpet'
