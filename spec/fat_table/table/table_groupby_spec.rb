@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 module FatTable
   describe Table do
     describe 'group_by' do
@@ -17,7 +15,7 @@ module FatTable
           [13, '2013-05-29', 'S', 13_459.00, 5659.51, 24.7464, 'ZMEAC', 'T'],
           [14, '2013-05-29', 'S', 15_700.00, 6601.85, 24.7790, 'ZMEAC', 'F'],
           [15, '2013-05-29', 'S', 15_900.00, 6685.95, 24.5802, 'ZMEAC', 'T'],
-          [16, '2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'ZMEAC', 'T']
+          [16, '2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'ZMEAC', 'T'],
         ]
         @tab = Table.from_aoa(aoa)
       end
@@ -25,8 +23,8 @@ module FatTable
       it 'should be able to group by equal columns' do
         tab2 = @tab.group_by(:date, :code, shares: :sum, price: :avg, ref: :rng,
                              bool: :all?)
-        expect(tab2.headers).to eq(%i[date code sum_shares avg_price
-                                      rng_ref all_bool])
+        expect(tab2.headers).to eq([:date, :code, :sum_shares, :avg_price,
+                                    :rng_ref, :all_bool,])
         expect(tab2[0][:sum_shares]).to eq(913732.6)
         expect(tab2[1][:sum_shares]).to eq(54791.99)
         expect(tab2[0][:avg_price]).to eq(6.5175)

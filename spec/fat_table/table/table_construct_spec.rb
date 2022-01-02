@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 # Specs to test the building of Table from various inputs.
 module FatTable
   describe Table do
@@ -162,7 +160,7 @@ module FatTable
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to be > 20
         expect(tab.headers.sort)
-          .to eq %i[code date info price rawshares ref shares]
+          .to eq [:code, :date, :info, :price, :rawshares, :ref, :shares]
         tab.rows.each do |row|
           row.each_pair do |k, _v|
             expect(k.class).to eq Symbol
@@ -179,12 +177,12 @@ module FatTable
       end
 
       it 'creates a Table from a CSV file' do
-        File.open('/tmp/junk.csv', 'w') { |f| f.write(csv_body) }
+        File.write('/tmp/junk.csv', csv_body)
         tab = Table.from_csv_file('/tmp/junk.csv')
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to be > 20
         expect(tab.headers.sort)
-          .to eq %i[code date info price rawshares ref shares]
+          .to eq [:code, :date, :info, :price, :rawshares, :ref, :shares]
         tab.rows.each do |row|
           row.each_pair do |k, _v|
             expect(k.class).to eq Symbol
@@ -264,7 +262,7 @@ module FatTable
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to be > 10
         expect(tab.headers.sort)
-          .to eq %i[code date info price raw ref shares]
+          .to eq [:code, :date, :info, :price, :raw, :ref, :shares]
         tab.rows.each do |row|
           row.each_pair do |k, _v|
             expect(k.class).to eq Symbol
@@ -286,7 +284,7 @@ module FatTable
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to be > 10
         expect(tab.headers.sort)
-          .to eq %i[code date info price raw ref shares]
+          .to eq [:code, :date, :info, :price, :raw, :ref, :shares]
         tab.rows.each do |row|
           row.each_pair do |k, _v|
             expect(k.class).to eq Symbol
@@ -304,12 +302,12 @@ module FatTable
       end
 
       it 'creates from an Org file' do
-        File.open('/tmp/junk.org', 'w') { |f| f.write(org_body) }
+        File.write('/tmp/junk.org', org_body)
         tab = Table.from_org_file('/tmp/junk.org')
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to be > 10
         expect(tab.rows[0].keys.sort)
-          .to eq %i[code date info price raw ref shares]
+          .to eq [:code, :date, :info, :price, :raw, :ref, :shares]
         tab.rows.each do |row|
           row.each_pair do |k, _v|
             expect(k.class).to eq Symbol
@@ -350,13 +348,12 @@ module FatTable
     describe 'from ruby data structures' do
       let(:aoa_with_nil_hrule) do
         [
-          # rubocop:disable Style/WordArray
           ['First', 'Second', 'Third'],
           nil,
           ['1', '2', '3.2'],
           ['4', '5', '6.4'],
           ['7', '8', '9.0'],
-          [10, 11, 12.1]
+          [10, 11, 12.1],
         ]
       end
 
@@ -365,7 +362,7 @@ module FatTable
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to eq(4)
         expect(tab.groups.size).to eq(1)
-        expect(tab.headers.sort).to eq %i[first second third]
+        expect(tab.headers.sort).to eq [:first, :second, :third]
         tab.rows.each do |row|
           row.each_pair do |k, _v|
             expect(k.class).to eq Symbol
@@ -381,7 +378,7 @@ module FatTable
           ['1', '2', '3.2'],
           ['4', '5', '6.4'],
           ['7', '8', '9.0'],
-          [7, 8, 9.3]
+          [7, 8, 9.3],
         ]
       end
 
@@ -391,7 +388,7 @@ module FatTable
         tab = Table.from_aoa(aoa_sans_header, hlines: true)
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to eq(4)
-        expect(tab.headers.sort).to eq %i[col_1 col_2 col_3]
+        expect(tab.headers.sort).to eq [:col_1, :col_2, :col_3]
         tab.rows.each do |row|
           row.each_pair do |k, _v|
             expect(k.class).to eq Symbol
@@ -407,12 +404,12 @@ module FatTable
           { a: '1', 'Two words' => '2', c: '3.2' },
           { a: '4', 'Two words' => '5', c: '6.4' },
           { a: '7', 'Two words' => '8', c: '9.0' },
-          { a: 10, 'Two words' => 11, c: 12.4 }
+          { a: 10, 'Two words' => 11, c: 12.4 },
         ]
         tab = Table.from_aoh(aoh)
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to eq(4)
-        expect(tab.rows[0].keys.sort).to eq %i[a c two_words]
+        expect(tab.rows[0].keys.sort).to eq [:a, :c, :two_words]
         tab.rows.each do |row|
           row.each_pair do |k, _v|
             expect(k.class).to eq Symbol
@@ -454,23 +451,20 @@ module FatTable
           rescue LoadError
             got_gem = false
           end
-          unless got_gem
-            expect {
-              FatTable.connect(adapter: adapter,
-                               database: 'fat_table_spec')
-            }.to raise_error FatTable::TransientError, /need to install/
-          end
+          next if got_gem
+
+          expect {
+            FatTable.connect(adapter: adapter, database: 'fat_table_spec')
+          }.to raise_error FatTable::TransientError, /need to install/
         end
         expect {
-          FatTable.connect(adapter: 'jdbc',
-                           database: 'fat_table_spec')
+          FatTable.connect(adapter: 'jdbc', database: 'fat_table_spec')
         }.to raise_error Sequel::AdapterNotFound, /cannot load/
       end
 
       it 'creates from a SQL query', :db do
         # FatTable.db = Sequel.postgres(database: 'fat_table_spec')
-        FatTable.connect(adapter: 'postgres',
-                         database: 'fat_table_spec')
+        FatTable.connect(adapter: 'postgres', database: 'fat_table_spec')
         system("echo URI: #{FatTable.db.uri} >>#{@out_file}")
         system("echo Tables: #{FatTable.db.tables} >>#{@out_file}")
         system "psql -a -d fat_table_spec -c 'select * from trades where shares > 10000' >>#{@out_file} 2>&1"

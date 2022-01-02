@@ -1,16 +1,15 @@
 require 'spec_helper'
 
 module FatTable
-  describe Column do
+  describe 'Column' do
     before :all do
-      @bool_items = [nil, 't', 'true', 'False', 'nO',
-                     'y', nil, 'Y', 'yEs', 'yippers']
+      @bool_items = [nil, 't', 'true', 'False', 'nO', 'y', nil, 'Y', 'yEs', 'yippers']
     end
 
     describe 'initialization of boolean' do
       it 'should initialize a good boolean column without trailing nils' do
         items = [nil, 't', 'true', 'False', 'nO', 'y', 'Y', 'yEs']
-        col = Column.new(header: 'junk', items: items)
+        col = Column.new(header: 'junk', items:)
         expect(col.header).to eq(:junk)
         expect(col.type).to eq('Boolean')
         expect(col[0]).to eq(nil)
@@ -26,7 +25,7 @@ module FatTable
 
       it 'should initialize a good boolean column with trailing nils' do
         items = [nil, 't', 'true', 'False', 'nO', 'y', nil, 'Y', 'yEs', '']
-        col = Column.new(header: 'junk', items: items)
+        col = Column.new(header: 'junk', items:)
         expect(col.type).to eq('Boolean')
         expect(col.size).to eq(10)
       end
@@ -34,16 +33,18 @@ module FatTable
       it 'raise error initializing a boolean column with trailing numeric' do
         items = [nil, 't', 'true', 'False', 'nO', '32.8', 'y', nil, 'Y', 'yEs']
         expect {
-          Column.new(header: 'junk', items: items)
+          Column.new(header: 'junk', items:)
         }.to raise_error(/already typed as Boolean/)
       end
     end
 
     describe 'initialization of datetime' do
       it 'should initialize a good datetime column without trailing nils' do
-        items = [nil, nil, '2018-01-21', Date.parse('1957/9/22'), '1957/9/22',
-                 '1956-03-16 08:21:13', '[2017-04-22 Sat]', '<2017-04-23>']
-        col = Column.new(header: 'junk', items: items)
+        items = [
+          nil, nil, '2018-01-21', Date.parse('1957/9/22'), '1957/9/22',
+          '1956-03-16 08:21:13', '[2017-04-22 Sat]', '<2017-04-23>',
+        ]
+        col = Column.new(header: 'junk', items:)
         expect(col.header).to eq(:junk)
         expect(col.type).to eq('DateTime')
         expect(col[0]).to eq(nil)
@@ -57,9 +58,11 @@ module FatTable
       end
 
       it 'should initialize a good boolean column with trailing nils' do
-        items = [nil, nil, '2018-01-21', '', nil, Date.parse('1957/9/22'),
-                 '1957/9/22', '1956-03-16 08:21:13']
-        col = Column.new(header: 'junk', items: items)
+        items = [
+          nil, nil, '2018-01-21', '', nil, Date.parse('1957/9/22'),
+          '1957/9/22', '1956-03-16 08:21:13',
+        ]
+        col = Column.new(header: 'junk', items:)
         expect(col.header).to eq(:junk)
         expect(col.type).to eq('DateTime')
         expect(col[0]).to eq(nil)
@@ -78,20 +81,24 @@ module FatTable
       end
 
       it 'should raise an error for a datetime column with numeric' do
-        items = [nil, nil, '2018-01-21', '36.8', nil, Date.parse('1957/9/22'),
-                 '1957/9/22', '1956-03-16 08:21:13']
+        items = [
+          nil, nil, '2018-01-21', '36.8', nil, Date.parse('1957/9/22'),
+          '1957/9/22', '1956-03-16 08:21:13',
+        ]
         expect {
-          Column.new(header: 'junk', items: items)
+          Column.new(header: 'junk', items:)
         }.to raise_error(/already typed as DateTime/)
       end
     end
 
     describe 'initialization of numeric' do
       it 'should initialize a good numeric column without trailing nils' do
-        items = [nil, nil, '$2_018', 3.14159, '1,957/9', '2:3', 64646464646,
-                 '$-2_018', -3.14159, '+1,957/-9', '-2:3', +64646464646,
-                 '-$2_018', +3.14159, '-1,957/+9', '+2:-3', -64646464646]
-        col = Column.new(header: 'junk', items: items)
+        items = [
+          nil, nil, '$2_018', 3.14159, '1,957/9', '2:3', 64646464646,
+          '$-2_018', -3.14159, '+1,957/-9', '-2:3', +64646464646,
+          '-$2_018', +3.14159, '-1,957/+9', '+2:-3', -64646464646,
+        ]
+        col = Column.new(header: 'junk', items:)
         expect(col.header).to eq(:junk)
         expect(col.type).to eq('Numeric')
         expect(col[0]).to eq(nil)
@@ -115,9 +122,8 @@ module FatTable
       end
 
       it 'should initialize a good numeric column with trailing nils' do
-        items = [nil, nil, '2018', 3.14159, '1957/9',
-                 nil, '', '2:3', 64646464646]
-        col = Column.new(header: 'junk', items: items)
+        items = [nil, nil, '2018', 3.14159, '1957/9', nil, '', '2:3', 64646464646]
+        col = Column.new(header: 'junk', items:)
         expect(col.header).to eq(:junk)
         expect(col.type).to eq('Numeric')
         expect(col[0]).to eq(nil)
@@ -133,19 +139,17 @@ module FatTable
       end
 
       it 'should raise an error for a datetime column with trailing boolean' do
-        items = [nil, nil, '2018', 3.14159, '1957/9',
-                 'True', '', '2:3', 64646464646]
+        items = [nil, nil, '2018', 3.14159, '1957/9', 'True', '', '2:3', 64646464646]
         expect {
-          Column.new(header: 'junk', items: items)
+          Column.new(header: 'junk', items:)
         }.to raise_error(/already typed as Numeric/)
       end
     end
 
     describe 'initialization of string' do
       it 'should initialize a good string column without trailing nils' do
-        items = [nil, nil, 'hello', 'world77',
-                 'about 1957/9', '2::3', '64646464646']
-        col = Column.new(header: 'junk', items: items)
+        items = [nil, nil, 'hello', 'world77', 'about 1957/9', '2::3', '64646464646']
+        col = Column.new(header: 'junk', items:)
         expect(col.header).to eq(:junk)
         expect(col.type).to eq('String')
         expect(col[0]).to eq(nil)
@@ -159,9 +163,8 @@ module FatTable
       end
 
       it 'should initialize a good numeric column with trailing nils' do
-        items = [nil, nil, 'hello', 'world77',
-                 '', nil, 'about 1957/9', '2::3', '64646464646']
-        col = Column.new(header: 'junk', items: items)
+        items = [nil, nil, 'hello', 'world77', '', nil, 'about 1957/9', '2::3', '64646464646']
+        col = Column.new(header: 'junk', items:)
         expect(col.header).to eq(:junk)
         expect(col.type).to eq('String')
         expect(col[0]).to eq(nil)
@@ -179,13 +182,15 @@ module FatTable
       end
 
       it 'should raise an error for a string column with trailing numeric' do
-        items = [nil, nil, 'hello', 'world77', 25, nil, 'about 1957/9',
-                 '2::3', '64646464646']
+        items = [
+          nil, nil, 'hello', 'world77', 25, nil, 'about 1957/9',
+                 '2::3', '64646464646',
+        ]
         # Notice that for a String column, a number just gets converted to a
         # string and does not raise an error.
         col = nil
         expect {
-          col = Column.new(header: 'junk', items: items)
+          col = Column.new(header: 'junk', items:)
         }.not_to raise_error
         # Like this:
         expect(col[4]).to eq('25')
@@ -193,9 +198,11 @@ module FatTable
 
       it 'should be able to force the String type on any column' do
         # Dates
-        items = [nil, nil, '2018-01-21', Date.parse('1957/9/22'), '1957/9/22',
-                 '1956-03-16 08:21:13', '[2017-04-22 Sat]', '<2017-04-23>']
-        col = Column.new(header: 'junk', items: items)
+        items = [
+          nil, nil, '2018-01-21', Date.parse('1957/9/22'), '1957/9/22',
+          '1956-03-16 08:21:13', '[2017-04-22 Sat]', '<2017-04-23>',
+        ]
+        col = Column.new(header: 'junk', items:)
         expect(col.header).to eq(:junk)
         expect(col.type).to eq('DateTime')
         col.force_to_string_type
@@ -205,7 +212,7 @@ module FatTable
         end
         # Booleans
         items = [nil, 't', 'true', 'False', 'nO', 'y', 'Y', 'yEs']
-        col = Column.new(header: 'junk', items: items)
+        col = Column.new(header: 'junk', items:)
         expect(col.header).to eq(:junk)
         expect(col.type).to eq('Boolean')
         col.force_to_string_type
@@ -214,10 +221,12 @@ module FatTable
           expect(it.class).to eq(String)
         end
         # Numerics
-        items = [nil, nil, '$2_018', 3.14159, '1,957/9', '2:3', 64646464646,
-                 '$-2_018', -3.14159, '+1,957/-9', '-2:3', +64646464646,
-                 '-$2_018', +3.14159, '-1,957/+9', '+2:-3', -64646464646]
-        col = Column.new(header: 'junk', items: items)
+        items = [
+          nil, nil, '$2_018', 3.14159, '1,957/9', '2:3', 64646464646,
+          '$-2_018', -3.14159, '+1,957/-9', '-2:3', +64646464646,
+          '-$2_018', +3.14159, '-1,957/+9', '+2:-3', -64646464646,
+        ]
+        col = Column.new(header: 'junk', items:)
         expect(col.header).to eq(:junk)
         expect(col.type).to eq('Numeric')
         col.force_to_string_type
@@ -230,9 +239,8 @@ module FatTable
 
     describe 'attribute access' do
       before :all do
-        items = [nil, nil, '2018', 3.14159,
-                 '1957/9', nil, '', '2:3', 64646464646]
-        @col = Column.new(header: 'junk Header 88', items: items)
+        items = [nil, nil, '2018', 3.14159, '1957/9', nil, '', '2:3', 64646464646]
+        @col = Column.new(header: 'junk Header 88', items:)
       end
 
       it 'should be index-able' do
@@ -262,9 +270,11 @@ module FatTable
 
     describe 'enumerablity' do
       before :all do
-        items = [nil, nil, '2018', 3.14159, '1957/9', nil, '',
-                 '2:3', 64646464646, 87.6546464646465489798798646]
-        @col = Column.new(header: 'junk Header 88', items: items)
+        items = [
+          nil, nil, '2018', 3.14159, '1957/9', nil, '',
+          '2:3', 64646464646, 87.6546464646465489798798646,
+        ]
+        @col = Column.new(header: 'junk Header 88', items:)
       end
 
       it 'should be enumerable by enumerating its items' do
@@ -276,13 +286,11 @@ module FatTable
 
     describe 'aggregates' do
       before :all do
-        nums = [nil, nil, '2018', 3.14159, '1957/9', nil, '',
-                '2:3', 64646464646, 87.654]
+        nums = [nil, nil, '2018', 3.14159, '1957/9', nil, '', '2:3', 64646464646, 87.654]
         @nums = Column.new(header: 'nums', items: nums)
         bools = [true, true, nil, false, 'no', nil]
         @bools = Column.new(header: 'bools', items: bools)
-        dates = ['2017-01-22', '1957-09-22', '2011-05-18 23:14', nil,
-                 '2011-02-18', nil]
+        dates = ['2017-01-22', '1957-09-22', '2011-05-18 23:14', nil, '2011-02-18', nil]
         @dates = Column.new(header: 'dates', items: dates)
         strs = ['four', nil, 'score', 'and seven', nil, 'years', 'ago', nil]
         @strs = Column.new(header: 'strs', items: strs)

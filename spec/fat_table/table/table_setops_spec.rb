@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 module FatTable
   describe Table do
     before :all do
@@ -7,7 +5,7 @@ module FatTable
         { a: '5', 'Two words' => '20', c: '3,123', d: 'apple' },
         { a: '5', 'Two words' => '20', c: '3,123', d: 'apple' },
         { a: '4', 'Two words' => '5', c: 6412, d: 'orange' },
-        { a: '7', 'Two words' => '8', c: '$1,888', d: 'apple' }
+        { a: '7', 'Two words' => '8', c: '$1,888', d: 'apple' },
       ]
       @tab1 = Table.from_aoh(aoh)
       aoh2 = [
@@ -16,7 +14,7 @@ module FatTable
         nil,
         { t: '87', 'Two words' => '12', s: 412, u: 'banana' },
         { t: '4', 'Two words' => '5', s: 6412, u: 'orange' },
-        { t: '13', 'Two words' => '11', s: '$1,821', u: 'grape' }
+        { t: '13', 'Two words' => '11', s: '$1,821', u: 'grape' },
       ]
       @tab2 = Table.from_aoh(aoh2, hlines: true)
       # This table is not set compatible with the first two by reason of number
@@ -25,7 +23,7 @@ module FatTable
         { a: '5', 'Two words' => '20', c: '3,123' },
         { a: '4', 'Two words' => '5', c: 6412 },
         { a: '4', 'Two words' => '5', c: 6412 },
-        { a: '7', 'Two words' => '8', c: '$1,888' }
+        { a: '7', 'Two words' => '8', c: '$1,888' },
       ]
       @tab3 = Table.from_aoh(aoh3)
       # This table is not set compatible with the first two by reason of column
@@ -33,7 +31,7 @@ module FatTable
       aoh4 = [
         { t: '8',  'Two worlds' => '65', s: '2016-01-17',   u: 'kiwi' },
         { t: '87', 'Two worlds' => '12', s: Date.today,     u: 'banana' },
-        { t: '13', 'Two worlds' => '11', s: '[2015-05-21]', u: 'grape' }
+        { t: '13', 'Two worlds' => '11', s: '[2015-05-21]', u: 'grape' },
       ]
       @tab4 = Table.from_aoh(aoh4)
     end

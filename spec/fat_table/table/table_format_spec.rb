@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 module FatTable
   describe Table do
     describe 'output' do
@@ -7,21 +5,23 @@ module FatTable
       before :all do
         @tab = Table.from_aoh(
           [
-            { id: 1, name: 'Paul', age: 32, address: 'California',
-              salary: 20000, join_date: '2001-07-13' },
-            { id: 3, name: 'Teddy', age: 23, address: 'Norway', salary: 20000 },
+            {
+              id: 1, name: 'Paul', age: 32, address: 'California',
+              salary: 20000, join_date: '2001-07-13',
+            },
+            { id: 3, name: 'Teddy', age: 23, address: 'Norway', salary: 20000, },
             { id: 4, name: 'Mark', age: 25, address: 'Rich-Mond', salary: 65000,
-              join_date: '2007-12-13' },
+              join_date: '2007-12-13', },
             { id: 5, name: 'David', age: 27, address: 'Texas', salary: 85000,
-              join_date: '2007-12-13' },
+              join_date: '2007-12-13', },
             { id: 2, name: 'Allen', age: 25, address: 'Texas', salary: nil,
-              join_date: '2007-12-13' },
+              join_date: '2007-12-13', },
             { id: 8, name: 'Paul', age: 24, address: 'Houston', salary: 20000,
-              join_date: '2005-07-13' },
+              join_date: '2005-07-13', },
             { id: 9, name: 'James', age: 44, address: 'Norway', salary: 5000,
-              join_date: '2005-07-13' },
+              join_date: '2005-07-13', },
             { id: 10, name: 'James', age: 45, address: 'Texas', salary: 5000,
-              join_date: '2005-07-13' }
+              join_date: '2005-07-13', },
           ]
         )
       end

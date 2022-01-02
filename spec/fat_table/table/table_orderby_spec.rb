@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 module FatTable
   describe Table do
     describe 'order_by' do
@@ -7,7 +5,7 @@ module FatTable
         aoh = [
           { a: '5', 'Two words' => '20', c: '3,123', d: 'apple' },
           { a: '4', 'Two words' => '5', c: '6,412', d: 'orange' },
-          { a: '7', 'Two words' => '8', c: '$1,888', d: 'apple' }
+          { a: '7', 'Two words' => '8', c: '$1,888', d: 'apple' },
         ]
         tab = Table.from_aoh(aoh).order_by(:a)
         expect(tab.rows[0][:a]).to eq 4
@@ -17,7 +15,7 @@ module FatTable
         aoh = [
           { a: '5', 'Two words' => '20', c: '3,123', d: 'apple' },
           { a: '4', 'Two words' => '5', c: '6,412', d: 'orange' },
-          { a: '7', 'Two words' => '8', c: '$1,888', d: 'apple' }
+          { a: '7', 'Two words' => '8', c: '$1,888', d: 'apple' },
         ]
         tab = Table.from_aoh(aoh).order_by(:d, :c)
         expect(tab.rows[0][:a]).to eq 7
@@ -27,7 +25,7 @@ module FatTable
         aoh = [
           { a: '5', 'Two words' => '20', c: '3,123', d: 'apple' },
           { a: '4', 'Two words' => '5', c: '6,412', d: 'orange' },
-          { a: '7', 'Two words' => '8', c: '$1,888', d: 'apple' }
+          { a: '7', 'Two words' => '8', c: '$1,888', d: 'apple' },
         ]
         tab = Table.from_aoh(aoh).order_by(:d!)
         expect(tab.rows[0][:d]).to eq 'orange'
@@ -38,7 +36,7 @@ module FatTable
         aoh = [
           { a: '5', 'Two words' => '20', c: '3,123', d: 'apple' },
           { a: '4', 'Two words' => '5', c: 6412, d: 'orange' },
-          { a: '7', 'Two words' => '8', c: '$1,888', d: 'apple' }
+          { a: '7', 'Two words' => '8', c: '$1,888', d: 'apple' },
         ]
         tab = Table.from_aoh(aoh).order_by(:d!, :c)
         expect(tab.rows[0][:d]).to eq 'orange'

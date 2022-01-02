@@ -4,9 +4,11 @@ module FatTable
       before do
         @tab =
           Table.from_aoh(
-            [{ a: '1', 'Two words' => '2', c: '3,123', d: 'apple' },
-             { a: '4', 'Two words' => '5', c: '6,412', d: 'orange' },
-             { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' }]
+            [
+              { a: '1', 'Two words' => '2', c: '3,123', d: 'apple' },
+              { a: '4', 'Two words' => '5', c: '6,412', d: 'orange' },
+              { a: '7', 'Two words' => '8', c: '$9,888', d: 'pear' },
+            ]
           )
       end
 
@@ -18,7 +20,7 @@ module FatTable
 
       it 'is indexable by column head' do
         expect(@tab[:a]).to eq([1, 4, 7])
-        expect(@tab[:d]).to eq(%w[apple orange pear])
+        expect(@tab[:d]).to eq(['apple', 'orange', 'pear'])
         expect { @tab[:r] }.to raise_error(/not in table/)
       end
 
@@ -46,7 +48,7 @@ module FatTable
       end
 
       it 'knows its headers' do
-        expect(@tab.headers).to eq %i[a two_words c d]
+        expect(@tab.headers).to eq [:a, :two_words, :c, :d]
       end
 
       it 'knows its size' do
