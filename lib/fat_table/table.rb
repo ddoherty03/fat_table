@@ -1304,12 +1304,20 @@ module FatTable
     # is set true, mark this row as a boundary. All tables should be built
     # ultimately using this method as a primitive.
     def add_row(row, mark: false)
-      row.each_pair do |k, v|
-        key = k.as_sym
-        columns << Column.new(header: k) unless column?(k)
-        column(key) << v
+      row.transform_keys!(&:as_sym)
+      # Make sure there is a column for each known header and each new key
+      # present in row.
+      new_heads = row.keys - headers
+      new_heads.each do |h|
+        # This column is new, so it needs nil items for all prior rows lest
+        # the value be added to a prior row.
+        items = Array.new(size, nil)
+        columns << Column.new(header: h, items: items)
       end
-      add_boundary if mark
+      headers.each do |h|
+        # NB: This adds a nil if h is not in row.
+        column(h) << row[h]
+      end
       self
     end
 

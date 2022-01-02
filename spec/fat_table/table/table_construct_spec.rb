@@ -3,7 +3,7 @@ require 'spec_helper'
 # Specs to test the building of Table from various inputs.
 module FatTable
   describe Table do
-    describe 'by direct construction' do
+    describe 'add_column' do
       it 'by adding columns' do
         headers = [:a, :b, :c, :d]
         tab = Table.new
@@ -13,22 +13,50 @@ module FatTable
         expect(tab.headers).to eq headers
         expect(tab.columns.size).to eq 4
       end
+    end
 
-      it 'by adding rows' do
-        rows = [
-          { a: 1, b: 2, c: 3, d: 4 },
-          { a: 11, b: 12, c: 13, d: 14 },
-          { a: 21, b: 22, c: 23, d: 24 },
-          { a: 31, b: 32, c: 33, d: 34 },
-          { a: 41, b: 42, c: 43, d: 44 },
-        ]
-        tab = Table.new
-        rows.each do |r|
-          tab << r
+    describe 'add_row' do
+      context 'full rows' do
+        it 'builds table correctly' do
+          rows = [
+            { a: 1, b: 2, c: 3, d: 4 },
+            { a: 11, b: 12, c: 13, d: 14 },
+            { a: 21, b: 22, c: 23, d: 24 },
+            { a: 31, b: 32, c: 33, d: 34 },
+            { a: 41, b: 42, c: 43, d: 44 },
+          ]
+          tab = Table.new
+          rows.each do |r|
+            tab << r
+          end
+          expect(tab.size).to eq 5
         end
-        expect(tab.size).to eq 5
       end
 
+      context 'rows with elements missing' do
+        it 'by adding rows with missing keys', :aggregate_failures do
+          rows = [
+            { 'a': 1, c: 3, d: 4 },
+            { a: 11, b: 12, d: 14 },
+            { b: 22, c: 23, d: 24 },
+            { a: 31, b: 32, c: 33 },
+            { a: 41, b: 42, c: 43, d: 44 },
+          ]
+          tab = Table.new
+          rows.each do |r|
+            tab << r
+          end
+          expect(tab.size).to eq(5)
+          expect(tab[0][:a]).to eq(1)
+          expect(tab[2][:a]).to be nil
+          expect(tab[1][:b]).to eq(12)
+          expect(tab[0][:b]).to be nil
+          expect(tab[0][:c]).to eq(3)
+          expect(tab[1][:c]).to be nil
+          expect(tab[0][:d]).to eq(4)
+          expect(tab[3][:d]).to be nil
+        end
+      end
     end
 
     describe 'from CSV' do
