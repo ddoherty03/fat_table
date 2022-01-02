@@ -1,5 +1,5 @@
 module FatTable
-  describe Table do
+  RSpec.describe Table do
     describe 'group_by' do
       before :all do
         aoa = [

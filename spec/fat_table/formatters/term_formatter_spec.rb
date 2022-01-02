@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 module FatTable
-  describe TermFormatter do
+  RSpec.describe TermFormatter do
     describe 'table output' do
       before :all do
         UPPER_LEFT = "\u2552".freeze

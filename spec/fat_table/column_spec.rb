@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 module FatTable
-  describe 'Column' do
+  RSpec.describe 'Column' do
     before :all do
       @bool_items = [nil, 't', 'true', 'False', 'nO', 'y', nil, 'Y', 'yEs', 'yippers']
     end

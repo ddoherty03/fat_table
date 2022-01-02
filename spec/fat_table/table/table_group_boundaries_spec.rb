@@ -1,5 +1,5 @@
 module FatTable
-  describe Table do
+  RSpec.describe Table do
     describe 'group boundaries' do
       before :all do
         @tab_a = Table.from_aoh(

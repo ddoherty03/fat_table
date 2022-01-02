@@ -1,5 +1,5 @@
 module FatTable
-  describe Table do
+  RSpec.describe Table do
     describe 'degroup!' do
       before :all do
         aoh = [

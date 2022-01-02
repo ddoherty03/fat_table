@@ -1,5 +1,5 @@
 module FatTable
-  describe Evaluator, :aggregate_failures do
+  RSpec.describe Evaluator, :aggregate_failures do
     describe 'instance variables' do
       let(:ev) do
         described_class.new(ivars: { group: 0, row: 1, junk: Date.parse('2017-09-22') },

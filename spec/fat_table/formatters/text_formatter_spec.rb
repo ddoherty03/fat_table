@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 module FatTable
-  describe TextFormatter do
+  RSpec.describe TextFormatter do
     describe 'table output' do
       before :each do
         @aoa = [

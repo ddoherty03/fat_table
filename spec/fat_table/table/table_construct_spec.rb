@@ -1,6 +1,6 @@
 # Specs to test the building of Table from various inputs.
 module FatTable
-  describe Table do
+  RSpec.describe Table do
     describe 'add_column' do
       it 'by adding columns' do
         headers = [:a, :b, :c, :d]

@@ -1,5 +1,5 @@
 module FatTable
-  describe Table do
+  RSpec.describe Table do
     describe 'where' do
       before :all do
         aoa = [

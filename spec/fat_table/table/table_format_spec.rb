@@ -1,5 +1,5 @@
 module FatTable
-  describe Table do
+  RSpec.describe Table do
     describe 'output' do
       # These tests are taken from https://www.tutorialspoint.com/postgresql/postgresql_using_joins.htm
       before :all do

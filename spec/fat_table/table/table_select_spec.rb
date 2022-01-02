@@ -1,5 +1,5 @@
 module FatTable
-  describe Table do
+  RSpec.describe Table do
     describe 'select' do
       it 'should be able to select by column names' do
         aoh = [

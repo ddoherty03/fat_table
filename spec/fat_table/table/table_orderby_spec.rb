@@ -1,5 +1,5 @@
 module FatTable
-  describe Table do
+  RSpec.describe Table do
     describe 'order_by' do
       it 'should be able to sort its rows on one column' do
         aoh = [

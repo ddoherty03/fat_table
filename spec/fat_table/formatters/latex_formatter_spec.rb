@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 module FatTable
-  describe LaTeXFormatter do
+  RSpec.describe LaTeXFormatter do
     describe 'table output' do
       before :all do
         tmp_dir = "#{__dir__}/../../tmp"

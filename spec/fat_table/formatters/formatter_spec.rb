@@ -1,8 +1,7 @@
 require 'spec_helper'
 
 module FatTable
-  describe Formatter do
-    before :all do
+  RSpec.describe Formatter do
       aoa = [
         %w[Ref Date Code Raw Shares Price Info Bool],
         [1, '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850, 'ZMPEF1', 'T'],

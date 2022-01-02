@@ -1,5 +1,5 @@
 module FatTable
-  describe Table do
+  RSpec.describe Table do
     before :all do
       aoh = [
         { a: '5', 'Two words' => '20', c: '3,123', d: 'apple' },
