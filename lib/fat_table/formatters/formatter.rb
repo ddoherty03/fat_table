@@ -855,11 +855,16 @@ module FatTable
         result = val.secs_to_hms
         istruct.commas = false
       elsif istruct.currency
-        prec = istruct.post_digits.zero? ? 2 : istruct.post_digits
         delim = istruct.commas ? ',' : ''
-        result = val.to_s(:currency, precision: prec, delimiter: delim,
+        result =
+        if istruct.post_digits < 0
+          val.to_s(:currency, delimiter: delim,
                           unit: FatTable.currency_symbol)
-        istruct.commas = false
+        else
+          val.to_s(:currency, precision: istruct.post_digits, delimiter: delim,
+                          unit: FatTable.currency_symbol)
+        end
+        # istruct.commas = false
       elsif istruct.pre_digits.positive?
         if val.whole?
           # No fractional part, ignore post_digits
