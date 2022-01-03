@@ -1,7 +1,6 @@
-require 'spec_helper'
-
 module FatTable
   RSpec.describe Formatter do
+    let(:tab) {
       aoa = [
         %w[Ref Date Code Raw Shares Price Info Bool],
         [1, '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850, 'ZMPEF1', 'T'],
@@ -17,169 +16,192 @@ module FatTable
         [15, '2013-05-29', 'S', 15_900.00, 6685.95, 24.5802, 'ZMEAC', 'T'],
         [16, '2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'ZMEAC', 'T']
       ]
-      @tab = Table.from_aoa(aoa)
-    end
+      Table.from_aoa(aoa)
+    }
 
     describe 'parsing and validity' do
-      it 'should raise error for invalid location' do
-        fmt = Formatter.new(@tab)
-        expect {
-          fmt.format_for(:trout, string: 'BC')
-        }.to raise_error(/unknown format location/)
+      describe 'invalid format strings' do
+        it 'raises an error for invalid location' do
+          fmt = described_class.new(tab)
+          expect {
+            fmt.format_for(:trout, string: 'BC')
+          }.to raise_error(/unknown format location/)
+        end
+
+        it 'raises an error for invalid format string' do
+          fmt = described_class.new(tab)
+          expect {
+            fmt.format_for(:body, string: 'OOIUOIO')
+          }.to raise_error(/unrecognized string formatting instruction/)
+        end
+
+        it 'raises an error for inapposite format string' do
+          fmt = described_class.new(tab)
+          expect {
+            fmt.format_for(:body, boolean: '7.4,')
+          }.to raise_error(/unrecognized boolean formatting instruction/)
+        end
       end
 
-      it 'should raise error for invalid format string' do
-        fmt = Formatter.new(@tab)
-        expect {
-          fmt.format_for(:body, string: 'OOIUOIO')
-        }.to raise_error(/unrecognized string formatting instruction/)
+      describe 'parsing format strings', :aggregate_failures do
+        describe '#parse_numeric_format' do
+          let(:fmt) { described_class.new(tab) }
+
+          it 'properly parses a dollar and comma' do
+            fh = fmt.send(:parse_numeric_fmt, '$,R')
+            expect(fh[:commas]).to be_truthy
+            expect(fh[:currency]).to be_truthy
+          end
+        end
       end
 
-      it 'should raise error for inapposite format string' do
-        fmt = Formatter.new(@tab)
-        expect {
-          fmt.format_for(:body, boolean: '7.4,')
-        }.to raise_error(/unrecognized boolean formatting instruction/)
+      describe 'formmater for nil entries' do
+        it 'should parse nil for a string type' do
+          fmt = described_class.new(tab)
+          fmt.format_for(:body, string: 'Rn[No Data]')
+          expect(fmt.format_at[:body][:info].nil_text).to eq('No Data')
+          fmt = described_class.new(tab)
+          fmt.format_for(:body, info: 'Rn[No Data]')
+          expect(fmt.format_at[:body][:info].nil_text).to eq('No Data')
+        end
+
+        it 'should parse nil for a numeric type' do
+          fmt = described_class.new(tab)
+          fmt.format_for(:body, numeric: '3.2n[No Data]')
+          expect(fmt.format_at[:body][:shares].nil_text).to eq('No Data')
+          fmt = described_class.new(tab)
+          fmt.format_for(:body, shares: '3.2n[No Data]')
+          expect(fmt.format_at[:body][:shares].nil_text).to eq('No Data')
+        end
+
+        it 'should parse nil for a boolean type' do
+          fmt = described_class.new(tab)
+          fmt.format_for(:body, boolean: 'Yn[No Data]')
+          expect(fmt.format_at[:body][:bool].nil_text).to eq('No Data')
+          fmt = described_class.new(tab)
+          fmt.format_for(:body, bool: 'Yn[No Data]')
+          expect(fmt.format_at[:body][:bool].nil_text).to eq('No Data')
+        end
+
+        it 'should parse nil for a datetime type' do
+          fmt = described_class.new(tab)
+          fmt.format_for(:body, datetime: 'd[%Y %m]n[No Data]')
+          expect(fmt.format_at[:body][:date].nil_text).to eq('No Data')
+          fmt = described_class.new(tab)
+          fmt.format_for(:body, date: 'd[%Y %m]n[No Data]')
+          expect(fmt.format_at[:body][:date].nil_text).to eq('No Data')
+        end
       end
 
-      it 'should parse nil for a string type' do
-        fmt = Formatter.new(@tab)
-        fmt.format_for(:body, string: 'Rn[No Data]')
-        expect(fmt.format_at[:body][:info].nil_text).to eq('No Data')
-        fmt = Formatter.new(@tab)
-        fmt.format_for(:body, info: 'Rn[No Data]')
-        expect(fmt.format_at[:body][:info].nil_text).to eq('No Data')
+      describe 'font style formmating' do
+        it 'should parse bold or not bold' do
+          fmt = described_class.new(tab)
+                  .format_for(:body, numeric: '4.0B')
+          expect(fmt.format_at[:body][:shares].bold).to eq(true)
+          fmt = described_class.new(tab)
+                  .format_for(:body, numeric: '4.0~ B')
+          expect(fmt.format_at[:body][:shares].bold).to eq(false)
+        end
+
+        it 'should parse italic or not italic' do
+          fmt = described_class.new(tab)
+                  .format_for(:body, numeric: '4.0I')
+          expect(fmt.format_at[:body][:shares].italic).to eq(true)
+          fmt = described_class.new(tab)
+                  .format_for(:body, numeric: '4.0~ I')
+          expect(fmt.format_at[:body][:shares].italic).to eq(false)
+        end
+
+        it 'should parse underline or not underline' do
+          fmt = described_class.new(tab)
+                  .format_for(:body, numeric: '4.0_')
+          expect(fmt.format_at[:body][:shares].underline).to eq(true)
+          fmt = described_class.new(tab)
+                  .format_for(:body, numeric: '4.0~ _')
+          expect(fmt.format_at[:body][:shares].underline).to eq(false)
+        end
+
+        it 'should parse blink or not blink' do
+          fmt = described_class.new(tab)
+                  .format_for(:body, numeric: '4.0*')
+          expect(fmt.format_at[:body][:shares].blink).to eq(true)
+          fmt = described_class.new(tab)
+                  .format_for(:body, numeric: '4.0~ *')
+          expect(fmt.format_at[:body][:shares].blink).to eq(false)
+        end
       end
 
-      it 'should parse nil for a numeric type' do
-        fmt = Formatter.new(@tab)
-        fmt.format_for(:body, numeric: '3.2n[No Data]')
-        expect(fmt.format_at[:body][:shares].nil_text).to eq('No Data')
-        fmt = Formatter.new(@tab)
-        fmt.format_for(:body, shares: '3.2n[No Data]')
-        expect(fmt.format_at[:body][:shares].nil_text).to eq('No Data')
-      end
+      describe 'grouping commas for numerics' do
+        it 'parses comma described_class' do
+          fmt = described_class.new(tab)
+                  .format_for(:body, numeric: '4.0,')
+          expect(fmt.format_at[:body][:shares].commas).to eq(true)
+        end
 
-      it 'should parse nil for a boolean type' do
-        fmt = Formatter.new(@tab)
-        fmt.format_for(:body, boolean: 'Yn[No Data]')
-        expect(fmt.format_at[:body][:bool].nil_text).to eq('No Data')
-        fmt = Formatter.new(@tab)
-        fmt.format_for(:body, bool: 'Yn[No Data]')
-        expect(fmt.format_at[:body][:bool].nil_text).to eq('No Data')
-      end
-
-      it 'should parse nil for a datetime type' do
-        fmt = Formatter.new(@tab)
-        fmt.format_for(:body, datetime: 'd[%Y %m]n[No Data]')
-        expect(fmt.format_at[:body][:date].nil_text).to eq('No Data')
-        fmt = Formatter.new(@tab)
-        fmt.format_for(:body, date: 'd[%Y %m]n[No Data]')
-        expect(fmt.format_at[:body][:date].nil_text).to eq('No Data')
-      end
-
-      it 'should parse bold or not bold' do
-        fmt = Formatter.new(@tab)
-                .format_for(:body, numeric: '4.0B')
-        expect(fmt.format_at[:body][:shares].bold).to eq(true)
-        fmt = Formatter.new(@tab)
-                .format_for(:body, numeric: '4.0~ B')
-        expect(fmt.format_at[:body][:shares].bold).to eq(false)
-      end
-
-      it 'should parse italic or not italic' do
-        fmt = Formatter.new(@tab)
-                .format_for(:body, numeric: '4.0I')
-        expect(fmt.format_at[:body][:shares].italic).to eq(true)
-        fmt = Formatter.new(@tab)
-                .format_for(:body, numeric: '4.0~ I')
-        expect(fmt.format_at[:body][:shares].italic).to eq(false)
-      end
-
-      it 'should parse underline or not underline' do
-        fmt = Formatter.new(@tab)
-                .format_for(:body, numeric: '4.0_')
-        expect(fmt.format_at[:body][:shares].underline).to eq(true)
-        fmt = Formatter.new(@tab)
-                .format_for(:body, numeric: '4.0~ _')
-        expect(fmt.format_at[:body][:shares].underline).to eq(false)
-      end
-
-      it 'should parse blink or not blink' do
-        fmt = Formatter.new(@tab)
-                .format_for(:body, numeric: '4.0*')
-        expect(fmt.format_at[:body][:shares].blink).to eq(true)
-        fmt = Formatter.new(@tab)
-                .format_for(:body, numeric: '4.0~ *')
-        expect(fmt.format_at[:body][:shares].blink).to eq(false)
-      end
-
-      it 'should parse commas or not commas' do
-        fmt = Formatter.new(@tab)
-                .format_for(:body, numeric: '4.0,')
-        expect(fmt.format_at[:body][:shares].commas).to eq(true)
-        fmt = Formatter.new(@tab)
-                .format_for(:body, numeric: '4.0~ ,')
-        expect(fmt.format_at[:body][:shares].commas).to eq(false)
+        it 'parses negated comma described_class' do
+          fmt = described_class.new(tab)
+                  .format_for(:body, numeric: '4.0,', shares: '4.0~,')
+          expect(fmt.format_at[:body][:shares].commas).to eq(false)
+        end
       end
 
       it 'should parse currency or not currency' do
-        fmt = Formatter.new(@tab)
+        fmt = described_class.new(tab)
                 .format_for(:body, numeric: '4.0$')
         expect(fmt.format_at[:body][:shares].currency).to eq(true)
-        fmt = Formatter.new(@tab)
+        fmt = described_class.new(tab)
                 .format_for(:body, numeric: '4.0~ $')
         expect(fmt.format_at[:body][:shares].currency).to eq(false)
       end
 
       it 'should parse hms or not hms' do
-        fmt = Formatter.new(@tab)
+        fmt = described_class.new(tab)
                 .format_for(:body, numeric: '4.0H')
         expect(fmt.format_at[:body][:shares].hms).to eq(true)
-        fmt = Formatter.new(@tab)
+        fmt = described_class.new(tab)
                 .format_for(:body, numeric: '4.0~ H')
         expect(fmt.format_at[:body][:shares].hms).to eq(false)
       end
 
       it 'should give priority to column over type formatting' do
-        fmt = Formatter.new(@tab)
+        fmt = described_class.new(tab)
                 .format_for(:body, numeric: '4.0', shares: '0.4')
         expect(fmt.format_at[:body][:shares].pre_digits).to eq(0)
         expect(fmt.format_at[:body][:shares].post_digits).to eq(4)
       end
 
       it 'should give priority to column over string formatting' do
-        fmt = Formatter.new(@tab)
+        fmt = described_class.new(tab)
                 .format_for(:body, string: 'c[red]', shares: 'c[blue]')
         expect(fmt.format_at[:body][:shares].color).to eq('blue')
       end
 
       it 'should give priority to column over nil formatting' do
-        fmt = Formatter.new(@tab)
+        fmt = described_class.new(tab)
                 .format_for(:body, nil: 'n[Blank]', shares: 'n[Nada]')
         expect(fmt.format_at[:body][:shares].nil_text).to eq('Nada')
       end
 
       it 'should give priority to type over string formatting' do
-        fmt = Formatter.new(@tab)
+        fmt = described_class.new(tab)
                 .format_for(:body, string: 'c[red]', numeric: 'c[blue]')
         expect(fmt.format_at[:body][:shares].color).to eq('blue')
       end
 
       it 'should give priority to type over nil formatting' do
-        fmt = Formatter.new(@tab)
+        fmt = described_class.new(tab)
                 .format_for(:body, nil: 'n[Blank]', numeric: 'n[Nada]')
         expect(fmt.format_at[:body][:shares].nil_text).to eq('Nada')
       end
 
       it 'should give priority to nil over string formatting' do
-        fmt = Formatter.new(@tab)
+        fmt = described_class.new(tab)
                 .format_for(:body, nil: 'n[Blank]', string: 'n[Nada]')
         expect(fmt.format_at[:body][:shares].nil_text).to eq('Blank')
       end
 
       it 'should give priority to bfirst over body formatting' do
-        fmt = Formatter.new(@tab)
+        fmt = described_class.new(tab)
                 .format_for(:bfirst, ref: '3.1')
                 .format_for(:body, ref: '4.0')
         expect(fmt.format_at[:bfirst][:ref][:_location]).to eq(:bfirst)
@@ -189,7 +211,7 @@ module FatTable
       end
 
       it 'bfirst should inherit body formatting with possible override' do
-        fmt = Formatter.new(@tab)
+        fmt = described_class.new(tab)
                 .format_for(:bfirst, ref: 'c[red]')
                 .format_for(:body, ref: '4.0')
         expect(fmt.format_at[:bfirst][:ref][:_location]).to eq(:bfirst)
@@ -199,7 +221,7 @@ module FatTable
         expect(fmt.format_at[:bfirst][:ref].color).to eq('red')
         expect(fmt.format_at[:body][:ref].color).to eq('none')
         # Regardless of the order
-        fmt = Formatter.new(@tab)
+        fmt = described_class.new(tab)
                 .format_for(:body, ref: '4.0')
                 .format_for(:bfirst, ref: 'c[red]')
         expect(fmt.format_at[:bfirst][:ref][:_location]).to eq(:bfirst)
@@ -211,7 +233,7 @@ module FatTable
       end
 
       it 'gfirst should inherit body formatting with possible override' do
-        fmt = Formatter.new(@tab)
+        fmt = described_class.new(tab)
                 .format_for(:gfirst, ref: 'c[red]')
                 .format_for(:body, ref: '4.0')
         expect(fmt.format_at[:gfirst][:ref][:_location]).to eq(:gfirst)
@@ -221,7 +243,7 @@ module FatTable
         expect(fmt.format_at[:gfirst][:ref].color).to eq('red')
         expect(fmt.format_at[:body][:ref].color).to eq('none')
         # Regardless of the order
-        fmt = Formatter.new(@tab)
+        fmt = described_class.new(tab)
                 .format_for(:body, ref: '4.0')
                 .format_for(:gfirst, ref: 'c[red]')
         expect(fmt.format_at[:gfirst][:ref][:_location]).to eq(:gfirst)
@@ -233,7 +255,7 @@ module FatTable
       end
 
       it 'bfirst should inherit gfirst formatting with possible override' do
-        fmt = Formatter.new(@tab)
+        fmt = described_class.new(tab)
                 .format_for(:bfirst, ref: 'c[red]')
                 .format_for(:gfirst, ref: '4.0')
         expect(fmt.format_at[:bfirst][:ref][:_location]).to eq(:bfirst)
@@ -243,7 +265,7 @@ module FatTable
         expect(fmt.format_at[:bfirst][:ref].color).to eq('red')
         expect(fmt.format_at[:gfirst][:ref].color).to eq('none')
         # Regardless of the order
-        fmt = Formatter.new(@tab)
+        fmt = described_class.new(tab)
                 .format_for(:gfirst, ref: '4.0')
                 .format_for(:bfirst, ref: 'c[red]')
         expect(fmt.format_at[:bfirst][:ref][:_location]).to eq(:bfirst)
@@ -255,7 +277,7 @@ module FatTable
       end
 
       it 'should be able to set element formats' do
-        fmt = Formatter.new(@tab)
+        fmt = described_class.new(tab)
                 .format_for(:header, string: 'Uc[red]',
                             ref: 'uc[blue.aquamarine]')
                 .format_for(:gfooter, string: 'B')
@@ -291,7 +313,7 @@ module FatTable
         expect(fmt.format_at[:header][:info].case).to eq(:upper)
         expect(fmt.format_at[:header][:bool].case).to eq(:upper)
         # Header all others, the default
-        @tab.headers.each do |h|
+        tab.headers.each do |h|
           expect(fmt.format_at[:header][h].true_color).to eq('none')
           expect(fmt.format_at[:header][h].false_color).to eq('none')
           expect(fmt.format_at[:header][h].true_text).to eq('T')
@@ -311,11 +333,11 @@ module FatTable
           expect(fmt.format_at[:header][h].blink).to eq(false)
         end
         # Gfooter bold
-        @tab.headers.each do |h|
+        tab.headers.each do |h|
           expect(fmt.format_at[:gfooter][h].bold).to eq(true)
         end
         # Gfooter all others, the default
-        @tab.headers.each do |h|
+        tab.headers.each do |h|
           expect(fmt.format_at[:gfooter][h].true_color).to eq('none')
           expect(fmt.format_at[:gfooter][h].false_color).to eq('none')
           expect(fmt.format_at[:gfooter][h].color).to eq('none')
@@ -336,7 +358,7 @@ module FatTable
         expect(fmt.format_at[:footer][:date].date_fmt).to eq('%Y')
         expect(fmt.format_at[:footer][:date].bold).to eq(true)
         # Footer all others, the default
-        @tab.headers.each do |h|
+        tab.headers.each do |h|
           expect(fmt.format_at[:footer][h].true_color).to eq('none')
           expect(fmt.format_at[:footer][h].false_color).to eq('none')
           expect(fmt.format_at[:footer][h].color).to eq('none')
@@ -394,70 +416,115 @@ module FatTable
     end
 
     describe 'cell formatting' do
-      it 'should be able to format a string' do
-        fmt = Formatter.new
-        istruct = OpenStruct.new(Formatter.default_format)
-        istruct.case = :upper
-        expect(fmt.format_cell('hello world', istruct)).to eq('HELLO WORLD')
-        istruct.case = :lower
-        expect(fmt.format_cell('HELLO WORLD', istruct)).to eq('hello world')
-        istruct.case = :title
-        expect(fmt.format_cell('HELLO TO THE WORLD', istruct))
-          .to eq('Hello to the World')
-        expect(fmt.format_cell(nil, istruct))
-          .to eq('')
+      let(:fmt) { described_class.new }
+
+      before do
+        @istruct = OpenStruct.new(described_class.default_format)
       end
 
-      it 'should be able to format a numeric' do
-        fmt = Formatter.new
-        istruct = OpenStruct.new(Formatter.default_format)
-        expect(fmt.format_cell(78546.254, istruct)).to eq('78546.254')
-        istruct.commas = true
-        expect(fmt.format_cell(78546.254, istruct)).to eq('78,546.254')
-        istruct.hms = true
-        expect(fmt.format_cell(78546.254, istruct)).to eq('21:49:06.25')
-        istruct.hms = false
-        istruct.pre_digits = 8
-        expect(fmt.format_cell(78546.254, istruct)).to eq('00078546')
-        istruct.post_digits = 1
-        expect(fmt.format_cell(78546.254, istruct)).to eq('00078546.3')
-        istruct.commas = true
-        expect(fmt.format_cell(78546.254, istruct)).to eq('00,078,546.3')
-        istruct.commas = false
-        istruct.pre_digits = -1
-        istruct.post_digits = 2
-        expect(fmt.format_cell(78546.254, istruct)).to eq('78546.25')
-        istruct.currency = true
-        istruct.post_digits = 5
-        expect(fmt.format_cell(78546.254, istruct)).to eq('$78546.25400')
-        istruct.commas = true
-        expect(fmt.format_cell(78546.254, istruct)).to eq('$78,546.25400')
+      # let(:istruct) { OpenStruct.new(described_class.default_format) }
+
+      describe 'string formatting' do
+        it 'properly uppercases a string' do
+          @istruct = OpenStruct.new(described_class.default_format)
+          @istruct.case = :upper
+          expect(fmt.format_cell('hello world', @istruct)).to eq('HELLO WORLD')
+        end
+
+        it 'properly downcases a string' do
+          @istruct.case = :lower
+          expect(fmt.format_cell('HELLO WORLD', @istruct)).to eq('hello world')
+        end
+
+        it 'properly title cases a string' do
+          @istruct.case = :title
+          expect(fmt.format_cell('HELLO TO THE WORLD', @istruct))
+            .to eq('Hello to the World')
+        end
+
+        it 'properly formats a nil as an empty string' do
+          expect(fmt.format_cell(nil, @istruct)).to eq('')
+        end
       end
 
-      it 'should be able to format a boolean' do
-        fmt = Formatter.new
-        istruct = OpenStruct.new(Formatter.default_format)
-        expect(fmt.format_cell(true, istruct)).to eq('T')
-        expect(fmt.format_cell(false, istruct)).to eq('F')
-        istruct.true_text = 'Yippers'
-        istruct.false_text = 'Nappers'
-        expect(fmt.format_cell(true, istruct)).to eq('Yippers')
-        expect(fmt.format_cell(false, istruct)).to eq('Nappers')
+      describe 'numeric formatting' do
+        it 'adds grouping commas' do
+          @istruct.commas = true
+          expect(fmt.format_cell(78546.254, @istruct)).to eq('78,546.254')
+        end
+
+        it 'converts to HMS' do
+          @istruct.hms = true
+          expect(fmt.format_cell(78546.254, @istruct)).to eq('21:49:06.25')
+        end
+
+        it 'handles pre-digits with zero padding' do
+          @istruct.pre_digits = 8
+          expect(fmt.format_cell(78546.254, @istruct)).to eq('00078546')
+        end
+
+        it 'rounds to the the number of post-digits' do
+          @istruct.pre_digits = 8
+          @istruct.post_digits = 1
+          expect(fmt.format_cell(78546.254, @istruct)).to eq('00078546.3')
+          expect(fmt.format_cell(78546.234, @istruct)).to eq('00078546.2')
+        end
+
+        it 'adds commas and pre-digit padding' do
+          @istruct.commas = true
+          @istruct.pre_digits = 8
+          @istruct.post_digits = 1
+          expect(fmt.format_cell(78546.254, @istruct)).to eq('00,078,546.3')
+        end
+
+        it 'handles negative pre-digits' do
+          @istruct.commas = false
+          @istruct.pre_digits = -1
+          @istruct.post_digits = 2
+          expect(fmt.format_cell(78546.254, @istruct)).to eq('78546.25')
+        end
+
+        it 'handles currency with post-digits' do
+          @istruct.currency = true
+          @istruct.post_digits = 5
+          expect(fmt.format_cell(78546.254, @istruct)).to eq('$78546.25400')
+        end
+
+        it 'formats currency with commas' do
+          @istruct.currency = true
+          @istruct.commas = true
+          expect(fmt.format_cell(78546.254, @istruct)).to eq('$78,546.25')
+        end
       end
 
-      it 'should be able to format a datetime' do
-        fmt = Formatter.new
-        istruct = OpenStruct.new(Formatter.default_format)
-        val = DateTime.parse('2017-02-23 9pm')
-        expect(fmt.format_cell(val, istruct)).to eq('2017-02-23 21:00:00')
-        istruct.datetime_fmt = '%Y in %B at %l%P, which was on a %A'
-        expect(fmt.format_cell(val, istruct))
-          .to eq('2017 in February at  9pm, which was on a Thursday')
+      describe 'boolean formatting' do
+        it 'properly formats a boolean' do
+          fmt = described_class.new
+          @istruct = OpenStruct.new(described_class.default_format)
+          expect(fmt.format_cell(true, @istruct)).to eq('T')
+          expect(fmt.format_cell(false, @istruct)).to eq('F')
+          @istruct.true_text = 'Yippers'
+          @istruct.false_text = 'Nappers'
+          expect(fmt.format_cell(true, @istruct)).to eq('Yippers')
+          expect(fmt.format_cell(false, @istruct)).to eq('Nappers')
+        end
+      end
+
+      describe 'datetime formatting' do
+        it 'properly formats a datetime' do
+          fmt = described_class.new
+          @istruct = OpenStruct.new(described_class.default_format)
+          val = DateTime.parse('2017-02-23 9pm')
+          expect(fmt.format_cell(val, @istruct)).to eq('2017-02-23 21:00:00')
+          @istruct.datetime_fmt = '%Y in %B at %l%P, which was on a %A'
+          expect(fmt.format_cell(val, @istruct))
+            .to eq('2017 in February at  9pm, which was on a Thursday')
+        end
       end
     end
 
     describe 'footers' do
-      before :each do
+      let(:tab) {
         aoa = [
           %w[Ref Date Code Raw Shares Price Info Bool],
           [1, '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850, 'ZMPEF1', 'T'],
@@ -474,11 +541,11 @@ module FatTable
           [15, '2013-05-29', 'S', 15_900.00, 6685.95, 24.5802, 'ZMEAC', 'T'],
           [16, '2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'ZMEAC', 'T']
         ]
-        @tab = Table.from_aoa(aoa).order_by(:date)
-      end
+        FatTable::Table.from_aoa(aoa).order_by(:date)
+      }
 
-      it 'should be able to add a total footer to the output' do
-        fmt = Formatter.new(@tab) do |f|
+      it 'adds a total footer to the output' do
+        fmt = described_class.new(tab) do |f|
           f.sum_footer(:raw, :shares, :price)
         end
         expect(fmt.footers['Total'][:raw]).to eq(:sum)
@@ -487,8 +554,8 @@ module FatTable
         expect(fmt.footers['Total'][:info]).to be_nil
       end
 
-      it 'should be able to add an average footer to the output' do
-        fmt = Formatter.new(@tab) do |f|
+      it 'adds an average footer to the output' do
+        fmt = described_class.new(tab) do |f|
           f.avg_footer(:raw, :shares, :price)
         end
         expect(fmt.footers['Average'][:raw]).to eq(:avg)
@@ -497,8 +564,8 @@ module FatTable
         expect(fmt.footers['Average'][:info]).to be_nil
       end
 
-      it 'should be able to add a minimum footer to the output' do
-        fmt = Formatter.new(@tab) do |f|
+      it 'adds a minimum footer to the output' do
+        fmt = described_class.new(tab) do |f|
           f.min_footer(:raw, :shares, :price)
         end
         expect(fmt.footers['Minimum'][:raw]).to eq(:min)
@@ -507,8 +574,8 @@ module FatTable
         expect(fmt.footers['Minimum'][:info]).to be_nil
       end
 
-      it 'should be able to add a maximum footer to the output' do
-        fmt = Formatter.new(@tab) do |f|
+      it 'adds a maximum footer to the output' do
+        fmt = described_class.new(tab) do |f|
           f.max_footer(:raw, :shares, :price)
         end
         expect(fmt.footers['Maximum'][:raw]).to eq(:max)
@@ -516,69 +583,69 @@ module FatTable
         expect(fmt.footers['Maximum'][:price]).to eq(:max)
         expect(fmt.footers['Maximum'][:info]).to be_nil
       end
-    end
 
-    describe 'table output' do
-      before :each do
-        aoa = [
-          %w[Ref Date Code Raw Shares Price Info Bool],
-          [1, '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850, 'ZMPEF1', 'T'],
-          [2, '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500,
-           'ZMPEF1', 'T'],
-          [7, '2013-05-20', 'S', 12_000.00, 5046.00, 28.2804, 'ZMEAC', 'F'],
-          [8, '2013-05-20', 'S', 85_000.00, 35_742.50, 28.3224, 'ZMEAC', 'T'],
-          [9, '2013-05-20', 'S', 33_302.00, 14_003.49, 28.6383, 'ZMEAC', 'T'],
-          [10, '2013-05-23', 'S', 8000.00, 3364.00, 27.1083, 'ZMEAC', 'T'],
-          [11, '2013-05-23', 'S', 23_054.00, 9694.21, 26.8015, 'ZMEAC', 'F'],
-          [12, '2013-05-23', 'S', 39_906.00, 16_780.47, 25.1749, 'ZMEAC', 'T'],
-          [13, '2013-05-29', 'S', 13_459.00, 5659.51, 24.7464, 'ZMEAC', 'T'],
-          [14, '2013-05-29', 'S', 15_700.00, 6601.85, 24.7790, 'ZMEAC', 'F'],
-          [15, '2013-05-29', 'S', 15_900.00, 6685.95, 24.5802, 'ZMEAC', 'T'],
-          [16, '2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'ZMEAC', 'T']
-        ]
-        @tab = Table.from_aoa(aoa).order_by(:date)
-      end
+      describe 'table output' do
+        let(:tab) {
+          aoa = [
+            %w[Ref Date Code Raw Shares Price Info Bool],
+            [1, '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850, 'ZMPEF1', 'T'],
+            [2, '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500,
+             'ZMPEF1', 'T'],
+            [7, '2013-05-20', 'S', 12_000.00, 5046.00, 28.2804, 'ZMEAC', 'F'],
+            [8, '2013-05-20', 'S', 85_000.00, 35_742.50, 28.3224, 'ZMEAC', 'T'],
+            [9, '2013-05-20', 'S', 33_302.00, 14_003.49, 28.6383, 'ZMEAC', 'T'],
+            [10, '2013-05-23', 'S', 8000.00, 3364.00, 27.1083, 'ZMEAC', 'T'],
+            [11, '2013-05-23', 'S', 23_054.00, 9694.21, 26.8015, 'ZMEAC', 'F'],
+            [12, '2013-05-23', 'S', 39_906.00, 16_780.47, 25.1749, 'ZMEAC', 'T'],
+            [13, '2013-05-29', 'S', 13_459.00, 5659.51, 24.7464, 'ZMEAC', 'T'],
+            [14, '2013-05-29', 'S', 15_700.00, 6601.85, 24.7790, 'ZMEAC', 'F'],
+            [15, '2013-05-29', 'S', 15_900.00, 6685.95, 24.5802, 'ZMEAC', 'T'],
+            [16, '2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'ZMEAC', 'T']
+          ]
+          FatTable::Table.from_aoa(aoa).order_by(:date)
+        }
 
-      it 'should output a table with default formatting' do
-        str = Formatter.new(@tab).output
-        expect(str.length).to be > 10
-      end
-
-      it 'should be able to set format and output by method calls' do
-        fmt = Formatter.new(@tab)
-        fmt.format(ref: '5.0', code: 'C', raw: ',0.0R', shares: ',0.0R',
-                   price: '0.3', bool: 'Y')
-        fmt.format_for(:header, string: 'CB')
-        fmt.sum_gfooter(:price, :raw, :shares)
-        fmt.gfooter('Grp Std Dev', price: :dev, shares: :dev, bool: :one?)
-        fmt.sum_footer(:price, :raw, :shares)
-        fmt.footer('Std Dev', price: :dev, shares: :dev, bool: :all?)
-        fmt.footer('Any?', bool: :any?)
-        str = fmt.output
-        expect(str.length).to be > 10
-        expect(str).to match(/^Ref\|.*\|Bool$/)
-        expect(str).to match(/^00001\|2013-05-02\|P\|795,546\|795,546\|1.185\|ZMPEF1\|Y$/)
-        expect(str).to match(/^Group Total\|\|\|130,302\|54,792\|85.241\|\|$/)
-        expect(str).to match(/^Total|||1,166,733|1,020,119|276.514||$/)
-      end
-
-      it 'should be able to set format and output in a block' do
-        fmt = Formatter.new(@tab) do |f|
-          f.format(ref: '5.0', code: 'C', raw: ',0.0R', shares: ',0.0R',
-                     price: '0.3', bool: 'Y')
-          f.format_for(:header, string: 'CB')
-          f.sum_gfooter(:price, :raw, :shares)
-          f.gfooter('Grp Std Dev', price: :dev, shares: :dev, bool: :one?)
-          f.sum_footer(:price, :raw, :shares)
-          f.footer('Std Dev', price: :dev, shares: :dev, bool: :all?)
-          f.footer('Any?', bool: :any?)
+        it 'outputs a table with default formatting' do
+          str = described_class.new(tab).output
+          expect(str.length).to be > 10
         end
-        str = fmt.output
-        expect(str.length).to be > 10
-        expect(str).to match(/^Ref\|.*\|Bool$/)
-        expect(str).to match(/^00001\|2013-05-02\|P\|795,546\|795,546\|1.185\|ZMPEF1\|Y$/)
-        expect(str).to match(/^Group Total\|\|\|130,302\|54,792\|85.241\|\|$/)
-        expect(str).to match(/^Total|||1,166,733|1,020,119|276.514||$/)
+
+        it 'sets format and output by method calls' do
+          fmt = described_class.new(tab)
+          fmt.format(ref: '5.0', code: 'C', raw: ',0.0R', shares: ',0.0R',
+                     price: '0.3', bool: 'Y')
+          fmt.format_for(:header, string: 'CB')
+          fmt.sum_gfooter(:price, :raw, :shares)
+          fmt.gfooter('Grp Std Dev', price: :dev, shares: :dev, bool: :one?)
+          fmt.sum_footer(:price, :raw, :shares)
+          fmt.footer('Std Dev', price: :dev, shares: :dev, bool: :all?)
+          fmt.footer('Any?', bool: :any?)
+          str = fmt.output
+          expect(str.length).to be > 10
+          expect(str).to match(/^Ref\|.*\|Bool$/)
+          expect(str).to match(/^00001\|2013-05-02\|P\|795,546\|795,546\|1.185\|ZMPEF1\|Y$/)
+          expect(str).to match(/^Group Total\|\|\|130,302\|54,792\|85.241\|\|$/)
+          expect(str).to match(/^Total|||1,166,733|1,020,119|276.514||$/)
+        end
+
+        it 'sets format and output in a block' do
+          fmt = described_class.new(tab) do |f|
+            f.format(ref: '5.0', code: 'C', raw: ',0.0R', shares: ',0.0R',
+                     price: '0.3', bool: 'Y')
+            f.format_for(:header, string: 'CB')
+            f.sum_gfooter(:price, :raw, :shares)
+            f.gfooter('Grp Std Dev', price: :dev, shares: :dev, bool: :one?)
+            f.sum_footer(:price, :raw, :shares)
+            f.footer('Std Dev', price: :dev, shares: :dev, bool: :all?)
+            f.footer('Any?', bool: :any?)
+          end
+          str = fmt.output
+          expect(str.length).to be > 10
+          expect(str).to match(/^Ref\|.*\|Bool$/)
+          expect(str).to match(/^00001\|2013-05-02\|P\|795,546\|795,546\|1.185\|ZMPEF1\|Y$/)
+          expect(str).to match(/^Group Total\|\|\|130,302\|54,792\|85.241\|\|$/)
+          expect(str).to match(/^Total|||1,166,733|1,020,119|276.514||$/)
+        end
       end
     end
   end
