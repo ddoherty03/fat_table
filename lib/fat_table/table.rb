@@ -597,8 +597,12 @@ module FatTable
         key1 <=> key2
       end
       # Add the new rows to the table, but mark a group boundary at the points
-      # where the sort key changes value.
-      new_tab = Table.new
+      # where the sort key changes value.  NB: I use self.class.new here
+      # rather than Table.new because if this class is inherited, I want the
+      # new_tab to be an instance of the subclass.  With Table.new, this
+      # method's result will be an instance of FatTable::Table rather than of
+      # the subclass.
+      new_tab = self.class.new
       last_key = nil
       new_rows.each_with_index do |nrow, k|
         new_tab << nrow
@@ -713,7 +717,7 @@ module FatTable
                          before: before_hook,
                          after: after_hook)
       # Compute the new Table from this Table
-      result = Table.new
+      result = self.class.new
       normalize_boundaries
       rows.each_with_index do |old_row, old_k|
         # Set the group number in the before hook and run the hook with the
@@ -770,7 +774,7 @@ module FatTable
     #   tab.where('@row.even? && shares > 500') => even rows with lots of shares
     def where(expr)
       expr = expr.to_s
-      result = Table.new
+      result = self.class.new
       headers.each do |h|
         col = Column.new(header: h)
         result.add_column(col)
@@ -792,7 +796,7 @@ module FatTable
     # Return a new table with all duplicate rows eliminated. Resets groups. Same
     # as #uniq.
     def distinct
-      result = Table.new
+      result = self.class.new
       uniq_rows = rows.uniq
       uniq_rows.each do |row|
         result << row
@@ -904,7 +908,7 @@ module FatTable
         raise UserError, msg
       end
       other_rows = other.rows.map { |r| r.replace_keys(headers) }
-      result = Table.new
+      result = self.class.new
       new_rows = rows.send(oper, other_rows)
       new_rows.each_with_index do |row, k|
         result << row
@@ -1011,7 +1015,7 @@ module FatTable
       join_exp, other_common_heads =
         build_join_expression(exps, other, join_type)
       ev = Evaluator.new
-      result = Table.new
+      result = self.class.new
       other_rows = other.rows
       other_row_matches = Array.new(other_rows.size, false)
       rows.each do |self_row|
@@ -1259,7 +1263,7 @@ module FatTable
       groups = sorted_tab.rows.group_by do |r|
         group_cols.map { |k| r[k] }
       end
-      result = Table.new
+      result = self.class.new
       groups.each_pair do |_vals, grp_rows|
         result << row_from_group(grp_rows, group_cols, agg_cols)
       end
