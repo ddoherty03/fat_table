@@ -500,7 +500,7 @@ module FatTable
             format_h = format_h.merge(typ_fmt)
           end
           if fmts.key?(:nil)
-            typ_fmt = parse_nil_fmt(fmts[:nil]).first
+            typ_fmt = parse_nilclass_fmt(fmts[:nil]).first
             format_h = format_h.merge(typ_fmt)
           end
         end
@@ -587,7 +587,7 @@ module FatTable
         fmt = fmt.sub($&, '')
       end
       # Nil formatting can apply to strings as well
-      nil_hash, fmt = parse_nil_fmt(fmt)
+      nil_hash, fmt = parse_nilclass_fmt(fmt)
       fmt_hash = fmt_hash.merge(nil_hash)
       if fmt =~ /u/
         fmt_hash[:case] = :lower
@@ -636,7 +636,7 @@ module FatTable
     # instructions and the unconsumed part of the instruction string. This is
     # called to cull nil-based instructions from a formatting string intended
     # for other types, such as numeric, etc.
-    def parse_nil_fmt(fmt, _strict: true)
+    def parse_nilclass_fmt(fmt, _strict: true)
       # We parse the more complex formatting constructs first, and after each
       # parse, we remove the matched construct from fmt.  At the end, any
       # remaining characters in fmt should be invalid.
