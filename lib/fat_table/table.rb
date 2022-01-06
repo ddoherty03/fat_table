@@ -69,6 +69,23 @@ module FatTable
 
     # :category: Constructors
 
+    # Return an empty duplicate of self.  This allows the library to create an
+    # empty table that preserves all the instance variables from self.  Even
+    # though FatTable::Table objects have no instance variables, a class that
+    # inherits from it might.
+    def empty_dup
+      self.dup.__empty!
+    end
+
+    def __empty!
+      @columns = []
+      @boundaries = []
+      self
+    end
+
+
+    # :category: Constructors
+
     # Construct a Table from the contents of a CSV file named +fname+. Headers
     # will be taken from the first CSV row and converted to symbols.
     def self.from_csv_file(fname)
@@ -602,7 +619,7 @@ module FatTable
       # new_tab to be an instance of the subclass.  With Table.new, this
       # method's result will be an instance of FatTable::Table rather than of
       # the subclass.
-      new_tab = self.class.new
+      new_tab = empty_dup
       last_key = nil
       new_rows.each_with_index do |nrow, k|
         new_tab << nrow
@@ -717,7 +734,7 @@ module FatTable
                          before: before_hook,
                          after: after_hook)
       # Compute the new Table from this Table
-      result = self.class.new
+      result = empty_dup
       normalize_boundaries
       rows.each_with_index do |old_row, old_k|
         # Set the group number in the before hook and run the hook with the
@@ -774,7 +791,7 @@ module FatTable
     #   tab.where('@row.even? && shares > 500') => even rows with lots of shares
     def where(expr)
       expr = expr.to_s
-      result = self.class.new
+      result = empty_dup
       headers.each do |h|
         col = Column.new(header: h)
         result.add_column(col)
@@ -796,7 +813,7 @@ module FatTable
     # Return a new table with all duplicate rows eliminated. Resets groups. Same
     # as #uniq.
     def distinct
-      result = self.class.new
+      result = empty_dup
       uniq_rows = rows.uniq
       uniq_rows.each do |row|
         result << row
@@ -908,7 +925,7 @@ module FatTable
         raise UserError, msg
       end
       other_rows = other.rows.map { |r| r.replace_keys(headers) }
-      result = self.class.new
+      result = empty_dup
       new_rows = rows.send(oper, other_rows)
       new_rows.each_with_index do |row, k|
         result << row
@@ -1015,7 +1032,7 @@ module FatTable
       join_exp, other_common_heads =
         build_join_expression(exps, other, join_type)
       ev = Evaluator.new
-      result = self.class.new
+      result = empty_dup
       other_rows = other.rows
       other_row_matches = Array.new(other_rows.size, false)
       rows.each do |self_row|
@@ -1263,7 +1280,7 @@ module FatTable
       groups = sorted_tab.rows.group_by do |r|
         group_cols.map { |k| r[k] }
       end
-      result = self.class.new
+      result = empty_dup
       groups.each_pair do |_vals, grp_rows|
         result << row_from_group(grp_rows, group_cols, agg_cols)
       end
