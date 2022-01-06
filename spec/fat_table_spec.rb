@@ -1,21 +1,19 @@
-require 'spec_helper'
-
 RSpec.describe FatTable do
   it 'has a version number' do
     expect(FatTable::VERSION).not_to be nil
   end
 
-  it 'can invoke new constructor' do
+  it 'invokes new constructor' do
     expect(FatTable.new.class).to eq(FatTable::Table)
   end
 
-  it 'can invoke from_csv_file constructor' do
+  it 'invokes from_csv_file constructor' do
     fname = "#{__dir__}/example_files/wpcs.csv"
     expect(FatTable.from_csv_file(fname).class)
       .to eq(FatTable::Table)
   end
 
-  it 'can invoke from_csv_string constructor' do
+  it 'invokes from_csv_string constructor' do
     str = <<-CSV.strip_heredoc
       Ref,Date,Code,RawShares,Shares,Price,Info
       1,5/2/2006,P,5000,5000,8.6000,2006-08-09-1-I
@@ -27,13 +25,13 @@ RSpec.describe FatTable do
     expect(tab.column(:date).type).to eq('DateTime')
   end
 
-  it 'can construct from_org_file' do
+  it 'constructs from_org_file' do
     fname = "#{__dir__}/example_files/goldberg.org"
     expect(FatTable.from_org_file(fname).class)
       .to eq(FatTable::Table)
   end
 
-  it 'can construct from_org_string' do
+  it 'constructs from_org_string' do
     str = <<-TABLE.strip_heredoc
       #+CAPTION: Goldberg
       #+ATTR_LATEX: :font \footnotesize
@@ -48,7 +46,7 @@ RSpec.describe FatTable do
       .to eq(FatTable::Table)
   end
 
-  it 'can construct from array of arrays' do
+  it 'constructs from array of arrays' do
     aoa = [%i[a b c], [1, 2, 3], [4, 5, 6]]
     expect(FatTable.from_aoa(aoa).class)
       .to eq(FatTable::Table)
@@ -57,20 +55,20 @@ RSpec.describe FatTable do
       .to eq(FatTable::Table)
   end
 
-  it 'can construct from array of hashes' do
+  it 'constructs from array of hashes' do
     aoh = [{ a: 1, b: 2, c: 3 }, { a: 4, b: 5, c: 6 }]
     expect(FatTable.from_aoh(aoh).class)
       .to eq(FatTable::Table)
   end
 
-  it 'can construct from Table' do
+  it 'constructs from Table' do
     aoh = [{ a: 1, b: 2, c: 3 }, { a: 4, b: 5, c: 6 }]
     tab = FatTable.from_aoh(aoh)
     expect(FatTable.from_table(tab).class)
       .to eq(FatTable::Table)
   end
 
-  it 'should work on README example' do
+  it 'works on README example' do
     data = [
       %w[Date Code Raw Shares Price Info Bool],
       ['2013-05-29', 'S', 15_700.00, 6601.85, 24.7790, 'ENTITY3', 'F'],
