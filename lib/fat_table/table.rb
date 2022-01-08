@@ -205,6 +205,7 @@ module FatTable
           end
           result << hsh.to_h
         end
+        result.normalize_boundaries
         result
       end
 
@@ -253,6 +254,7 @@ module FatTable
           hash_row = Hash[headers.zip(row)]
           result << hash_row
         end
+        result.normalize_boundaries
         result
       end
 
@@ -262,6 +264,7 @@ module FatTable
                   skip_blanks: true).each do |row|
           result << row.to_h
         end
+        result.normalize_boundaries
         result
       end
 
@@ -523,6 +526,11 @@ module FatTable
       groups
     end
 
+    # Return the number of groups in the table.
+    def number_of_groups
+      boundaries.size
+    end
+
     # :category: Operators
 
     # Return this table mutated with all groups removed. Useful after something
@@ -545,8 +553,6 @@ module FatTable
       end
     end
 
-    protected
-
     # :stopdoc:
 
     # Make sure size - 1 is last boundary and that they are unique and sorted.
@@ -557,6 +563,8 @@ module FatTable
       end
       boundaries
     end
+
+    protected
 
     # Concatenate the array of argument bounds to this table's boundaries, but
     # increase each of the indexes in bounds by shift. This is used in the

@@ -421,6 +421,62 @@ module FatTable
       end
     end
 
+    describe 'from ruby aoa data structures with groups' do
+      let(:tab) {
+        @aoa = [
+          %w[Ref Date Code Raw Shares Price Info Bool],
+          nil,
+          [1, '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850, 'ZMPEF1', 'T'],
+          nil,
+          [2, '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500, 'ZMPEF1', 'T'],
+          [7, '2013-05-20', 'S', 12_000.00, 5046.00, 28.2804, 'ZMEAC', 'F'],
+          [8, '2013-05-20', 'S', 85_000.00, 35_742.50, 28.3224, 'ZMEAC', 'T'],
+          nil,
+          [9, '2013-05-20', 'S', 33_302.00, 14_003.49, 28.6383, 'ZMEAC', 'T'],
+          [10, '2013-05-23', 'S', 8000.00, 3364.00, 27.1083, 'ZMEAC', 'T'],
+          [11, '2013-05-23', 'S', 23_054.00, 9694.21, 26.8015, 'ZMEAC', 'F'],
+          [12, '2013-05-23', 'S', 39_906.00, 16_780.47, 25.1749, 'ZMEAC', 'T'],
+          [13, '2013-05-29', 'S', 13_459.00, 5659.51, 24.7464, 'ZMEAC', 'T'],
+          [14, '2013-05-29', 'S', 15_700.00, 6601.85, 24.7790, 'ZMEAC', 'F'],
+          [15, '2013-05-29', 'S', 15_900.00, 6685.95, 24.5802, 'ZMEAC', 'T'],
+          nil,
+          [16, '2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'ZMEAC', 'T'],
+        ]
+        Table.from_aoa(@aoa, hlines: true)
+      }
+
+      it 'properly forms the groups' do
+        expect(tab.number_of_groups).to eq(4)
+      end
+    end
+
+    describe 'from ruby aoh data structures with groups' do
+      let(:tab) {
+        @aoh = [
+          { ref: 1, date: '2013-05-02', code: 'P', shares: 795_546.20, raw: 795_546.2, price: 1.1850, info: 'ZMPEF1', bool: 'T'},
+          nil,
+          { ref: 2, date: '2013-05-02', code: 'P', shares: 118_186.40, raw: 118_186.4, price: 11.8500, info: 'ZMPEF1', bool: 'T'},
+          { ref: 7, date: '2013-05-20', code: 'S', shares: 12_000.00, raw: 5046.00, price: 28.2804, info: 'ZMEAC', bool: 'F'},
+          { ref: 8, date: '2013-05-20', code: 'S', shares: 85_000.00, raw: 35_742.50, price: 28.3224, info: 'ZMEAC', bool: 'T'},
+          nil,
+          { ref: 9, date: '2013-05-20', code: 'S', shares: 33_302.00, raw: 14_003.49, price: 28.6383, info: 'ZMEAC', bool: 'T'},
+          { ref: 10, date: '2013-05-23', code: 'S', shares: 8000.00, raw: 3364.00, price: 27.1083, info: 'ZMEAC', bool: 'T'},
+          { ref: 11, date: '2013-05-23', code: 'S', shares: 23_054.00, raw: 9694.21, price: 26.8015, info: 'ZMEAC', bool: 'F'},
+          { ref: 12, date: '2013-05-23', code: 'S', shares: 39_906.00, raw: 16_780.47, price: 25.1749, info: 'ZMEAC', bool: 'T'},
+          { ref: 13, date: '2013-05-29', code: 'S', shares: 13_459.00, raw: 5659.51, price: 24.7464, info: 'ZMEAC', bool: 'T'},
+          { ref: 14, date: '2013-05-29', code: 'S', shares: 15_700.00, raw: 6601.85, price: 24.7790, info: 'ZMEAC', bool: 'F'},
+          { ref: 15, date: '2013-05-29', code: 'S', shares: 15_900.00, raw: 6685.95, price: 24.5802, info: 'ZMEAC', bool: 'T'},
+          nil,
+          { ref: 16, date: '2013-05-30', code: 'S', shares: 6_679.00, raw: 2808.52, price: 25.0471, info: 'ZMEAC', bool: 'T'},
+        ]
+        Table.from_aoh(@aoh, hlines: true)
+      }
+
+      it 'properly forms the groups' do
+        expect(tab.number_of_groups).to eq(4)
+      end
+    end
+
     describe 'from SQL' do
       before :context do
         @out_file = Pathname("#{__dir__}/../../tmp/psql.out").cleanpath
