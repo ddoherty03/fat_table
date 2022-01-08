@@ -312,11 +312,11 @@ module FatTable
         expect(@strs.last).to eq('ago')
       end
 
-      it 'applies the `rng` aggregate' do
-        expect(@nums.rng).to eq('2018..87.654')
-        expect(@bools.rng).to eq('true..false')
-        expect(@dates.rng).to eq('2017-01-22..2011-02-18')
-        expect(@strs.rng).to eq('four..ago')
+      it 'applies the `range` aggregate' do
+        expect(@nums.range).to eq((Rational(2, 3)..64646464646))
+        expect{ @bools.range }.to raise_error /cannot/
+        expect(@dates.range).to eq(Date.parse('1957-09-22')..Date.parse('2017-01-22'))
+        expect(@strs.range).to eq('ago'..'years')
       end
 
       it 'applies the `sum` aggregate' do

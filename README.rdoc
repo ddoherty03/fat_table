@@ -888,8 +888,7 @@ will raise an exception.
 
 +last+:: the last non-nil item in the column,
 
-+rng+:: form a string of the form "#{first}..#{last}" to show the range of
-        values in the column,
++range+- :: form a Range ~~{min}..{max}~ to show the range of values in the column,
 
 +sum+:: for Numeric and String columns, apply '+' to all the non-nil values,
 

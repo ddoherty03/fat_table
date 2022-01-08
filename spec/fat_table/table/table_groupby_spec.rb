@@ -21,10 +21,10 @@ module FatTable
       end
 
       it 'should be able to group by equal columns' do
-        tab2 = @tab.group_by(:date, :code, shares: :sum, price: :avg, ref: :rng,
+        tab2 = @tab.group_by(:date, :code, shares: :sum, price: :avg, ref: :range,
                              bool: :all?)
         expect(tab2.headers).to eq([:date, :code, :sum_shares, :avg_price,
-                                    :rng_ref, :all_bool,])
+                                    :range_ref, :all_bool,])
         expect(tab2[0][:sum_shares]).to eq(913732.6)
         expect(tab2[1][:sum_shares]).to eq(54791.99)
         expect(tab2[0][:avg_price]).to eq(6.5175)

@@ -1109,8 +1109,7 @@ will raise an exception.
 
 -   **`first`:** the first non-nil item in the column,
 -   **`last`:** the last non-nil item in the column,
--   **`rng`:** form a string of the form `"#{first}..#{last}"` to show the range of
-    values in the column,
+-   **`range`:** form a Range ~~{min}..{max}~ to show the range of values in the column,
 -   **`sum`:** for `Numeric` and `String` columns, apply &rsquo;+&rsquo; to all the non-nil
     values,
 -   **`count`:** the number of non-nil values in the column,

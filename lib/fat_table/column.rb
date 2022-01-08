@@ -175,8 +175,9 @@ module FatTable
 
     # The names of the known aggregate operations that can be performed on a
     # Column.
-    VALID_AGGREGATES = %s(first last rng
-                          sum count min max avg var dev
+    VALID_AGGREGATES = %s(first last range
+                          sum count min max
+                          avg var pvar dev pdev
                           any? all? none? one?)
 
     # :category: Aggregates
@@ -195,10 +196,11 @@ module FatTable
 
     # :category: Aggregates
 
-    # Return a string of the #first and #last non-nil values in the Column.
-    # Works with any Column type.
-    def rng
-      "#{first}..#{last}"
+    # Return a Range object for the smallest to largest value in the column.
+    # Works with numeric, string, and datetime Columns.
+    def range
+      only_with('range', 'NilClass', 'Numeric', 'String', 'DateTime')
+      Range.new(min, max)
     end
 
     # :category: Aggregates
