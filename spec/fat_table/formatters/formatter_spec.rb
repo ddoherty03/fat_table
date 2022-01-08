@@ -48,7 +48,7 @@ module FatTable
           let(:fmt) { described_class.new(tab) }
 
           it 'properly parses a dollar and comma' do
-            fh = fmt.send(:parse_numeric_fmt, '$,R')
+            fh = fmt.send(:parse_numeric_fmt, '$,R').first
             expect(fh[:commas]).to be_truthy
             expect(fh[:currency]).to be_truthy
           end
