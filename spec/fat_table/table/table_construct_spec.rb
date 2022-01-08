@@ -474,6 +474,11 @@ module FatTable
 
       it 'properly forms the groups' do
         expect(tab.number_of_groups).to eq(4)
+        sub_cols = tab.group_cols(:shares)
+        expect(sub_cols[0].size).to eq(1)
+        expect(sub_cols[1].size).to eq(3)
+        expect(sub_cols[2].size).to eq(7)
+        expect(sub_cols[3].size).to eq(1)
       end
     end
 

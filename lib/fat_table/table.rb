@@ -531,6 +531,41 @@ module FatTable
       boundaries.size
     end
 
+    # Return the range of row indexes for boundary number +k+
+    def group_row_range(k)
+      last_k = boundaries.size - 1
+      if k < 0 || k > last_k
+        raise ArgumentError, "boundary number '#{k}' out of range in boundary_row_range"
+      end
+
+      if boundaries.empty?
+        (0..size-1)
+      elsif boundaries.size == 1
+        (0..boundaries.first)
+      else
+        # Keep index at or above zero
+        if k.zero?
+          (0..boundaries[k])
+        else
+          (boundaries[k-1]+1..boundaries[k])
+        end
+      end
+    end
+
+    # Return an Array of Column objects for header +col+ representing a
+    # sub-column for each group in the table under that header.
+    def group_cols(col)
+      normalize_boundaries
+      cols = []
+      (0..boundaries.size - 1).each do |k|
+        range = group_row_range(k)
+        tab_col = column(col)
+        gitems = tab_col.items[range]
+        cols << Column.new(header: col, items: gitems, type: tab_col.type)
+      end
+      cols
+    end
+
     # :category: Operators
 
     # Return this table mutated with all groups removed. Useful after something
