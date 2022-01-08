@@ -23,6 +23,7 @@ module FatTable
   require 'fat_table/convert'
   require 'fat_table/column'
   require 'fat_table/table'
+  require 'fat_table/footer'
   require 'fat_table/formatters'
   require 'fat_table/db_handle'
   require 'fat_table/errors'
