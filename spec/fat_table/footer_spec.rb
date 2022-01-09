@@ -82,11 +82,50 @@ module FatTable
         expect(g.number_of_groups).to eq(4)
       end
 
-      it 'initializes adds a single value to a group footer' do
+      it 'places label in first column by default' do
+        g = Footer.new('Summary', tab, group: true)
+        expect(g.label).to eq('Summary')
+        expect(g.table).to eq(tab)
+        expect(g.label_col).to eq(:ref)
+        expect(g.group).to be true
+        expect(g.number_of_groups).to eq(4)
+      end
+
+      it 'adds a single value to a group footer' do
         g = Footer.new('Summary', tab, label_col: :ref, group: true)
         g.add_value(:shares, :sum)
-        expect(g[0][:shares]).to eq(795246.2)
-        expect(g[:shares][0]).to eq(795246.2)
+        expect(g[:shares][0]).to eq(BigDecimal('795546.2'))
+        expect(g[:shares][1]).to eq(BigDecimal('158974.9'))
+        expect(g[:shares][2]).to eq(BigDecimal('62789.48'))
+        expect(g[:shares][3]).to eq(BigDecimal('2808.52'))
+      end
+
+      it 'adds multiple values to a group footer' do
+        g = Footer.new('Summary', tab, label_col: :ref, group: true)
+        g.add_value(:shares, :sum)
+        expect(g[:shares][0]).to eq(BigDecimal('795546.2'))
+        expect(g[:shares][1]).to eq(BigDecimal('158974.9'))
+        expect(g[:shares][2]).to eq(BigDecimal('62789.48'))
+        expect(g[:shares][3]).to eq(BigDecimal('2808.52'))
+
+        g.add_value(:date, :avg)
+        expect(g[:date][0].year).to eq(2013)
+        expect(g[:date][1].year).to eq(2013)
+        expect(g[:date][2].year).to eq(2013)
+        expect(g[:date][3].year).to eq(2013)
+
+        g.add_value(:price, :avg)
+        delta = 0.00001
+        expect(g[:price][0]).to be_within(delta).of(BigDecimal('1.1850'))
+        expect(g[:price][1]).to be_within(delta).of(BigDecimal('22.8176'))
+        expect(g[:price][2]).to be_within(delta).of(BigDecimal('25.97551'))
+        expect(g[:price][3]).to be_within(delta).of(BigDecimal('25.0471'))
+
+        g.add_value(:bool, :all?)
+        expect(g[:bool][0]).to eq(true)
+        expect(g[:bool][1]).to eq(false)
+        expect(g[:bool][2]).to eq(false)
+        expect(g[:bool][3]).to eq(true)
       end
     end
   end

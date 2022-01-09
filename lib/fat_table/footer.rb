@@ -64,8 +64,7 @@ module FatTable
         @group_cols[col] ||= table.group_cols(col)
         number_of_groups.times do |k|
           values[col] ||= []
-          binding.break
-          values << calc_val(agg, @group_cols[k])
+          values[col] << calc_val(agg, @group_cols[col][k])
         end
       else
         val = calc_val(agg, table.column(col))
@@ -95,22 +94,17 @@ module FatTable
     end
 
     def [](key)
-      case key
-      when Numeric
+      key = key.as_sym
+      if values.keys.include?(key)
         if group
           values[key]
         else
-          raise ArgumentError, "Can't index non-group Footer by number '#{key}'"
-        end
-      when Symbol, String
-        key = key.as_sym
-        if values.keys.include?(key)
           values[key].last
-        elsif table.headers.include?(label_col.as_sym)
-          nil
-        else
-          raise ArgumentError, "No column header '#{key}' in footer table"
         end
+      elsif table.headers.include?(label_col.as_sym)
+        nil
+      else
+        raise ArgumentError, "No column header '#{key}' in footer table"
       end
     end
 
