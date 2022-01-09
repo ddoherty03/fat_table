@@ -285,6 +285,12 @@ module FatTable
         expect(tab.rows.size).to be > 10
         expect(tab.headers.sort)
           .to eq [:code, :date, :info, :price, :raw, :ref, :shares]
+        expect(tab.number_of_groups).to eq(4)
+        sub_cols = tab.group_cols(:shares)
+        expect(sub_cols[0].size).to eq(1)
+        expect(sub_cols[1].size).to eq(3)
+        expect(sub_cols[2].size).to eq(7)
+        expect(sub_cols[3].size).to eq(3)
         tab.rows.each do |row|
           row.each_pair do |k, _v|
             expect(k.class).to eq Symbol
