@@ -182,6 +182,50 @@ module FatTable
 
     # :category: Add Footers
 
+    # A simpler method for adding a footer to the formatted output having the
+    # label +label+ placed in the column with the header +label_col+ or in the
+    # first column if +label_col+ is ommitted.  The remaining hash arguments
+    # apply an aggregate to the values of the column, which can be:
+    #
+    # (1) a symbol representing one of the builtin aggregates, i.e., :first,
+    # :last, :range, :sum, :count, :min, :max, :avg, :var, :pvar, :dev, :pdev,
+    # :any?, :all?, :none?, and :one?,
+    #
+    # (2) an arbitrary value of one of the four supported types: Boolean,
+    # DateTime, Numeric, or String: true, false, 3.14159, 'Total debits', or a
+    # string that is convertible into one of these types by the usual methods
+    # used in contructing a table,
+    #
+    # Examples:
+    #
+    # Put the label in the :dickens column of the footer and the maximum value
+    # from the :alpha column in the :alpha column of the footer.
+    #
+    #   fmtr.foot('Best', :dickens, alpha: :max)
+    #
+    # Put the label 'Today' in the first column of the footer and today's date
+    # in the :beta column.
+    #
+    #   fmtr.foot('Today', beta: Date.today)
+    #
+    # Put the label 'Best' in the :dickens column of the footer and the string
+    # 'Tale of Two Cities' in the :alpha column of the footer.  Since it can't
+    # be interpreted as Boolean, Numeric, or DateTime, it is placed in the
+    # footer literally.
+    #
+    #   fmtr.foot('Best', :dickens, alpha: 'A Tale of Two Cities')
+    #
+    def foot(label, label_col = nil, **agg_cols)
+      foot = Footer.new(label, table, label_col: label_col)
+      agg_cols.each_pair do |h, agg|
+        foot.add_value(h, agg)
+      end
+      @footers[label] = foot
+      foot.to_hash
+    end
+
+    # :category: Add Footers
+
     # Add a group footer to the output with a label given in the first
     # parameter, defaulting to 'Total'. After the label, you can given any
     # number of headers (as symbols) for columns to be summed, and then any
@@ -204,6 +248,18 @@ module FatTable
       sum_cols.each do |h|
         foot.add_value(h, :sum)
       end
+      agg_cols.each_pair do |h, agg|
+        foot.add_value(h, agg)
+      end
+      @gfooters[label] = foot
+      k = @gfooters.size - 1
+      foot.to_hash(k)
+    end
+
+    # Add a group footer to the formatted output.  This method has the same
+    # usage as the #foot method, but it adds group footers.
+    def gfoot(label, label_col = nil, **agg_cols)
+      foot = Footer.new(label, table, label_col: label_col, group: true)
       agg_cols.each_pair do |h, agg|
         foot.add_value(h, agg)
       end
