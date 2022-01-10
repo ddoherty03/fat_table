@@ -23,12 +23,13 @@ module FatTable
     # specific Formatters.
     attr_reader :options
 
-    # A Hash of Hashes with the outer Hash keyed on location.  The value for the
-    # outer Hash is another Hash keyed on column names.  The values of the inner
-    # Hash are OpenStruct objects that contain the formatting instructions for
-    # the location and column.  For example, +format_at[:body][:shares].commas+
-    # is set either true or false depending on whether the +:shares+ column in
-    # the table body is to have grouping commas inserted in the output.
+    # A Hash of Hashes with the outer Hash keyed on location.  The value for
+    # the outer Hash is an inner Hash keyed on column names.  The values of
+    # the inner Hash are OpenStruct objects that contain the formatting
+    # instructions for the location and column.  For example,
+    # +format_at[:body][:shares].commas+ is set either true or false depending
+    # on whether the +:shares+ column in the table body is to have grouping
+    # commas inserted in the output.
     attr_reader :format_at
 
     # A Hash of the table-wide footers to be added to the output.  The key is a
@@ -102,6 +103,7 @@ module FatTable
       @options = options
       @footers = {}
       @gfooters = {}
+
       # Formatting instructions for various "locations" within the Table, as a
       # hash of hashes. The outer hash is keyed on the location, and each inner
       # hash is keyed on either a column sym or a type sym, :string, :numeric,
@@ -120,14 +122,14 @@ module FatTable
       yield self if block_given?
     end
 
-    # :category: Footers
+    # :category: Add Footers
 
     ############################################################################
-    # Footer methods
+    # Add Footer methods
     #
     # A Table may have any number of footers and any number of group footers.
     # Footers are not part of the table's data and never participate in any of
-    # the transformation methods on tables.  They are never inherited by output
+    # the operation methods on tables.  They are never inherited by output
     # tables from input tables in any of the transformation methods.
     #
     # When output, a table footer will appear at the bottom of the table, and a
@@ -154,46 +156,37 @@ module FatTable
     # For example, these are valid footer definitions.
     #
     # Just sum the shares column with a label of 'Total'
-    #   tab.footer(:shares)
+    #   fmtr.footer(:shares)
     #
     # Change the label and sum the :price column as well
-    #   tab.footer('Grand Total', :shares, :price)
+    #   fmtr.footer('Grand Total', :shares, :price)
     #
     # Average then show standard deviation of several columns
-    #   tab.footer.('Average', date: :avg, shares: :avg, price: :avg)
-    #   tab.footer.('Sigma', date: :dev, shares: :dev, price: :dev)
+    #   fmtr.footer.('Average', date: :avg, shares: :avg, price: :avg)
+    #   fmtr.footer.('Sigma', date: :dev, shares: :dev, price: :dev)
     #
     # Do some sums and some other aggregates: sum shares, average date and
     # price.
-    #   tab.footer.('Summary', :shares, date: :avg, price: :avg)
-    def footer(label, *sum_cols, **agg_cols)
-      label = label.to_s
-      foot = {}
+    #   fmtr.footer.('Summary', :shares, date: :avg, price: :avg)
+    def footer(label, label_col = nil, *sum_cols, **agg_cols)
+      foot = Footer.new(label, table, label_col: label_col)
       sum_cols.each do |h|
-        unless table.headers.include?(h)
-          raise UserError, "No '#{h}' column in table to sum in the footer"
-        end
-
-        foot[h] = :sum
+        foot.add_value(h, :sum)
       end
-      agg_cols.each do |h, agg|
-        unless table.headers.include?(h)
-          raise UserError, "No '#{h}' column in table to #{agg} in the footer"
-        end
-
-        foot[h] = agg
+      agg_cols.each_pair do |h, agg|
+        foot.add_value(h, agg)
       end
       @footers[label] = foot
-      self
+      foot.to_hash
     end
 
-    # :category: Footers
+    # :category: Add Footers
 
-    # Add a group footer to the table with a label given in the first parameter,
-    # defaulting to 'Total'. After the label, you can given any number of
-    # headers (as symbols) for columns to be summed, and then any number of hash
-    # parameters for columns for with to apply an aggregate other than :sum. For
-    # example, these are valid gfooter definitions.
+    # Add a group footer to the output with a label given in the first
+    # parameter, defaulting to 'Total'. After the label, you can given any
+    # number of headers (as symbols) for columns to be summed, and then any
+    # number of hash parameters for columns for with to apply an aggregate
+    # other than :sum. For example, these are valid gfooter definitions.
     #
     # Just sum the shares column with a label of 'Total' tab.gfooter(:shares)
     #
@@ -201,49 +194,41 @@ module FatTable
     #   :shares, :price)
     #
     # Average then show standard deviation of several columns
-    #   tab.gfooter.('Average', date: :avg, shares: :avg, price: :avg)
-    #   tab.gfooter.('Sigma', date: dev, shares: :dev, price: :dev)
+    #   fmtr.gfooter.('Average', date: :avg, shares: :avg, price: :avg)
+    #   fmtr.gfooter.('Sigma', date: dev, shares: :dev, price: :dev)
     #
     # Do some sums and some other aggregates: sum shares, average date and
-    # price. tab.gfooter.('Summary', :shares, date: :avg, price: :avg)
-    def gfooter(label, *sum_cols, **agg_cols)
-      label = label.to_s
-      foot = {}
+    # price. fmtr.gfooter.('Summary', :shares, date: :avg, price: :avg)
+    def gfooter(label, label_col = nil, *sum_cols, **agg_cols)
+      foot = Footer.new(label, table, label_col: label_col, group: true)
       sum_cols.each do |h|
-        unless table.headers.include?(h)
-          raise UserError, "No '#{h}' column in table for group sum footer"
-        end
-
-        foot[h] = :sum
+        foot.add_value(h, :sum)
       end
-      agg_cols.each do |h, agg|
-        unless table.headers.include?(h)
-          raise UserError, "No '#{h}' column in table for #{agg} group footer"
-        end
-
-        foot[h] = agg
+      agg_cols.each_pair do |h, agg|
+        foot.add_value(h, agg)
       end
       @gfooters[label] = foot
-      self
+      k = @gfooters.size - 1
+      foot.to_hash(k)
     end
 
-    # :category: Footers
+    # :category: Add Footers
 
-    # Add table footer to sum the +cols+ given as header symbols.
+    # Add a footer to sum the +cols+ given as header symbols.
     def sum_footer(*cols)
-      footer('Total', *cols)
+      footer('Total', nil, *cols)
     end
 
-    # :category: Footers
+    # :category: Add Footers
 
-    # Add group footer to sum the +cols+ given as header symbols.
+    # Add a group footer to sum the +cols+ given as header symbols.
     def sum_gfooter(*cols)
-      gfooter('Group Total', *cols)
+      gfooter('Group Total', nil, *cols)
     end
 
-    # :category: Footers
+    # :category: Add Footers
 
-    # Add table footer to average the +cols+ given as header symbols.
+    # Add a footer to average the +cols+ given as header symbols.
     def avg_footer(*cols)
       hsh = {}
       cols.each do |c|
@@ -252,9 +237,9 @@ module FatTable
       footer('Average', **hsh)
     end
 
-    # :category: Footers
+    # :category: Add Footers
 
-    # Add group footer to average the +cols+ given as header symbols.
+    # Add a group footer to average the +cols+ given as header symbols.
     def avg_gfooter(*cols)
       hsh = {}
       cols.each do |c|
@@ -263,9 +248,9 @@ module FatTable
       gfooter('Group Average', **hsh)
     end
 
-    # :category: Footers
+    # :category: Add Footers
 
-    # Add table footer to display the minimum value of the +cols+ given as
+    # Add a footer to display the minimum value of the +cols+ given as
     # header symbols.
     def min_footer(*cols)
       hsh = {}
@@ -275,9 +260,9 @@ module FatTable
       footer('Minimum', **hsh)
     end
 
-    # :category: Footers
+    # :category: Add Footers
 
-    # Add group footer to display the minimum value of the +cols+ given as
+    # Add a group footer to display the minimum value of the +cols+ given as
     # header symbols.
     def min_gfooter(*cols)
       hsh = {}
@@ -287,10 +272,10 @@ module FatTable
       gfooter('Group Minimum', **hsh)
     end
 
-    # :category: Footers
+    # :category: Add Footers
 
-    # Add table footer to display the maximum value of the +cols+ given as
-    # header symbols.
+    # Add a footer to display the maximum value of the +cols+ given as header
+    # symbols.
     def max_footer(*cols)
       hsh = {}
       cols.each do |c|
@@ -299,9 +284,9 @@ module FatTable
       footer('Maximum', **hsh)
     end
 
-    # :category: Footers
+    # :category: Add Footers
 
-    # Add group footer to display the maximum value of the +cols+ given as
+    # Add a group footer to display the maximum value of the +cols+ given as
     # header symbols.
     def max_gfooter(*cols)
       hsh = {}
@@ -320,7 +305,7 @@ module FatTable
     # columns by using the column head as a key and the value as the format
     # instructions. In addition, the keys, :numeric, :string, :datetime,
     # :boolean, and :nil, can be used to specify the default format instructions
-    # for columns of the given type is no other instructions have been given.
+    # for columns of the given type if no other instructions have been given.
     #
     # Formatting instructions are strings, and what are valid strings depend on
     # the type of the column:
@@ -418,6 +403,11 @@ module FatTable
     # instructions valid for strings are available:
     #
     # \n\[niltext\]:: render a nil item with the given text.
+
+    # Set the formatting for all 6 "location" specifiers for the table: (1)
+    # the headline, :header, (2) the first row of the body, :bfirst, (3) the
+    # first row of each group, :gfirst, (4) all of the body rows, :body, (5)
+    # the footer rows, :footer, and (6) the group footer rows, :gfooter.
     def format(**fmts)
       %i[header bfirst gfirst body footer gfooter].each do |loc|
         format_for(loc, **fmts)
@@ -469,6 +459,8 @@ module FatTable
     # cells have the type of the column to which they belong, including all
     # cells in group or table footers. See ::format for details on formatting
     # directives.
+    #
+    # Set the formatting for the given location.
     def format_for(location, **fmts)
       unless LOCATIONS.include?(location)
         raise UserError, "unknown format location '#{location}'"
@@ -483,7 +475,9 @@ module FatTable
 
       @format_at[location] ||= {}
       table.headers.each do |h|
-        # Default formatting hash
+        # Build the inner hash of formatting instructions for this column h,
+        # beginning with the default formatting hash or any existing inner
+        # hash.
         format_h =
           if format_at[location][h].empty?
             default_format.dup
@@ -491,10 +485,10 @@ module FatTable
             format_at[location][h].to_h
           end
 
+        # Merge in string and nil formatting for this column h, but not in
+        # header location.  Header is always typed a string, so it will get
+        # formatted in type-based formatting below. And headers are never nil.
         unless location == :header
-          # Merge in string and nil formatting, but not in header.  Header is
-          # always typed a string, so it will get formatted in type-based
-          # formatting below. And headers are never nil.
           if fmts.key?(:string)
             typ_fmt = parse_fmt_string(fmts[:string])
             format_h = format_h.merge(typ_fmt)
@@ -505,6 +499,8 @@ module FatTable
           end
         end
 
+        # Merge in formatting for column h based on the column type, or based
+        # on the string type for the header location.
         typ = location == :header ? :string : table.type(h).as_sym
         parse_typ_method_name = 'parse_' + typ.to_s + '_fmt'
         if fmts.key?(typ)
@@ -519,10 +515,10 @@ module FatTable
           format_h = format_h.merge(col_fmt)
         end
 
+        # Copy :body formatting for column h to :bfirst and :gfirst if they
+        # still have the default formatting. Can be overridden with a
+        # format_for call with those locations.
         if location == :body
-          # Copy :body formatting for column h to :bfirst and :gfirst if they
-          # still have the default formatting. Can be overridden with a
-          # format_for call with those locations.
           format_h.each_pair do |k, v|
             if format_at[:bfirst][h].send(k) == default_format[k]
               format_at[:bfirst][h].send("#{k}=", v)
@@ -938,9 +934,10 @@ module FatTable
 
     # :category: Output
 
-    # Return the +table+ as either a string in the target format or as a Ruby
-    # data structure if that is the target.  In the latter case, all the cells
-    # are converted to strings formatted according to the Formatter's formatting
+    # Return a representation of the +table+, along with all footers and group
+    # footers, as either a string in the target format or as a Ruby data
+    # structure if that is the target.  In the latter case, all the cells are
+    # converted to strings formatted according to the Formatter's formatting
     # directives given in Formatter.format_for or Formatter.format.
     def output
       # This results in a hash of two-element arrays. The key is the header and
@@ -1062,16 +1059,16 @@ module FatTable
       # Don't decorate if this Formatter calls for alignment.  It will be done
       # in the second pass.
       decorate = !aligned?
-      new_rows = []
+      out_rows = []
       tbl_row_k = 0
       table.groups.each_with_index do |grp, grp_k|
+        # NB: grp is an array of hashes, one for each row in the group.
+        #
         # Mark the beginning of a group if this is the first group after the
         # header or the second or later group.
-        new_rows << nil if include_header_row? || grp_k.positive?
-        # Compute group body
-        grp_col = {}
+        out_rows << nil if include_header_row? || grp_k.positive?
+        # Format group body rows
         grp.each_with_index do |row, grp_row_k|
-          new_row = {}
           location =
             if tbl_row_k.zero?
               :bfirst
@@ -1080,83 +1077,51 @@ module FatTable
             else
               :body
             end
-          table.headers.each do |h|
-            # We set the column type here in case the column type was forced
-            # to String.
-            # grp_col[h] ||= Column.new(header: h)
-            grp_col[h] ||= Column.new(header: h, type: table.type(h))
-            grp_col[h] << row[h]
+
+          out_row = {}
+          row.each_pair do |h, v|
             istruct = format_at[location][h]
-            new_row[h] = [row[h], format_cell(row[h], istruct,
-                                              decorate: decorate)]
+            out_row[h] = [row[h], format_cell(row[h], istruct, decorate: decorate)]
           end
-          new_rows << [location, new_row]
+          out_rows << [location, out_row]
           tbl_row_k += 1
         end
-        # Compute group footers
+        # Format group footers
         gfooters.each_pair do |label, gfooter|
-          # Mark the beginning of a group footer
-          new_rows << nil
-          gfoot_row = {}
-          first_h = nil
-          grp_col.each_pair do |h, col|
-            first_h ||= h
-            gfoot_row[h] =
-              if gfooter[h]
-                val = col.send(gfooter[h])
-                istruct = format_at[:gfooter][h]
-                [val, format_cell(val, istruct, decorate: decorate)]
-              else
-                [nil, '']
-              end
+          out_rows << nil
+          gfoot_row = Hash.new([nil, ''])
+          gfooter.to_hash(grp_k).each_pair do |h, v|
+            istruct = format_at[:gfooter][h]
+            gfoot_row[h] = [v, format_cell(v, istruct, decorate: decorate)]
           end
-          if gfoot_row[first_h].last.blank?
-            istruct = format_at[:gfooter][first_h]
-            gfoot_row[first_h] =
-              [label, format_cell(label, istruct, decorate: decorate)]
-          end
-          new_rows << [:gfooter, gfoot_row]
+          out_rows << [:gfooter, gfoot_row]
         end
       end
-      new_rows
+      out_rows
     end
 
     def build_formatted_footers
       # Don't decorate if this Formatter calls for alignment.  It will be done
       # in the second pass.
       decorate = !aligned?
-      new_rows = []
-      # Done with body, compute the table footers.
-      footers.each_pair do |label, footer|
-        # Mark the beginning of a footer
-        new_rows << nil
-        foot_row = {}
-        first_h = nil
-        table.columns.each do |col|
-          h = col.header
-          first_h ||= h
-          foot_row[h] =
-            if footer[h]
-              val = col.send(footer[h])
-              istruct = format_at[:footer][h]
-              [val, format_cell(val, istruct, decorate: decorate)]
-            else
-              [nil, '']
-            end
+      out_rows = []
+
+      footers.each_pair do |label, foot|
+        out_rows << nil
+        foot_row = Hash.new([nil, ''])
+        foot.to_hash.each_pair do |h, v|
+          istruct = format_at[:gfooter][h]
+          foot_row[h] = [v, format_cell(v, istruct, decorate: decorate)]
         end
-        # Put the label in the first column of footer unless it has been
-        # formatted as part of footer.
-        if foot_row[first_h].last.blank?
-          istruct = format_at[:footer][first_h]
-          foot_row[first_h] =
-            [label, format_cell(label, istruct, decorate: decorate)]
-        end
-        new_rows << [:footer, foot_row]
+        out_rows << [:footer, foot_row]
       end
-      new_rows
+      out_rows
     end
 
-    # Return a hash of the maximum widths of all the given headers and rows.
+    # Return a hash of the maximum widths of all the given headers and out
+    # rows, represented as hashes keyed by column symbol, h, and with a value
+    # being a 2-element array of the raw value for the cell and the formatted
+    # string representation of the cell.
     def width_map(formatted_headers, rows)
       widths = {}
       formatted_headers.each_pair do |h, (_v, fmt_v)|

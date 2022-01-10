@@ -548,40 +548,45 @@ module FatTable
         fmt = described_class.new(tab) do |f|
           f.sum_footer(:raw, :shares, :price)
         end
-        expect(fmt.footers['Total'][:raw]).to eq(:sum)
-        expect(fmt.footers['Total'][:shares]).to eq(:sum)
-        expect(fmt.footers['Total'][:price]).to eq(:sum)
-        expect(fmt.footers['Total'][:info]).to be_nil
+        expect(fmt.footers['Total'].to_hash[:ref]).to eq('Total')
+        expect(fmt.footers['Total'].to_hash[:raw].class).to eq(BigDecimal)
+        expect(fmt.footers['Total'].to_hash[:shares].class).to eq(BigDecimal)
+        expect(fmt.footers['Total'].to_hash[:price].class).to eq(BigDecimal)
+        expect(fmt.footers['Total'].to_hash[:info]).to be_nil
       end
 
       it 'adds an average footer to the output' do
         fmt = described_class.new(tab) do |f|
           f.avg_footer(:raw, :shares, :price)
         end
-        expect(fmt.footers['Average'][:raw]).to eq(:avg)
-        expect(fmt.footers['Average'][:shares]).to eq(:avg)
-        expect(fmt.footers['Average'][:price]).to eq(:avg)
-        expect(fmt.footers['Average'][:info]).to be_nil
+        foot_hash = fmt.footers['Average'].to_hash
+        expect(foot_hash[:ref]).to eq('Average')
+        expect(foot_hash[:raw].class).to be(BigDecimal)
+        expect(foot_hash[:shares].class).to be(BigDecimal)
+        expect(foot_hash[:price].class).to be(BigDecimal)
+        expect(foot_hash[:info]).to be_nil
       end
 
       it 'adds a minimum footer to the output' do
         fmt = described_class.new(tab) do |f|
           f.min_footer(:raw, :shares, :price)
         end
-        expect(fmt.footers['Minimum'][:raw]).to eq(:min)
-        expect(fmt.footers['Minimum'][:shares]).to eq(:min)
-        expect(fmt.footers['Minimum'][:price]).to eq(:min)
-        expect(fmt.footers['Minimum'][:info]).to be_nil
+        foot_hash = fmt.footers['Minimum'].to_hash
+        expect(foot_hash[:raw].class).to eq(BigDecimal)
+        expect(foot_hash[:shares].class).to eq(BigDecimal)
+        expect(foot_hash[:price].class).to eq(BigDecimal)
+        expect(foot_hash[:info]).to be_nil
       end
 
       it 'adds a maximum footer to the output' do
         fmt = described_class.new(tab) do |f|
           f.max_footer(:raw, :shares, :price)
         end
-        expect(fmt.footers['Maximum'][:raw]).to eq(:max)
-        expect(fmt.footers['Maximum'][:shares]).to eq(:max)
-        expect(fmt.footers['Maximum'][:price]).to eq(:max)
-        expect(fmt.footers['Maximum'][:info]).to be_nil
+        foot_hash = fmt.footers['Maximum'].to_hash
+        expect(foot_hash[:raw].class).to eq(BigDecimal)
+        expect(foot_hash[:shares].class).to eq(BigDecimal)
+        expect(foot_hash[:price].class).to eq(BigDecimal)
+        expect(foot_hash[:info]).to be_nil
       end
 
       describe 'table output' do

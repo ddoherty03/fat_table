@@ -113,5 +113,27 @@ module FatTable
 
       table.number_of_groups
     end
+
+    # Return a Hash with a key for each column header mapped to the footer
+    # value for that column, nil for unused columns.  Use the key +k+ to
+    # specify which group to access in the case of a group footer.
+    def to_hash(k = nil)
+      hsh = {}
+      if group
+        table.headers.each do |h|
+          hsh[h] = values[h] ? values[h][k] : nil
+        end
+      else
+        table.headers.each do |h|
+          hsh[h] =
+          if values[h]
+            values[h].first
+          else
+            nil
+          end
+        end
+      end
+      hsh
+    end
   end
 end
