@@ -62,33 +62,55 @@ module FatTable
       end
 
       if group
-        @group_cols[col] ||= table.group_cols(col)
         number_of_groups.times do |k|
           values[col] ||= []
-          values[col] << calc_val(agg, @group_cols[col][k])
+          values[col] << calc_val(agg, col, k)
         end
       else
-        val = calc_val(agg, table.column(col))
-        values[col] = [val]
+        values[col] = [calc_val(agg, col)]
       end
     end
 
-    def calc_val(agg, column)
-      if agg.is_a?(Symbol)
+    # Evaluate the given agg for the header col and, in the case of a group
+    # footer, the group k.
+    def calc_val(agg, col, k = nil)
+      column =
+        if group
+          @group_cols[col] ||= table.group_cols(col)
+          @group_cols[col][k]
+        else
+          table.column(col)
+        end
+
+      case agg
+      when Symbol
         column.send(agg)
-      elsif agg.is_a?(String)
-        # TODO: allow eval of expression here.
-        #
-        # If it can be converted to the column type, convert it; otherwise if
-        # it be evaled like a select clause, eval it; otherwise set it to the
-        # string value.
-        if (val = Convert.convert_to_type(agg, column.type))
-          val
+      when String
+        begin
+          converted_val = Convert.convert_to_type(agg, column.type)
+        rescue UserError
+          converted_val = false
+        end
+        if converted_val
+          converted_val
         else
           agg
         end
-      elsif agg.is_a?(column.type)
+      when column.type.constantize
         agg
+      when Proc
+        case agg.arity
+        when 0
+          agg.call
+        when 1
+          group ? agg.call(k) : agg.call(col)
+        when 2
+          if group
+            agg.call(col, k)
+          else
+            raise ArgumentError, "2-argument lambdas are allowed only in group footers"
+          end
+        end
       else
         raise ArgumentError, "Attempt to set footer column #{col} to '#{agg}' of type #{agg.class}"
       end
@@ -127,8 +149,16 @@ module FatTable
       else
         table.headers.each do |h|
           hsh[h] =
-          if values[h]
-            values[h].first
+            if values[h]
+              values[h].first
+            else
+              nil
+            end
+        end
+      end
+      hsh
+    end
+
     # Define an accessor method for each table header that returns the footer
     # value for that column, and in the case of a group footer, either returns
     # the array of values or take an optional index k to return the value for
