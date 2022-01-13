@@ -196,25 +196,6 @@ module FatTable
 
     # :category: Aggregates
 
-    # Return a Range object for the smallest to largest value in the column.
-    # Works with numeric, string, and datetime Columns.
-    def range
-      only_with('range', 'NilClass', 'Numeric', 'String', 'DateTime')
-      Range.new(min, max)
-    end
-
-    # :category: Aggregates
-
-    # Return the sum of the non-nil items in the Column.  Works with numeric and
-    # string Columns. For a string Column, it will return the concatenation of
-    # the non-nil items.
-    def sum
-      only_with('sum', 'Numeric', 'String')
-      items.compact.sum
-    end
-
-    # :category: Aggregates
-
     # Return a count of the non-nil items in the Column.  Works with any Column
     # type.
     def count
@@ -237,6 +218,25 @@ module FatTable
     def max
       only_with('max', 'NilClass', 'Numeric', 'String', 'DateTime')
       items.compact.max
+    end
+
+    # :category: Aggregates
+
+    # Return a Range object for the smallest to largest value in the column.
+    # Works with numeric, string, and datetime Columns.
+    def range
+      only_with('range', 'NilClass', 'Numeric', 'String', 'DateTime')
+      Range.new(min, max)
+    end
+
+    # :category: Aggregates
+
+    # Return the sum of the non-nil items in the Column.  Works with numeric and
+    # string Columns. For a string Column, it will return the concatenation of
+    # the non-nil items.
+    def sum
+      only_with('sum', 'Numeric')
+      items.compact.sum
     end
 
     # :category: Aggregates
