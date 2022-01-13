@@ -593,19 +593,18 @@ module FatTable
         let(:tab) {
           aoa = [
             %w[Ref Date Code Raw Shares Price Info Bool],
-            [1, '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850, 'ZMPEF1', 'T'],
-            [2, '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500,
-             'ZMPEF1', 'T'],
-            [7, '2013-05-20', 'S', 12_000.00, 5046.00, 28.2804, 'ZMEAC', 'F'],
-            [8, '2013-05-20', 'S', 85_000.00, 35_742.50, 28.3224, 'ZMEAC', 'T'],
-            [9, '2013-05-20', 'S', 33_302.00, 14_003.49, 28.6383, 'ZMEAC', 'T'],
-            [10, '2013-05-23', 'S', 8000.00, 3364.00, 27.1083, 'ZMEAC', 'T'],
-            [11, '2013-05-23', 'S', 23_054.00, 9694.21, 26.8015, 'ZMEAC', 'F'],
-            [12, '2013-05-23', 'S', 39_906.00, 16_780.47, 25.1749, 'ZMEAC', 'T'],
-            [13, '2013-05-29', 'S', 13_459.00, 5659.51, 24.7464, 'ZMEAC', 'T'],
-            [14, '2013-05-29', 'S', 15_700.00, 6601.85, 24.7790, 'ZMEAC', 'F'],
-            [15, '2013-05-29', 'S', 15_900.00, 6685.95, 24.5802, 'ZMEAC', 'T'],
-            [16, '2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'ZMEAC', 'T']
+            [1  , '2013-05-02' , 'P' , 795_546.20 , 795_546.2 , 1.1850  , 'ZMPEF1' , 'T'] ,
+            [2  , '2013-05-02' , 'P' , 118_186.40 , 118_186.4 , 11.8500 , 'ZMPEF1' , 'T'] ,
+            [7  , '2013-05-20' , 'S' , 12_000.00  , 5046.00   , 28.2804 , 'ZMEAC'  , 'F'] ,
+            [8  , '2013-05-20' , 'S' , 85_000.00  , 35_742.50 , 28.3224 , 'ZMEAC'  , 'T'] ,
+            [9  , '2013-05-20' , 'S' , 33_302.00  , 14_003.49 , 28.6383 , 'ZMEAC'  , 'T'] ,
+            [10 , '2013-05-23' , 'S' , 8000.00    , 3364.00   , 27.1083 , 'ZMEAC'  , 'T'] ,
+            [11 , '2013-05-23' , 'S' , 23_054.00  , 9694.21   , 26.8015 , 'ZMEAC'  , 'F'] ,
+            [12 , '2013-05-23' , 'S' , 39_906.00  , 16_780.47 , 25.1749 , 'ZMEAC'  , 'T'] ,
+            [13 , '2013-05-29' , 'S' , 13_459.00  , 5659.51   , 24.7464 , 'ZMEAC'  , 'T'] ,
+            [14 , '2013-05-29' , 'S' , 15_700.00  , 6601.85   , 24.7790 , 'ZMEAC'  , 'F'] ,
+            [15 , '2013-05-29' , 'S' , 15_900.00  , 6685.95   , 24.5802 , 'ZMEAC'  , 'T'] ,
+            [16 , '2013-05-30' , 'S' , 6_679.00   , 2808.52   , 25.0471 , 'ZMEAC'  , 'T']
           ]
           FatTable::Table.from_aoa(aoa).order_by(:date)
         }
@@ -615,7 +614,7 @@ module FatTable
           expect(str.length).to be > 10
         end
 
-        it 'sets format and output by method calls' do
+        it 'sets format and output by footer and gfooter method calls' do
           fmt = described_class.new(tab)
           fmt.format(ref: '5.0', code: 'C', raw: ',0.0R', shares: ',0.0R',
                      price: '0.3', bool: 'Y')
@@ -631,6 +630,36 @@ module FatTable
           expect(str).to match(/^00001\|2013-05-02\|P\|795,546\|795,546\|1.185\|ZMPEF1\|Y$/)
           expect(str).to match(/^Group Total\|\|\|130,302\|54,792\|85.241\|\|$/)
           expect(str).to match(/^Total|||1,166,733|1,020,119|276.514||$/)
+        end
+
+        it 'allows footer aggregates to be lambdas' do
+          fmt = described_class.new(tab)
+          fmt.format(ref: '5.0', code: 'C', raw: ',0.0R', shares: ',0.0R',
+                     price: '0.3', bool: 'Y')
+          fmt.format_for(:header, string: 'CB')
+          tgfoot = fmt.gfoot('Group Total', price: :sum, raw: :sum, shares: :sum, bool: 'Static')
+          sqft = fmt.gfoot('Sqrt Group Total', price: ->(x) { tgfoot.price(x).sqrt(12) },
+                    raw: ->(x) { tgfoot.raw(x).sqrt(12) },
+                    shares: ->(x) { tgfoot.shares(x).sqrt(12) },
+                    bool: 'Static')
+          tfoot = fmt.foot('Total', :date, price: :sum, raw: :sum, shares: :sum)
+          fmt.foot('Sqrt Total', :date, price: -> { tfoot.price.sqrt(12) },
+                   shares: -> { tfoot.shares.sqrt(12) },
+                   raw: -> { tfoot.raw.sqrt(12) })
+          str = fmt.output
+          expect(str.length).to be > 10
+          expect(str).to include("Group Total|||913,733|913,733|13.035||Static")
+          expect(str).to include("Sqrt Group Total|||956|956|3.610||Static")
+          expect(str).to include("Group Total|||130,302|54,792|85.241||Static")
+          expect(str).to include("Sqrt Group Total|||361|234|9.233||Static")
+          expect(str).to include("Group Total|||70,960|29,839|79.085||Static")
+          expect(str).to include("Sqrt Group Total|||266|173|8.893||Static")
+          expect(str).to include("Group Total|||45,059|18,947|74.106||Static")
+          expect(str).to include("Sqrt Group Total|||212|138|8.608||Static")
+          expect(str).to include("Group Total|||6,679|2,809|25.047||Static")
+          expect(str).to include("Sqrt Group Total|||82|53|5.005||Static")
+          expect(str).to include("|Total||1,166,733|1,020,119|276.514||")
+          expect(str).to include("|Sqrt Total||1,080|1,010|16.629||")
         end
 
         it 'sets format and output in a block' do

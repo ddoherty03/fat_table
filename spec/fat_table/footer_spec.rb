@@ -47,6 +47,48 @@ module FatTable
           expect(f[:d]).to eq(Date.parse('1957-09-22'))
         end
       end
+
+      describe 'accessor methods' do
+        let(:tab) {
+          aoh = [
+            { a: '5', b: true, c: '3123', d: '[2021-03-17]', s: 'Four' },
+            { a: '4', b: 'T', c: 6412, d: '[1957-09-22]', s: 'score' },
+            { a: '7', b: 'No', c: '$1888', d: '<2022-01-08>', s: 'and seven' },
+          ]
+          Table.from_aoh(aoh)
+        }
+
+        let(:foot) {
+          f = Footer.new('Summary', tab, label_col: :s)
+          f.add_value(:a, :sum)
+          f.add_value(:b, :all?)
+          f.add_value(:c, :avg)
+          f.add_value(:d, :min)
+          f
+        }
+
+        it 'defines an accessor for each column' do
+          expect(foot.a).to eq(16)
+          expect(foot.b).to eq(false)
+          expect(foot.c.round(1)).to eq(3807.7)
+          expect(foot.d).to eq(Date.parse('1957-09-22'))
+        end
+
+        it 'allows access by brackets' do
+          expect(foot[:a]).to eq(16)
+          expect(foot[:b]).to eq(false)
+          expect(foot[:c].round(1)).to eq(3807.7)
+          expect(foot[:d]).to eq(Date.parse('1957-09-22'))
+        end
+
+        it 'produces itself as a hash' do
+          h = foot.to_h
+          expect(h[:a]).to eq(16)
+          expect(h[:b]).to eq(false)
+          expect(h[:c].round(1)).to eq(3807.7)
+          expect(h[:d]).to eq(Date.parse('1957-09-22'))
+        end
+      end
     end
 
     context 'group footers' do
@@ -74,10 +116,10 @@ module FatTable
       }
 
       it 'initializes an empty group footer' do
-        g = Footer.new('Summary', tab, label_col: :ref, group: true)
+        g = Footer.new('Summary', tab, label_col: :date, group: true)
         expect(g.label).to eq('Summary')
         expect(g.table).to eq(tab)
-        expect(g.label_col).to eq(:ref)
+        expect(g.label_col).to eq(:date)
         expect(g.group).to be true
         expect(g.number_of_groups).to eq(4)
       end
