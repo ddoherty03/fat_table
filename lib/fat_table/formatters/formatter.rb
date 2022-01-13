@@ -177,7 +177,7 @@ module FatTable
         foot.add_value(h, agg)
       end
       @footers[label] = foot
-      foot.to_hash
+      foot
     end
 
     # :category: Add Footers
@@ -221,7 +221,7 @@ module FatTable
         foot.add_value(h, agg)
       end
       @footers[label] = foot
-      foot.to_hash
+      foot
     end
 
     # :category: Add Footers
@@ -252,8 +252,7 @@ module FatTable
         foot.add_value(h, agg)
       end
       @gfooters[label] = foot
-      k = @gfooters.size - 1
-      foot.to_hash(k)
+      foot
     end
 
     # Add a group footer to the formatted output.  This method has the same
@@ -264,8 +263,7 @@ module FatTable
         foot.add_value(h, agg)
       end
       @gfooters[label] = foot
-      k = @gfooters.size - 1
-      foot.to_hash(k)
+      foot
     end
 
     # :category: Add Footers
@@ -1146,7 +1144,7 @@ module FatTable
         gfooters.each_pair do |label, gfooter|
           out_rows << nil
           gfoot_row = Hash.new([nil, ''])
-          gfooter.to_hash(grp_k).each_pair do |h, v|
+          gfooter.to_h(grp_k).each_pair do |h, v|
             istruct = format_at[:gfooter][h]
             gfoot_row[h] = [v, format_cell(v, istruct, decorate: decorate)]
           end
@@ -1165,7 +1163,7 @@ module FatTable
       footers.each_pair do |label, foot|
         out_rows << nil
         foot_row = Hash.new([nil, ''])
-        foot.to_hash.each_pair do |h, v|
+        foot.to_h.each_pair do |h, v|
           istruct = format_at[:gfooter][h]
           foot_row[h] = [v, format_cell(v, istruct, decorate: decorate)]
         end

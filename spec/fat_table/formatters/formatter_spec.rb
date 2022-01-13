@@ -548,18 +548,18 @@ module FatTable
         fmt = described_class.new(tab) do |f|
           f.sum_footer(:raw, :shares, :price)
         end
-        expect(fmt.footers['Total'].to_hash[:ref]).to eq('Total')
-        expect(fmt.footers['Total'].to_hash[:raw].class).to eq(BigDecimal)
-        expect(fmt.footers['Total'].to_hash[:shares].class).to eq(BigDecimal)
-        expect(fmt.footers['Total'].to_hash[:price].class).to eq(BigDecimal)
-        expect(fmt.footers['Total'].to_hash[:info]).to be_nil
+        expect(fmt.footers['Total'].to_h[:ref]).to eq('Total')
+        expect(fmt.footers['Total'].to_h[:raw].class).to eq(BigDecimal)
+        expect(fmt.footers['Total'].to_h[:shares].class).to eq(BigDecimal)
+        expect(fmt.footers['Total'].to_h[:price].class).to eq(BigDecimal)
+        expect(fmt.footers['Total'].to_h[:info]).to be_nil
       end
 
       it 'adds an average footer to the output' do
         fmt = described_class.new(tab) do |f|
           f.avg_footer(:raw, :shares, :price)
         end
-        foot_hash = fmt.footers['Average'].to_hash
+        foot_hash = fmt.footers['Average'].to_h
         expect(foot_hash[:ref]).to eq('Average')
         expect(foot_hash[:raw].class).to be(BigDecimal)
         expect(foot_hash[:shares].class).to be(BigDecimal)
@@ -571,7 +571,7 @@ module FatTable
         fmt = described_class.new(tab) do |f|
           f.min_footer(:raw, :shares, :price)
         end
-        foot_hash = fmt.footers['Minimum'].to_hash
+        foot_hash = fmt.footers['Minimum'].to_h
         expect(foot_hash[:raw].class).to eq(BigDecimal)
         expect(foot_hash[:shares].class).to eq(BigDecimal)
         expect(foot_hash[:price].class).to eq(BigDecimal)
@@ -582,7 +582,7 @@ module FatTable
         fmt = described_class.new(tab) do |f|
           f.max_footer(:raw, :shares, :price)
         end
-        foot_hash = fmt.footers['Maximum'].to_hash
+        foot_hash = fmt.footers['Maximum'].to_h
         expect(foot_hash[:raw].class).to eq(BigDecimal)
         expect(foot_hash[:shares].class).to eq(BigDecimal)
         expect(foot_hash[:price].class).to eq(BigDecimal)
