@@ -38,6 +38,7 @@ module FatTable
       else
         @values[@label_col] = [@label]
       end
+      make_accessor_methods
     end
 
     # :category: Constructors
@@ -128,12 +129,24 @@ module FatTable
           hsh[h] =
           if values[h]
             values[h].first
+    # Define an accessor method for each table header that returns the footer
+    # value for that column, and in the case of a group footer, either returns
+    # the array of values or take an optional index k to return the value for
+    # the k-th group.
+    def make_accessor_methods
+      table.headers.each do |attribute|
+        self.class.define_method attribute do |k = nil|
+          if group
+            if k.nil?
+              values[attribute]
+            else
+              values[attribute][k]
+            end
           else
-            nil
+            values[attribute].last
           end
         end
       end
-      hsh
     end
   end
 end
