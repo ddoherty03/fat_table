@@ -99,17 +99,36 @@ module FatTable
       when column.type.constantize
         agg
       when Proc
-        case agg.arity
-        when 0
-          agg.call
-        when 1
-          group ? agg.call(k) : agg.call(col)
-        when 2
-          if group
-            agg.call(col, k)
+        result =
+          case agg.arity
+          when 0
+            gmsg = 'a lambda used in a group footer must have at least one argument for the group number'
+            if group
+              raise ArgumentError, gmsg
+            else
+              agg.call
+            end
+          when 1
+            group ? agg.call(k) : agg.call(col)
+          when 2
+            if group
+              agg.call(col, k)
+            else
+              raise ArgumentError, "2-argument lambdas are allowed only in group footers"
+            end
           else
-            raise ArgumentError, "2-argument lambdas are allowed only in group footers"
+            msg = 'a lambda used in a footer may only have zero or one arguments'
+            gmsg = 'a lambda used in a group footer may only have one or two arguments'
+            raise ArgumentError, group ? gmsg : msg
           end
+        # Make sure the result returned can be inserted into footer field.
+        case result
+        when Symbol, String
+          calc_val(result, col, k)
+        when column.type.constantize
+          result
+        else
+          raise ArgumentError, "lambda cannot return an object of class #{result.class}"
         end
       else
         raise ArgumentError, "Attempt to set footer column #{col} to '#{agg}' of type #{agg.class}"
