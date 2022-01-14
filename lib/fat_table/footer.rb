@@ -156,6 +156,23 @@ module FatTable
       table.number_of_groups
     end
 
+    # Return a Column object for the header h and, if a group, the kth group.
+    def column(h, k = nil)
+      if group && k.nil?
+        raise ArgumentError, 'Footer#column(h, k) missing the group number argument k'
+      end
+      if group
+        k.nil? ? @group_cols[h] : @group_cols[h][k]
+      else
+        table.column(h)
+      end
+    end
+
+    # Return a the values for the header h and, if a group, the kth group.
+    def items(h, k = nil)
+      column(h, k).items
+    end
+
     # Return a Hash with a key for each column header mapped to the footer
     # value for that column, nil for unused columns.  Use the key +k+ to
     # specify which group to access in the case of a group footer.
