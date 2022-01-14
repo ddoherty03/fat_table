@@ -323,7 +323,7 @@ module FatTable
         expect(@nums.sum.round(4)).to eq(64646466972.9067)
         expect { @bools.sum }.to raise_error(/cannot be applied/)
         expect { @dates.sum }.to raise_error(/cannot be applied/)
-        expect(@strs.sum).to eq('fourscoreand sevenyearsago')
+        expect { @strs.sum }.to raise_error(/cannot be applied/)
       end
 
       it 'applies the `count` aggregate' do
