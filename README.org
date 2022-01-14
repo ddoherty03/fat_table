@@ -785,7 +785,6 @@ EOS
 #+END_SRC
 
 Rendering ~tab1~ into Emacs org-mode:
-
 #+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
   tab1 = FatTable.from_org_string(tab1_str).to_aoa
@@ -850,9 +849,7 @@ Rendering ~tab2~ into Emacs org-mode:
 | T021 | 2017-01-23 | P    |  7.16 | T   | T    |  12100 | 11050 | 1050 | 0.2453 | 0.1924 |
 #+end_EXAMPLE
 
-
 *** Select
-
 With the ~select~ method, you can select which existing columns should appear in
 the output table and create new columns in the output table that are a function
 of existing and new columns.
@@ -1952,12 +1949,12 @@ represented by a ~+~ character.  Embelishments such as color, bold, and so
 forth are ignored.
 
 #+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+begin_SRC ruby
+#+BEGIN_SRC ruby
   tab_a.to_text
 #+end_SRC
 
 #+RESULTS:
-#+begin_EXAMPLE
+#+BEGIN_EXAMPLE
 +====+=======+=====+============+========+============+
 | Id | Name  | Age | Address    | Salary | Join Date  |
 +----+-------+-----+------------+--------+------------+
@@ -1970,7 +1967,7 @@ forth are ignored.
 | 9  | James | 44  | Norway     | 5000   | 2005-07-13 |
 | 10 | James | 45  | Texas      | 5000   |            |
 +====+=======+=====+============+========+============+
-#+end_EXAMPLE
+#+END_EXAMPLE
 
 ***** To Org
 This formatter is designed to format tables in a manner consistent with the
