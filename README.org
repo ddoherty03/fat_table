@@ -33,14 +33,14 @@ they makes sense for the output medium and treats other formatting directives as
 no-ops.
 
 ~FatTable~ can be used to perform operations on data that are naturally best
-conceived of as tables, which in my experience is quite often. It can also serve
-as a foundation for providing reporting functions where flexibility about the
-output medium can be useful. Finally ~FatTable~ can be used within Emacs
-~org-mode~ files in code blocks targeting the Ruby language. Org mode tables are
-presented to a ruby code block as an array of arrays, so ~FatTable~ can read
-them in with its ~.from_aoa~ constructor. A ~FatTable~ table output as an array
-of arrays with its ~.to_aoa~ output function will be rendered in an org-mode
-buffer as an org-table, ready for processing by other code blocks.
+conceived of as tables, which in my experience is quite often. It can also
+serve as a foundation for providing reporting functions where flexibility
+about the output medium can be useful. Finally ~FatTable~ can be used within
+Emacs ~org-mode~ files in code blocks targeting the Ruby language. Org mode
+tables are presented to a ruby code block as an array of arrays, so ~FatTable~
+can read them in with its ~.from_aoa~ constructor. A ~FatTable~ table output as an
+array of arrays with its ~.to_aoa~ output function will be rendered in an
+org-mode buffer as an org-table, ready for processing by other code blocks.
 
 * Installation
 
@@ -103,19 +103,19 @@ operated on in a number of ways. Here's a quick example to illustrate the use of
   # Convert the table to an ASCII text string
 
   table.to_text do |fmt|
+    # Add a group footer
+    fmt.gfooter('Avg', shares: :avg, price: :avg)
     # Add some table footers
     fmt.avg_footer(:price, :shares)
     fmt.sum_footer(:shares)
-    # Add a group footer
-    fmt.gfooter('Avg', shares: :avg, price: :avg)
     # Formats for all locations
     fmt.format(ref: 'CB', numeric: 'R', boolean: 'CY')
     # Formats for different "locations" in the table
     fmt.format_for(:header, string: 'CB')
     fmt.format_for(:body, code: 'C', shares: ',0.1', price: '0.4', )
     fmt.format_for(:bfirst, price: '$0.4', )
-    fmt.format_for(:footer, shares: 'B,0.1', price: '$B0.4', )
     fmt.format_for(:gfooter, shares: 'B,0.1', price: 'B0.4', )
+    fmt.format_for(:footer, shares: 'B,0.1', price: '$B0.4', )
   end
 #+END_SRC
 
@@ -162,15 +162,14 @@ When you install the ~fat_table~ gem, you have access to a program ~ft_console~,
 which opens a ~pry~ session with ~fat_table~ loaded and the tables used in the
 examples in this ~README~ defined as instance variables so you can experiment
 with them. Because they are defined as instance variables, you have to write
-~tab1~ as ~@tab1~ in ~ft_console~, but otherwise the examples should work as
-shown in this ~README~.
+~tab1~ as ~@tab1~ in ~ft_console~, but otherwise the examples should work as shown
+in this ~README~.
 
 The examples in this ~README~ file are executed as code blocks within the
-~README.org~ file, so they typically end with a call to ~.to_aoa~. That causes
-the table to be inserted into the file and formatted as a table. With
-~ft_console~, you should instead display your tables with ~.to_text~ or
-~.to_term~. These will return a string that you can print to the terminal with
-~puts~.
+~README.org~ file, so they typically end with a call to ~.to_aoa~. That causes the
+table to be inserted into the file and formatted as a table. With ~ft_console~,
+you should instead display your tables with ~.to_text~ or ~.to_term~. These will
+return a string that you can print to the terminal with ~puts~.
 
 To read in the table used in the Quick Start section above, you might do the
 following:
@@ -708,10 +707,74 @@ tab2_str = <<-EOS
 | T021 | [2017-01-23 Mon] | P    |   7.16 | T   | T    |  12100 | 11050 | 1050 | 0.2453 | 0.1924 |
 | T021 | [2017-01-23 Mon] | P    |   7.16 | T   | T    |  12100 | 11050 | 1050 | 0.2453 | 0.1924 |
 EOS
-
-tab1 = FatTable.from_org_string(tab1_str)
-tab2 = FatTable.from_org_string(tab2_str)
 #+END_SRC
+
+Rendering ~tab1~ into Emacs org-mode:
+
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
+#+BEGIN_SRC ruby
+  tab1 = FatTable.from_org_string(tab1_str).to_aoa
+#+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+| Ref  |       Date | Code | Price | G10 | QP10 | Shares |   Lp |    Qp |   Iplp |   Ipqp |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
+| T001 | 2016-11-01 | P    |   7.7 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 |
+| T002 | 2016-11-01 | P    |  7.75 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 |
+| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 |
+| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
+| T004 | 2016-11-01 | S    |  7.55 | T   | F    |   6811 |  966 |  5845 | 0.2453 | 0.1924 |
+| T005 | 2016-11-01 | S    |   7.5 | F   | F    |   4000 |  572 |  3428 | 0.2453 | 0.1924 |
+| T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 |
+| T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 |
+| T007 | 2016-11-01 | S    |  7.65 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 |
+| T008 | 2016-11-01 | P    |  7.65 | F   | F    |   2771 |  393 |  2378 | 0.2453 | 0.1924 |
+| T009 | 2016-11-01 | P    |   7.6 | F   | F    |   9550 | 1363 |  8187 | 0.2453 | 0.1924 |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
+| T010 | 2016-11-01 | P    |  7.55 | F   | T    |   3175 |  451 |  2724 | 0.2453 | 0.1924 |
+| T011 | 2016-11-02 | P    | 7.425 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 |
+| T012 | 2016-11-02 | P    |  7.55 | F   | F    |   4700 |  677 |  4023 | 0.2453 | 0.1924 |
+| T012 | 2016-11-02 | P    |  7.55 | F   | F    |   4700 |  677 |  4023 | 0.2453 | 0.1924 |
+| T013 | 2016-11-02 | P    |  7.35 | T   | T    |  53100 | 7656 | 45444 | 0.2453 | 0.1924 |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
+| T014 | 2016-11-02 | P    |  7.45 | F   | T    |   5847 |  835 |  5012 | 0.2453 | 0.1924 |
+| T015 | 2016-11-02 | P    |  7.75 | F   | F    |    500 |   72 |   428 | 0.2453 | 0.1924 |
+| T016 | 2016-11-02 | P    |  8.25 | T   | T    |    100 |   14 |    86 | 0.2453 | 0.1924 |
+#+end_EXAMPLE
+
+Rendering ~tab2~ into Emacs org-mode:
+
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
+#+BEGIN_SRC ruby
+  tab2 = FatTable.from_org_string(tab2_str).to_aoa
+#+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+| Ref  |       Date | Code | Price | G10 | QP10 | Shares |    Lp |   Qp |   Iplp |   Ipqp |
+|------+------------+------+-------+-----+------+--------+-------+------+--------+--------|
+| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |   112 |  688 | 0.2453 | 0.1924 |
+| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |   112 |  688 | 0.2453 | 0.1924 |
+| T017 | 2016-11-01 | P    |   8.3 | F   | T    |   1801 |  1201 |  600 | 0.2453 | 0.1924 |
+|------+------------+------+-------+-----+------+--------+-------+------+--------+--------|
+| T018 | 2016-11-01 | S    | 7.152 | T   | F    |   2516 |  2400 |  116 | 0.2453 | 0.1924 |
+| T018 | 2016-11-01 | S    | 7.152 | T   | F    |   2516 |  2400 |  116 | 0.2453 | 0.1924 |
+| T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 |   143 |  857 | 0.2453 | 0.1924 |
+| T007 | 2016-11-01 | S    |  7.65 | T   | F    |    200 |    28 |  172 | 0.2453 | 0.1924 |
+|------+------------+------+-------+-----+------+--------+-------+------+--------+--------|
+| T014 | 2016-11-02 | P    |  7.45 | F   | T    |   5847 |   835 | 5012 | 0.2453 | 0.1924 |
+| T015 | 2016-11-02 | P    |  7.75 | F   | F    |    500 |    72 |  428 | 0.2453 | 0.1924 |
+| T015 | 2016-11-02 | P    |  7.75 | F   | F    |    500 |    72 |  428 | 0.2453 | 0.1924 |
+| T016 | 2016-11-02 | P    |  8.25 | T   | T    |    100 |    14 |   86 | 0.2453 | 0.1924 |
+|------+------------+------+-------+-----+------+--------+-------+------+--------+--------|
+| T019 | 2017-01-15 | S    |  8.75 | T   | F    |    300 |   175 |  125 | 0.2453 | 0.1924 |
+| T020 | 2017-01-19 | S    |  8.25 | F   | T    |    700 |   615 |   85 | 0.2453 | 0.1924 |
+| T021 | 2017-01-23 | P    |  7.16 | T   | T    |  12100 | 11050 | 1050 | 0.2453 | 0.1924 |
+| T021 | 2017-01-23 | P    |  7.16 | T   | T    |  12100 | 11050 | 1050 | 0.2453 | 0.1924 |
+#+end_EXAMPLE
+
 
 *** Select
 
@@ -1165,32 +1228,68 @@ available in ~ft_console~ as ~@tab_a~ and ~@tab_b~:
 
 #+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
-require 'fat_table'
+  require 'fat_table'
 
-    tab_a_str = <<-EOS
-  | Id | Name  | Age | Address    | Salary |  Join Date |
-  |----+-------+-----+------------+--------+------------|
-  |  1 | Paul  |  32 | California |  20000 | 2001-07-13 |
-  |  3 | Teddy |  23 | Norway     |  20000 | 2007-12-13 |
-  |  4 | Mark  |  25 | Rich-Mond  |  65000 | 2007-12-13 |
-  |  5 | David |  27 | Texas      |  85000 | 2007-12-13 |
-  |  2 | Allen |  25 | Texas      |        | 2005-07-13 |
-  |  8 | Paul  |  24 | Houston    |  20000 | 2005-07-13 |
-  |  9 | James |  44 | Norway     |   5000 | 2005-07-13 |
-  | 10 | James |  45 | Texas      |   5000 |            |
-  EOS
+  tab_a_str = <<-EOS
+    | Id | Name  | Age | Address    | Salary |  Join Date |
+    |----+-------+-----+------------+--------+------------|
+    |  1 | Paul  |  32 | California |  20000 | 2001-07-13 |
+    |  3 | Teddy |  23 | Norway     |  20000 | 2007-12-13 |
+    |  4 | Mark  |  25 | Rich-Mond  |  65000 | 2007-12-13 |
+    |  5 | David |  27 | Texas      |  85000 | 2007-12-13 |
+    |  2 | Allen |  25 | Texas      |        | 2005-07-13 |
+    |  8 | Paul  |  24 | Houston    |  20000 | 2005-07-13 |
+    |  9 | James |  44 | Norway     |   5000 | 2005-07-13 |
+    | 10 | James |  45 | Texas      |   5000 |            |
+    EOS
 
-    tab_b_str = <<-EOS
-  | Id | Dept        | Emp Id |
-  |----+-------------+--------|
-  |  1 | IT Billing  |      1 |
-  |  2 | Engineering |      2 |
-  |  3 | Finance     |      7 |
-  EOS
+  tab_b_str = <<-EOS
+    | Id | Dept        | Emp Id |
+    |----+-------------+--------|
+    |  1 | IT Billing  |      1 |
+    |  2 | Engineering |      2 |
+    |  3 | Finance     |      7 |
+    EOS
 
-    tab_a = FatTable.from_org_string(tab_a_str)
-    tab_b = FatTable.from_org_string(tab_b_str)
+  tab_b = FatTable.from_org_string(tab_b_str)
 #+END_SRC
+
+Here is ~tab_a~:
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
+#+begin_src ruby
+  tab_a = FatTable.from_org_string(tab_a_str)
+  tab_a.to_aoa
+#+end_src
+
+#+RESULTS:
+#+begin_EXAMPLE
+| Id | Name  | Age | Address    | Salary |  Join Date |
+|----+-------+-----+------------+--------+------------|
+|  1 | Paul  |  32 | California |  20000 | 2001-07-13 |
+|  3 | Teddy |  23 | Norway     |  20000 | 2007-12-13 |
+|  4 | Mark  |  25 | Rich-Mond  |  65000 | 2007-12-13 |
+|  5 | David |  27 | Texas      |  85000 | 2007-12-13 |
+|  2 | Allen |  25 | Texas      |        | 2005-07-13 |
+|  8 | Paul  |  24 | Houston    |  20000 | 2005-07-13 |
+|  9 | James |  44 | Norway     |   5000 | 2005-07-13 |
+| 10 | James |  45 | Texas      |   5000 |            |
+#+end_EXAMPLE
+
+And ~tab_b~:
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
+#+begin_src ruby
+  tab_b = FatTable.from_org_string(tab_b_str)
+  tab_b.to_aoa
+#+end_src
+
+#+RESULTS:
+#+begin_EXAMPLE
+| Id | Dept        | Emp Id |
+|----+-------------+--------|
+|  1 | IT Billing  |      1 |
+|  2 | Engineering |      2 |
+|  3 | Finance     |      7 |
+#+end_EXAMPLE
 
 ***** Inner Joins
 
@@ -1751,8 +1850,7 @@ an ~org-mode~ table as a String, and since ~org-mode~ does not support colors,
 any color directives are ignored. Some of the output targets are not strings,
 but ruby data structures, and for them, things such as alignment are irrelevant.
 
-*** Available Formatters
-
+*** Available Formatter Output Targets
 ~FatTable~ supports the following output targets for its tables:
 
 - Text :: form the table with ACSII characters,
@@ -1771,8 +1869,145 @@ class by defining about a dozen methods that get called at various places
 during the construction of the output table. The idea is that more output
 formats can be defined by adding additional classes.
 
-*** Table Locations
+**** Examples
+***** To Text
+This formatter uses nothing by ASCII characters to draw the table.  Notice
+that, unlike to ~to_org~ formatter shown below, the intersections of lines are
+represented by a ~+~ character.  Embelishments such as color, bold, and so
+forth are ignored.
 
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
+#+begin_SRC ruby
+  tab_a.to_text
+#+end_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
++====+=======+=====+============+========+============+
+| Id | Name  | Age | Address    | Salary | Join Date  |
++----+-------+-----+------------+--------+------------+
+| 1  | Paul  | 32  | California | 20000  | 2001-07-13 |
+| 3  | Teddy | 23  | Norway     | 20000  | 2007-12-13 |
+| 4  | Mark  | 25  | Rich-Mond  | 65000  | 2007-12-13 |
+| 5  | David | 27  | Texas      | 85000  | 2007-12-13 |
+| 2  | Allen | 25  | Texas      |        | 2005-07-13 |
+| 8  | Paul  | 24  | Houston    | 20000  | 2005-07-13 |
+| 9  | James | 44  | Norway     | 5000   | 2005-07-13 |
+| 10 | James | 45  | Texas      | 5000   |            |
++====+=======+=====+============+========+============+
+#+end_EXAMPLE
+
+***** To Org
+This formatter is designed to format tables in a manner consistent with the
+way tables are drawn within Emacs Org Mode.  It also uses nothing by ASCII
+characters to draw the table, but, the intersections of lines are represented
+by a ~|~ character.  Embelishments such as color, bold, and so forth are
+ignored.  When working in Org Mode, note that Emacs will convert an Array of
+Arrays into an Org Mode table, so when constructing tables programmatically,
+it may be better to use that formatter as shown below.
+
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
+#+begin_SRC ruby
+  tab_a.to_org
+#+end_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+|----+-------+-----+------------+--------+--------------|
+| Id | Name  | Age | Address    | Salary | Join Date    |
+|----+-------+-----+------------+--------+--------------|
+| 1  | Paul  | 32  | California | 20000  | [2001-07-13] |
+| 3  | Teddy | 23  | Norway     | 20000  | [2007-12-13] |
+| 4  | Mark  | 25  | Rich-Mond  | 65000  | [2007-12-13] |
+| 5  | David | 27  | Texas      | 85000  | [2007-12-13] |
+| 2  | Allen | 25  | Texas      |        | [2005-07-13] |
+| 8  | Paul  | 24  | Houston    | 20000  | [2005-07-13] |
+| 9  | James | 44  | Norway     | 5000   | [2005-07-13] |
+| 10 | James | 45  | Texas      | 5000   |              |
+|----+-------+-----+------------+--------+--------------|
+#+end_EXAMPLE
+
+***** To Term
+When outputting to a terminal or other device that can interpret ANSI
+characters and escape codes, you can use this formatter to get a prettier
+table.  It also allows embelishments such as color and text styles to the
+extent the device supports it.
+
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
+#+begin_SRC ruby
+  tab_a.to_term
+#+end_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+╒════╤═══════╤═════╤════════════╤════════╤════════════╕
+│ Id │ Name  │ Age │ Address    │ Salary │ Join Date  │
+├────┼───────┼─────┼────────────┼────────┼────────────┤
+│ 1  │ Paul  │ 32  │ California │ 20000  │ 2001-07-13 │
+│ 3  │ Teddy │ 23  │ Norway     │ 20000  │ 2007-12-13 │
+│ 4  │ Mark  │ 25  │ Rich-Mond  │ 65000  │ 2007-12-13 │
+│ 5  │ David │ 27  │ Texas      │ 85000  │ 2007-12-13 │
+│ 2  │ Allen │ 25  │ Texas      │        │ 2005-07-13 │
+│ 8  │ Paul  │ 24  │ Houston    │ 20000  │ 2005-07-13 │
+│ 9  │ James │ 44  │ Norway     │ 5000   │ 2005-07-13 │
+│ 10 │ James │ 45  │ Texas      │ 5000   │            │
+╘════╧═══════╧═════╧════════════╧════════╧════════════╛
+#+end_EXAMPLE
+
+***** To LaTeX
+This formatter outputs a table in the form suitable for inclusion in a LaTeX
+document using the ~logtable~ package.  Natualy it allows embelishments such
+as color and text styles to the full extent of LaTeX's formatting prowess.
+
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
+#+begin_SRC ruby
+  tab_b.to_latex
+#+end_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+\begin{longtable}{lll}
+Id&
+Dept&
+Emp Id\\
+\endhead
+1&
+IT Billing&
+1\\
+2&
+Engineering&
+2\\
+3&
+Finance&
+7\\
+\end{longtable}
+#+end_EXAMPLE
+
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both :results verbatim
+#+begin_SRC ruby
+  tab_b.to_aoa
+#+end_SRC
+
+#+HEADER: :
+#+RESULTS:
+#+begin_EXAMPLE
+[["Id", "Dept", "Emp Id"], nil, ["1", "IT Billing", "1"], ["2", "Engineering", "2"],
+  ["3", "Finance", "7"]]
+#+end_EXAMPLE
+
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both :results verbatim
+#+begin_SRC ruby
+  tab_b.to_aoh
+#+end_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+[{:id=>"1", :dept=>"IT Billing", :emp_id=>"1"}, {:id=>"2", :dept=>"Engineering", :emp_id=>"2"},
+ {:id=>"3", :dept=>"Finance", :emp_id=>"7"}]
+#+end_EXAMPLE
+
+
+*** Table Locations
 In the formatting methods, the table is divided into several "locations" for
 which separate formatting directives may be given. These locations are
 identified with the following symbols:
@@ -1797,7 +2032,6 @@ order, so ~'$R,'~ and ~',$R'~ are equivalent.
 Here is a list of all the formatting directives that apply to each cell type:
 
 **** String
-
 For a string element, the following instructions are valid. Note that these can
 also be applied to all the other cell types as well since they are all converted
 to a string in forming the output.
@@ -1818,7 +2052,7 @@ to a string in forming the output.
     'none', which keeps the terminal's default color.
 - _ ~_ :: underline the element, or turn off underline
 - * ~* :: cause the element to blink, or turn off blink
-
+tab1 = FatTable.from_org_string(tab1_str).to_aoa
 For example, the directive ~'tCc[red.yellow]'~ would title-case the element,
 center it, and color it red on a yellow background. The directives that are
 boolean have negating forms so that, for example, if bold is turned on for all
@@ -1889,26 +2123,44 @@ valid for strings are also available:
 For example, you might want to use ~'n[-]Cc[purple]'~ to make nils visible as a
 centered purple hyphen.
 
-*** Footers Methods
+*** Footers
 
-You can call the ~footer~ and ~gfooter~ methods on ~Formatter~ objects to add
-footers and group footers. Their signatures are:
+**** Adding Footers
+You can call the ~footer,~ ~gfooter, foot, and gfoot~ methods on ~Formatter~ objects
+to add footers and group footers. Note that all of these methods return a
+~Footer~ object that can be accessed to extract the computed values.  Their
+signatures are:
 
 - ~footer(label, *sum_cols, **agg_cols)~ :: where ~label~ is a label to be
-     placed in the first cell of the footer (unless that column is named as one
-     of the ~sum_cols~ or ~agg_cols~, in which case the label is ignored),
-     ~*sum_cols~ are zero or more symbols for columns to be summed, and
-     ~**agg_cols~ is zero or more hash-like parameters with a column symbol as a
-     key and a symbol for an aggregate method as the value. This causes a
-     table-wide header to be added at the bottom of the table applying the
-     ~:sum~ aggregate to the ~sum_cols~ and the named aggregate method to the
-     ~agg_cols~. A table can have any number of footers attached, and they will
-     appear at the bottom of the output table in the order they are given.
+  placed in the first cell of the footer (unless that column is named as one
+  of the ~sum_cols~ or ~agg_cols~, in which case the label is ignored),
+  ~*sum_cols~ are zero or more symbols for columns to be summed, and
+  ~**agg_cols~ is zero or more hash-like parameters with a column symbol as a
+  key and a symbol for an aggregate method as the value. This causes a
+  table-wide header to be added at the bottom of the table applying the ~:sum~
+  aggregate to the ~sum_cols~ and the named aggregate method to the
+  ~agg_cols~. A table can have any number of footers attached, and they will
+  appear at the bottom of the output table in the order they are given.
 
-- ~gfooter(label, *sum_cols, **agg_cols)~ :: where the parameters have the same
-     meaning as for the ~footer~ method, but result in a footer for each group
-     in the table rather than the table as a whole. These will appear in the
-     output table just below each group.
+- ~foot(label, label_col, **agg_cols)~ :: where ~label~ is a label to be
+  placed in the column with header ~label_col~, or, if ommitted, the first
+  cell of the footer (unless that column is named as one of the ~agg_cols~, in
+  which case the label is ignored), and ~**agg_cols~ is zero or more hash-like
+  parameters with a column symbol as a key and a symbol for an aggregate
+  method as the value. This causes a table-wide header to be added at the
+  bottom of the table applying ~agg~, to the ~agg_cols~. A table can have any
+  number of footers attached, and they will appear at the bottom of the output
+  table in the order they are given.
+
+- ~gfooter(label, *sum_cols, **agg_cols)~ :: where the parameters have the
+  same meaning as for the ~footer~ method, but results in a footer for each
+  group in the table rather than the table as a whole. These will appear in
+  the output table just below each group.
+
+- ~gfoot(label, label_col, **agg_cols)~ :: where the parameters have the same
+  meaning as for the ~foot~ method, but results in a footer for each group in
+  the table rather than the table as a whole. These will appear in the output
+  table just below each group.
 
 There are also a number of convenience methods for adding common footers:
 
@@ -1929,14 +2181,57 @@ There are also a number of convenience methods for adding common footers:
 - ~max_gfooter(*cols)~ :: Add a group footer showing the maximum for the given
      columns with the label 'Group Maximum'.
 
-*** Formatting Methods
+**** Aggregators
+When adding a footer with the above methods, you can specify an aggregator for
+each column named in the ~agg_cols~ parameter.  There are several candidates
+for what you can use for an aggregator:
+
+- Symbol :: one of the following built-in aggregators: :first, :last, :range,
+  :sum, :count, :min, :max, :avg, :var, :pvar, :dev, :pdev, :any?, :all?,
+  :none?, and :one?.
+  + The symbols ending in a question mark are valid only for boolean columns;
+  + :count, :first, and :last work with any column type,
+  + :min, :max, and :range work with all types except boolean;
+  + :sum, works only with numeric columns, and
+  + :avg, :var, :dev, :pvar, and :pdev work with numeric or datetime columns.
+    In the case of datetime columns, these aggrgators convert the dates to
+    julian date numbers, perform the calculation, then convert the result back
+    to a datetime object.
+- String :: using a string as an aggrgegator can result in:
+  + the string being converted to an object matching the type of the column
+    (for example, using '$1,888' in a numeric column puts the constant number
+    1888 in the footer field, using '1957-09-22' puts the fixed date in the
+    field, etc.)
+  + if the string cannot be parsed as a valid object matching the column's
+    type, it is placed literally in the footer field (for example, using
+    '(estimated)' can be used to add additional information to the footer)
+- Ruby object :: you can put a number in a numeric footer field, a DateTime
+  object in a datetime footer field, or a true or false in a boolean footer
+  field;
+- A Lambda :: finally, you can provide a lambda for performing arbitrary
+  calculations and placing the result in the footer field.  The number of
+  arguments the lambda takes can vary:
+  * If the lambda is used in a group footer, it must take a single integer
+    argument that is set to the group number being calculated and /can/ take a
+    second argument for the column symbol in which it appears, or
+  * If the lambda is used in an ordinary footer, it either takes no arguments,
+    or a single argument for the column symbol in which it appears.
+
+#+begin_example
+
+#+end_example
+**** Footer objects
+Each of the methods for adding a footer to a ~Formatter~ returns a ~Footer~ object
+that you can query for attributes of the generated footer, including accessing
+their computed values.
+
+*** Invoking Formatters
 
 You can call methods on  ~Formatter~ objects to specify formatting directives
 for specific columns or types.  There are two methods for doing so, ~format_for~
 and ~format~.
 
-**** Instantiating a Formatter
-
+**** By Instantiating a Formatter
 There are several ways to invoke the formatting methods on a table. First, you
 can instantiate a ~XXXFormatter~ object and feed it a table as a parameter.
 There is a Formatter subclass for each target output medium, for example,
@@ -1984,8 +2279,7 @@ you can call methods on it to affect the formatting of the output:
 | 010 | James |  45 | Texas      |  5,000 |            |
 #+END_EXAMPLE
 
-**** ~FatTable~ module-level method calls
-
+**** By Using ~FatTable~ module-level method calls
 The ~FatTable~ module provides a set of methods of the form ~to_aoa~, ~to_text~,
 etc., to access a ~Formatter~ without having to create an instance yourself.
 Without a block, they apply the default formatting to the table and call the
@@ -2033,8 +2327,7 @@ automatically after the block:
 | 010 | James |  45 | Texas      |  5,000 |            |
 #+END_EXAMPLE
 
-**** Calling methods on Table objects
-
+**** By Calling Methods on Table Objects
 Finally, you can call methods such as ~to_aoa~, ~to_text~, etc., directly on a
 Table:
 
@@ -2127,13 +2420,12 @@ directive affected only the ~:id~ column. All the other cells in the table had
 the default formatting applied.
 
 **** Location priority
-
 Formatting for any given cell depends on its location in the table. The
 ~format_for~ method takes a location to which its formatting directive are
 restricted as the first argument. It can be one of the following:
 
-- ~:header~ :: directive apply only to the header row, that is the first row, of
-     the output table,
+- ~:header~ :: directives apply only to the header row, that is the first row,
+  of the output table,
 
 - ~:footer~ :: directives apply to all the footer rows of the output table,
      regardless of how many there are,
@@ -2142,8 +2434,8 @@ restricted as the first argument. It can be one of the following:
      regardless of how many there are,
 
 - ~:body~ :: directives apply to all rows in the body of the table unless the
-     row is the first row in the table or in a group and separate directives for
-     those have been given, in which case those directives apply,
+  row is the first row in the table or in a group: if separate directives for
+  those have been given, those directives apply,
 
 - ~:gfirst~ :: directives apply to the first row in each group in the body of
      the table, unless the row is also the first row in the table as a whole, in
@@ -2152,14 +2444,13 @@ restricted as the first argument. It can be one of the following:
 - ~:bfirst~ :: directives apply to the first row in the body of the table.
 
 If you give directives for ~:body~, they are copied to ~:bfirst~ and ~:gfirst~
-as well and can be overridden by directives for those locations.
+as well but can be overridden by directives for those locations.
 
 Directives given to the ~format~ method apply the directives to all locations in
 the table, but they can be overridden by more specific directives given in a
 ~format_for~ directive.
 
 **** Type and Column priority
-
 A directive based on type applies to all columns having that type unless
 overridden by a directive specific to a named column; a directive based on a
 column name applies only to cells in that column.
@@ -2171,11 +2462,26 @@ applies to nils in all columns regardless of the column's type.
 
 #+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
-require 'fat_table'
   tab_a.to_text do |f|
     f.format(string: 'R', id: '3.0C', salary: 'n[N/A]')
   end
 #+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
++=====+=======+=====+============+========+============+
+|  Id |  Name | Age |    Address | Salary |  Join Date |
++-----+-------+-----+------------+--------+------------+
+| 001 |  Paul |  32 | California |  20000 | 2001-07-13 |
+| 003 | Teddy |  23 |     Norway |  20000 | 2007-12-13 |
+| 004 |  Mark |  25 |  Rich-Mond |  65000 | 2007-12-13 |
+| 005 | David |  27 |      Texas |  85000 | 2007-12-13 |
+| 002 | Allen |  25 |      Texas |    N/A | 2005-07-13 |
+| 008 |  Paul |  24 |    Houston |  20000 | 2005-07-13 |
+| 009 | James |  44 |     Norway |   5000 | 2005-07-13 |
+| 010 | James |  45 |      Texas |   5000 |            |
++=====+=======+=====+============+========+============+
+#+end_EXAMPLE
 
 #+BEGIN_EXAMPLE
 +=====+=======+=====+============+========+============+
