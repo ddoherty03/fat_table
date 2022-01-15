@@ -91,7 +91,7 @@ module FatTable
         else
           ''
         end
-      result += "\\usepackage[pdftex,x11names]{xcolor}\n"
+      result += "\\usepackage[pdftex,table,x11names]{xcolor}\n"
       result
     end
 
@@ -113,12 +113,14 @@ module FatTable
     # default.
     def decorate_string(str, istruct)
       str = quote(str)
-      result = ''
-      result += '\\bfseries{}' if istruct.bold
-      result += '\\itshape{}' if istruct.italic
-      result += "\\color{#{istruct.color}}" if istruct.color &&
-                                               istruct.color != 'none'
-      result = "#{result}#{str}"
+      result = istruct.italic ? "\\itshape{#{str}}" : str
+      result = istruct.bold ? "\\bfseries{#{result}}" : result
+      if istruct.color && istruct.color != 'none'
+        result = "{\\textcolor{#{istruct.color}}{#{result}}}"
+      end
+      if istruct.bgcolor && istruct.bgcolor != 'none'
+        result = "\\cellcolor{#{istruct.bgcolor}}#{result}"
+      end
       unless istruct.alignment == format_at[:body][istruct._h].alignment
         ac = alignment_code(istruct.alignment)
         result = "\\multicolumn{1}{#{ac}}{#{result}}"
