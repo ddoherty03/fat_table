@@ -96,6 +96,8 @@ org-mode buffer as an org-table, ready for processing by other code blocks.
         - [[#to-org][To Org]]
         - [[#to-term][To Term]]
         - [[#to-latex][To LaTeX]]
+        - [[#to-aoa-array-of-arrays][To AoA (Array of Arrays)]]
+        - [[#to-aoh-array-of-hashes][To AoH (Array of Hashes)]]
     - [[#table-locations][Table Locations]]
     - [[#formatting-directives][Formatting Directives]]
       - [[#string][String]]
@@ -1953,7 +1955,6 @@ forth are ignored.
   tab_a.to_text
 #+end_SRC
 
-#+RESULTS:
 #+BEGIN_EXAMPLE
 +====+=======+=====+============+========+============+
 | Id | Name  | Age | Address    | Salary | Join Date  |
@@ -1983,7 +1984,6 @@ it may be better to use that formatter as shown below.
   tab_a.to_org
 #+end_SRC
 
-#+RESULTS:
 #+begin_EXAMPLE
 |----+-------+-----+------------+--------+--------------|
 | Id | Name  | Age | Address    | Salary | Join Date    |
@@ -2010,7 +2010,6 @@ extent the device supports it.
   tab_a.to_term
 #+end_SRC
 
-#+RESULTS:
 #+begin_EXAMPLE
 ╒════╤═══════╤═════╤════════════╤════════╤════════════╕
 │ Id │ Name  │ Age │ Address    │ Salary │ Join Date  │
@@ -2036,7 +2035,6 @@ as color and text styles to the full extent of LaTeX's formatting prowess.
   tab_b.to_latex
 #+end_SRC
 
-#+RESULTS:
 #+begin_EXAMPLE
 \begin{longtable}{lll}
 Id&
@@ -2055,24 +2053,23 @@ Finance&
 \end{longtable}
 #+end_EXAMPLE
 
+***** To AoA (Array of Arrays)
 #+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both :results verbatim
 #+begin_SRC ruby
   tab_b.to_aoa
 #+end_SRC
 
-#+HEADER: :
-#+RESULTS:
 #+begin_EXAMPLE
 [["Id", "Dept", "Emp Id"], nil, ["1", "IT Billing", "1"], ["2", "Engineering", "2"],
   ["3", "Finance", "7"]]
 #+end_EXAMPLE
 
+***** To AoH (Array of Hashes)
 #+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both :results verbatim
 #+begin_SRC ruby
   tab_b.to_aoh
 #+end_SRC
 
-#+RESULTS:
 #+begin_EXAMPLE
 [{:id=>"1", :dept=>"IT Billing", :emp_id=>"1"}, {:id=>"2", :dept=>"Engineering", :emp_id=>"2"},
  {:id=>"3", :dept=>"Finance", :emp_id=>"7"}]
