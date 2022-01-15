@@ -1,5 +1,16 @@
 #+OPTIONS: toc:4
 #+LATEX_HEADER: \usepackage[margin=0.75in]{geometry}
+#+STARTUP: inlineimages
+
+#+begin_comment
+Notes on producing this README.
+
+1. Result blocks won't be rendered on Github if the #+RESULTS: tag is left
+over the results block, so manually delete them.
+
+2. Make sure that the current version of the gem is geting loaded when running
+the code blocks.  rbenv-use-corresponding helps here.
+#+end_comment
 
 #+BEGIN_COMMENT
 This is for markdown output:
@@ -45,7 +56,8 @@ org-mode buffer as an org-table, ready for processing by other code blocks.
 * Table of Contents                                                     :toc:
 - [[#introduction][Introduction]]
 - [[#installation][Installation]]
-  - [[#installing-the-gem][Installing the gem]]
+  - [[#using-in-a-gem][Using in a gem]]
+  - [[#manually-install][Manually install]]
 - [[#usage][Usage]]
   - [[#quick-start][Quick Start]]
   - [[#a-word-about-the-examples][A Word About the Examples]]
@@ -120,14 +132,18 @@ org-mode buffer as an org-table, ready for processing by other code blocks.
 - [[#contributing][Contributing]]
 
 * Installation
-
-** Installing the gem
-
+** Using in a gem
 Add this line to your application's Gemfile:
 
 #+BEGIN_SRC ruby
   gem 'fat_table'
 #+END_SRC
+
+Or, something like this in your gemspec file:
+
+#+begin_SRC ruby
+    gem.add_runtime_dependency 'fat_table'
+#+end_SRC
 
 And then execute:
 
@@ -135,6 +151,7 @@ And then execute:
   $ bundle
 #+END_SRC
 
+** Manually install
 Or install it yourself as:
 
 #+BEGIN_SRC sh
@@ -148,7 +165,10 @@ Or install it yourself as:
 operated on in a number of ways. Here's a quick example to illustrate the use of
 ~FatTable~. See the detailed explanations further on down.
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
+Here is a set of data that records some kind of stock activity.  It's an array
+of arrays with the first inner array being the headings.
+
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports code
 #+BEGIN_SRC ruby
   require 'fat_table'
 
@@ -166,9 +186,34 @@ operated on in a number of ways. Here's a quick example to illustrate the use of
        ['2013-05-29', 'S', 15_900.00, 6685.95, 24.5802, 'ENTITY3', 'T'],
        ['2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'ENTITY3', 'T'],
        ['2013-05-23', 'S', 23_054.00, 9694.21, 26.8015, 'ENTITY3', 'F']]
+#+END_SRC
 
-  # Build the Table and then perform chained operations on it
+#+RESULTS:
+#+begin_EXAMPLE
+|       Date | Code |      Raw |   Shares |   Price | Info    | Ok |
+| 2013-05-29 | S    |  15700.0 |  6601.85 |  24.779 | ENTITY3 | F  |
+| 2013-05-02 | P    | 118186.4 | 118186.4 |   11.85 | ENTITY1 | T  |
+| 2013-05-20 | S    |  12000.0 |   5046.0 | 28.2804 | ENTITY3 | F  |
+| 2013-05-23 | S    |   8000.0 |   3364.0 | 27.1083 | ENTITY3 | T  |
+| 2013-05-23 | S    |  39906.0 | 16780.47 | 25.1749 | ENTITY3 | T  |
+| 2013-05-20 | S    |  85000.0 |  35742.5 | 28.3224 | ENTITY3 | T  |
+| 2013-05-02 | P    | 795546.2 | 795546.2 |   1.185 | ENTITY1 | T  |
+| 2013-05-29 | S    |  13459.0 |  5659.51 | 24.7464 | ENTITY3 | T  |
+| 2013-05-20 | S    |  33302.0 | 14003.49 | 28.6383 | ENTITY3 | T  |
+| 2013-05-29 | S    |  15900.0 |  6685.95 | 24.5802 | ENTITY3 | T  |
+| 2013-05-30 | S    |   6679.0 |  2808.52 | 25.0471 | ENTITY3 | T  |
+| 2013-05-23 | S    |  23054.0 |  9694.21 | 26.8015 | ENTITY3 | F  |
+#+end_EXAMPLE
 
+Use FatTable to read the data and convert in into a table object.  Note that
+the headings within the table are all converted to symbols, lower-cased and
+any spaces replaced with underscores.
+
+Here, we select only those rows having more than 2000 shares, the sort the
+result by a compund key, select all columns but add a column, :ref, for the
+row number, and finally re-order the columns with a final select.
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports code
+#+BEGIN_SRC ruby
   table = FatTable.from_aoa(data) \
     .where('shares > 2000') \
     .order_by(:date, :code) \
@@ -176,27 +221,57 @@ operated on in a number of ways. Here's a quick example to illustrate the use of
             :price, :ok, ref: '@row') \
     .select(:ref, :date, :code,
             :shares, :price, :ok)
+#+END_SRC
 
-  # Convert the table to an ASCII text string
+#+RESULTS:
+#+begin_EXAMPLE
+#<FatTable::Table:0x00007f66802bf848 @columns=[#<FatTable::Column:0x00007f66802be3d0 @raw_header=:ref, @header=:ref, @type="Numeric", @items=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]>, #<FatTable::Column:0x00007f66802be240 @raw_header=:date, @header=:date, @type="DateTime", @items=[Thu, 02 May 2013, Thu, 02 May 2013, Mon, 20 May 2013, Mon, 20 May 2013, Mon, 20 May 2013, Thu, 23 May 2013, Thu, 23 May 2013, Thu, 23 May 2013, Wed, 29 May 2013, Wed, 29 May 2013, Wed, 29 May 2013, Thu, 30 May 2013]>, #<FatTable::Column:0x00007f66802be0d8 @raw_header=:code, @header=:code, @type="String", @items=["P", "P", "S", "S", "S", "S", "S", "S", "S", "S", "S", "S"]>, #<FatTable::Column:0x00007f66802bdef8 @raw_header=:shares, @header=:shares, @type="Numeric", @items=[0.1181864e6, 0.7955462e6, 0.5046e4, 0.357425e5, 0.1400349e5, 0.3364e4, 0.1678047e5, 0.969421e4, 0.660185e4, 0.565951e4, 0.668595e4, 0.280852e4]>, #<FatTable::Column:0x00007f66802bdd18 @raw_header=:price, @header=:price, @type="Numeric", @items=[0.1185e2, 0.1185e1, 0.282804e2, 0.283224e2, 0.286383e2, 0.271083e2, 0.251749e2, 0.268015e2, 0.24779e2, 0.247464e2, 0.245802e2, 0.250471e2]>, #<FatTable::Column:0x00007f66802bdb38 @raw_header=:ok, @header=:ok, @type="Boolean", @items=[true, true, false, true, true, true, true, false, false, true, true, true]>], @boundaries=[1, 4, 7, 10, 11]>
+#+end_EXAMPLE
 
+You can use the resulting table in other operation, such as performing joins
+with other tables or set operations, etc.  The world's your oyster.  But
+eventually you will want to present the table in some format, and that is
+where the formatting methods come in.  They let you add footers, including
+groups footers, as well as styling the various elements with very simple
+formatting directives that can apply to various "locations" in the table.  Any
+formatting directives that are beyond the capabilities of the output medium
+are simply ignored.
+
+Here, we format the table constructed above.
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
+#+BEGIN_SRC ruby
   table.to_text do |fmt|
-    # Add a group footer
+    # Add a group footer at the bottom of each group that results from sorting
+    # with the order_by method.
     fmt.gfooter('Avg', shares: :avg, price: :avg)
-    # Add some table footers
+    # Add some table footers.  Averages for the price and shares columns. The
+    # avg_footer method applies the avg aggregate to all the named columns with
+    # an "Average" label.
     fmt.avg_footer(:price, :shares)
+    # And a second footer that shows the sum for the shares column.
     fmt.sum_footer(:shares)
-    # Formats for all locations
+    # Formats for all locations, :ref column is centered and bold, all numerics
+    # are right-aligned, and all booleans are centered and printed with 'Y' or
+    # 'N'
     fmt.format(ref: 'CB', numeric: 'R', boolean: 'CY')
-    # Formats for different "locations" in the table
+    # Formats for different "locations" in the table:
+    # The headers are all centered and bold.
     fmt.format_for(:header, string: 'CB')
+    # In the body rows (i.e., not the headers or footers), the code column is
+    # centered, shares have grouping commas applied and are rounded to one
+    # decimal place, but the price column is rounded to 4 places with no
+    # grouping commas.
     fmt.format_for(:body, code: 'C', shares: ',0.1', price: '0.4', )
+    # But the price column in the first row of the body (:bfirst location) will
+    # also be formatted with a currency symbol.
     fmt.format_for(:bfirst, price: '$0.4', )
+    # In the footers, apply the same rounding rules, but make the results bold.
     fmt.format_for(:gfooter, shares: 'B,0.1', price: 'B0.4', )
     fmt.format_for(:footer, shares: 'B,0.1', price: '$B0.4', )
   end
 #+END_SRC
 
-#+BEGIN_EXAMPLE
+#+begin_EXAMPLE
 +=========+============+======+=============+==========+====+
 |   Ref   |    Date    | Code |    Shares   |   Price  | Ok |
 +---------+------------+------+-------------+----------+----+
@@ -231,7 +306,109 @@ operated on in a number of ways. Here's a quick example to illustrate the use of
 +---------+------------+------+-------------+----------+----+
 |  Total  |            |      | 1,020,119.1 |          |    |
 +=========+============+======+=============+==========+====+
-#+END_EXAMPLE
+#+end_EXAMPLE
+
+For the text format above, we were wasting our breath specifying bold styling
+since there is no way to make that happen in plain ASCII text.  But with
+LaTeX, bold is doable.
+#+HEADER: :session readme :results file :file "img/quicktable.tex"
+#+BEGIN_SRC ruby
+  table.to_latex do |fmt|
+    fmt.gfooter('Avg', shares: :avg, price: :avg)
+    fmt.avg_footer(:price, :shares)
+    fmt.sum_footer(:shares)
+    fmt.format(ref: 'CB', numeric: 'R', boolean: 'CY')
+    fmt.format_for(:header, string: 'CB')
+    fmt.format_for(:body, code: 'C', shares: ',0.1c[blue.lightgray]', price: '0.4', )
+    fmt.format_for(:bfirst, price: '$0.4', )
+    fmt.format_for(:gfooter, shares: 'B,0.1', price: 'B0.4', )
+    fmt.format_for(:footer, shares: 'B,0.1', price: '$B0.4', )
+  end
+#+END_SRC
+
+#+RESULTS:
+[[file:img/quicktable.tex]]
+
+The file =quick.tex= adds the needed preamlble and wraps the generated table
+in a =document= environment, so we can see the results.  These commands
+run pdflatex on the result twice to get the table aligned properly.
+#+begin_src sh :results verbatim
+  cd img
+  pdflatex quick.tex
+  pdflatex quick.tex
+  pdftoppm -png quick.pdf >quick.ppm
+  convert quick.png -resize 600x800 quick_small.png
+#+end_src
+
+#+RESULTS:
+#+begin_example
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/Debian) (preloaded format=pdflatex)
+ restricted \write18 enabled.
+entering extended mode
+(./quick.tex
+LaTeX2e <2020-10-01> patch level 4
+L3 programming layer <2021-01-09> xparse <2020-03-03>
+(/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
+Document Class: article 2020/04/10 v1.4m Standard LaTeX document class
+(/usr/share/texlive/texmf-dist/tex/latex/base/size10.clo))
+(/usr/share/texlive/texmf-dist/tex/latex/tools/longtable.sty)
+(/usr/share/texlive/texmf-dist/tex/latex/xcolor/xcolor.sty
+(/usr/share/texlive/texmf-dist/tex/latex/graphics-cfg/color.cfg)
+(/usr/share/texlive/texmf-dist/tex/latex/graphics-def/pdftex.def)
+(/usr/share/texlive/texmf-dist/tex/latex/colortbl/colortbl.sty
+(/usr/share/texlive/texmf-dist/tex/latex/tools/array.sty))
+(/usr/share/texlive/texmf-dist/tex/latex/xcolor/x11nam.def))
+(/usr/share/texlive/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def)
+(./quick.aux (./quicktable.aux))
+(/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+) (./quicktable.tex) [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
+(./quick.aux (./quicktable.aux)) ){/usr/share/texmf/fonts/enc/dvips/cm-super/cm
+-super-ts1.enc}</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cm
+bx10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pf
+b></usr/share/texmf/fonts/type1/public/cm-super/sfrm1000.pfb>
+Output written on quick.pdf (1 page, 31167 bytes).
+Transcript written on quick.log.
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/Debian) (preloaded format=pdflatex)
+ restricted \write18 enabled.
+entering extended mode
+(./quick.tex
+LaTeX2e <2020-10-01> patch level 4
+L3 programming layer <2021-01-09> xparse <2020-03-03>
+(/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
+Document Class: article 2020/04/10 v1.4m Standard LaTeX document class
+(/usr/share/texlive/texmf-dist/tex/latex/base/size10.clo))
+(/usr/share/texlive/texmf-dist/tex/latex/tools/longtable.sty)
+(/usr/share/texlive/texmf-dist/tex/latex/xcolor/xcolor.sty
+(/usr/share/texlive/texmf-dist/tex/latex/graphics-cfg/color.cfg)
+(/usr/share/texlive/texmf-dist/tex/latex/graphics-def/pdftex.def)
+(/usr/share/texlive/texmf-dist/tex/latex/colortbl/colortbl.sty
+(/usr/share/texlive/texmf-dist/tex/latex/tools/array.sty))
+(/usr/share/texlive/texmf-dist/tex/latex/xcolor/x11nam.def))
+(/usr/share/texlive/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def)
+(./quick.aux (./quicktable.aux))
+(/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+) (./quicktable.tex) [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
+(./quick.aux (./quicktable.aux)) ){/usr/share/texmf/fonts/enc/dvips/cm-super/cm
+-super-ts1.enc}</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cm
+bx10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pf
+b></usr/share/texmf/fonts/type1/public/cm-super/sfrm1000.pfb>
+Output written on quick.pdf (1 page, 31167 bytes).
+Transcript written on quick.log.
+#+end_example
+
+And we convert into a smaller image for display:
+#+begin_src sh :results verbatim
+  cd img
+  pdftoppm -png quick.pdf >quick.png
+  convert quick.png -resize 600x800 quick_small.png
+#+end_src
+
+#+RESULTS:
+
+
+[[file:img/quick_small.png]]
 
 ** A Word About the Examples
 
