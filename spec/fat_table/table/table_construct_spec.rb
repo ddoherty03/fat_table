@@ -1,6 +1,22 @@
 # Specs to test the building of Table from various inputs.
 module FatTable
   RSpec.describe Table do
+    describe 'initializer' do
+      it 'initializes an empty table without headers' do
+        expect(Table.new).to be_a(Table)
+        expect(Table.new).to be_empty
+      end
+
+      it 'initializes and empty table with headers' do
+        tab = Table.new('a', :b, '   four scORE', '**Batt@ry**')
+        expect(tab).to be_a(Table)
+        expect(tab).to be_empty
+        heads = [:a, :b, :four_score, :battry]
+        heads.each do |h|
+          expect(tab.headers).to include(h)
+          expect(tab.type(h)).to eq('NilClass')
+        end
+      end
     describe 'add_column' do
       it 'by adding columns' do
         headers = [:a, :b, :c, :d]

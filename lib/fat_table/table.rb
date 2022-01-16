@@ -62,9 +62,14 @@ module FatTable
     # :category: Constructors
 
     # Return an empty FatTable::Table object.
-    def initialize
+    def initialize(*heads)
       @columns = []
       @boundaries = []
+      unless heads.empty?
+        heads.each do |h|
+          @columns << Column.new(header: h)
+        end
+      end
     end
 
     # :category: Constructors
