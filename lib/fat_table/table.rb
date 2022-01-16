@@ -342,8 +342,10 @@ module FatTable
     # Set the column type for Column with the given +key+ as a String type,
     # but only if empty.  Otherwise, we would have to worry about converting
     # existing items in the column to String.  Perhaps that's a TODO.
-    def set_column_to_string_type(key)
-      column(key).force_to_string_type
+    def force_to_string!(*keys)
+      keys.each do |h|
+        column(h).force_to_string!
+      end
     end
 
     # :category: Attributes

@@ -146,8 +146,7 @@ module FatTable
         heads.each do |h|
           tab.add_column(Column.new(header: h))
         end
-        tab.set_column_to_string_type(:raw)
-        tab.set_column_to_string_type(:shares)
+        tab.force_to_string!(:raw, :shares)
         rows.each do |r|
           tab << r
         end

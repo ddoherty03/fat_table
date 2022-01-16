@@ -17,6 +17,33 @@ module FatTable
           expect(tab.type(h)).to eq('NilClass')
         end
       end
+
+      it 'can force a column to string type after initialization' do
+        tab = Table.new('a', :b, '   four scORE', '**Batt@ry**', :zip)
+        expect(tab).to be_a(Table)
+        expect(tab).to be_empty
+        heads = [:a, :b, :four_score, :zip]
+        heads.each do |h|
+          expect(tab.headers).to include(h)
+          expect(tab.type(h)).to eq('NilClass')
+        end
+        tab << { zip: '66210' }
+        tab << { a: '66210' }
+        expect(tab.type(:a)).to eq('Numeric')
+        expect(tab.type(:zip)).to eq('Numeric')
+        tab.force_to_string!(:zip)
+        tab << { zip: '66210' }
+        tab << { b: '06610' }
+        expect(tab[0][:zip]).to eq('66210')
+        expect(tab[1][:zip]).to eq('')
+        expect(tab[1][:a]).to eq(66_210)
+        expect(tab[2][:zip]).to eq('66210')
+        expect(tab[3][:a]).to be_nil
+        expect(tab[3][:b]).to eq(6_610)
+        expect(tab[3][:zip]).to be_nil
+      end
+    end
+
     describe 'add_column' do
       it 'by adding columns' do
         headers = [:a, :b, :c, :d]

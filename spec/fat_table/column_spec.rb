@@ -196,7 +196,7 @@ module FatTable
         expect(col[4]).to eq('25')
       end
 
-      describe '#force_to_string_type' do
+      describe '#force_to_string!' do
         it 'forces the String type on any column type' do
           # Dates
           items = [
@@ -206,7 +206,7 @@ module FatTable
           col = Column.new(header: 'junk', items:)
           expect(col.header).to eq(:junk)
           expect(col.type).to eq('DateTime')
-          col.force_to_string_type
+          col.force_to_string!
           expect(col.type).to eq('String')
           col.each do |it|
             expect(it.class).to eq(String)
@@ -216,7 +216,7 @@ module FatTable
           col = Column.new(header: 'junk', items:)
           expect(col.header).to eq(:junk)
           expect(col.type).to eq('Boolean')
-          col.force_to_string_type
+          col.force_to_string!
           expect(col.type).to eq('String')
           col.each do |it|
             expect(it.class).to eq(String)
@@ -230,7 +230,7 @@ module FatTable
           col = Column.new(header: 'junk', items:)
           expect(col.header).to eq(:junk)
           expect(col.type).to eq('Numeric')
-          col.force_to_string_type
+          col.force_to_string!
           expect(col.type).to eq('String')
           col.each do |it|
             expect(it.class).to eq(String)
