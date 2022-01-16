@@ -489,60 +489,80 @@ module FatTable
     end
 
     describe 'from SQL' do
-      before :context do
-        @out_file = Pathname("#{__dir__}/../../tmp/psql.out").cleanpath
-        # Make sure there is no old db from a failed prior run
-        system "dropdb -e fat_table_spec >>#{@out_file} 2>&1"
-        # Create the db
-        ok = system "createdb -e fat_table_spec >#{@out_file} 2>&1"
-        expect(ok).to be_truthy
-        # Populate the db
-        sql_file = Pathname("#{__dir__}/../../example_files/trades.sql").cleanpath
-        ok = system "psql -a -d fat_table_spec -f #{sql_file} >>#{@out_file} 2>&1"
-        expect(ok).to be_truthy
+      context 'all adapters' do
+        it 'raises exception if adapter not present', :db do
+          ['pg', 'mysql2', 'sqlite3'].each do |adapter|
+            begin
+              got_gem = require adapter
+            rescue LoadError
+              got_gem = false
+            end
+            next if got_gem
+
+            expect {
+              FatTable.connect(adapter: adapter, database: 'fat_table_spec')
+            }.to raise_error FatTable::TransientError, /need to install/
+          end
+          expect {
+            FatTable.connect(adapter: 'jdbc', database: 'fat_table_spec')
+          }.to raise_error Sequel::AdapterNotFound, /cannot load/
+        end
       end
 
-      after :context do
-        # Drop the db
-        if FatTable.db
-          FatTable.db.disconnect
-          ok = system "dropdb -e fat_table_spec >>#{@out_file} 2>&1"
+      context 'postgres' do
+        before :context do
+          @out_file = Pathname("#{__dir__}/../../tmp/psql.out").cleanpath
+          # Make sure there is no old db from a failed prior run
+          system "dropdb -e fat_table_spec >>#{@out_file} 2>&1"
+          # Create the db
+          ok = system "createdb -e fat_table_spec >#{@out_file} 2>&1"
+          expect(ok).to be_truthy
+          # Populate the db
+          sql_file = Pathname("#{__dir__}/../../example_files/trades.sql").cleanpath
+          ok = system "psql -a -d fat_table_spec -f #{sql_file} >>#{@out_file} 2>&1"
           expect(ok).to be_truthy
         end
-      end
 
-      it 'raises exception if adapter not present', :db do
-        ['pg', 'mysql2', 'sqlite3'].each do |adapter|
-          begin
-            got_gem = require adapter
-          rescue LoadError
-            got_gem = false
+        after :context do
+          # Drop the db
+          if FatTable.db
+            FatTable.db.disconnect
+            ok = system "dropdb -e fat_table_spec >>#{@out_file} 2>&1"
+            expect(ok).to be_truthy
           end
-          next if got_gem
-
-          expect {
-            FatTable.connect(adapter: adapter, database: 'fat_table_spec')
-          }.to raise_error FatTable::TransientError, /need to install/
         end
-        expect {
-          FatTable.connect(adapter: 'jdbc', database: 'fat_table_spec')
-        }.to raise_error Sequel::AdapterNotFound, /cannot load/
-      end
 
-      it 'creates from a SQL query', :db do
-        # FatTable.db = Sequel.postgres(database: 'fat_table_spec')
-        FatTable.connect(adapter: 'postgres', database: 'fat_table_spec')
-        system("echo URI: #{FatTable.db.uri} >>#{@out_file}")
-        system("echo Tables: #{FatTable.db.tables} >>#{@out_file}")
-        system "psql -a -d fat_table_spec -c 'select * from trades where shares > 10000' >>#{@out_file} 2>&1"
-        query = <<-SQL.strip_heredoc
+        it 'creates from a postgres SQL query', :db do
+          # FatTable.db = Sequel.postgres(database: 'fat_table_spec')
+          FatTable.connect(adapter: 'postgres', database: 'fat_table_spec')
+          system("echo URI: #{FatTable.db.uri} >>#{@out_file}")
+          system("echo Tables: #{FatTable.db.tables} >>#{@out_file}")
+          system "psql -a -d fat_table_spec -c 'select * from trades where shares > 10000' >>#{@out_file} 2>&1"
+          query = <<-SQL.strip_heredoc
           SELECT ref, date, code, price, shares
           FROM trades
           WHERE shares > 1000
         SQL
-        tab = Table.from_sql(query)
-        expect(tab.class).to eq(Table)
-        expect(tab.rows.size).to be > 100
+          tab = Table.from_sql(query)
+          expect(tab.class).to eq(Table)
+          expect(tab.rows.size).to be > 100
+        end
+      end
+
+      context 'sqlite' do
+        it 'creates from a sqlite SQL query', :db do
+          db_file = File.expand_path(File.join(__dir__, '../../../examples/trades.db'))
+          # FatTable.db = Sequel.postgres(database: 'fat_table_spec')
+          FatTable.connect(adapter: 'sqlite', database: db_file)
+          query = <<-SQL.strip_heredoc
+          SELECT date, code, price, shares
+          FROM trans
+          WHERE shares > 1000
+        SQL
+          tab = Table.from_sql(query)
+          expect(tab.class).to eq(Table)
+          expect(tab.rows.size).to be > 8
+        end
       end
     end
   end
