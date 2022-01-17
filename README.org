@@ -1546,7 +1546,6 @@ Here is ~tab_a~:
   tab_a.to_aoa
 #+end_src
 
-#+RESULTS:
 #+begin_EXAMPLE
 | Id | Name  | Age | Address    | Salary |  Join Date |
 |----+-------+-----+------------+--------+------------|
@@ -2516,9 +2515,28 @@ date.
   tab_a.to_text do |f|
     f.footer('Average', age: :avg, salary: :avg, join_date: :avg)
     f.footer('Tally', age: :count)
-    f.format(numeric: '0.0R,', datetime: 'D[%v]')
+    f.format(numeric: '0.0R,', datetime: 'd[%v]D[%v]')
   end
 #+END_SRC
+
+#+begin_EXAMPLE
++=========+=======+=====+============+========+=============+
+| Id      | Name  | Age | Address    | Salary | Join Date   |
++---------+-------+-----+------------+--------+-------------+
+|       1 | Paul  |  32 | California | 20,000 | 13-JUL-2001 |
+|       3 | Teddy |  23 | Norway     | 20,000 | 13-DEC-2007 |
+|       4 | Mark  |  25 | Rich-Mond  | 65,000 | 13-DEC-2007 |
+|       5 | David |  27 | Texas      | 85,000 | 13-DEC-2007 |
+|       2 | Allen |  25 | Texas      |        | 13-JUL-2005 |
+|       8 | Paul  |  24 | Houston    | 20,000 | 13-JUL-2005 |
+|       9 | James |  44 | Norway     |  5,000 | 13-JUL-2005 |
+|      10 | James |  45 | Texas      |  5,000 |             |
++---------+-------+-----+------------+--------+-------------+
+| Average |       |  31 |            | 31,429 | 29-DEC-2005 |
++---------+-------+-----+------------+--------+-------------+
+|   Tally |       |   8 |            |        |             |
++=========+=======+=====+============+========+=============+
+#+end_EXAMPLE
 
 #+begin_EXAMPLE
 +=========+=======+=====+============+========+=====================+
