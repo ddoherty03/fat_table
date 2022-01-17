@@ -281,10 +281,11 @@ module FatTable
                 .format_for(:header, string: 'Uc[red]',
                             ref: 'uc[blue.aquamarine]')
                 .format_for(:gfooter, string: 'B')
-                .format_for(:footer, date: 'Bd[%Y]')
+                .format_for(:footer, datetime: 'Bd[%Y]')
                 .format_for(:body, numeric: ',0.2', shares: '0.4', ref: 'B',
                             price: '$,',
                             bool: '  c[white.green, red.white] b[  Yippers, Nah Sir]',
+                            datetime: 'd[%Y]D[%v]',
                             nil: 'n[  Nothing to see here   ]')
         # Header color
         expect(fmt.format_at[:header][:ref].color).to eq('blue')
@@ -395,6 +396,9 @@ module FatTable
         expect(fmt.format_at[:body][:bool].false_bgcolor).to eq('white')
         expect(fmt.format_at[:body][:bool].true_text).to eq('Yippers')
         expect(fmt.format_at[:body][:bool].false_text).to eq('Nah Sir')
+        # Body, :datetime
+        expect(fmt.format_at[:body][:date].date_fmt).to eq('%Y')
+        expect(fmt.format_at[:body][:date].datetime_fmt).to eq('%v')
         # Body, :ref
         expect(fmt.format_at[:body][:ref].bold).to eq(true)
         # Body, :price
@@ -406,7 +410,6 @@ module FatTable
           expect(fmt.format_at[:body][h].false_color).to eq('none')
           expect(fmt.format_at[:body][h].true_text).to eq('T')
           expect(fmt.format_at[:body][h].false_text).to eq('F')
-          expect(fmt.format_at[:body][h].date_fmt).to eq('%F')
           expect(fmt.format_at[:body][h].italic).to eq(false)
           expect(fmt.format_at[:body][h].alignment).to eq(:left)
           expect(fmt.format_at[:body][h].currency).to eq(false)
@@ -511,7 +514,7 @@ module FatTable
       end
 
       describe 'datetime formatting' do
-        it 'properly formats a datetime' do
+        it 'properly formats a datetime with sub-day components' do
           fmt = described_class.new
           @istruct = OpenStruct.new(described_class.default_format)
           val = DateTime.parse('2017-02-23 9pm')
@@ -519,6 +522,16 @@ module FatTable
           @istruct.datetime_fmt = '%Y in %B at %l%P, which was on a %A'
           expect(fmt.format_cell(val, @istruct))
             .to eq('2017 in February at  9pm, which was on a Thursday')
+        end
+
+        it 'properly formats a datetime without sub-day components' do
+          fmt = described_class.new
+          @istruct = OpenStruct.new(described_class.default_format)
+          val = DateTime.parse('2017-02-23')
+          expect(fmt.format_cell(val, @istruct)).to eq('2017-02-23')
+          @istruct.date_fmt = '%Y in %B at %l%P, which was on a %A'
+          expect(fmt.format_cell(val, @istruct))
+            .to eq('2017 in February at 12am, which was on a Thursday')
         end
       end
     end

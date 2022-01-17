@@ -746,7 +746,7 @@ module FatTable
         fmt = fmt.sub(Regexp.last_match[0], '')
       end
       if fmt =~ /D\[(?<bdy>[^\]]*)\]/
-        fmt_hash[:date_fmt] = Regexp.last_match[:bdy]
+        fmt_hash[:datetime_fmt] = Regexp.last_match[:bdy]
         fmt = fmt.sub(Regexp.last_match[0], '')
       end
       unless fmt.blank? || !strict
