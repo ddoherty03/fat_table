@@ -1,5 +1,8 @@
+#+TITLE: FatTable User Guide
 #+OPTIONS: toc:4
 #+LATEX_HEADER: \usepackage[margin=0.75in]{geometry}
+#+PROPERTY: header-args:ruby :colnames no :session readme :hlines yes :exports both
+#+PROPERTY: header-args:sh :exports code
 #+STARTUP: inlineimages
 
 #+begin_comment
@@ -53,11 +56,12 @@ can read them in with its ~.from_aoa~ constructor. A ~FatTable~ table output as 
 array of arrays with its ~.to_aoa~ output function will be rendered in an
 org-mode buffer as an org-table, ready for processing by other code blocks.
 
-* Table of Contents                                                     :toc:
+* Table of Contents                                            :toc:noexport:
 - [[#introduction][Introduction]]
 - [[#installation][Installation]]
   - [[#using-in-a-gem][Using in a gem]]
   - [[#manually-install][Manually install]]
+  - [[#require][Require]]
 - [[#usage][Usage]]
   - [[#quick-start][Quick Start]]
   - [[#a-word-about-the-examples][A Word About the Examples]]
@@ -67,8 +71,13 @@ org-mode buffer as an org-table, ready for processing by other code blocks.
     - [[#groups][Groups]]
   - [[#constructing-tables][Constructing Tables]]
     - [[#empty-tables][Empty Tables]]
+      - [[#without-headers][Without Headers]]
+      - [[#with-headers][With Headers]]
+      - [[#forcing-string-type][Forcing String Type]]
     - [[#from-csv-or-org-mode-files-or-strings][From CSV or Org Mode files or strings]]
     - [[#from-arrays-of-arrays][From Arrays of Arrays]]
+      - [[#in-ruby-code][In Ruby Code]]
+      - [[#in-emacs-org-files][In Emacs Org Files]]
     - [[#from-arrays-of-hashes][From Arrays of Hashes]]
     - [[#from-sql-queries][From SQL queries]]
     - [[#marking-groups-in-input][Marking Groups in Input]]
@@ -98,7 +107,7 @@ org-mode buffer as an org-table, ready for processing by other code blocks.
     - [[#set-operations][Set Operations]]
       - [[#unions][Unions]]
       - [[#intersections][Intersections]]
-      - [[#differences-with-except][Differences with Except]]
+      - [[#set-differences-with-except][Set Differences with Except]]
     - [[#uniq-aka-distinct][Uniq (aka Distinct)]]
     - [[#remove-groups-with-degroup][Remove groups with degroup!]]
   - [[#formatting-tables][Formatting Tables]]
@@ -121,6 +130,8 @@ org-mode buffer as an org-table, ready for processing by other code blocks.
       - [[#adding-footers][Adding Footers]]
       - [[#aggregators][Aggregators]]
       - [[#footer-objects][Footer objects]]
+      - [[#footer-examples][Footer Examples]]
+        - [[#built-in-aggregators][Built-in Aggregators]]
     - [[#invoking-formatters][Invoking Formatters]]
       - [[#by-instantiating-a-formatter][By Instantiating a Formatter]]
       - [[#by-using-fattable-module-level-method-calls][By Using ~FatTable~ module-level method calls]]
@@ -134,19 +145,16 @@ org-mode buffer as an org-table, ready for processing by other code blocks.
 * Installation
 ** Using in a gem
 Add this line to your application's Gemfile:
-
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :exports code
   gem 'fat_table'
 #+END_SRC
 
 Or, something like this in your gemspec file:
-
-#+begin_SRC ruby
+#+begin_SRC ruby :exports code
     gem.add_runtime_dependency 'fat_table'
 #+end_SRC
 
 And then execute:
-
 #+BEGIN_SRC sh
   $ bundle
 #+END_SRC
@@ -158,6 +166,12 @@ Or install it yourself as:
   $ gem install fat_table
 #+END_SRC
 
+** Require
+Somewhere in your code, make sure that =FatTable= is required:
+#+begin_src ruby :exports code :results silent
+  require 'fat_table'
+#+end_src
+
 * Usage
 ** Quick Start
 
@@ -167,11 +181,7 @@ operated on in a number of ways. Here's a quick example to illustrate the use of
 
 Here is a set of data that records some kind of stock activity.  It's an array
 of arrays with the first inner array being the headings.
-
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports code
-#+BEGIN_SRC ruby
-  require 'fat_table'
-
+#+BEGIN_SRC ruby :exports code :results silent
   data =
       [['Date', 'Code', 'Raw', 'Shares', 'Price', 'Info', 'Ok'],
        ['2013-05-29', 'S', 15_700.00, 6601.85, 24.7790, 'ENTITY3', 'F'],
@@ -188,32 +198,15 @@ of arrays with the first inner array being the headings.
        ['2013-05-23', 'S', 23_054.00, 9694.21, 26.8015, 'ENTITY3', 'F']]
 #+END_SRC
 
-#+RESULTS:
-#+begin_EXAMPLE
-|       Date | Code |      Raw |   Shares |   Price | Info    | Ok |
-| 2013-05-29 | S    |  15700.0 |  6601.85 |  24.779 | ENTITY3 | F  |
-| 2013-05-02 | P    | 118186.4 | 118186.4 |   11.85 | ENTITY1 | T  |
-| 2013-05-20 | S    |  12000.0 |   5046.0 | 28.2804 | ENTITY3 | F  |
-| 2013-05-23 | S    |   8000.0 |   3364.0 | 27.1083 | ENTITY3 | T  |
-| 2013-05-23 | S    |  39906.0 | 16780.47 | 25.1749 | ENTITY3 | T  |
-| 2013-05-20 | S    |  85000.0 |  35742.5 | 28.3224 | ENTITY3 | T  |
-| 2013-05-02 | P    | 795546.2 | 795546.2 |   1.185 | ENTITY1 | T  |
-| 2013-05-29 | S    |  13459.0 |  5659.51 | 24.7464 | ENTITY3 | T  |
-| 2013-05-20 | S    |  33302.0 | 14003.49 | 28.6383 | ENTITY3 | T  |
-| 2013-05-29 | S    |  15900.0 |  6685.95 | 24.5802 | ENTITY3 | T  |
-| 2013-05-30 | S    |   6679.0 |  2808.52 | 25.0471 | ENTITY3 | T  |
-| 2013-05-23 | S    |  23054.0 |  9694.21 | 26.8015 | ENTITY3 | F  |
-#+end_EXAMPLE
-
 Use FatTable to read the data and convert in into a table object.  Note that
 the headings within the table are all converted to symbols, lower-cased and
 any spaces replaced with underscores.
 
-Here, we select only those rows having more than 2000 shares, the sort the
-result by a compund key, select all columns but add a column, :ref, for the
-row number, and finally re-order the columns with a final select.
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports code
-#+BEGIN_SRC ruby
+Below, we select only those rows having more than 2000 shares, sort by a
+compund key, select all columns but add a column, :ref, for the row number,
+and finally re-order the columns with a final select.
+
+#+BEGIN_SRC ruby :results silent :exports code
   table = FatTable.from_aoa(data) \
     .where('shares > 2000') \
     .order_by(:date, :code) \
@@ -223,13 +216,8 @@ row number, and finally re-order the columns with a final select.
             :shares, :price, :ok)
 #+END_SRC
 
-#+RESULTS:
-#+begin_EXAMPLE
-#<FatTable::Table:0x00007f66802bf848 @columns=[#<FatTable::Column:0x00007f66802be3d0 @raw_header=:ref, @header=:ref, @type="Numeric", @items=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]>, #<FatTable::Column:0x00007f66802be240 @raw_header=:date, @header=:date, @type="DateTime", @items=[Thu, 02 May 2013, Thu, 02 May 2013, Mon, 20 May 2013, Mon, 20 May 2013, Mon, 20 May 2013, Thu, 23 May 2013, Thu, 23 May 2013, Thu, 23 May 2013, Wed, 29 May 2013, Wed, 29 May 2013, Wed, 29 May 2013, Thu, 30 May 2013]>, #<FatTable::Column:0x00007f66802be0d8 @raw_header=:code, @header=:code, @type="String", @items=["P", "P", "S", "S", "S", "S", "S", "S", "S", "S", "S", "S"]>, #<FatTable::Column:0x00007f66802bdef8 @raw_header=:shares, @header=:shares, @type="Numeric", @items=[0.1181864e6, 0.7955462e6, 0.5046e4, 0.357425e5, 0.1400349e5, 0.3364e4, 0.1678047e5, 0.969421e4, 0.660185e4, 0.565951e4, 0.668595e4, 0.280852e4]>, #<FatTable::Column:0x00007f66802bdd18 @raw_header=:price, @header=:price, @type="Numeric", @items=[0.1185e2, 0.1185e1, 0.282804e2, 0.283224e2, 0.286383e2, 0.271083e2, 0.251749e2, 0.268015e2, 0.24779e2, 0.247464e2, 0.245802e2, 0.250471e2]>, #<FatTable::Column:0x00007f66802bdb38 @raw_header=:ok, @header=:ok, @type="Boolean", @items=[true, true, false, true, true, true, true, false, false, true, true, true]>], @boundaries=[1, 4, 7, 10, 11]>
-#+end_EXAMPLE
-
-You can use the resulting table in other operation, such as performing joins
-with other tables or set operations, etc.  The world's your oyster.  But
+You can use the resulting table in other operations, such as performing joins
+or set operations with other tables, etc.  The world's your oyster.  But
 eventually you will want to present the table in some format, and that is
 where the formatting methods come in.  They let you add footers, including
 groups footers, as well as styling the various elements with very simple
@@ -237,9 +225,8 @@ formatting directives that can apply to various "locations" in the table.  Any
 formatting directives that are beyond the capabilities of the output medium
 are simply ignored.
 
-Here, we format the table constructed above.
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+We can format the table constructed above.
+#+BEGIN_SRC ruby :exports both
   table.to_text do |fmt|
     # Add a group footer at the bottom of each group that results from sorting
     # with the order_by method.
@@ -271,7 +258,8 @@ Here, we format the table constructed above.
   end
 #+END_SRC
 
-#+begin_EXAMPLE
+#+RESULTS:
+#+begin_example
 +=========+============+======+=============+==========+====+
 |   Ref   |    Date    | Code |    Shares   |   Price  | Ok |
 +---------+------------+------+-------------+----------+----+
@@ -306,13 +294,15 @@ Here, we format the table constructed above.
 +---------+------------+------+-------------+----------+----+
 |  Total  |            |      | 1,020,119.1 |          |    |
 +=========+============+======+=============+==========+====+
-#+end_EXAMPLE
+#+end_example
 
 For the text format above, we were wasting our breath specifying bold styling
 since there is no way to make that happen in plain ASCII text.  But with
-LaTeX, bold is doable.
-#+HEADER: :session readme :results file :file "img/quicktable.tex"
-#+BEGIN_SRC ruby
+LaTeX, bold is doable.  The output of the following code block is being
+written to a file =examples/quicktable.tex= which is then =\included=-ed in a
+simple wrapper file, =examples/quick.tex= so it can be compiled by LaTeX.
+
+#+BEGIN_SRC ruby :results file :file "examples/quicktable.tex"
   table.to_latex do |fmt|
     fmt.gfooter('Avg', shares: :avg, price: :avg)
     fmt.avg_footer(:price, :shares)
@@ -327,91 +317,30 @@ LaTeX, bold is doable.
 #+END_SRC
 
 #+RESULTS:
-[[file:img/quicktable.tex]]
+#+begin_EXAMPLE
+[[file:examples/quicktable.tex]]
+#+end_EXAMPLE
 
-The file =quick.tex= adds the needed preamlble and wraps the generated table
-in a =document= environment, so we can see the results.  These commands
-run pdflatex on the result twice to get the table aligned properly.
-#+begin_src sh :results verbatim
-  cd img
+These commands run pdflatex on the result twice to get the table aligned
+properly.
+#+begin_src sh :results silent
+  cd examples
   pdflatex quick.tex
   pdflatex quick.tex
-  pdftoppm -png quick.pdf >quick.ppm
-  convert quick.png -resize 600x800 quick_small.png
 #+end_src
 
-#+RESULTS:
-#+begin_example
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/Debian) (preloaded format=pdflatex)
- restricted \write18 enabled.
-entering extended mode
-(./quick.tex
-LaTeX2e <2020-10-01> patch level 4
-L3 programming layer <2021-01-09> xparse <2020-03-03>
-(/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
-Document Class: article 2020/04/10 v1.4m Standard LaTeX document class
-(/usr/share/texlive/texmf-dist/tex/latex/base/size10.clo))
-(/usr/share/texlive/texmf-dist/tex/latex/tools/longtable.sty)
-(/usr/share/texlive/texmf-dist/tex/latex/xcolor/xcolor.sty
-(/usr/share/texlive/texmf-dist/tex/latex/graphics-cfg/color.cfg)
-(/usr/share/texlive/texmf-dist/tex/latex/graphics-def/pdftex.def)
-(/usr/share/texlive/texmf-dist/tex/latex/colortbl/colortbl.sty
-(/usr/share/texlive/texmf-dist/tex/latex/tools/array.sty))
-(/usr/share/texlive/texmf-dist/tex/latex/xcolor/x11nam.def))
-(/usr/share/texlive/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def)
-(./quick.aux (./quicktable.aux))
-(/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
-[Loading MPS to PDF converter (version 2006.09.02).]
-) (./quicktable.tex) [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
-(./quick.aux (./quicktable.aux)) ){/usr/share/texmf/fonts/enc/dvips/cm-super/cm
--super-ts1.enc}</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cm
-bx10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pf
-b></usr/share/texmf/fonts/type1/public/cm-super/sfrm1000.pfb>
-Output written on quick.pdf (1 page, 31167 bytes).
-Transcript written on quick.log.
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/Debian) (preloaded format=pdflatex)
- restricted \write18 enabled.
-entering extended mode
-(./quick.tex
-LaTeX2e <2020-10-01> patch level 4
-L3 programming layer <2021-01-09> xparse <2020-03-03>
-(/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
-Document Class: article 2020/04/10 v1.4m Standard LaTeX document class
-(/usr/share/texlive/texmf-dist/tex/latex/base/size10.clo))
-(/usr/share/texlive/texmf-dist/tex/latex/tools/longtable.sty)
-(/usr/share/texlive/texmf-dist/tex/latex/xcolor/xcolor.sty
-(/usr/share/texlive/texmf-dist/tex/latex/graphics-cfg/color.cfg)
-(/usr/share/texlive/texmf-dist/tex/latex/graphics-def/pdftex.def)
-(/usr/share/texlive/texmf-dist/tex/latex/colortbl/colortbl.sty
-(/usr/share/texlive/texmf-dist/tex/latex/tools/array.sty))
-(/usr/share/texlive/texmf-dist/tex/latex/xcolor/x11nam.def))
-(/usr/share/texlive/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def)
-(./quick.aux (./quicktable.aux))
-(/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
-[Loading MPS to PDF converter (version 2006.09.02).]
-) (./quicktable.tex) [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
-(./quick.aux (./quicktable.aux)) ){/usr/share/texmf/fonts/enc/dvips/cm-super/cm
--super-ts1.enc}</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cm
-bx10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pf
-b></usr/share/texmf/fonts/type1/public/cm-super/sfrm1000.pfb>
-Output written on quick.pdf (1 page, 31167 bytes).
-Transcript written on quick.log.
-#+end_example
-
-And we convert into a smaller image for display:
+And we convert the =PDF= into a smaller image for display:
 #+begin_src sh :results verbatim
-  cd img
+  cd examples
   pdftoppm -png quick.pdf >quick.png
   convert quick.png -resize 600x800 quick_small.png
 #+end_src
 
 #+RESULTS:
 
-
-[[file:img/quick_small.png]]
+[[file:examples/quick_small.png]]
 
 ** A Word About the Examples
-
 When you install the ~fat_table~ gem, you have access to a program ~ft_console~,
 which opens a ~pry~ session with ~fat_table~ loaded and the tables used in the
 examples in this ~README~ defined as instance variables so you can experiment
@@ -419,11 +348,13 @@ with them. Because they are defined as instance variables, you have to write
 ~tab1~ as ~@tab1~ in ~ft_console~, but otherwise the examples should work as shown
 in this ~README~.
 
-The examples in this ~README~ file are executed as code blocks within the
-~README.org~ file, so they typically end with a call to ~.to_aoa~. That causes the
-table to be inserted into the file and formatted as a table. With ~ft_console~,
-you should instead display your tables with ~.to_text~ or ~.to_term~. These will
-return a string that you can print to the terminal with ~puts~.
+The examples in this ~README~ file are executed in Emacs org-mode as code
+blocks within the ~README.org~ file, so they typically end with a call to
+~.to_aoa~. That causes Emacs to insert the "Array of Array" ruby data
+structure into the file and format it as a table, which is the convention for
+Emacs org-mode. With ~ft_console~, you should instead display your tables with
+~.to_text~ or ~.to_term~. These will return a string that you can print to the
+terminal with ~puts~.
 
 To read in the table used in the Quick Start section above, you might do the
 following:
@@ -483,7 +414,6 @@ directives.
 
 ** Anatomy of a Table
 *** Columns
-
 ~FatTable::Table~ objects consist of an array of ~FatTable::Column~ objects.
 Each ~Column~ has a header, a type, and an array of items, all of the given type
 or nil. There are only five permissible types for a ~Column~:
@@ -537,7 +467,6 @@ types as follows:
      the ~NilClass~ type.
 
 *** Headers
-
 Headers for the columns are formed from the input. No two columns in a table can
 have the same header. Headers in the input are converted to symbols by
 
@@ -555,24 +484,30 @@ If no sensible headers can be discerned from the input, headers of the form
 
 *** Groups
 
-The rows of a ~FatTable~ table can be sub-divided into groups, either from
-markers in the input or as a result of certain operations. There is only one
-level of grouping, so ~FatTable~ has no concept of sub-groups. Groups can be
-shown on output with rules or "hlines" that underline the last row in each
-group, and you can decorate the output with group footers that summarize the
-columns in each group.
+The rows of a ~FatTable~ table can be divided into groups, either from markers
+in the input or as a result of certain operations. There is only one level of
+grouping, so ~FatTable~ has no concept of sub-groups. Groups can be shown on
+output with rules or "hlines" that underline the last row in each group, and
+you can decorate the output with group footers that summarize the columns in
+each group.
 
 ** Constructing Tables
 *** Empty Tables
+**** Without Headers
+You can create an empty table with ~FatTable::Table.new~ or, the shorter form,
+~FatTable.new~, and then add rows with the ~<<~ operator and a Hash.  The keys
+in the added rows determine the names of the headers:
 
-You can create an empty table with ~FatTable.new~, and then add rows with the
-~<<~ operator and a Hash:
-
-#+BEGIN_SRC ruby
-  tab = FatTable.new
-  tab << { a: 1, b: 2, c: "<2017-01-21>', d: 'f', e: '' }
+#+BEGIN_SRC ruby :results silent
+  tab = FatTable::Table.new
+  tab << { a: 1, b: 2, c: "<2017-01-21>", d: 'f', e: '' }
   tab << { a: 3.14, b: 2.17, c: '[2016-01-21 Thu]', d: 'Y', e: nil }
-  tab.to_aoa
+#+END_SRC
+
+#+BEGIN_SRC ruby :results silent
+  tab = FatTable.new
+  tab << { a: 1, b: 2, c: "<2017-01-21>", d: 'f', e: '' }
+  tab << { a: 3.14, b: 2.17, c: '[2016-01-21 Thu]', d: 'Y', e: nil }
 #+END_SRC
 
 After this, the table will have column headers ~:a~, ~:b~, ~:c~, ~:d~, and ~:e~.
@@ -581,14 +516,123 @@ Column, ~:a~ and ~:b~ will have type Numeric, column ~:c~ will have type
 have an open type. Notice that dates in the input can be wrapped in brackets as
 in org-mode time stamps.
 
-*** From CSV or Org Mode files or strings
+#+BEGIN_SRC ruby
+  tab.to_text
+#+END_SRC
 
+#+RESULTS:
+#+begin_EXAMPLE
++======+======+============+===+===+
+| A    | B    | C          | D | E |
++------+------+------------+---+---+
+| 1    | 2    | 2017-01-21 | F |   |
+| 3.14 | 2.17 | 2016-01-21 | T |   |
++======+======+============+===+===+
+#+end_EXAMPLE
+
+You can continue to add rows to the table:
+#+BEGIN_SRC ruby :results silent
+  tab << { 'F' => '335:113', a: Rational(3, 5) }
+#+END_SRC
+
+This last ~<<~ operation adds a new column headed ~:f~ to the table and makes
+the value of =:f= in all prior rows ~nil~.  Also, the values for the new row
+for which no key was give are assigned ~nil~ as well:
+
+#+BEGIN_SRC ruby
+  tab.to_text
+#+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
++======+======+============+===+===+=========+
+| A    | B    | C          | D | E | F       |
++------+------+------------+---+---+---------+
+| 1    | 2    | 2017-01-21 | F |   |         |
+| 3.14 | 2.17 | 2016-01-21 | T |   |         |
++------+------+------------+---+---+---------+
+|      |      |            |   |   | 335/113 |
+|      |      |            |   |   | 335/113 |
++------+------+------------+---+---+---------+
+| 3/5  |      |            |   |   | 335/113 |
++======+======+============+===+===+=========+
+#+end_EXAMPLE
+
+**** With Headers
+Alternatively, you can specify the headers at the outset, in which case,
+headers in added rows that do not match any of the initial headers cause new
+columns to be created:
+
+#+BEGIN_SRC ruby :wrap EXAMPLE :results raw
+  require 'fat_table'
+  tab = FatTable.new(:a, 'b', 'C', :d)
+  tab.headers
+#+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+[:a, :b, :c, :d]
+#+end_EXAMPLE
+
+#+begin_src ruby :wrap EXAMPLE
+  tab << { a: 1, b: 2, c: "<2017-01-21>", d: 'f', e: '' }
+  tab << { a: 3.14, b: 2.17, c: '[2016-01-21 Thu]', d: 'Y', e: nil }
+  tab.to_text
+#+end_src
+
+#+RESULTS:
+#+begin_EXAMPLE
++======+======+============+===+===+
+| A    | B    | C          | D | E |
++------+------+------------+---+---+
+| 1    | 2    | 2017-01-21 | F |   |
+| 3.14 | 2.17 | 2016-01-21 | T |   |
++------+------+------------+---+---+
+| 1    | 2    | 2017-01-21 | F |   |
+| 3.14 | 2.17 | 2016-01-21 | T |   |
++======+======+============+===+===+
+#+end_EXAMPLE
+
+**** Forcing String Type
+Occasionally, the ~FatTable~'s automatic type detection can get in the way and
+you just want it to treat one or more columns as Strings regardless of their
+appearance.  Think, for example, of zip codes.  At any time after creating a
+table, you can have it force the String type on any number of columns with the
+~force_string!~ method.  When you do so, all exisiting items in the column are
+converted to strings with the #to_s method.
+
+#+begin_src ruby :wrap EXAMPLE
+  tab = FatTable.new(:a, 'b', 'C', :d, :zip)
+  tab << { a: 1, b: 2, c: "<2017-01-21>", d: 'f', e: '', zip: 18552 }
+  tab << { a: 3.14, b: 2.17, c: '[2016-01-21 Thu]', d: 'Y', e: nil }
+  tab.force_string!(:zip, :c)
+  tab << { zip: '01879' }
+  tab << { zip: '66210' }
+  tab << { zip: '90210' }
+  tab.to_text
+#+end_src
+
+#+RESULTS:
+#+begin_EXAMPLE
++======+======+============+===+=======+===+
+| A    | B    | C          | D | Zip   | E |
++------+------+------------+---+-------+---+
+| 1    | 2    | 2017-01-21 | F | 18552 |   |
+| 3.14 | 2.17 | 2016-01-21 | T |       |   |
+|      |      |            |   | 01879 |   |
+|      |      |            |   | 66210 |   |
+|      |      |            |   | 90210 |   |
++======+======+============+===+=======+===+
+#+end_EXAMPLE
+
+*** From CSV or Org Mode files or strings
 Tables can also be read from ~.csv~ files or files containing ~org-mode~ tables.
+
 In the case of org-mode files, ~FatTable~ skips through the file until it finds
 a line that look like a table, that is, it begins with any number of spaces
 followed by ~|-~. Only the first table in an ~.org~ file is read.
 
-For both ~.csv~ and ~.org~ files, the first row in the tables is taken as the
+For both ~.csv~ and ~.org~ files, the first row in the table is taken as the
 header row, and the headers are converted to symbols as described above.
 
 #+BEGIN_SRC ruby
@@ -638,7 +682,7 @@ header row, and the headers are converted to symbols as described above.
 #+END_SRC
 
 *** From Arrays of Arrays
-
+**** In Ruby Code
 You can also initialize a table directly from ruby data structures. You can, for
 example, build a table from an array of arrays:
 
@@ -664,6 +708,7 @@ example, build a table from an array of arrays:
 Notice that the values can either be ruby objects, such as the Integer ~85_000~,
 or strings that can be parsed into one of the permissible column types.
 
+**** In Emacs Org Files
 This method of building a table, ~.from_aoa~, is particularly useful in dealing
 with Emacs org-mode code blocks. Tables in org-mode are passed to code blocks as
 arrays of arrays. Likewise, a result of a code block in the form of an array of
@@ -741,7 +786,7 @@ to a Hash with the ~#to_h~ method, so you can use an array of your own objects
 to initialize a table, provided that you define a suitable ~#to_h~ method for
 the objects' class.
 
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :results silent
 aoh = [
   { ref: 'T001', date: '2016-11-01', code: 'P', price: '7.7000',  shares: 100 },
   { ref: 'T002', date: '2016-11-01', code: 'P', price: 7.7500,  shares: 200 },
@@ -782,14 +827,30 @@ You must first set the database parameters to be used for the queries.
 
 #+BEGIN_SRC ruby
   # This automatically requires sequel.
-  require 'fat_table'
-  FatTable.connect(adapter: 'postgres',
-                  database: 'XXX_development',
-                  user: 'ken',
-                  password: 'imsecret',
-                  host: 'db.lan')
-  tab = FatTable.from_sql('select * from trades;')
+  FatTable.connect(adapter: 'sqlite',
+                   database: 'examples/trades.db')
+  tab = FatTable.from_sql('select * from trans;').to_text
 #+END_SRC
+
+#+RESULTS:
+#+begin_example
++============+======+==========+==========+=========+=========+====+
+| Date       | Code | Raw      | Shares   | Price   | Info    | Ok |
++------------+------+----------+----------+---------+---------+----+
+| 2013-05-29 | S    | 15700.0  | 6601.85  | 24.779  | ENTITY3 | F  |
+| 2013-05-02 | P    | 118186.4 | 118186.4 | 11.85   | ENTITY1 | T  |
+| 2013-05-20 | S    | 12000.0  | 5046.0   | 28.2804 | ENTITY3 | F  |
+| 2013-05-23 | S    | 8000.0   | 3364.0   | 27.1083 | ENTITY3 | T  |
+| 2013-05-23 | S    | 39906.0  | 16780.47 | 25.1749 | ENTITY3 | T  |
+| 2013-05-20 | S    | 85000.0  | 35742.5  | 28.3224 | ENTITY3 | T  |
+| 2013-05-02 | P    | 795546.2 | 795546.2 | 1.185   | ENTITY1 | T  |
+| 2013-05-29 | S    | 13459.0  | 5659.51  | 24.7464 | ENTITY3 | T  |
+| 2013-05-20 | S    | 33302.0  | 14003.49 | 28.6383 | ENTITY3 | T  |
+| 2013-05-29 | S    | 15900.0  | 6685.95  | 24.5802 | ENTITY3 | T  |
+| 2013-05-30 | S    | 6679.0   | 2808.52  | 25.0471 | ENTITY3 | T  |
+| 2013-05-23 | S    | 23054.0  | 9694.21  | 26.8015 | ENTITY3 | F  |
++============+======+==========+==========+=========+=========+====+
+#+end_example
 
 The arguments to ~connect~ are simply passed on to ~sequel~'s connect method, so
 any set of arguments that work for it should work for ~connect~. Alternatively,
@@ -836,7 +897,6 @@ recognizes hlines in the input, so it takes no ~hlines:~ keyword parameter.
 ** Accessing Parts of Tables
 
 *** Rows
-
 A ~FatTable~ table is an Enumerable, yielding each row of the table as a Hash
 keyed on the header symbols. The method ~Table#rows~ returns an Array of the
 rows as Hashes as well.
@@ -847,13 +907,11 @@ data row of the table, while ~tab[0]~ returns the first row and tab[-1] returns
 the last row.
 
 *** Columns
-
 If the index provided to ~[]~ is a string or a symbol, it returns an Array of
 the items of the column with that header. Thus, ~tab[:ref]~ returns an Array of
 all the items of the table's ~:ref~ column.
 
 *** Cells
-
 The two forms of indexing can be combined to access individual cells of the
 table:
 
@@ -865,19 +923,21 @@ table:
 #+END_SRC
 
 *** Other table attributes
+Here is a quick rundown of other table attributes that you can access:
 
 #+BEGIN_SRC ruby
   tab.headers       # => an Array of the headers in symbol form
   tab.types         # => a Hash mapping headers to column types
+  tab.type(head)    # => return the type of the column for the given head
   tab.size          # => the number of rows in the table
   tab.width         # => the number of columns in the table
   tab.empty?        # => is the table empty?
-  tab.column?(head) # => does the table have a column with the given header?
+  tab.column(head)  # => return the FatTable::Column object for the given head
+  tab.column?(head) # => does the table have a column with the given head?
   tab.groups        # => return an Array of the table's groups as Arrays of row Hashes.
 #+END_SRC
 
 ** Operations on Tables
-
 Once you have one or more tables, you will likely want to perform operations on
 them. The operations provided by ~FatTable~ are the subject of this section.
 Before getting into the operations, though, there are a couple of issues that
@@ -1231,7 +1291,6 @@ of the running cost of shares, then formats the table.
 #+END_EXAMPLE
 
 **** Argument Order and Boundaries
-
 Notice that ~select~ can take any number of arguments but all the symbol
 arguments must come first followed by all the hash-like keyword arguments,
 including the special arguments for instance variables and hooks.
@@ -1240,7 +1299,6 @@ As the example illustrates, ~.select~ transmits any group boundaries in its
 input table to the result table.
 
 *** Where
-
 You can filter the rows of the result table with the ~.where~ method. It takes a
 single string expression as an argument which is evaluated in a manner similar
 to ~.select~ in which the value of the cells in each column are available as
@@ -1270,7 +1328,6 @@ fields is true:
 #+END_EXAMPLE
 
 *** Order_by
-
 You can sort a table on any number of columns with ~order_by~. The ~order_by~
 method takes any number of symbol arguments for the columns to sort on. If you
 specify more than one column, the sort is performed on the first column, then
@@ -1319,7 +1376,6 @@ keys change.  Thus, in each group, ~:code~ and ~:date~ are the same, and when
 either changes, ~order_by~ inserts a group boundary.
 
 *** Group_by
-
 Like ~order_by~, ~group_by~ takes a set of parameters of column header symbols,
 the "grouping parameters", by which to sort the table into a set of groups that
 are equal with respect to values in those columns. In addition, those parameters
@@ -1407,7 +1463,6 @@ implicit ~order_by~ on the grouping columns is collapsed into a single row.
 
 *** Join
 **** Join Types
-
 So far, all the operations have operated on a single table. ~FatTable~ provides
 several ~join~ methods for combining two tables, each of which takes as
 parameters (1) a second table and (2) except in the case of ~cross_join~, zero
@@ -1472,15 +1527,11 @@ local variables within the expression, but the instance variables ~@row~ and
 ~@group~ are not.
 
 **** Join Examples
-
 The following examples are taken from the [[https://www.tutorialspoint.com/postgresql/postgresql_using_joins.htm][Postgresql tutorial]], with some slight
 modifications. The examples will use the following two tables, which are also
 available in ~ft_console~ as ~@tab_a~ and ~@tab_b~:
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
-  require 'fat_table'
-
+#+BEGIN_SRC ruby :wrap EXAMPLE :results silent
   tab_a_str = <<-EOS
     | Id | Name  | Age | Address    | Salary |  Join Date |
     |----+-------+-----+------------+--------+------------|
@@ -1543,7 +1594,6 @@ And ~tab_b~:
 #+end_EXAMPLE
 
 ***** Inner Joins
-
 With no join expression arguments, the tables are joined when their sole common
 field, ~:id~, is equal in both tables.  The result is the natural join of the
 two tables.
@@ -1595,7 +1645,6 @@ should be treated as local variables:
 #+END_EXAMPLE
 
 ***** Left and Right Joins
-
 In left join, all the rows of ~tab_a~ are included in the output, augmented by
 the matching columns of ~tab_b~ and augmented with nils where there is no match:
 
@@ -1635,7 +1684,6 @@ match:
 #+END_EXAMPLE
 
 ***** Full Join
-
 A full join combines the effects of a left join and a right join. All the rows
 from both tables are included in the output augmented by columns of the other
 table where the join expression is satisfied and augmented with nils otherwise.
@@ -1660,7 +1708,6 @@ table where the join expression is satisfied and augmented with nils otherwise.
 #+END_EXAMPLE
 
 ***** Cross Join
-
 Finally, a cross join outputs every row of ~tab_a~ augmented with every row of
 ~tab_b~, in other words, the Cartesian product of the two tables. If ~tab_a~ has
 ~N~ rows and ~tab_b~ has ~M~ rows, the output table will have ~N * M~ rows.
@@ -1701,7 +1748,6 @@ So be careful lest you consume all your computer's memory.
 #+END_EXAMPLE
 
 *** Set Operations
-
 ~FatTable~ can perform several set operations on pairs of tables. In order for
 two tables to be used this way, they must have the same number of columns with
 the same types or an exception will be raised. We'll call two tables that
@@ -1772,7 +1818,6 @@ set operations on duplicates and groups.
 #+END_EXAMPLE
 
 **** Unions
-
 Two tables that are set-compatible can be combined with the ~union~ or
 ~union_all~ methods so that the rows of both tables appear in the output. In the
 output table, the headers of the receiver table are used. You can use ~select~
@@ -1866,7 +1911,6 @@ group boundary between the rows of the two input tables.
 #+END_EXAMPLE
 
 **** Intersections
-
 The ~intersect~ method returns a table having only rows common to both tables,
 eliminating any duplicate rows in the result.
 
@@ -1930,8 +1974,7 @@ operation matters.
 | T016 | 2016-11-02 | P    |  8.25 | T   | T    |    100 |  14 |   86 | 0.2453 | 0.1924 |
 #+END_EXAMPLE
 
-**** Differences with Except
-
+**** Set Differences with Except
 You can use the ~except~ method to delete from a table any rows that occur in
 another table, that is, compute the set difference between the tables.
 
@@ -2017,7 +2060,6 @@ And, of course, the order of operands matters here as well.
 #+END_EXAMPLE
 
 *** Uniq (aka Distinct)
-
 The ~uniq~ method takes no arguments and simply removes any duplicate rows from
 the input table.  The ~distinct~ method is an alias for ~uniq~.  Any groups in
 the input table are lost.
@@ -2049,10 +2091,9 @@ the input table are lost.
 #+END_EXAMPLE
 
 *** Remove groups with degroup!
-
 Finally, it is sometimes helpful to remove any group boundaries from a table.
-You can do this with ~.degroup!~, which is the only operation that mutates its
-receiver table by removing its groups.
+You can do this with ~.degroup!~, which, together with ~force_string!~, are
+the only operations that mutate its receiver table.
 
 #+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
@@ -2084,7 +2125,6 @@ receiver table by removing its groups.
 #+END_EXAMPLE
 
 ** Formatting Tables
-
 Besides creating and operating on tables, you may want to display the resulting
 table. ~FatTable~ seeks to provide a set of formatting directives that are the
 most common across many output media. It provides directives for alignment, for
@@ -2267,7 +2307,6 @@ identified with the following symbols:
 - :gfirst :: the first row in each group in the table's body.
 
 *** Formatting Directives
-
 The formatting methods explained in the next section all take formatting
 directives as strings in which letters and other characters signify what
 formatting applies.  For example, we may apply the formatting directive ~'R,$'~
@@ -2291,14 +2330,14 @@ to a string in forming the output.
 - R :: align the element on the right of the column
 - L :: align the element on the left of the column
 - C :: align the element in the center of the column
-- c[color] :: render the element in the given color; the color can have
-    the form fgcolor, fgcolor.bgcolor, or .bgcolor, to set the
-    foreground or background colors respectively, and each of those can
-    be an ANSI or X11 color name in addition to the special color,
-    'none', which keeps the terminal's default color.
+- c[<color_spec>] :: render the element in the given color; the <color_spec>
+  can have the form fgcolor, fgcolor.bgcolor, or .bgcolor, to set the
+  foreground or background colors respectively, and each of those can be an
+  ANSI or X11 color name in addition to the special color, 'none', which keeps
+  the output's default color.
 - _ ~_ :: underline the element, or turn off underline
 - * ~* :: cause the element to blink, or turn off blink
-tab1 = FatTable.from_org_string(tab1_str).to_aoa
+
 For example, the directive ~'tCc[red.yellow]'~ would title-case the element,
 center it, and color it red on a yellow background. The directives that are
 boolean have negating forms so that, for example, if bold is turned on for all
@@ -2306,7 +2345,6 @@ columns of a given type, it can be countermanded in formatting directives for
 particular columns.
 
 **** Numeric
-
 For a numeric element, all the instructions valid for string are available, in
 addition to the following:
 
@@ -2325,7 +2363,6 @@ For example, the directive ~'R5.0c[blue]'~ would right-align the numeric
 element, pad it on the left with zeros, and color it blue.
 
 **** DateTime
-
 For a ~DateTime~, all the instructions valid for string are available, in
 addition to the following:
 
@@ -2341,7 +2378,6 @@ For example, ~'c[pink]d[%b %-d, %Y]C'~, would format a date element like 'Sep
 22, 1957', center it, and color it pink.
 
 **** Boolean
-
 For a boolean cell, all the instructions valid for string are available, in
 addition to the following:
 
@@ -2359,7 +2395,6 @@ render a true boolean as '~Yeppers~' colored green on pink and render a false
 boolean as '~Nope~' colored red on pink. See [[https://www.youtube.com/watch?v=oLdFFD8II8U][Yeppers]] for additional information.
 
 **** NilClass
-
 By default, ~nil~ elements are rendered as blank cells, but you can make them
 visible with the following, and in that case, all the formatting instructions
 valid for strings are also available:
@@ -2370,33 +2405,34 @@ For example, you might want to use ~'n[-]Cc[purple]'~ to make nils visible as a
 centered purple hyphen.
 
 *** Footers
-
 **** Adding Footers
-You can call the ~footer,~ ~gfooter, foot, and gfoot~ methods on ~Formatter~ objects
-to add footers and group footers. Note that all of these methods return a
-~Footer~ object that can be accessed to extract the computed values.  Their
-signatures are:
+You can call the ~footer,~ ~gfooter, foot, and gfoot~ methods on ~Formatter~
+objects to add footers and group footers. Note that all of these methods
+return a ~Footer~ object that can be accessed to extract the computed values.
+All of these methods return the ~FatTable::Footer~ object so constructed. It
+can be used to access the values and other attributes of the footer
+computed. Their signatures are:
 
 - ~footer(label, *sum_cols, **agg_cols)~ :: where ~label~ is a label to be
   placed in the first cell of the footer (unless that column is named as one
   of the ~sum_cols~ or ~agg_cols~, in which case the label is ignored),
   ~*sum_cols~ are zero or more symbols for columns to be summed, and
   ~**agg_cols~ is zero or more hash-like parameters with a column symbol as a
-  key and a symbol for an aggregate method as the value. This causes a
-  table-wide header to be added at the bottom of the table applying the ~:sum~
-  aggregate to the ~sum_cols~ and the named aggregate method to the
-  ~agg_cols~. A table can have any number of footers attached, and they will
-  appear at the bottom of the output table in the order they are given.
-
-- ~foot(label, label_col, **agg_cols)~ :: where ~label~ is a label to be
-  placed in the column with header ~label_col~, or, if ommitted, the first
-  cell of the footer (unless that column is named as one of the ~agg_cols~, in
-  which case the label is ignored), and ~**agg_cols~ is zero or more hash-like
-  parameters with a column symbol as a key and a symbol for an aggregate
-  method as the value. This causes a table-wide header to be added at the
-  bottom of the table applying ~agg~, to the ~agg_cols~. A table can have any
+  key and a valid aggregate as the value. This causes a table-wide header to
+  be added at the bottom of the table applying the ~:sum~ aggregate to the
+  ~sum_cols~ and the named aggregate to the ~agg_cols~. A table can have any
   number of footers attached, and they will appear at the bottom of the output
   table in the order they are given.
+
+- ~foot(label, label_col, **agg_cols)~ :: where ~label~ is a label to be
+  placed in the column with header ~label_col~, or, if ommitted, in the first
+  cell of the footer (unless that column is named as one of the ~agg_cols~, in
+  which case the label is ignored), and ~**agg_cols~ is zero or more hash-like
+  parameters with a column symbol as a key and a valid aggregate as the
+  value. This causes a table-wide header to be added at the bottom of the
+  table applying ~agg~, to the ~agg_cols~. A table can have any number of
+  footers attached, and they will appear at the bottom of the output table in
+  the order they are given.
 
 - ~gfooter(label, *sum_cols, **agg_cols)~ :: where the parameters have the
   same meaning as for the ~footer~ method, but results in a footer for each
@@ -2409,7 +2445,6 @@ signatures are:
   table just below each group.
 
 There are also a number of convenience methods for adding common footers:
-
 - ~sum_footer(*cols)~ :: Add a footer summing the given columns with the label
      'Total'.
 - ~sum_gfooter(*cols)~ :: Add a group footer summing the given columns with the
@@ -2463,16 +2498,66 @@ for what you can use for an aggregator:
   * If the lambda is used in an ordinary footer, it either takes no arguments,
     or a single argument for the column symbol in which it appears.
 
-#+begin_example
-
-#+end_example
 **** Footer objects
 Each of the methods for adding a footer to a ~Formatter~ returns a ~Footer~ object
 that you can query for attributes of the generated footer, including accessing
 their computed values.
 
-*** Invoking Formatters
+**** Footer Examples
+As a reminder, here is the table, ~tab_a~ defined earlier:
 
+#+BEGIN_SRC ruby :wrap EXAMPLE
+  tab_a.to_aoa
+#+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+| Id | Name  | Age | Address    | Salary |  Join Date |
+|----+-------+-----+------------+--------+------------|
+|  1 | Paul  |  32 | California |  20000 | 2001-07-13 |
+|  3 | Teddy |  23 | Norway     |  20000 | 2007-12-13 |
+|  4 | Mark  |  25 | Rich-Mond  |  65000 | 2007-12-13 |
+|  5 | David |  27 | Texas      |  85000 | 2007-12-13 |
+|  2 | Allen |  25 | Texas      |        | 2005-07-13 |
+|  8 | Paul  |  24 | Houston    |  20000 | 2005-07-13 |
+|  9 | James |  44 | Norway     |   5000 | 2005-07-13 |
+| 10 | James |  45 | Texas      |   5000 |            |
+#+end_EXAMPLE
+
+***** Built-in Aggregators
+You can add a footer compute the average of the given columns.  You may be
+surprised that you can average a set of dates, but ~:avg~ simply converts the
+dates to Julian numbers, averages that, then converts the result back to a
+date.
+#+BEGIN_SRC ruby :wrap EXAMPLE
+  tab_a.to_text do |f|
+    f.footer('Average', age: :avg, salary: :avg, join_date: :avg)
+    f.footer('Tally', age: :count)
+    f.format(numeric: '0.0R,', datetime: 'D[%v]')
+  end
+#+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
++=========+=======+=====+============+========+=====================+
+| Id      | Name  | Age | Address    | Salary | Join Date           |
++---------+-------+-----+------------+--------+---------------------+
+|       1 | Paul  |  32 | California | 20,000 | 13-JUL-2001         |
+|       3 | Teddy |  23 | Norway     | 20,000 | 13-DEC-2007         |
+|       4 | Mark  |  25 | Rich-Mond  | 65,000 | 13-DEC-2007         |
+|       5 | David |  27 | Texas      | 85,000 | 13-DEC-2007         |
+|       2 | Allen |  25 | Texas      |        | 13-JUL-2005         |
+|       8 | Paul  |  24 | Houston    | 20,000 | 13-JUL-2005         |
+|       9 | James |  44 | Norway     |  5,000 | 13-JUL-2005         |
+|      10 | James |  45 | Texas      |  5,000 |                     |
++---------+-------+-----+------------+--------+---------------------+
+| Average |       |  31 |            | 31,429 | 2005-12-29 17:08:34 |
++---------+-------+-----+------------+--------+---------------------+
+|   Tally |       |   8 |            |        |                     |
++=========+=======+=====+============+========+=====================+
+#+end_EXAMPLE
+
+*** Invoking Formatters
 You can call methods on  ~Formatter~ objects to specify formatting directives
 for specific columns or types.  There are two methods for doing so, ~format_for~
 and ~format~.
@@ -2484,8 +2569,7 @@ There is a Formatter subclass for each target output medium, for example,
 ~AoaFormatter~ will produce a ruby array of arrays. You can then call the
 ~output~ method on the ~XXXFormatter~.
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
   FatTable::AoaFormatter.new(tab_a).output
 #+END_SRC
 
@@ -2762,6 +2846,5 @@ git commits and tags, and push the `.gem` file to
 [rubygems.org](https://rubygems.org).
 
 * Contributing
-
 Bug reports and pull requests are welcome on GitHub at
 https://github.com/ddoherty03/fat_table.
