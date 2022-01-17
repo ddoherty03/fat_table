@@ -60,8 +60,8 @@ module FatTable
 
   # Return an empty FatTable::Table object. You can use FatTable::Table#add_row
   # or FatTable::Table#add_column to populate the table with data.
-  def self.new
-    Table.new
+  def self.new(*args)
+    Table.new(*args)
   end
 
   # Construct a FatTable::Table from the contents of a CSV file given by the

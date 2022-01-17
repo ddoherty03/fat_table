@@ -41,6 +41,26 @@ module FatTable
         expect(tab[3][:a]).to be_nil
         expect(tab[3][:b]).to eq(6_610)
         expect(tab[3][:zip]).to be_nil
+        # It preserves leading zeros
+        expect(tab[4][:zip]).to eq('06610')
+      end
+
+      it 'can initialize from FatTable module method' do
+        tab1 = FatTable.new
+        expect(tab1).to be_a(Table)
+        expect(tab1).to be_empty
+      end
+
+      it 'can initialize with headers from FatTable module method' do
+        tab = FatTable.new('a', :b, '   four scORE', '**Batt@ry**', :zip)
+        expect(tab).to be_a(Table)
+        expect(tab).to be_empty
+        heads = [:a, :b, :four_score, :battry, :zip]
+        expect(tab.headers).to eq(heads)
+        heads.each do |h|
+          expect(tab.headers).to include(h)
+          expect(tab.type(h)).to eq('NilClass')
+        end
       end
     end
 
