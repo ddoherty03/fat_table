@@ -2538,25 +2538,6 @@ date.
 +=========+=======+=====+============+========+=============+
 #+end_EXAMPLE
 
-#+begin_EXAMPLE
-+=========+=======+=====+============+========+=====================+
-| Id      | Name  | Age | Address    | Salary | Join Date           |
-+---------+-------+-----+------------+--------+---------------------+
-|       1 | Paul  |  32 | California | 20,000 | 13-JUL-2001         |
-|       3 | Teddy |  23 | Norway     | 20,000 | 13-DEC-2007         |
-|       4 | Mark  |  25 | Rich-Mond  | 65,000 | 13-DEC-2007         |
-|       5 | David |  27 | Texas      | 85,000 | 13-DEC-2007         |
-|       2 | Allen |  25 | Texas      |        | 13-JUL-2005         |
-|       8 | Paul  |  24 | Houston    | 20,000 | 13-JUL-2005         |
-|       9 | James |  44 | Norway     |  5,000 | 13-JUL-2005         |
-|      10 | James |  45 | Texas      |  5,000 |                     |
-+---------+-------+-----+------------+--------+---------------------+
-| Average |       |  31 |            | 31,429 | 2005-12-29 17:08:34 |
-+---------+-------+-----+------------+--------+---------------------+
-|   Tally |       |   8 |            |        |                     |
-+=========+=======+=====+============+========+=====================+
-#+end_EXAMPLE
-
 *** Invoking Formatters
 You can call methods on  ~Formatter~ objects to specify formatting directives
 for specific columns or types.  There are two methods for doing so, ~format_for~
