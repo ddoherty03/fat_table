@@ -31,9 +31,10 @@ module FatTable
         tab << { a: '66210' }
         expect(tab.type(:a)).to eq('Numeric')
         expect(tab.type(:zip)).to eq('Numeric')
-        tab.force_to_string!(:zip)
+        tab.force_string!(:zip)
         tab << { zip: '66210' }
         tab << { b: '06610' }
+        tab << { zip: '06610' }
         expect(tab[0][:zip]).to eq('66210')
         expect(tab[1][:zip]).to eq('')
         expect(tab[1][:a]).to eq(66_210)
