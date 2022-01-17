@@ -366,5 +366,31 @@ module FatTable
         end
       end
     end
+
+    context 'problematic code' do
+      let(:tab_a) {
+        tab_a_str = <<-EOS
+    | Id | Name  | Age | Address    | Salary |  Join Date |
+    |----+-------+-----+------------+--------+------------|
+    |  1 | Paul  |  32 | California |  20000 | 2001-07-13 |
+    |  3 | Teddy |  23 | Norway     |  20000 | 2007-12-13 |
+    |  4 | Mark  |  25 | Rich-Mond  |  65000 | 2007-12-13 |
+    |  5 | David |  27 | Texas      |  85000 | 2007-12-13 |
+    |  2 | Allen |  25 | Texas      |        | 2005-07-13 |
+    |  8 | Paul  |  24 | Houston    |  20000 | 2005-07-13 |
+    |  9 | James |  44 | Norway     |   5000 | 2005-07-13 |
+    | 10 | James |  45 | Texas      |   5000 |            |
+    EOS
+        FatTable.from_org_string(tab_a_str)
+      }
+
+      it 'tallies the count' do
+          tab_a.to_text do |f|
+            f.footer('Average', age: :avg, salary: :avg, join_date: :avg)
+            f.footer('Tally', name: :count)
+            f.format(numeric: '0.0R,', datetime: 'D[%v]')
+          end
+      end
+    end
   end
 end
