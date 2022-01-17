@@ -184,14 +184,22 @@ module FatTable
 
     # Return the first non-nil item in the Column.  Works with any Column type.
     def first
-      items.compact.first
+      if type == 'String'
+        items.reject(&:blank?).first
+      else
+        items.compact.first
+      end
     end
 
     # :category: Aggregates
 
     # Return the last non-nil item in the Column.  Works with any Column type.
     def last
-      items.compact.last
+      if type == 'String'
+        items.reject(&:blank?).last
+      else
+        items.compact.last
+      end
     end
 
     # :category: Aggregates
@@ -199,25 +207,37 @@ module FatTable
     # Return a count of the non-nil items in the Column.  Works with any Column
     # type.
     def count
-      items.compact.count.to_d
+      if type == 'String'
+        items.reject(&:blank?).count.to_d
+      else
+        items.compact.count.to_d
+      end
     end
 
     # :category: Aggregates
 
-    # Return the smallest non-nil item in the Column.  Works with numeric,
-    # string, and datetime Columns.
+    # Return the smallest non-nil, non-blank item in the Column.  Works with
+    # numeric, string, and datetime Columns.
     def min
       only_with('min', 'NilClass', 'Numeric', 'String', 'DateTime')
-      items.compact.min
+      if type == 'String'
+        items.reject(&:blank?).min
+      else
+        items.compact.min
+      end
     end
 
     # :category: Aggregates
 
-    # Return the largest non-nil item in the Column.  Works with numeric,
-    # string, and datetime Columns.
+    # Return the largest non-nil, non-blank item in the Column.  Works with
+    # numeric, string, and datetime Columns.
     def max
       only_with('max', 'NilClass', 'Numeric', 'String', 'DateTime')
-      items.compact.max
+      if type == 'String'
+        items.reject(&:blank?).max
+      else
+        items.compact.max
+      end
     end
 
     # :category: Aggregates
@@ -235,8 +255,12 @@ module FatTable
     # string Columns. For a string Column, it will return the concatenation of
     # the non-nil items.
     def sum
-      only_with('sum', 'Numeric')
-      items.compact.sum
+      only_with('sum', 'Numeric', 'String')
+      if type == 'String'
+        items.reject(&:blank?).join(' ')
+      else
+        items.compact.sum
+      end
     end
 
     # :category: Aggregates
