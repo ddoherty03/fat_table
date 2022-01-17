@@ -181,6 +181,7 @@ operated on in a number of ways. Here's a quick example to illustrate the use of
 
 Here is a set of data that records some kind of stock activity.  It's an array
 of arrays with the first inner array being the headings.
+
 #+BEGIN_SRC ruby :exports code :results silent
   data =
       [['Date', 'Code', 'Raw', 'Shares', 'Price', 'Info', 'Ok'],
@@ -258,7 +259,6 @@ We can format the table constructed above.
   end
 #+END_SRC
 
-#+RESULTS:
 #+begin_example
 +=========+============+======+=============+==========+====+
 |   Ref   |    Date    | Code |    Shares   |   Price  | Ok |
@@ -316,7 +316,6 @@ simple wrapper file, =examples/quick.tex= so it can be compiled by LaTeX.
   end
 #+END_SRC
 
-#+RESULTS:
 #+begin_EXAMPLE
 [[file:examples/quicktable.tex]]
 #+end_EXAMPLE
@@ -483,7 +482,6 @@ If no sensible headers can be discerned from the input, headers of the form
 ~:col_1~, ~:col_2~, etc., are synthesized.
 
 *** Groups
-
 The rows of a ~FatTable~ table can be divided into groups, either from markers
 in the input or as a result of certain operations. There is only one level of
 grouping, so ~FatTable~ has no concept of sub-groups. Groups can be shown on
@@ -520,7 +518,6 @@ in org-mode time stamps.
   tab.to_text
 #+END_SRC
 
-#+RESULTS:
 #+begin_EXAMPLE
 +======+======+============+===+===+
 | A    | B    | C          | D | E |
@@ -543,7 +540,6 @@ for which no key was give are assigned ~nil~ as well:
   tab.to_text
 #+END_SRC
 
-#+RESULTS:
 #+begin_EXAMPLE
 +======+======+============+===+===+=========+
 | A    | B    | C          | D | E | F       |
@@ -569,7 +565,6 @@ columns to be created:
   tab.headers
 #+END_SRC
 
-#+RESULTS:
 #+begin_EXAMPLE
 [:a, :b, :c, :d]
 #+end_EXAMPLE
@@ -580,7 +575,6 @@ columns to be created:
   tab.to_text
 #+end_src
 
-#+RESULTS:
 #+begin_EXAMPLE
 +======+======+============+===+===+
 | A    | B    | C          | D | E |
@@ -612,7 +606,6 @@ converted to strings with the #to_s method.
   tab.to_text
 #+end_src
 
-#+RESULTS:
 #+begin_EXAMPLE
 +======+======+============+===+=======+===+
 | A    | B    | C          | D | Zip   | E |
@@ -812,7 +805,6 @@ Notice, again, that the values can either be ruby objects, such as ~Date.today~,
 or strings that can be parsed into one of the permissible column types.
 
 *** From SQL queries
-
 Another way to initialize a ~FatTable~ table is with the results of a SQL
 query.  Before you can connect to a database, you need to make sure that the required
 adapter for your database is installed.  ~FatTable~ uses the ~sequel~ gem
@@ -832,7 +824,6 @@ You must first set the database parameters to be used for the queries.
   tab = FatTable.from_sql('select * from trans;').to_text
 #+END_SRC
 
-#+RESULTS:
 #+begin_example
 +============+======+==========+==========+=========+=========+====+
 | Date       | Code | Raw      | Shares   | Price   | Info    | Ok |
@@ -872,7 +863,6 @@ creates will be used for all subsequent ~.from_sql~ calls until ~.connect~ is
 called again.
 
 *** Marking Groups in Input
-
 ~FatTable~ tables has a concept of "groups" of rows that play a role in many of
 the methods for operating on them as explained [[Groups][below]].
 
@@ -962,7 +952,6 @@ but when expressions play a role, you write them using ruby syntax rather than
 SQL.
 
 *** Example Input Table
-
 For illustration purposes assume that the following tables are read into ruby
 variables called '~tab1~' and '~tab2~. We have given the table groups, marked by
 the hlines below, and included some duplicate rows to illustrate the effect of
@@ -1029,7 +1018,6 @@ Rendering ~tab1~ into Emacs org-mode:
   tab1 = FatTable.from_org_string(tab1_str).to_aoa
 #+END_SRC
 
-#+RESULTS:
 #+begin_EXAMPLE
 | Ref  |       Date | Code | Price | G10 | QP10 | Shares |   Lp |    Qp |   Iplp |   Ipqp |
 |------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
@@ -1064,7 +1052,6 @@ Rendering ~tab2~ into Emacs org-mode:
   tab2 = FatTable.from_org_string(tab2_str).to_aoa
 #+END_SRC
 
-#+RESULTS:
 #+begin_EXAMPLE
 | Ref  |       Date | Code | Price | G10 | QP10 | Shares |    Lp |   Qp |   Iplp |   Ipqp |
 |------+------------+------+-------+-----+------+--------+-------+------+--------+--------|
@@ -1094,7 +1081,6 @@ the output table and create new columns in the output table that are a function
 of existing and new columns.
 
 **** Selecting Existing Columns
-
 Here we select three existing columns by simply passing header symbols in the
 order we want them to appear in the output. Thus, one use of =select= is to
 filter and permute the order of existing columns. The =select= method preserves
@@ -1133,7 +1119,6 @@ any group boundaries present in the input table.
 #+END_EXAMPLE
 
 **** Adding New Columns
-
 More interesting is that ~select~ can take hash-like keyword arguments after the
 symbol arguments to create new columns in the output as functions of other
 columns. For each hash-like parameter, the keyword given must be a symbol, which
@@ -1231,7 +1216,6 @@ second, chained call to ~select~:
 #+END_EXAMPLE
 
 **** Custom Instance Variables and Hooks
-
 As the above examples demonstrate, the instance variables ~@row~ and ~@group~
 are available when evaluating expressions that add new columns. You can also set
 up your own instance variables as well for keeping track of things that cross
@@ -1425,13 +1409,13 @@ will raise an exception.
 - ~last~ :: the last non-nil item in the column,
 - ~range~ :: form a Range ~~{min}..{max}~ to show the range of values in the
   column,
-- ~sum~ :: for ~Numeric~ and ~String~ columns, apply '+' to all the non-nil
-     values,
+- ~sum~ :: for ~Numeric~ columns, apply '+' to all the non-nil
+     values; for ~String~ columns, join the elements with a single space,
 - ~count~ :: the number of non-nil values in the column,
 - ~min~ :: for ~Numeric~, ~String~, and ~DateTime~ columns, return the smallest
-     non-nil value in the column,
+     non-nil, non-blank  value in the column,
 - ~max~ :: for ~Numeric~, ~String~, and ~DateTime~ columns, return the largest
-     non-nil value in the column,
+     non-nil, non-blank value in the column,
 - ~avg~ :: for ~Numeric~ and ~DateTime~ columns, return the arithmetic mean of
      the non-nil values in the column; with respect to ~Date~ or ~DateTime~
      objects, each is converted to a numeric Julian date, the average is
@@ -1499,7 +1483,6 @@ for inclusion in the joined output table.
      M~ rows.
 
 **** Join Expressions
-
 For each of the join types, if no join expressions are given, the tables will be
 joined on columns having the same column header in both tables, and the join
 condition is satisfied when all the values in those columns are equal. If the
@@ -2093,7 +2076,7 @@ the input table are lost.
 *** Remove groups with degroup!
 Finally, it is sometimes helpful to remove any group boundaries from a table.
 You can do this with ~.degroup!~, which, together with ~force_string!~, are
-the only operations that mutate its receiver table.
+the only operations that mutate their receiver tables.
 
 #+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
@@ -2537,7 +2520,6 @@ date.
   end
 #+END_SRC
 
-#+RESULTS:
 #+begin_EXAMPLE
 +=========+=======+=====+============+========+=====================+
 | Id      | Name  | Age | Address    | Salary | Join Date           |
@@ -2834,16 +2816,11 @@ directive for specifies how nil are displayed in the numeric column, ~:salary~,
 but not for other nils, such as in the last row of the ~:join_date~ column.
 
 * Development
-
 After checking out the repo, run `bin/setup` to install dependencies. Then, run
 `rake spec` to run the tests. You can also run `bin/console` for an interactive
 prompt that will allow you to experiment.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To
-release a new version, update the version number in `version.rb`, and then run
-`bundle exec rake release`, which will create a git tag for the version, push
-git commits and tags, and push the `.gem` file to
-[rubygems.org](https://rubygems.org).
+To install this gem onto your local machine, run `bundle exec rake install`.
 
 * Contributing
 Bug reports and pull requests are welcome on GitHub at
