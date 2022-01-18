@@ -557,7 +557,7 @@ module FatTable
             format_h = format_h.merge(typ_fmt)
           end
           if fmts.key?(:nil)
-            typ_fmt = parse_nilclass_fmt(fmts[:nil]).first
+            typ_fmt = parse_nilclass_fmt(fmts[:nil], strict: false).first
             format_h = format_h.merge(typ_fmt)
           end
         end
@@ -700,7 +700,7 @@ module FatTable
       # We parse the more complex formatting constructs first, and after each
       # parse, we remove the matched construct from fmt.  At the end, any
       # remaining characters in fmt should be invalid.
-      fmt_hash = {}
+      fmt_hash, fmt = strict ? [{}, fmt] : parse_string_fmt(fmt)
       if fmt =~ /n\[\s*(?<bdy>[^\]]*)\s*\]/
         fmt_hash[:nil_text] = Regexp.last_match[:bdy].clean
         fmt = fmt.sub(Regexp.last_match[0], '')
