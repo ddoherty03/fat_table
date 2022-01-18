@@ -56,6 +56,17 @@ module FatTable
       end
 
       describe 'formmater for nil entries' do
+        it 'should parse nil directive' do
+          fmt = described_class.new(tab)
+          fmt.format_for(:body, nil: 'Rn[No Data]')
+          expect(fmt.format_at[:body][:info].nil_text).to eq('No Data')
+          fmt = described_class.new(tab)
+          $break = true
+          fmt.format_for(:body, nilclass: 'Rn[No Data]')
+          $break = false
+          expect(fmt.format_at[:body][:info].nil_text).to eq('No Data')
+        end
+
         it 'should parse nil for a string type' do
           fmt = described_class.new(tab)
           fmt.format_for(:body, string: 'Rn[No Data]')

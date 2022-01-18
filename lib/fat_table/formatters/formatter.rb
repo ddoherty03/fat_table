@@ -520,6 +520,15 @@ module FatTable
         raise UserError, "unknown format location '#{location}'"
       end
 
+      fmts = fmts.transform_keys do |k|
+        if k == :nilclass
+          :nil
+        elsif k == :date
+          :datetime
+        else
+          k
+        end
+      end
       valid_keys = table.headers + %i[string numeric datetime boolean nil]
       invalid_keys = (fmts.keys - valid_keys).uniq
       unless invalid_keys.empty?
@@ -555,7 +564,7 @@ module FatTable
 
         # Merge in formatting for column h based on the column type, or based
         # on the string type for the header location.
-        typ = location == :header ? :string : table.type(h).as_sym
+        typ = (location == :header ? :string : table.type(h).as_sym)
         parse_typ_method_name = 'parse_' + typ.to_s + '_fmt'
         if fmts.key?(typ)
           # Merge in type-based formatting
