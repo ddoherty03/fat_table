@@ -439,27 +439,27 @@ Items of input must be either one of the permissible ruby objects or strings. If
 they are strings, ~FatTable~ attempts to parse them as one of the permissible
 types as follows:
 
-- Boolean :: the strings, ~'t'~, ~'true'~, ~'yes'~, or ~'y'~, regardless of
-     case, are interpreted as ~TrueClass~ and the strings, ~'f'~, ~'false'~,
-     ~'no'~, or ~'n'~, regardless of case, are interpreted as ~FalseClass~, in
+- Boolean :: the strings, ~t~, ~true~, ~yes~, or ~y~, regardless of
+     case, are interpreted as ~TrueClass~ and the strings, ~f~, ~false~,
+     ~no~, or ~n~, regardless of case, are interpreted as ~FalseClass~, in
      either case resulting in a Boolean column. Empty strings in a column
      already having a Boolean type are converted to ~nil~.
-- DateTime :: strings that contain patterns of ~'yyyy-mm-dd'~ or ~'yyyy/mm/dd'~
-     or ~'mm-dd-yyy'~ or ~'mm/dd/yyyy'~ or any of the foregoing with an added
-     ~'Thh:mm:ss'~ or ~'Thh:mm'~ will be interpreted as a ~DateTime~ or a ~Date~
+- DateTime :: strings that contain patterns of ~yyyy-mm-dd~ or ~yyyy/mm/dd~
+     or ~mm-dd-yyy~ or ~mm/dd/yyyy~ or any of the foregoing with an added
+     ~Thh:mm:ss~ or ~Thh:mm~ will be interpreted as a ~DateTime~ or a ~Date~
      (if there are no sub-day time components present). The number of digits in
      the month and day can be one or two, but the year component must be four
      digits. Any time components are valid if they can be properly interpreted
      by ~DateTime.parse~. Org mode timestamps (any of the foregoing surrounded
-     by square '~[]~' or pointy '~<>~' brackets), active or inactive, are valid
+     by square ~[]~ or pointy ~<>~ brackets), active or inactive, are valid
      input strings for ~DateTime~ columns. Empty strings in a column already
      having the ~DateTime~ type are converted to ~nil~.
-- Numeric :: all commas ~','~, underscores, ~'_'~, and ~'$'~ dollar signs (or
+- Numeric :: all commas ~,~, underscores, ~_~, and ~$~ dollar signs (or
      other currency symbol as set by ~FatTable.currency_symbol~ are removed from
      the string and if the remaining string can be interpreted as a ~Numeric~,
      it will be. It is interpreted as an ~Integer~ if there are no decimal
      places in the remaining string, as a ~Rational~ if the string has the form
-     '~<number>:<number>~' or '~<number>/<number>~', or as a ~BigDecimal~ if
+     ~<number>:<number>~ or ~<number>/<number>~, or as a ~BigDecimal~ if
      there is a decimal point in the remaining string. Empty strings in a column
      already having the Numeric type are converted to nil.
 - String :: if all else fails, ~FatTable~ applies ~#to_s~ to the input value
@@ -479,7 +479,7 @@ have the same header. Headers in the input are converted to symbols by
 - removing any characters that are not letters, numbers, or underscores, and
 - lowercasing all remaining letters
 
-Thus, a header of ~'Date'~ becomes ~:date~, a header of ~'Id Number'~ becomes,
+Thus, a header of ~Date~ becomes ~:date~, a header of ~Id Number~ becomes,
 ~:id_number~, etc. When referring to a column in code, you must use the symbol
 form of the header.
 
@@ -886,7 +886,7 @@ the form ~:col_1~, ~:col_2~, ... ~:col_n~.
 In org mode table text passed to ~.from_org_file~ and ~.from_org_string~, you
 /must/ mark the header row by following it with an hrule and you /may/ mark
 group boundaries with an hrule. In org mode tables, hlines are table rows
-beginning with something like '~|---~'. The ~.from_org_...~ functions always
+beginning with something like ~|---~. The ~.from_org_...~ functions always
 recognizes hlines in the input, so it takes no ~hlines:~ keyword parameter.
 
 ** Accessing Parts of Tables
@@ -958,7 +958,7 @@ SQL.
 
 *** Example Input Table
 For illustration purposes assume that the following tables are read into ruby
-variables called '~tab1~' and '~tab2~. We have given the table groups, marked by
+variables called ~tab1~ and ~tab2~. We have given the table groups, marked by
 the hlines below, and included some duplicate rows to illustrate the effect of
 certain operations on groups and duplicates.
 
@@ -1174,8 +1174,8 @@ new column to compute the cost of shares, we could do the following:
 | T016 |  8.25 |    100 | 2016-11-02 |    825.0 |
 #+END_EXAMPLE
 
-The parameter '~traded_on: :date~' caused the ~:date~ column of the input table
-to be renamed '~:traded_on~, and the parameter ~cost: 'price * shares'~ created
+The parameter ~traded_on: :date~ caused the ~:date~ column of the input table
+to be renamed ~:traded_on~, and the parameter ~cost: 'price * shares'~ created
 a new column, ~:cost~, as the product of values in the ~:price~ and ~:shares~
 columns.
 
@@ -2333,10 +2333,10 @@ Finance&
 *** Formatting Directives
 The formatting methods explained in the next section all take formatting
 directives as strings in which letters and other characters signify what
-formatting applies.  For example, we may apply the formatting directive ~'R,$'~
+formatting applies.  For example, we may apply the formatting directive ='R,$'=
 to numbers in a certain part of the table.  Each of those characters, and in
 some cases a whole substring, is a single directive.  They can appear in any
-order, so ~'$R,'~ and ~',$R'~ are equivalent.
+order, so '$R,' and ',$R' are equivalent.
 
 Here is a list of all the formatting directives that apply to each cell type:
 
@@ -2405,7 +2405,7 @@ For example, ~'c[pink]d[%b %-d, %Y]C'~, would format a date element like 'Sep
 For a boolean cell, all the instructions valid for string are available, in
 addition to the following:
 
-- Y :: print true as '~Y~' and false as '~N~',
+- Y :: print true as ~Y~ and false as ~N~,
 - T :: print true as '~T~' and false as '~F~',
 - X :: print true as '~X~' and false as an empty string '',
 - b[xxx,yyy] :: print true as the string given as ~xxx~ and false as the string
@@ -2414,9 +2414,9 @@ addition to the following:
      with ~fcolor~. Each of the colors may be specified in the same manner as
      colors for strings described above.
 
-For example, the directive '~b[Yeppers,Nope]c[green.pink,red.pink]~' would
-render a true boolean as '~Yeppers~' colored green on pink and render a false
-boolean as '~Nope~' colored red on pink. See [[https://www.youtube.com/watch?v=oLdFFD8II8U][Yeppers]] for additional information.
+For example, the directive ~'b[Yeppers,Nope]c[green.pink,red.pink]'~ would
+render a true boolean as ~Yeppers~ colored green on pink and render a false
+boolean as ~Nope~ colored red on pink. See [[https://www.youtube.com/watch?v=oLdFFD8II8U][Yeppers]] for additional information.
 
 **** NilClass
 By default, ~nil~ elements are rendered as blank cells, but you can make them
