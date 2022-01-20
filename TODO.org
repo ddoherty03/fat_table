@@ -1,14 +1,26 @@
+* TODO Conversion to Spreadsheets
+- State "TODO"       from              [2017-04-21 Fri 10:36]
+This is a [[https://github.com/westonganger/spreadsheet_architect][gem]] that I can include into the Table model to convert a table into
+a spread-sheet, or even a sheet in a multi-sheet spreadsheet file.
+
+* TODO Add from_yql for fetching from Yahoo
+- State "TODO"       from              [2017-04-21 Fri 10:35]
+Add a constructor to allow fetching stock data from yql.  Perhaps grab all
+available fields, then allow a select of those of interest.
+
+* DONE Allow sorting by expression
+CLOSED: [2022-01-20 Thu 12:47]
+Either by a single string argument as the sole argument to order_by, or use
+another method, such a order_with.  Note that this can be done now by creating
+a new column having the sort expression with select and then just order_by
+that column.  Perhaps that is an easy way to implement it.
+
 * DONE Ensure that columns resulting from aggregates have proper type
 CLOSED: [2017-12-29 Fri 05:34]
 - State "WAIT"       from "TODO"       [2017-12-29 Fri 05:34]
 - State "TODO"       from              [2017-11-27 Mon 04:46]
 After applying avg, does the column have the proper Numeric or Date, or DateTime
 type.  How about Boolean aggregates?
-
-* TODO Conversion to Spreadsheets
-- State "TODO"       from              [2017-04-21 Fri 10:36]
-This is a [[https://github.com/westonganger/spreadsheet_architect][gem]] that I can include into the Table model to convert a table into
-a spread-sheet, or even a sheet in a multi-sheet spreadsheet file.
 
 * DONE Formatters
 CLOSED: [2017-04-21 Fri 10:36]
@@ -31,8 +43,3 @@ CLOSED: [2017-03-02 Thu 15:54]
 - State "TODO"       from              [2017-03-02 Thu 15:54]
 For tables, add a method that eliminates any duplicate rows. Perhaps just apply
 Array#uniq to the columns?
-
-* TODO Add from_yql for fetching from Yahoo
-- State "TODO"       from              [2017-04-21 Fri 10:35]
-Add a constructor to allow fetching stock data from yql.  Perhaps grab all
-available fields, then allow a select of those of interest.

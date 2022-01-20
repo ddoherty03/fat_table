@@ -699,6 +699,33 @@ module FatTable
     end
 
     # :category: Operators
+
+    # Return a new Table sorting the rows of this Table on an any expression
+    # +expr+ that is valid with the +select+ method, except that they
+    # expression may end with an exclamation mark +!+ to indicate a reverse
+    # sort.  The new table will have an additional column called +sort_key+
+    # populated with the result of evaluating the given expression and will be
+    # sorted (or reverse sorted) on that column.
+    #
+    #   tab.order_with('date.year') => table sorted by date's year
+    #   tab.order_with('date.year!') => table reverse sorted by date's year
+    #
+    # After sorting, the output Table will have group boundaries added after
+    # each row where the sort key changes.
+    def order_with(expr)
+      unless expr.is_a?(String)
+        raise "must call FatTable::Table\#order_with with a single string expression"
+      end
+      rev = false
+      if expr.match?(/\s*!\s*\z/)
+        rev = true
+        expr = expr.sub(/\s*!\s*\z/, '')
+      end
+      sort_sym = rev ? :sort_key! : :sort_key
+      dup.select(*headers, sort_key: expr).order_by(sort_sym)
+    end
+
+    # :category: Operators
     #
     # Return a Table having the selected column expressions. Each expression can
     # be either a
