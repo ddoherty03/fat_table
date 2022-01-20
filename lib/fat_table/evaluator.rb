@@ -49,6 +49,13 @@ module FatTable
     # Hash parameter +locals+ are available to the expression.
     def evaluate(expr = '', locals: {})
       eval(expr, local_vars(binding, locals))
+    rescue NoMethodError, TypeError => ex
+      if ex.to_s =~ /for nil:NilClass|nil can't be coerced/
+        # Likely one of the locals was nil, so let nil be the result.
+        return nil
+      else
+        raise ex
+      end
     end
 
     private

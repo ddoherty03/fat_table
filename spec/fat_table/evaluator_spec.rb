@@ -64,10 +64,16 @@ module FatTable
     describe 'evaluate' do
       let(:ev) { described_class.new }
       let(:locs) { { a: 1, b: 3, c: 5 } }
+      let(:locs_with_nil) { { a: 1, b: nil, c: 5 } }
 
       it 'evaluates with locals only' do
         expect(ev.evaluate('b**2 + 16 == c**2', locals: locs)).to be_truthy
         expect(ev.evaluate('a + b + c', locals: locs)).to eq(9)
+      end
+
+      it 'evaluates to nil if any locals in expression are nil' do
+        expect(ev.evaluate('b**2 + 16 == c**2', locals: locs_with_nil)).to be_nil
+        expect(ev.evaluate('a + b + c', locals: locs_with_nil)).to be_nil
       end
     end
   end
