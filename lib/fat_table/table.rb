@@ -661,7 +661,33 @@ module FatTable
       new_rows = rows.sort do |r1, r2|
         key1 = sort_heads.map { |h| rev_heads.include?(h) ? r2[h] : r1[h] }
         key2 = sort_heads.map { |h| rev_heads.include?(h) ? r1[h] : r2[h] }
-        key1 <=> key2
+        result = (key1 <=> key2)
+        if result.nil?
+          # One of the elements of key1 or key2 are nil.  Instead of just
+          # punting, we adopt the convention that nil is smaller than any
+          # other object but equal to itself.
+          nil_res = nil
+          key1.zip(key2) do |k1, k2|
+            if k1.nil? && k2.nil?
+              nil_res = 0
+              next
+            elsif k1.nil?
+              nil_res = -1
+              break
+            elsif k2.nil?
+              nil_res = 1
+              break
+            elsif (k1 <=> k2) == 0
+              next
+            else
+              nil_res = (k1 <=> k2)
+              break
+            end
+          end
+          nil_res
+        else
+          result
+        end
       end
       # Add the new rows to the table, but mark a group boundary at the points
       # where the sort key changes value.  NB: I use self.class.new here
