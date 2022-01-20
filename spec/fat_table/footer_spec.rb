@@ -132,17 +132,17 @@ module FatTable
         end
 
         it 'computes a lambda aggregator' do
-          f = Footer.new('Summary', tab, label_col: :s)
-          f.add_value(:a, ->(c) { f.table[c].inject(&:*) })
-          expect(f.a).to eq(5 * 4 * 7)
-          f.add_value(:c, ->(c) { f.table[c].map { |x| x*x }.sum.sqrt(12) })
-          expect(f.c).to be_within(0.001).of(7377.99)
+          foot = Footer.new('Summary', tab, label_col: :s)
+          foot.add_value(:a, ->(f, c) { f.items(c).inject(&:*) })
+          expect(foot.a).to eq(5 * 4 * 7)
+          foot.add_value(:c, ->(f, c) { f.items(c).map { |x| x*x }.sum.sqrt(12) })
+          expect(foot.c).to be_within(0.001).of(7377.99)
         end
 
         it 'lambda rejects incompatible types' do
-          f = Footer.new('Summary', tab, label_col: :s)
+          foot = Footer.new('Summary', tab, label_col: :s)
           expect {
-            f.add_value(:a, ->(c) { f.table })
+            foot.add_value(:a, ->(f, _c) { f.table })
           }.to raise_error(/lambda cannot return/)
         end
       end
@@ -366,7 +366,7 @@ module FatTable
         end
 
         it 'computes a lambda aggregator' do
-          foot.add_value(:raw, ->(c, k) { foot.items(c, k).map { |x| x*x }.sum.sqrt(12) })
+          foot.add_value(:raw, ->(f, c, k) { f.items(c, k).map { |x| x*x }.sum.sqrt(12) })
           expect(foot.raw[0]).to be_within(0.0001).of(795546.2)
           expect(foot.raw[1]).to be_within(0.0001).of(146071.986175)
           expect(foot.raw[2]).to be_within(0.0001).of(63066.9773891)
@@ -375,7 +375,7 @@ module FatTable
 
         it 'lambda rejects incompatible types' do
           expect {
-            foot.add_value(:shares, ->(k) { foot.table })
+            foot.add_value(:shares, ->(f, c, k) { f.table })
           }.to raise_error(/lambda cannot return/)
         end
       end

@@ -178,26 +178,18 @@ module FatTable
         agg
       when Proc
         result =
-          case agg.arity
-          when 0
-            gmsg = 'a lambda used in a group footer must have at least one argument for the group number'
-            if group
-              raise ArgumentError, gmsg
-            else
-              agg.call
+          if group
+            unless agg.arity == 3
+              msg = 'a lambda used in a group footer must have three arguments: (f, c, k)'
+              raise ArgumentError, msg
             end
-          when 1
-            group ? agg.call(k) : agg.call(col)
-          when 2
-            if group
-              agg.call(col, k)
-            else
-              raise ArgumentError, "2-argument lambdas are allowed only in group footers"
-            end
+            agg.call(self, col, k)
           else
-            msg = 'a lambda used in a footer may only have zero or one arguments'
-            gmsg = 'a lambda used in a group footer may only have one or two arguments'
-            raise ArgumentError, group ? gmsg : msg
+            unless agg.arity == 2
+              msg = 'a lambda used in a non-group footer must have two arguments: (f, c)'
+              raise ArgumentError, msg
+            end
+            agg.call(self, col)
           end
         # Make sure the result returned can be inserted into footer field.
         case result
