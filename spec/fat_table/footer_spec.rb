@@ -125,6 +125,12 @@ module FatTable
           expect(f.a).to eq('Merry Christmas')
         end
 
+        it 'can use a Ruby object as aggregator' do
+          f = Footer.new('Summary', tab, label_col: :s)
+          f.add_value(:d, Date.today)
+          expect(f.d).to eq(Date.today)
+        end
+
         it 'computes a lambda aggregator' do
           f = Footer.new('Summary', tab, label_col: :s)
           f.add_value(:a, ->(c) { f.table[c].inject(&:*) })
@@ -351,6 +357,14 @@ module FatTable
           expect(foot.raw[3]).to eq('Merry Christmas')
         end
 
+        it 'can use a Ruby object as aggregator' do
+          foot.add_value(:date, Date.today)
+          expect(foot.date[0]).to eq(Date.today)
+          expect(foot.date[1]).to eq(Date.today)
+          expect(foot.date[2]).to eq(Date.today)
+          expect(foot.date[3]).to eq(Date.today)
+        end
+
         it 'computes a lambda aggregator' do
           foot.add_value(:raw, ->(c, k) { foot.items(c, k).map { |x| x*x }.sum.sqrt(12) })
           expect(foot.raw[0]).to be_within(0.0001).of(795546.2)
@@ -385,11 +399,27 @@ module FatTable
       }
 
       it 'tallies the count' do
-          tab_a.to_text do |f|
-            f.footer('Average', age: :avg, salary: :avg, join_date: :avg)
-            f.footer('Tally', name: :count)
-            f.format(numeric: '0.0R,', datetime: 'D[%v]')
-          end
+        tab_a.to_text do |f|
+          f.footer('Average', age: :avg, salary: :avg, join_date: :avg)
+          f.footer('Tally', name: :count)
+          f.format(numeric: '0.0R,', datetime: 'D[%v]')
+        end
+      end
+
+      it 'orders by year' do
+        tab_x =
+          tab_a.select(:id, :name, :age, :address, :salary,
+                       :join_date, year: 'join_date ? join_date.year : 0')
+            .order_by(:year)
+        true
+      end
+
+      it 'select eval with nils' do
+        tab_x =
+          tab_a.select(:id, :name, :age, :address, :salary,
+                       :join_date, year: 'join_date.year')
+            .order_by(:year)
+        true
       end
     end
   end

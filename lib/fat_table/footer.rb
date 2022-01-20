@@ -71,6 +71,84 @@ module FatTable
       end
     end
 
+    # :category: Accessors
+
+    # Return the value of under the +key+ header, or if this is a group
+    # footer, return an array of the values for all the groups under the +key+
+    # header.
+    def [](key)
+      key = key.as_sym
+      if values.keys.include?(key)
+        if group
+          values[key]
+        else
+          values[key].last
+        end
+      elsif table.headers.include?(label_col.as_sym)
+        nil
+      else
+        raise ArgumentError, "No column header '#{key}' in footer table"
+      end
+    end
+
+    # :category: Accessors
+
+    # Return the total number of groups in the table to which this footer
+    # belongs.  Note that if the table has both group footers and normal
+    # footers, this will return the number of groups even for a normal footer.
+    def number_of_groups
+      table.number_of_groups
+    end
+
+    # :category: Accessors
+
+    # Return a FatTable::Column object for the header h and, if a group, the
+    # kth group.
+    def column(h, k = nil)
+      if group && k.nil?
+        raise ArgumentError, 'Footer#column(h, k) missing the group number argument k'
+      end
+      if group
+        k.nil? ? @group_cols[h] : @group_cols[h][k]
+      else
+        table.column(h)
+      end
+    end
+
+    # :category: Accessors
+
+    # Return an Array of the values for the header h and, if a group, for the
+    # kth group.
+    def items(h, k = nil)
+      column(h, k).items
+    end
+
+    # :category: Accessors
+
+    # Return a Hash with a key for each column header mapped to the footer
+    # value for that column, nil for unused columns.  Use the key +k+ to
+    # specify which group to access in the case of a group footer.
+    def to_h(k = nil)
+      hsh = {}
+      if group
+        table.headers.each do |h|
+          hsh[h] = values[h] ? values[h][k] : nil
+        end
+      else
+        table.headers.each do |h|
+          hsh[h] =
+            if values[h]
+              values[h].first
+            else
+              nil
+            end
+        end
+      end
+      hsh
+    end
+
+    private
+
     # Evaluate the given agg for the header col and, in the case of a group
     # footer, the group k.
     def calc_val(agg, col, k = nil)
@@ -131,68 +209,8 @@ module FatTable
           raise ArgumentError, "lambda cannot return an object of class #{result.class}"
         end
       else
-        raise ArgumentError, "Attempt to set footer column #{col} to '#{agg}' of type #{agg.class}"
+        agg
       end
-    end
-
-    def [](key)
-      key = key.as_sym
-      if values.keys.include?(key)
-        if group
-          values[key]
-        else
-          values[key].last
-        end
-      elsif table.headers.include?(label_col.as_sym)
-        nil
-      else
-        raise ArgumentError, "No column header '#{key}' in footer table"
-      end
-    end
-
-    def number_of_groups
-      return 1 unless group
-
-      table.number_of_groups
-    end
-
-    # Return a Column object for the header h and, if a group, the kth group.
-    def column(h, k = nil)
-      if group && k.nil?
-        raise ArgumentError, 'Footer#column(h, k) missing the group number argument k'
-      end
-      if group
-        k.nil? ? @group_cols[h] : @group_cols[h][k]
-      else
-        table.column(h)
-      end
-    end
-
-    # Return a the values for the header h and, if a group, the kth group.
-    def items(h, k = nil)
-      column(h, k).items
-    end
-
-    # Return a Hash with a key for each column header mapped to the footer
-    # value for that column, nil for unused columns.  Use the key +k+ to
-    # specify which group to access in the case of a group footer.
-    def to_h(k = nil)
-      hsh = {}
-      if group
-        table.headers.each do |h|
-          hsh[h] = values[h] ? values[h][k] : nil
-        end
-      else
-        table.headers.each do |h|
-          hsh[h] =
-            if values[h]
-              values[h].first
-            else
-              nil
-            end
-        end
-      end
-      hsh
     end
 
     # Define an accessor method for each table header that returns the footer
