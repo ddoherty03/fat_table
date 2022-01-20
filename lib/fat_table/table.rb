@@ -654,42 +654,32 @@ module FatTable
     # After sorting, the output Table will have group boundaries added after
     # each row where the sort key changes.
     def order_by(*sort_heads)
-      sort_heads = [sort_heads].flatten
-      rev_heads = sort_heads.select { |h| h.to_s.ends_with?('!') }
-      sort_heads = sort_heads.map { |h| h.to_s.sub(/\!\z/, '').to_sym }
-      rev_heads = rev_heads.map { |h| h.to_s.sub(/\!\z/, '').to_sym }
+      # Sort the rows in order and add to new_rows.
+      key_hash = partition_sort_keys(sort_heads)
       new_rows = rows.sort do |r1, r2|
-        key1 = sort_heads.map { |h| rev_heads.include?(h) ? r2[h] : r1[h] }
-        key2 = sort_heads.map { |h| rev_heads.include?(h) ? r1[h] : r2[h] }
-        result = (key1 <=> key2)
-        if result.nil?
-          # One of the elements of key1 or key2 are nil.  Instead of just
-          # punting, we adopt the convention that nil is smaller than any
-          # other object but equal to itself.
-          nil_res = nil
-          key1.zip(key2) do |k1, k2|
-            if k1.nil? && k2.nil?
-              nil_res = 0
-              next
-            elsif k1.nil?
-              nil_res = -1
-              break
-            elsif k2.nil?
-              nil_res = 1
-              break
-            elsif (k1 <=> k2) == 0
-              next
-            else
-              nil_res = (k1 <=> k2)
-              break
-            end
+        # Set the sort keys based on direction
+        key1 = []
+        key2 = []
+        key_hash.each_pair do |h, dir|
+          if dir == :forward
+            key1 << r1[h]
+            key2 << r2[h]
+          else
+            key1 << r2[h]
+            key2 << r1[h]
           end
-          nil_res
-        else
-          result
         end
+        # Make any booleans comparable with <=>
+        key1 = key1.map_booleans
+        key2 = key2.map_booleans
+
+        # If there are any nils, <=> will return nil, and we have to use the
+        # special comparison method, compare_with_nils, instead.
+        result = (key1 <=> key2)
+        result.nil? ? compare_with_nils(key1, key2) : result
       end
-      # Add the new rows to the table, but mark a group boundary at the points
+
+      # Add the new_rows to the table, but mark a group boundary at the points
       # where the sort key changes value.  NB: I use self.class.new here
       # rather than Table.new because if this class is inherited, I want the
       # new_tab to be an instance of the subclass.  With Table.new, this
@@ -699,7 +689,8 @@ module FatTable
       last_key = nil
       new_rows.each_with_index do |nrow, k|
         new_tab << nrow
-        key = nrow.fetch_values(*sort_heads)
+        # key = nrow.fetch_values(*sort_heads)
+        key = nrow.fetch_values(*key_hash.keys)
         new_tab.mark_boundary(k - 1) if last_key && key != last_key
         last_key = key
       end
@@ -984,36 +975,6 @@ module FatTable
     # are eliminated in the output Table.
     def except_all(other)
       set_operation(other, :difference, distinct: false)
-    end
-
-    private
-
-    # Apply the set operation given by ~oper~ between this table and the other
-    # table given in the first argument.  If distinct is true, eliminate
-    # duplicates from the result.
-    def set_operation(other, oper = :+, distinct: true, add_boundaries: true, inherit_boundaries: false)
-      unless columns.size == other.columns.size
-        msg = "can't apply set ops to tables with a different number of columns"
-        raise UserError, msg
-      end
-      unless columns.map(&:type) == other.columns.map(&:type)
-        msg = "can't apply a set ops to tables with different column types."
-        raise UserError, msg
-      end
-      other_rows = other.rows.map { |r| r.replace_keys(headers) }
-      result = empty_dup
-      new_rows = rows.send(oper, other_rows)
-      new_rows.each_with_index do |row, k|
-        result << row
-        result.mark_boundary if k == size - 1 && add_boundaries
-      end
-      if inherit_boundaries
-        result.boundaries = normalize_boundaries
-        other.normalize_boundaries
-        result.append_boundaries(other.boundaries, shift: size)
-      end
-      result.normalize_boundaries
-      distinct ? result.distinct : result
     end
 
     public
@@ -1582,6 +1543,76 @@ module FatTable
       fmt = TextFormatter.new(self, **options)
       yield fmt if block_given?
       fmt.output
+    end
+
+    private
+
+    # Apply the set operation given by ~oper~ between this table and the other
+    # table given in the first argument.  If distinct is true, eliminate
+    # duplicates from the result.
+    def set_operation(other, oper = :+, distinct: true, add_boundaries: true, inherit_boundaries: false)
+      unless columns.size == other.columns.size
+        msg = "can't apply set ops to tables with a different number of columns"
+        raise UserError, msg
+      end
+      unless columns.map(&:type) == other.columns.map(&:type)
+        msg = "can't apply a set ops to tables with different column types."
+        raise UserError, msg
+      end
+      other_rows = other.rows.map { |r| r.replace_keys(headers) }
+      result = empty_dup
+      new_rows = rows.send(oper, other_rows)
+      new_rows.each_with_index do |row, k|
+        result << row
+        result.mark_boundary if k == size - 1 && add_boundaries
+      end
+      if inherit_boundaries
+        result.boundaries = normalize_boundaries
+        other.normalize_boundaries
+        result.append_boundaries(other.boundaries, shift: size)
+      end
+      result.normalize_boundaries
+      distinct ? result.distinct : result
+    end
+
+    # Return a hash with the key being the header to sort on and the value
+    # being either :forward or :reverse to indicate the sort order on that
+    # key.
+    def partition_sort_keys(keys)
+      result = {}
+      [keys].flatten.each do |h|
+        if h.to_s.match?(/\s*!\s*\z/)
+          result[h.to_s.sub(/\s*!\s*\z/, '').to_sym] = :reverse
+        else
+          result[h] = :forward
+        end
+      end
+      result
+    end
+
+    # The <=> operator cannot handle nils without some help.  Treat a nil as
+    # smaller than any other value, but equal to other nils.  The two keys are assumed to be arrays of values to be
+    # compared with <=>.
+    def compare_with_nils(key1, key2)
+      result = nil
+      key1.zip(key2) do |k1, k2|
+        if k1.nil? && k2.nil?
+          result = 0
+          next
+        elsif k1.nil?
+          result = -1
+          break
+        elsif k2.nil?
+          result = 1
+          break
+        elsif (k1 <=> k2) == 0
+          next
+        else
+          result = (k1 <=> k2)
+          break
+        end
+      end
+      result
     end
   end
 end
