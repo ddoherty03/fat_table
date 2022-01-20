@@ -95,6 +95,7 @@ org-mode buffer as an org-table, ready for processing by other code blocks.
       - [[#argument-order-and-boundaries][Argument Order and Boundaries]]
     - [[#where][Where]]
     - [[#order_by][Order_by]]
+    - [[#order_with][Order_with]]
     - [[#group_by][Group_by]]
     - [[#join][Join]]
       - [[#join-types][Join Types]]
@@ -112,6 +113,7 @@ org-mode buffer as an org-table, ready for processing by other code blocks.
     - [[#remove-groups-with-degroup][Remove groups with degroup!]]
   - [[#formatting-tables][Formatting Tables]]
     - [[#available-formatter-output-targets][Available Formatter Output Targets]]
+      - [[#output-media][Output Media]]
       - [[#examples][Examples]]
         - [[#to-text][To Text]]
         - [[#to-org][To Org]]
@@ -119,26 +121,29 @@ org-mode buffer as an org-table, ready for processing by other code blocks.
         - [[#to-latex][To LaTeX]]
         - [[#to-aoa-array-of-arrays][To AoA (Array of Arrays)]]
         - [[#to-aoh-array-of-hashes][To AoH (Array of Hashes)]]
-    - [[#table-locations][Table Locations]]
     - [[#formatting-directives][Formatting Directives]]
       - [[#string][String]]
       - [[#numeric][Numeric]]
       - [[#datetime][DateTime]]
       - [[#boolean][Boolean]]
       - [[#nilclass][NilClass]]
+    - [[#the-format-and-format_for-methods][The ~format~ and ~format_for~ methods]]
+      - [[#table-locations][Table Locations]]
+      - [[#location-priority][Location priority]]
+      - [[#type-and-column-priority][Type and Column priority]]
     - [[#footers][Footers]]
       - [[#adding-footers][Adding Footers]]
       - [[#aggregators][Aggregators]]
       - [[#footer-objects][Footer objects]]
       - [[#footer-examples][Footer Examples]]
         - [[#built-in-aggregators][Built-in Aggregators]]
+        - [[#string-aggregators][String Aggregators]]
+        - [[#ruby-objects][Ruby Objects]]
+        - [[#lambdas][Lambdas]]
     - [[#invoking-formatters][Invoking Formatters]]
       - [[#by-instantiating-a-formatter][By Instantiating a Formatter]]
       - [[#by-using-fattable-module-level-method-calls][By Using ~FatTable~ module-level method calls]]
       - [[#by-calling-methods-on-table-objects][By Calling Methods on Table Objects]]
-    - [[#the-format-and-format_for-methods][The ~format~ and ~format_for~ methods]]
-      - [[#location-priority][Location priority]]
-      - [[#type-and-column-priority][Type and Column priority]]
 - [[#development][Development]]
 - [[#contributing][Contributing]]
 
@@ -957,10 +962,7 @@ variables called '~tab1~' and '~tab2~. We have given the table groups, marked by
 the hlines below, and included some duplicate rows to illustrate the effect of
 certain operations on groups and duplicates.
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
-require 'fat_table'
-
+#+BEGIN_SRC ruby :results silent
 tab1_str = <<-EOS
 | Ref  | Date             | Code |  Price | G10 | QP10 | Shares |   LP |    QP |   IPLP |   IPQP |
 |------+------------------+------+--------+-----+------+--------+------+-------+--------+--------|
@@ -1013,9 +1015,9 @@ EOS
 #+END_SRC
 
 Rendering ~tab1~ into Emacs org-mode:
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
-  tab1 = FatTable.from_org_string(tab1_str).to_aoa
+#+BEGIN_SRC ruby :wrap EXAMPLE
+  tab1 = FatTable.from_org_string(tab1_str)
+  tab1.to_aoa
 #+END_SRC
 
 #+begin_EXAMPLE
@@ -1047,9 +1049,9 @@ Rendering ~tab1~ into Emacs org-mode:
 
 Rendering ~tab2~ into Emacs org-mode:
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
-  tab2 = FatTable.from_org_string(tab2_str).to_aoa
+#+BEGIN_SRC ruby :wrap EXAMPLE
+  tab2 = FatTable.from_org_string(tab2_str)
+  tab2.to_aoa
 #+END_SRC
 
 #+begin_EXAMPLE
@@ -1322,8 +1324,7 @@ All columns of the input table are included in the output.
 
 Let's sort our table first by ~:code~, then in reverse order of ~:date~.
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
   tab1.order_by(:code, :date!) \
     .to_aoa
 #+END_SRC
@@ -1358,6 +1359,59 @@ The interesting thing about ~order_by~ is that, while it ignores groups in its
 input, it adds group boundaries in the output table at those rows where the sort
 keys change.  Thus, in each group, ~:code~ and ~:date~ are the same, and when
 either changes, ~order_by~ inserts a group boundary.
+
+*** Order_with
+The ~order_with~ method is a convenient combination of ~select~ and
+~order_by~.  It takes a single string expression as an argument to serve as a
+sort key---one that would be valid as a select expression---but with an
+optional trailing ~!~ to indicate reverse sort.  The resulting table has an
+additional column called ~:sort_key~ with the expression evaluated for each
+row and the table sorted as with ~order_by~ on that column.
+
+#+BEGIN_SRC ruby :wrap EXAMPLE
+  tab1.order_with('price * shares').to_aoa
+#+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+| Ref  |       Date | Code | Price | G10 | QP10 | Shares |   Lp |    Qp |   Iplp |   Ipqp | Sort Key |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
+| T011 | 2016-11-02 | P    | 7.425 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 |    742.5 |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
+| T001 | 2016-11-01 | P    |   7.7 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 |    770.0 |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
+| T016 | 2016-11-02 | P    |  8.25 | T   | T    |    100 |   14 |    86 | 0.2453 | 0.1924 |    825.0 |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
+| T007 | 2016-11-01 | S    |  7.65 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 |   1530.0 |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
+| T002 | 2016-11-01 | P    |  7.75 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 |   1550.0 |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
+| T015 | 2016-11-02 | P    |  7.75 | F   | F    |    500 |   72 |   428 | 0.2453 | 0.1924 |   3875.0 |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
+| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 |   6000.0 |
+| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 |   6000.0 |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
+| T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 |   7600.0 |
+| T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 |   7600.0 |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
+| T008 | 2016-11-01 | P    |  7.65 | F   | F    |   2771 |  393 |  2378 | 0.2453 | 0.1924 | 21198.15 |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
+| T010 | 2016-11-01 | P    |  7.55 | F   | T    |   3175 |  451 |  2724 | 0.2453 | 0.1924 | 23971.25 |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
+| T005 | 2016-11-01 | S    |   7.5 | F   | F    |   4000 |  572 |  3428 | 0.2453 | 0.1924 |  30000.0 |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
+| T012 | 2016-11-02 | P    |  7.55 | F   | F    |   4700 |  677 |  4023 | 0.2453 | 0.1924 |  35485.0 |
+| T012 | 2016-11-02 | P    |  7.55 | F   | F    |   4700 |  677 |  4023 | 0.2453 | 0.1924 |  35485.0 |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
+| T014 | 2016-11-02 | P    |  7.45 | F   | T    |   5847 |  835 |  5012 | 0.2453 | 0.1924 | 43560.15 |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
+| T004 | 2016-11-01 | S    |  7.55 | T   | F    |   6811 |  966 |  5845 | 0.2453 | 0.1924 | 51423.05 |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
+| T009 | 2016-11-01 | P    |   7.6 | F   | F    |   9550 | 1363 |  8187 | 0.2453 | 0.1924 |  72580.0 |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
+| T013 | 2016-11-02 | P    |  7.35 | T   | T    |  53100 | 7656 | 45444 | 0.2453 | 0.1924 | 390285.0 |
+#+end_EXAMPLE
+
 
 *** Group_by
 Like ~order_by~, ~group_by~ takes a set of parameters of column header symbols,
@@ -2124,6 +2178,7 @@ any color directives are ignored. Some of the output targets are not strings,
 but ruby data structures, and for them, things such as alignment are irrelevant.
 
 *** Available Formatter Output Targets
+**** Output Media
 ~FatTable~ supports the following output targets for its tables:
 
 - Text :: form the table with ACSII characters,
@@ -2275,19 +2330,6 @@ Finance&
 #+end_EXAMPLE
 
 
-*** Table Locations
-In the formatting methods, the table is divided into several "locations" for
-which separate formatting directives may be given. These locations are
-identified with the following symbols:
-
-- :header :: the first row of the output table containing the headers,
-- :footer :: all rows of the table's footers,
-- :gfooter :: all rows of the table's group footers,
-- :body :: all the data rows of the table, that is, those that are neither part
-     of the header, footers, or gfooters,
-- :bfirst :: the first row of the table's body, and
-- :gfirst :: the first row in each group in the table's body.
-
 *** Formatting Directives
 The formatting methods explained in the next section all take formatting
 directives as strings in which letters and other characters signify what
@@ -2386,6 +2428,147 @@ valid for strings are also available:
 For example, you might want to use ~'n[-]Cc[purple]'~ to make nils visible as a
 centered purple hyphen.
 
+*** The ~format~ and ~format_for~ methods
+Formatters take only two kinds of methods, those that attach footers to a
+table, which are discussed in the next section, and those that specify
+formatting for table cells, which are the subject of this section.
+
+To set formatting directives for all locations in a table at once, use the
+~format~ method; to set formatting directives for a particular location in the
+table, use the ~format_for~ method, giving the location as the first
+parameter.  See below at [[*Table Locations][Table Locations]] for an explanation of all the
+locations available.
+
+Other than that first parameter, the two methods take the same types of
+parameters. The remaining parameters are hash-like parameters that use either a
+column name or a type as the key and a string with the formatting directives to
+apply as the value. The following example says to set the formatting for all
+locations in the table and to format all numeric fields as strings that are
+rounded to whole numbers (the '0.0' part), that are right-aligned (the 'R'
+part), and have grouping commas inserted (the ',' part). But the ~:id~ column is
+numeric, and the second parameter overrides the formatting for numerics in
+general and calls for the ~:id~ column to be padded to three digits with zeros
+on the left (the '3.0' part) and to be centered (the 'C' part).
+
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
+#+BEGIN_SRC ruby
+  tab_a.to_text do |f|
+    f.format(numeric: '0.0,R', id: '3.0C')
+    f.format_for(:body, string: 'R')
+    f.format_for(:header, string: 'C')
+  end
+#+END_SRC
+
+#+begin_EXAMPLE
++=====+=======+=====+============+========+============+
+|  Id |  Name | Age |   Address  | Salary |  Join Date |
++-----+-------+-----+------------+--------+------------+
+| 001 |  Paul |  32 | California | 20,000 | 2001-07-13 |
+| 003 | Teddy |  23 |     Norway | 20,000 | 2007-12-13 |
+| 004 |  Mark |  25 |  Rich-Mond | 65,000 | 2007-12-13 |
+| 005 | David |  27 |      Texas | 85,000 | 2007-12-13 |
+| 002 | Allen |  25 |      Texas |        | 2005-07-13 |
+| 008 |  Paul |  24 |    Houston | 20,000 | 2005-07-13 |
+| 009 | James |  44 |     Norway |  5,000 | 2005-07-13 |
+| 010 | James |  45 |      Texas |  5,000 |            |
++=====+=======+=====+============+========+============+
+#+end_EXAMPLE
+
+In the example, the ~format~ method affects the whole table.  Its ~numeric:~
+directive affected the ~:age~ and ~:salary~ columns because their types are
+Numeric.  The ~id:~ column is also Numeric, but it's more specific directive
+takes precedence and it is formatted accordingly.
+
+But the ~format_for~ methods affected two "locations": the "body" and the
+"header".  Within the body, the ~:string~ directive calls for all strings to
+be right-aligned, but the headers are unaffected by it.  The ~format_for~ the
+~:header~ location caused all the headers to be centered.
+
+All the other cells in the table, namely the cells in the ~:join_date~ column,
+had the default formatting applied.
+
+**** Table Locations
+In the ~format_for~ formatting method, the first argument names a "location."
+The table is divided into several locations for which separate formatting
+directives may be given. These locations are identified by the following
+symbols:
+
+- :header :: the first row of the output table containing the headers,
+- :footer :: all rows of the table's footers,
+- :gfooter :: all rows of the table's group footers,
+- :body :: all the data rows of the table, that is, those that are neither part
+     of the header, footers, or gfooters,
+- :bfirst :: the first row of the table's body, and
+- :gfirst :: the first row in each group in the table's body.
+
+**** Location priority
+Formatting for any given cell depends on its location in the table. The
+~format_for~ method takes a location to which its formatting directive are
+restricted as the first argument. It can be one of the following:
+
+- ~:header~ :: The directives apply only to the header row, that is the first
+  row, of the output table; before the directives are applied, the header's
+  symbol form is converted back into a string and capitalized as is a book
+  title.  Thus, only directives applicable to the String type have any effect.
+
+- ~:body~ :: The directives apply to all rows in the body of the table.
+
+- ~:gfirst~ :: directives apply to the first row in each group in the body of
+     the table, unless the row is also the first row in the table as a whole, in
+     which case the ~:bfirst~ directives apply,
+
+- ~:bfirst~ :: The directives apply to the first row in the body of the table,
+  taking precedence over those directives that apply to the body generally or
+  the ~:gfirst~ directives that apply to the first row in each group.
+
+- ~:footer~ :: The directives apply to all the footer rows of the output
+  table, regardless of how many there are.
+
+- ~gfooter~ :: The directives apply to all group footer rows of the output
+  tables, regardless of how many there are.
+
+Directives given to the ~format~ method apply the directives to all locations in
+the table, but they can be overridden by more specific directives given in a
+~format_for~ directive.
+
+**** Type and Column priority
+A directive based on type applies to all columns having that type unless
+overridden by a directive specific to a named column; a directive based on a
+column name applies only to cells in that column.
+
+However, there is a twist.  Since the end result of formatting is to convert
+all columns to strings, the formatting directives for the ~String~ type can
+be applied to all column types.  Likewise, since all columns may contain nils,
+the ~NilClass:~ type applies to nils in all columns regardless of the column's
+type.
+
+#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
+#+BEGIN_SRC ruby
+  tab_a.to_text do |f|
+    f.format(string: 'R', id: '3.0C', nil: 'Cn[-]', salary: 'n[N/A]')
+  end
+#+END_SRC
+
+#+BEGIN_EXAMPLE
++=====+=======+=====+============+========+============+
+|  Id |  Name | Age |    Address | Salary |  Join Date |
++-----+-------+-----+------------+--------+------------+
+| 001 |  Paul |  32 | California |  20000 | 2001-07-13 |
+| 003 | Teddy |  23 |     Norway |  20000 | 2007-12-13 |
+| 004 |  Mark |  25 |  Rich-Mond |  65000 | 2007-12-13 |
+| 005 | David |  27 |      Texas |  85000 | 2007-12-13 |
+| 002 | Allen |  25 |      Texas |    N/A | 2005-07-13 |
+| 008 |  Paul |  24 |    Houston |  20000 | 2005-07-13 |
+| 009 | James |  44 |     Norway |   5000 | 2005-07-13 |
+| 010 | James |  45 |      Texas |   5000 |            |
++=====+=======+=====+============+========+============+
+#+END_EXAMPLE
+
+The ~string: 'R'~ directive causes all the cells to be right-aligned except
+~:id~ which specifies centering for the ~:id~ column only. The ~n[N/A]~
+directive for specifies how nil are displayed in the numeric column, ~:salary~,
+but not for other nils, such as in the last row of the ~:join_date~ column.
+
 *** Footers
 **** Adding Footers
 You can call the ~footer,~ ~gfooter, foot, and gfoot~ methods on ~Formatter~
@@ -2483,7 +2666,25 @@ for what you can use for an aggregator:
 **** Footer objects
 Each of the methods for adding a footer to a ~Formatter~ returns a ~Footer~ object
 that you can query for attributes of the generated footer, including accessing
-their computed values.
+their computed values.  Here are the accessors available on a
+~FatTable::Footer~ object:
+
+- ~[h]~ :: Return the value of under the ~h~ header, or if this is a group
+  footer, return an array of the values for all the groups under the ~h~
+  header.
+- .<header> :: like, ~[h]~ but makes the values available in method-call form.
+- ~number_of_groups~ :: Return the total number of groups in the table to
+  which this footer belongs.  Note that if the table has both group footers
+  and normal footers, this will return the number of groups even for a normal
+  footer.
+- ~column(h)~, ~column(h, k)~ :: Return a FatTable::Column object for the
+  header h and, if the footer is a group footer, the kth group.
+- ~items(h)~, ~items(h, k)~ :: Return an Array of the values for the header
+  ~h~ and, if a group, for the ~k~th group.
+- ~to_h~, ~to_h(k)~ :: Return a Hash with a key for each column header mapped
+  to the footer value for that column, nil for unused columns.  Use the index
+  ~k~ to specify which group to access in the case of a group footer.
+
 
 **** Footer Examples
 As a reminder, here is the table, ~tab_a~ defined earlier:
@@ -2492,7 +2693,6 @@ As a reminder, here is the table, ~tab_a~ defined earlier:
   tab_a.to_aoa
 #+END_SRC
 
-#+RESULTS:
 #+begin_EXAMPLE
 | Id | Name  | Age | Address    | Salary |  Join Date |
 |----+-------+-----+------------+--------+------------|
@@ -2513,9 +2713,9 @@ dates to Julian numbers, averages that, then converts the result back to a
 date.
 #+BEGIN_SRC ruby :wrap EXAMPLE
   tab_a.to_text do |f|
+    f.format(numeric: '0.0R,', datetime: 'd[%v]D[%v]')
     f.footer('Average', age: :avg, salary: :avg, join_date: :avg)
     f.footer('Tally', age: :count)
-    f.format(numeric: '0.0R,', datetime: 'd[%v]D[%v]')
   end
 #+END_SRC
 
@@ -2538,17 +2738,212 @@ date.
 +=========+=======+=====+============+========+=============+
 #+end_EXAMPLE
 
+***** String Aggregators
+If the string is convertible into its columns's type, it will be converted to
+that type; otherwise, it will be placed in the footer literally.  This example
+also shows how the values from one footer might be used in composing another
+footer.
+#+BEGIN_SRC ruby :wrap EXAMPLE
+  tab_a.to_text do |f|
+    f.format(numeric: '0.0R,', datetime: 'd[%v]D[%v]')
+    avg_ft = f.footer('Average', age: :avg, salary: :avg, join_date: :avg)
+    f.footer('Tally', age: :count)
+    if avg_ft[:salary] < 30000
+      cmt = "We're saving"
+    else
+      cmt = "We're overspending"
+    end
+    f.footer('Pay', join_date: "We have #{avg_ft.number_of_groups} grp")
+    f.footer('Group count', join_date: "We have #{avg_ft.number_of_groups} grp")
+    f.footer('Comment', join_date: cmt)
+  end
+#+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
++=============+=======+=====+============+========+====================+
+| Id          | Name  | Age | Address    | Salary | Join Date          |
++-------------+-------+-----+------------+--------+--------------------+
+|           1 | Paul  |  32 | California | 20,000 | 13-JUL-2001        |
+|           3 | Teddy |  23 | Norway     | 20,000 | 13-DEC-2007        |
+|           4 | Mark  |  25 | Rich-Mond  | 65,000 | 13-DEC-2007        |
+|           5 | David |  27 | Texas      | 85,000 | 13-DEC-2007        |
+|           2 | Allen |  25 | Texas      |        | 13-JUL-2005        |
+|           8 | Paul  |  24 | Houston    | 20,000 | 13-JUL-2005        |
+|           9 | James |  44 | Norway     |  5,000 | 13-JUL-2005        |
+|          10 | James |  45 | Texas      |  5,000 |                    |
++-------------+-------+-----+------------+--------+--------------------+
+|     Average |       |  31 |            | 31,429 | 29-DEC-2005        |
++-------------+-------+-----+------------+--------+--------------------+
+|       Tally |       |   8 |            |        |                    |
++-------------+-------+-----+------------+--------+--------------------+
+|         Pay |       |     |            |        | We have 1 grp      |
++-------------+-------+-----+------------+--------+--------------------+
+| Group count |       |     |            |        | We have 1 grp      |
++-------------+-------+-----+------------+--------+--------------------+
+|     Comment |       |     |            |        | We're overspending |
++=============+=======+=====+============+========+====================+
+#+end_EXAMPLE
+
+***** Ruby Objects
+You can make the aggregator an normal ruby object, in which case it is just
+inserted into the footer at the requested location.  If its type is the same
+as the column type, it participates in the formatting for that type and
+column.
+#+BEGIN_SRC ruby :wrap EXAMPLE
+  tab_a.to_text do |f|
+    f.footer('Average', age: :avg, salary: :avg, join_date: :avg)
+    f.footer('Report Date', age: :count, join_date: Date.today)
+    f.format(numeric: '0.0R,', datetime: 'd[%v]D[%v]')
+  end
+#+END_SRC
+
+#+begin_EXAMPLE
++=============+=======+=====+============+========+=============+
+| Id          | Name  | Age | Address    | Salary | Join Date   |
++-------------+-------+-----+------------+--------+-------------+
+|           1 | Paul  |  32 | California | 20,000 | 13-JUL-2001 |
+|           3 | Teddy |  23 | Norway     | 20,000 | 13-DEC-2007 |
+|           4 | Mark  |  25 | Rich-Mond  | 65,000 | 13-DEC-2007 |
+|           5 | David |  27 | Texas      | 85,000 | 13-DEC-2007 |
+|           2 | Allen |  25 | Texas      |        | 13-JUL-2005 |
+|           8 | Paul  |  24 | Houston    | 20,000 | 13-JUL-2005 |
+|           9 | James |  44 | Norway     |  5,000 | 13-JUL-2005 |
+|          10 | James |  45 | Texas      |  5,000 |             |
++-------------+-------+-----+------------+--------+-------------+
+|     Average |       |  31 |            | 31,429 | 29-DEC-2005 |
++-------------+-------+-----+------------+--------+-------------+
+| Report Date |       |   8 |            |        | 20-JAN-2022 |
++=============+=======+=====+============+========+=============+
+#+end_EXAMPLE
+
+But it can be any type.  Here we pick a lottery winner from the employee ids.
+#+BEGIN_SRC ruby :wrap EXAMPLE
+  tab_a.to_text do |f|
+    f.footer('Average', age: :avg, salary: :avg, join_date: :avg)
+    winner_id = tab_a.column(:id).items.sample
+    f.footer('Lottery Winner', age: :count, join_date: winner_id)
+    f.format(numeric: '0.0R,', datetime: 'd[%v]D[%v]')
+  end
+#+END_SRC
+
+#+begin_EXAMPLE
++================+=======+=====+============+========+=============+
+| Id             | Name  | Age | Address    | Salary | Join Date   |
++----------------+-------+-----+------------+--------+-------------+
+|              1 | Paul  |  32 | California | 20,000 | 13-JUL-2001 |
+|              3 | Teddy |  23 | Norway     | 20,000 | 13-DEC-2007 |
+|              4 | Mark  |  25 | Rich-Mond  | 65,000 | 13-DEC-2007 |
+|              5 | David |  27 | Texas      | 85,000 | 13-DEC-2007 |
+|              2 | Allen |  25 | Texas      |        | 13-JUL-2005 |
+|              8 | Paul  |  24 | Houston    | 20,000 | 13-JUL-2005 |
+|              9 | James |  44 | Norway     |  5,000 | 13-JUL-2005 |
+|             10 | James |  45 | Texas      |  5,000 |             |
++----------------+-------+-----+------------+--------+-------------+
+|        Average |       |  31 |            | 31,429 | 29-DEC-2005 |
++----------------+-------+-----+------------+--------+-------------+
+| Lottery Winner |       |   8 |            |        | 4           |
++================+=======+=====+============+========+=============+
+#+end_EXAMPLE
+
+***** Lambdas
+Perhaps the most flexible form of aggregator is a lambda form.  They require 2
+or 3 parameters in non-group and group footers, respectively:
+
+- ~->(f, c) {...}~ :: in a normal, non-group footer, you must provide for two
+  paramters: the first, ~f~, will be bound to the footer in which the lambda
+  appears and the second, ~c~, will be bound to the column header to which the
+  lambda is attached.
+- ~->(f, c, k)~ :: in a group footer, you must provide for three paramters:
+  the first, ~f~, will be bound to the footer in which the lambda appears, the
+  second, ~c~, will be bound to the column header to which the lambda is
+  attached, and the third, ~k~ will be bound to the group number of the group
+  being evaluated.
+
+With the first argument, the footer itself becomes available and with it all
+the things accessible with the footers, including the items in the current
+column, through the ~f.items(c)~ accessor.
+
+Compute the summ of the squares if the items in the ~:age~ column:
+#+BEGIN_SRC ruby :wrap EXAMPLE
+  tab_a.to_text do |f|
+    f.format(numeric: '0.0R,', datetime: 'd[%v]D[%v]')
+    f.footer('Average', age: :avg, salary: :avg, join_date: :avg)
+    f.footer('SSQ', age: ->(f, c) { sa = f.items(c).map {|x| x * x}.sum; Math.sqrt(sa) })
+  end
+#+END_SRC
+
+#+begin_EXAMPLE
++=========+=======+=====+============+========+=============+
+| Id      | Name  | Age | Address    | Salary | Join Date   |
++---------+-------+-----+------------+--------+-------------+
+|       1 | Paul  |  32 | California | 20,000 | 13-JUL-2001 |
+|       3 | Teddy |  23 | Norway     | 20,000 | 13-DEC-2007 |
+|       4 | Mark  |  25 | Rich-Mond  | 65,000 | 13-DEC-2007 |
+|       5 | David |  27 | Texas      | 85,000 | 13-DEC-2007 |
+|       2 | Allen |  25 | Texas      |        | 13-JUL-2005 |
+|       8 | Paul  |  24 | Houston    | 20,000 | 13-JUL-2005 |
+|       9 | James |  44 | Norway     |  5,000 | 13-JUL-2005 |
+|      10 | James |  45 | Texas      |  5,000 |             |
++---------+-------+-----+------------+--------+-------------+
+| Average |       |  31 |            | 31,429 | 29-DEC-2005 |
++---------+-------+-----+------------+--------+-------------+
+|     SSQ |       |  90 |            |        |             |
++=========+=======+=====+============+========+=============+
+#+end_EXAMPLE
+
+Group the table according to the employee's year of joining, then compute the
+summ of the squares if the ages in each group:
+#+BEGIN_SRC ruby :wrap EXAMPLE
+  tab_a.order_with('join_date.year').to_text do |f|
+    f.format(numeric: '0.0R,', datetime: 'd[%v]D[%v]', sort_key: '0.0~,')
+    f.footer('Average', age: :avg, salary: :avg, join_date: :avg)
+    f.gfooter('Group SSQ', age: ->(f, c, k) { sa = f.items(c, k).map {|x| x * x}.sum; Math.sqrt(sa) })
+    f.footer('Total SSQ', age: ->(f, c) { sa = f.items(c).map {|x| x * x}.sum; Math.sqrt(sa) })
+  end
+#+END_SRC
+
+#+begin_EXAMPLE
++===========+=======+=====+============+========+=============+==========+
+| Id        | Name  | Age | Address    | Salary | Join Date   | Sort Key |
++-----------+-------+-----+------------+--------+-------------+----------+
+|        10 | James |  45 | Texas      |  5,000 |             |          |
++-----------+-------+-----+------------+--------+-------------+----------+
+| Group SSQ |       |  45 |            |        |             |          |
++-----------+-------+-----+------------+--------+-------------+----------+
+|         1 | Paul  |  32 | California | 20,000 | 13-JUL-2001 |     2001 |
++-----------+-------+-----+------------+--------+-------------+----------+
+| Group SSQ |       |  32 |            |        |             |          |
++-----------+-------+-----+------------+--------+-------------+----------+
+|         2 | Allen |  25 | Texas      |        | 13-JUL-2005 |     2005 |
+|         8 | Paul  |  24 | Houston    | 20,000 | 13-JUL-2005 |     2005 |
+|         9 | James |  44 | Norway     |  5,000 | 13-JUL-2005 |     2005 |
++-----------+-------+-----+------------+--------+-------------+----------+
+| Group SSQ |       |  56 |            |        |             |          |
++-----------+-------+-----+------------+--------+-------------+----------+
+|         3 | Teddy |  23 | Norway     | 20,000 | 13-DEC-2007 |     2007 |
+|         4 | Mark  |  25 | Rich-Mond  | 65,000 | 13-DEC-2007 |     2007 |
+|         5 | David |  27 | Texas      | 85,000 | 13-DEC-2007 |     2007 |
++-----------+-------+-----+------------+--------+-------------+----------+
+| Group SSQ |       |  43 |            |        |             |          |
++-----------+-------+-----+------------+--------+-------------+----------+
+|   Average |       |  31 |            | 31,429 | 29-DEC-2005 |          |
++-----------+-------+-----+------------+--------+-------------+----------+
+| Total SSQ |       |  90 |            |        |             |          |
++===========+=======+=====+============+========+=============+==========+
+#+end_EXAMPLE
+
 *** Invoking Formatters
-You can call methods on  ~Formatter~ objects to specify formatting directives
-for specific columns or types.  There are two methods for doing so, ~format_for~
-and ~format~.
+As the examples show, one way to invoke the formatting methods is simply to
+call one of the ~to_xxx~ methods directly on a table, which will yield a
+~FatTable::Formatter~ object to the block, and that is often the most
+convenient way to do it.  But there are a few other ways.
 
 **** By Instantiating a Formatter
-There are several ways to invoke the formatting methods on a table. First, you
-can instantiate a ~XXXFormatter~ object and feed it a table as a parameter.
-There is a Formatter subclass for each target output medium, for example,
-~AoaFormatter~ will produce a ruby array of arrays. You can then call the
-~output~ method on the ~XXXFormatter~.
+You can instantiate a ~XXXFormatter~ object and feed it a table as a
+parameter.  There is a Formatter subclass for each target output medium, for
+example, ~AoaFormatter~ will produce a ruby array of arrays. You can then call
+the ~output~ method on the ~XXXFormatter~.
 
 #+BEGIN_SRC ruby :wrap EXAMPLE
   FatTable::AoaFormatter.new(tab_a).output
@@ -2639,8 +3034,8 @@ automatically after the block:
 #+END_EXAMPLE
 
 **** By Calling Methods on Table Objects
-Finally, you can call methods such as ~to_aoa~, ~to_text~, etc., directly on a
-Table:
+Finally, as in many of the examples, you can call methods such as ~to_aoa~,
+~to_text~, etc., directly on a Table:
 
 #+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
 #+BEGIN_SRC ruby
@@ -2684,135 +3079,6 @@ And you can supply a block to them as well to specify formatting or footers:
 |-------+-------+-----+------------+---------+------------|
 | Total |       | 245 |            | 220,000 |            |
 #+END_EXAMPLE
-
-*** The ~format~ and ~format_for~ methods
-
-Formatters take only two kinds of methods, those that attach footers to a
-table, which are discussed in the next section, and those that specify
-formatting for table cells, which are the subject of this section.
-
-To set formatting directives for all locations in a table at once, use the
-~format~ method; to set formatting directives for a particular location in the
-table, use the ~format_for~ method, giving the location as the first parameter.
-
-Other than that first parameter, the two methods take the same types of
-parameters. The remaining parameters are hash-like parameters that use either a
-column name or a type as the key and a string with the formatting directives to
-apply as the value. The following example says to set the formatting for all
-locations in the table and to format all numeric fields as strings that are
-rounded to whole numbers (the '0.0' part), that are right-aligned (the 'R'
-part), and have grouping commas inserted (the ',' part). But the ~:id~ column is
-numeric, and the second parameter overrides the formatting for numerics in
-general and calls for the ~:id~ column to be padded to three digits with zeros
-on the left (the '3.0' part) and to be centered (the 'C' part).
-
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
-  tab_a.to_aoa do |f|
-    f.format(numeric: '0.0,R', id: '3.0C')
-  end
-#+END_SRC
-
-#+BEGIN_EXAMPLE
-|  Id | Name  | Age | Address    | Salary |  Join Date |
-|-----+-------+-----+------------+--------+------------|
-| 001 | Paul  |  32 | California | 20,000 | 2001-07-13 |
-| 003 | Teddy |  23 | Norway     | 20,000 | 2007-12-13 |
-| 004 | Mark  |  25 | Rich-Mond  | 65,000 | 2007-12-13 |
-| 005 | David |  27 | Texas      | 85,000 | 2007-12-13 |
-| 002 | Allen |  25 | Texas      |        | 2005-07-13 |
-| 008 | Paul  |  24 | Houston    | 20,000 | 2005-07-13 |
-| 009 | James |  44 | Norway     |  5,000 | 2005-07-13 |
-| 010 | James |  45 | Texas      |  5,000 |            |
-#+END_EXAMPLE
-
-The ~numeric:~ directive affected the ~:age~ and ~:salary~ columns and the ~id:~
-directive affected only the ~:id~ column. All the other cells in the table had
-the default formatting applied.
-
-**** Location priority
-Formatting for any given cell depends on its location in the table. The
-~format_for~ method takes a location to which its formatting directive are
-restricted as the first argument. It can be one of the following:
-
-- ~:header~ :: directives apply only to the header row, that is the first row,
-  of the output table,
-
-- ~:footer~ :: directives apply to all the footer rows of the output table,
-     regardless of how many there are,
-
-- ~gfooter~ :: directives apply to all group footer rows of the output tables,
-     regardless of how many there are,
-
-- ~:body~ :: directives apply to all rows in the body of the table unless the
-  row is the first row in the table or in a group: if separate directives for
-  those have been given, those directives apply,
-
-- ~:gfirst~ :: directives apply to the first row in each group in the body of
-     the table, unless the row is also the first row in the table as a whole, in
-     which case the ~:bfirst~ directives apply,
-
-- ~:bfirst~ :: directives apply to the first row in the body of the table.
-
-If you give directives for ~:body~, they are copied to ~:bfirst~ and ~:gfirst~
-as well but can be overridden by directives for those locations.
-
-Directives given to the ~format~ method apply the directives to all locations in
-the table, but they can be overridden by more specific directives given in a
-~format_for~ directive.
-
-**** Type and Column priority
-A directive based on type applies to all columns having that type unless
-overridden by a directive specific to a named column; a directive based on a
-column name applies only to cells in that column.
-
-However, there is a twist.  Since the end result of formatting is to convert all
-columns to strings, the formatting directives for the ~:string~ type applies to
-all columns.  Likewise, since all columns may contain nils, the ~nil:~ type
-applies to nils in all columns regardless of the column's type.
-
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
-  tab_a.to_text do |f|
-    f.format(string: 'R', id: '3.0C', salary: 'n[N/A]')
-  end
-#+END_SRC
-
-#+RESULTS:
-#+begin_EXAMPLE
-+=====+=======+=====+============+========+============+
-|  Id |  Name | Age |    Address | Salary |  Join Date |
-+-----+-------+-----+------------+--------+------------+
-| 001 |  Paul |  32 | California |  20000 | 2001-07-13 |
-| 003 | Teddy |  23 |     Norway |  20000 | 2007-12-13 |
-| 004 |  Mark |  25 |  Rich-Mond |  65000 | 2007-12-13 |
-| 005 | David |  27 |      Texas |  85000 | 2007-12-13 |
-| 002 | Allen |  25 |      Texas |    N/A | 2005-07-13 |
-| 008 |  Paul |  24 |    Houston |  20000 | 2005-07-13 |
-| 009 | James |  44 |     Norway |   5000 | 2005-07-13 |
-| 010 | James |  45 |      Texas |   5000 |            |
-+=====+=======+=====+============+========+============+
-#+end_EXAMPLE
-
-#+BEGIN_EXAMPLE
-+=====+=======+=====+============+========+============+
-|  Id |  Name | Age |    Address | Salary |  Join Date |
-+-----+-------+-----+------------+--------+------------+
-| 001 |  Paul |  32 | California |  20000 | 2001-07-13 |
-| 003 | Teddy |  23 |     Norway |  20000 | 2007-12-13 |
-| 004 |  Mark |  25 |  Rich-Mond |  65000 | 2007-12-13 |
-| 005 | David |  27 |      Texas |  85000 | 2007-12-13 |
-| 002 | Allen |  25 |      Texas |    N/A | 2005-07-13 |
-| 008 |  Paul |  24 |    Houston |  20000 | 2005-07-13 |
-| 009 | James |  44 |     Norway |   5000 | 2005-07-13 |
-| 010 | James |  45 |      Texas |   5000 |            |
-+=====+=======+=====+============+========+============+
-#+END_EXAMPLE
-
-The ~string: 'R'~ directive causes all the cells to be right-aligned except
-~:id~ which specifies centering for the ~:id~ column only. The ~n[N/A]~
-directive for specifies how nil are displayed in the numeric column, ~:salary~,
-but not for other nils, such as in the last row of the ~:join_date~ column.
 
 * Development
 After checking out the repo, run `bin/setup` to install dependencies. Then, run
