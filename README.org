@@ -89,7 +89,7 @@ org-mode buffer as an org-table, ready for processing by other code blocks.
   - [[#operations-on-tables][Operations on Tables]]
     - [[#example-input-tables][Example Input Tables]]
     - [[#select][Select]]
-      - [[#selecting-existing-columns][Selecting Existing Columns]]
+      - [[#selecting-existing-columns-also-of-omni][Selecting Existing Columns (Also of :omni)]]
       - [[#adding-new-columns][Adding New Columns]]
       - [[#custom-instance-variables-and-hooks][Custom Instance Variables and Hooks]]
       - [[#argument-order-and-boundaries][Argument Order and Boundaries]]
@@ -485,6 +485,10 @@ form of the header.
 
 If no sensible headers can be discerned from the input, headers of the form
 ~:col_1~, ~:col_2~, etc., are synthesized.
+
+You should avoid the use of the column names ~:omni~ and ~:sort_key~ because
+they have special meanings in the ~select~ and ~order_with~ commands,
+respectively.
 
 *** Groups
 The rows of a ~FatTable~ table can be divided into groups, either from markers
@@ -1045,14 +1049,13 @@ With the ~select~ method, you can select columns to appear in the output
 table, rearrange their order, and create new columns that are a function of
 other columns.
 
-**** Selecting Existing Columns
+**** Selecting Existing Columns (Also of :omni)
 Here we select three existing columns by simply passing header symbols in the
 order we want them to appear in the output. Thus, one use of =select= is to
 filter and permute the order of existing columns. The =select= method preserves
 any group boundaries present in the input table.
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
   tab1.select(:price, :ref, :shares).to_aoa
 #+END_SRC
 
@@ -1082,6 +1085,47 @@ any group boundaries present in the input table.
 |  7.75 | T015 |    500 |
 |  8.25 | T016 |    100 |
 #+END_EXAMPLE
+
+It can be tedious to type the names of all the columns in a ~select~
+statement, so ~FatTable~ recognizes the special column name ~:omni~.  If the
+~select~'s first and only column argument is ~:omni~, it will expand to the
+names of all the existing columns in the table.  Use of ~:omni~ otherwise is
+not interpreted specially, so you will get an errors complaining about an
+non-existent column unless you happen to have a column named ~:omni~ in your
+table, which is not advisable.  You can add hash arguments after ~:omni~ but
+you cannot add additional column names:
+
+#+BEGIN_SRC ruby :wrap EXAMPLE
+  tab1.select(:omni, ref2: :ref, cost: 'shares * price').to_aoa
+#+END_SRC
+
+#+begin_EXAMPLE
+| Ref  |       Date | Code | Price | G10 | QP10 | Shares |   Lp |    Qp |   Iplp |   Ipqp | Ref2 |     Cost |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+------+----------|
+| T001 | 2016-11-01 | P    |   7.7 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 | T001 |    770.0 |
+| T002 | 2016-11-01 | P    |  7.75 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 | T002 |   1550.0 |
+| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 | T003 |   6000.0 |
+| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 | T003 |   6000.0 |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+------+----------|
+| T004 | 2016-11-01 | S    |  7.55 | T   | F    |   6811 |  966 |  5845 | 0.2453 | 0.1924 | T004 | 51423.05 |
+| T005 | 2016-11-01 | S    |   7.5 | F   | F    |   4000 |  572 |  3428 | 0.2453 | 0.1924 | T005 |  30000.0 |
+| T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 | T006 |   7600.0 |
+| T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 | T006 |   7600.0 |
+| T007 | 2016-11-01 | S    |  7.65 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 | T007 |   1530.0 |
+| T008 | 2016-11-01 | P    |  7.65 | F   | F    |   2771 |  393 |  2378 | 0.2453 | 0.1924 | T008 | 21198.15 |
+| T009 | 2016-11-01 | P    |   7.6 | F   | F    |   9550 | 1363 |  8187 | 0.2453 | 0.1924 | T009 |  72580.0 |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+------+----------|
+| T010 | 2016-11-01 | P    |  7.55 | F   | T    |   3175 |  451 |  2724 | 0.2453 | 0.1924 | T010 | 23971.25 |
+| T011 | 2016-11-02 | P    | 7.425 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 | T011 |    742.5 |
+| T012 | 2016-11-02 | P    |  7.55 | F   | F    |   4700 |  677 |  4023 | 0.2453 | 0.1924 | T012 |  35485.0 |
+| T012 | 2016-11-02 | P    |  7.55 | F   | F    |   4700 |  677 |  4023 | 0.2453 | 0.1924 | T012 |  35485.0 |
+| T013 | 2016-11-02 | P    |  7.35 | T   | T    |  53100 | 7656 | 45444 | 0.2453 | 0.1924 | T013 | 390285.0 |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+------+----------|
+| T014 | 2016-11-02 | P    |  7.45 | F   | T    |   5847 |  835 |  5012 | 0.2453 | 0.1924 | T014 | 43560.15 |
+| T015 | 2016-11-02 | P    |  7.75 | F   | F    |    500 |   72 |   428 | 0.2453 | 0.1924 | T015 |   3875.0 |
+| T016 | 2016-11-02 | P    |  8.25 | T   | T    |    100 |   14 |    86 | 0.2453 | 0.1924 | T016 |    825.0 |
+#+end_EXAMPLE
+
 
 **** Adding New Columns
 More interesting is that ~select~ can take hash-like keyword arguments after the

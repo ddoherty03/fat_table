@@ -839,7 +839,15 @@ module FatTable
         ev.eval_before_hook(locals: old_row)
         # Compute the new row.
         new_row = {}
-        cols.each do |k|
+        # Allow the :omni col to stand for all columns if it is alone and
+        # first.
+        cols_to_include =
+          if cols.size == 1 && cols.first.as_sym == :omni
+            headers
+          else
+            cols
+          end
+        cols_to_include.each do |k|
           h = k.as_sym
           msg = "Column '#{h}' in select does not exist"
           raise UserError, msg unless column?(h)
