@@ -90,6 +90,7 @@ org-mode buffer as an org-table, ready for processing by other code blocks.
     - [[#example-input-tables][Example Input Tables]]
     - [[#select][Select]]
       - [[#selecting-existing-columns-also-of-omni][Selecting Existing Columns (Also of :omni)]]
+      - [[#copying-and-renaming-existing-columns][Copying and Renaming Existing Columns]]
       - [[#adding-new-columns][Adding New Columns]]
       - [[#custom-instance-variables-and-hooks][Custom Instance Variables and Hooks]]
       - [[#argument-order-and-boundaries][Argument Order and Boundaries]]
@@ -339,8 +340,6 @@ And we convert the =PDF= into a smaller image for display:
   pdftoppm -png quick.pdf >quick.png
   convert quick.png -resize 600x800 quick_small.png
 #+end_src
-
-#+RESULTS:
 
 [[file:examples/quick_small.png]]
 
@@ -1090,51 +1089,87 @@ It can be tedious to type the names of all the columns in a ~select~
 statement, so ~FatTable~ recognizes the special column name ~:omni~.  If the
 ~select~'s first and only column argument is ~:omni~, it will expand to the
 names of all the existing columns in the table.  Use of ~:omni~ otherwise is
-not interpreted specially, so you will get an errors complaining about an
+not interpreted specially, so you will get an error complaining about a
 non-existent column unless you happen to have a column named ~:omni~ in your
 table, which is not advisable.  You can add hash arguments after ~:omni~ but
 you cannot add additional column names:
 
 #+BEGIN_SRC ruby :wrap EXAMPLE
-  tab1.select(:omni, ref2: :ref, cost: 'shares * price').to_aoa
+  tab1.select(:omni, cost: 'shares * price').to_aoa
 #+END_SRC
 
 #+begin_EXAMPLE
-| Ref  |       Date | Code | Price | G10 | QP10 | Shares |   Lp |    Qp |   Iplp |   Ipqp | Ref2 |     Cost |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+------+----------|
-| T001 | 2016-11-01 | P    |   7.7 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 | T001 |    770.0 |
-| T002 | 2016-11-01 | P    |  7.75 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 | T002 |   1550.0 |
-| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 | T003 |   6000.0 |
-| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 | T003 |   6000.0 |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+------+----------|
-| T004 | 2016-11-01 | S    |  7.55 | T   | F    |   6811 |  966 |  5845 | 0.2453 | 0.1924 | T004 | 51423.05 |
-| T005 | 2016-11-01 | S    |   7.5 | F   | F    |   4000 |  572 |  3428 | 0.2453 | 0.1924 | T005 |  30000.0 |
-| T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 | T006 |   7600.0 |
-| T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 | T006 |   7600.0 |
-| T007 | 2016-11-01 | S    |  7.65 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 | T007 |   1530.0 |
-| T008 | 2016-11-01 | P    |  7.65 | F   | F    |   2771 |  393 |  2378 | 0.2453 | 0.1924 | T008 | 21198.15 |
-| T009 | 2016-11-01 | P    |   7.6 | F   | F    |   9550 | 1363 |  8187 | 0.2453 | 0.1924 | T009 |  72580.0 |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+------+----------|
-| T010 | 2016-11-01 | P    |  7.55 | F   | T    |   3175 |  451 |  2724 | 0.2453 | 0.1924 | T010 | 23971.25 |
-| T011 | 2016-11-02 | P    | 7.425 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 | T011 |    742.5 |
-| T012 | 2016-11-02 | P    |  7.55 | F   | F    |   4700 |  677 |  4023 | 0.2453 | 0.1924 | T012 |  35485.0 |
-| T012 | 2016-11-02 | P    |  7.55 | F   | F    |   4700 |  677 |  4023 | 0.2453 | 0.1924 | T012 |  35485.0 |
-| T013 | 2016-11-02 | P    |  7.35 | T   | T    |  53100 | 7656 | 45444 | 0.2453 | 0.1924 | T013 | 390285.0 |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+------+----------|
-| T014 | 2016-11-02 | P    |  7.45 | F   | T    |   5847 |  835 |  5012 | 0.2453 | 0.1924 | T014 | 43560.15 |
-| T015 | 2016-11-02 | P    |  7.75 | F   | F    |    500 |   72 |   428 | 0.2453 | 0.1924 | T015 |   3875.0 |
-| T016 | 2016-11-02 | P    |  8.25 | T   | T    |    100 |   14 |    86 | 0.2453 | 0.1924 | T016 |    825.0 |
+| Ref  |       Date | Code | Price | G10 | QP10 | Shares |   Lp |    Qp |   Iplp |   Ipqp |     Cost |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
+| T001 | 2016-11-01 | P    |   7.7 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 |    770.0 |
+| T002 | 2016-11-01 | P    |  7.75 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 |   1550.0 |
+| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 |   6000.0 |
+| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 |   6000.0 |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
+| T004 | 2016-11-01 | S    |  7.55 | T   | F    |   6811 |  966 |  5845 | 0.2453 | 0.1924 | 51423.05 |
+| T005 | 2016-11-01 | S    |   7.5 | F   | F    |   4000 |  572 |  3428 | 0.2453 | 0.1924 |  30000.0 |
+| T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 |   7600.0 |
+| T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 |   7600.0 |
+| T007 | 2016-11-01 | S    |  7.65 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 |   1530.0 |
+| T008 | 2016-11-01 | P    |  7.65 | F   | F    |   2771 |  393 |  2378 | 0.2453 | 0.1924 | 21198.15 |
+| T009 | 2016-11-01 | P    |   7.6 | F   | F    |   9550 | 1363 |  8187 | 0.2453 | 0.1924 |  72580.0 |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
+| T010 | 2016-11-01 | P    |  7.55 | F   | T    |   3175 |  451 |  2724 | 0.2453 | 0.1924 | 23971.25 |
+| T011 | 2016-11-02 | P    | 7.425 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 |    742.5 |
+| T012 | 2016-11-02 | P    |  7.55 | F   | F    |   4700 |  677 |  4023 | 0.2453 | 0.1924 |  35485.0 |
+| T012 | 2016-11-02 | P    |  7.55 | F   | F    |   4700 |  677 |  4023 | 0.2453 | 0.1924 |  35485.0 |
+| T013 | 2016-11-02 | P    |  7.35 | T   | T    |  53100 | 7656 | 45444 | 0.2453 | 0.1924 | 390285.0 |
+|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
+| T014 | 2016-11-02 | P    |  7.45 | F   | T    |   5847 |  835 |  5012 | 0.2453 | 0.1924 | 43560.15 |
+| T015 | 2016-11-02 | P    |  7.75 | F   | F    |    500 |   72 |   428 | 0.2453 | 0.1924 |   3875.0 |
+| T016 | 2016-11-02 | P    |  8.25 | T   | T    |    100 |   14 |    86 | 0.2453 | 0.1924 |    825.0 |
 #+end_EXAMPLE
 
+**** Copying and Renaming Existing Columns
+After the list of selected column names in the call to ~select~, you can add
+any number of hash-like arguments.  You can use these to add a copy of an
+existing column.  By calling select again, you can include only the copied
+column, in effect renaming it. For example, if you want ~tab1~ but with ~:ref~
+changed to ~:id~, just add an argument to define the new ~:id~ column:
+
+#+BEGIN_SRC ruby :wrap EXAMPLE
+    tab1.select(:omni, id: :ref).
+      select(:id, :date, :code, :price, :shares).to_aoa
+#+END_SRC
+
+#+begin_EXAMPLE
+| Id   |       Date | Code | Price | Shares |
+|------+------------+------+-------+--------|
+| T001 | 2016-11-01 | P    |   7.7 |    100 |
+| T002 | 2016-11-01 | P    |  7.75 |    200 |
+| T003 | 2016-11-01 | P    |   7.5 |    800 |
+| T003 | 2016-11-01 | P    |   7.5 |    800 |
+|------+------------+------+-------+--------|
+| T004 | 2016-11-01 | S    |  7.55 |   6811 |
+| T005 | 2016-11-01 | S    |   7.5 |   4000 |
+| T006 | 2016-11-01 | S    |   7.6 |   1000 |
+| T006 | 2016-11-01 | S    |   7.6 |   1000 |
+| T007 | 2016-11-01 | S    |  7.65 |    200 |
+| T008 | 2016-11-01 | P    |  7.65 |   2771 |
+| T009 | 2016-11-01 | P    |   7.6 |   9550 |
+|------+------------+------+-------+--------|
+| T010 | 2016-11-01 | P    |  7.55 |   3175 |
+| T011 | 2016-11-02 | P    | 7.425 |    100 |
+| T012 | 2016-11-02 | P    |  7.55 |   4700 |
+| T012 | 2016-11-02 | P    |  7.55 |   4700 |
+| T013 | 2016-11-02 | P    |  7.35 |  53100 |
+|------+------------+------+-------+--------|
+| T014 | 2016-11-02 | P    |  7.45 |   5847 |
+| T015 | 2016-11-02 | P    |  7.75 |    500 |
+| T016 | 2016-11-02 | P    |  8.25 |    100 |
+#+end_EXAMPLE
 
 **** Adding New Columns
-More interesting is that ~select~ can take hash-like keyword arguments after the
-symbol arguments to create new columns in the output as functions of other
-columns. For each hash-like parameter, the keyword given must be a symbol, which
-becomes the header for the new column, and the value must be either: (1) a
-symbol representing an existing column, which has the effect of renaming an
-existing column, or (2) a string representing a ruby expression for the value of
-a new column.
+More interesting is that ~select~ can take hash-like keyword arguments after
+the symbol arguments to create new columns in the output as functions of other
+columns. For each hash-like parameter, the keyword given must be a symbol,
+which becomes the header for the new column, and the value can be a string
+representing a ruby expression for the value of a new column.
 
 Within the string expression, the names of existing or already-specified
 columns are available as local variables.  In addition the instance variables
@@ -1149,8 +1184,7 @@ variables are set the number of the current row and group number respectively.
 For example, if we want to rename the ~traded_on~ column to ~:date~ and add a
 new column to compute the cost of shares, we could do the following:
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
   tab1.select(:ref, :price, :shares, traded_on: :date, cost: 'price * shares').to_aoa
 #+END_SRC
 
@@ -1190,14 +1224,12 @@ The order of the columns in the result tables is the same as the order of the
 parameters to the ~select~ method. So, you can re-order the columns with a
 second, chained call to ~select~:
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
-  tab1.select(:ref, :price, :shares, traded_on: :date, cost: 'price * shares') \
-    .select(:ref, :traded_on, :price, :shares, :cost) \
-    .to_aoa
+#+BEGIN_SRC ruby :wrap EXAMPLE
+  tab1.select(:ref, :price, :shares, traded_on: :date, cost: 'price * shares').
+    select(:ref, :traded_on, :price, :shares, :cost).to_aoa
 #+END_SRC
 
-#+BEGIN_EXAMPLE
+#+begin_EXAMPLE
 | Ref  |  Traded On | Price | Shares |     Cost |
 |------+------------+-------+--------+----------|
 | T001 | 2016-11-01 |   7.7 |    100 |    770.0 |
@@ -1222,7 +1254,7 @@ second, chained call to ~select~:
 | T014 | 2016-11-02 |  7.45 |   5847 | 43560.15 |
 | T015 | 2016-11-02 |  7.75 |    500 |   3875.0 |
 | T016 | 2016-11-02 |  8.25 |    100 |    825.0 |
-#+END_EXAMPLE
+#+end_EXAMPLE
 
 **** Custom Instance Variables and Hooks
 As the above examples demonstrate, the instance variables ~@row~ and ~@group~
@@ -1245,8 +1277,7 @@ shows the cumulative cost after each transaction in our example table. The
 following example uses the ~ivars:~ and ~before_hook:~ parameters to keep track
 of the running cost of shares, then formats the table.
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
   tab = tab1.select(:ref, :price, :shares, traded_on: :date, \
               cost: 'price * shares', cumulative: '@total_cost', \
               ivars: { total_cost: 0 }, \
@@ -1298,14 +1329,15 @@ to ~.select~ in which the value of the cells in each column are available as
 local variables and the instance variables ~@row~ and ~@group~ are available for
 testing. The expression is evaluated for each row, and if the expression
 evaluates to a truthy value, the row is included in the output, otherwise it is
-not. The ~.where~ method obliterates any group boundaries in the input, so the
-output table has only a single group.
+not.
+
+The ~.where~ method removes any group boundaries in the input, so the output
+table has only a single group.
 
 Here we select only those even-numbered rows where either of the two boolean
 fields is true:
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
     tab1.where('@row.even? && (g10 || qp10)') \
       .to_aoa
 #+END_SRC
@@ -1373,13 +1405,12 @@ The ~order_with~ method is a convenient combination of ~select~ and
 sort key---one that would be valid as a select expression---but with an
 optional trailing ~!~ to indicate reverse sort.  The resulting table has an
 additional column called ~:sort_key~ with the expression evaluated for each
-row and the table sorted as with ~order_by~ on that column.
+row, and the table is sorted as with ~order_by~ on that column.
 
 #+BEGIN_SRC ruby :wrap EXAMPLE
   tab1.order_with('price * shares').to_aoa
 #+END_SRC
 
-#+RESULTS:
 #+begin_EXAMPLE
 | Ref  |       Date | Code | Price | G10 | QP10 | Shares |   Lp |    Qp |   Iplp |   Ipqp | Sort Key |
 |------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
@@ -1434,8 +1465,7 @@ For example, let's summarize the ~trades~ table by ~:code~ and ~:price~ again,
 and determine total shares, average price, and a few other features of each
 group:
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
   tab1.group_by(:code, :date, price: :avg,
                 shares: :sum, lp: :sum, qp: :sum,
                 qp10: :all?) \
@@ -1455,7 +1485,7 @@ hash-like "aggregating" parameters where the key is the column to aggregate and
 the value is a symbol for one of several aggregating methods that
 ~FatTable::Column~ objects understand. For example, the ~:avg~ method is applied
 to the :price column so that the output shows the average price in each group.
-The ~:shares~, ~:lp~, and ~:qp~ columns are summed, and the ~:any?~ aggregate is
+The ~:shares~, ~:lp~, and ~:qp~ columns are summed, and the ~:all?~ aggregate is
 applied to one of the boolean fields, that is, it is ~true~ if any of the values
 in that column are ~true~.
 
@@ -1601,8 +1631,7 @@ available in ~ft_console~ as ~@tab_a~ and ~@tab_b~:
 #+END_SRC
 
 Here is ~tab_a~:
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+begin_src ruby
+#+begin_src ruby :wrap EXAMPLE
   tab_a = FatTable.from_org_string(tab_a_str)
   tab_a.to_aoa
 #+end_src
@@ -1621,13 +1650,11 @@ Here is ~tab_a~:
 #+end_EXAMPLE
 
 And ~tab_b~:
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+begin_src ruby
+#+begin_src ruby :wrap EXAMPLE
   tab_b = FatTable.from_org_string(tab_b_str)
   tab_b.to_aoa
 #+end_src
 
-#+RESULTS:
 #+begin_EXAMPLE
 | Id | Dept        | Emp Id |
 |----+-------------+--------|
@@ -1641,8 +1668,7 @@ With no join expression arguments, the tables are joined when their sole common
 field, ~:id~, is equal in both tables.  The result is the natural join of the
 two tables.
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
   tab_a.join(tab_b).to_aoa
 #+END_SRC
 
@@ -1659,8 +1685,7 @@ in the second table. To correct this, we need to explicitly state the columns we
 want to join on in each table by disambiguating them with ~_a~ and ~_b~
 suffixes:
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
   tab_a.join(tab_b, :id_a, :emp_id_b).to_aoa
 #+END_SRC
 
@@ -1675,8 +1700,7 @@ Instead of using the disambiguated column names as symbols, we could also use a
 string containing a ruby expression.  Within the expression, the column names
 should be treated as local variables:
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
   tab_a.join(tab_b, 'id_a == emp_id_b').to_aoa
 #+END_SRC
 
@@ -1691,8 +1715,7 @@ should be treated as local variables:
 In left join, all the rows of ~tab_a~ are included in the output, augmented by
 the matching columns of ~tab_b~ and augmented with nils where there is no match:
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
   tab_a.left_join(tab_b, 'id_a == emp_id_b').to_aoa
 #+END_SRC
 
@@ -1713,8 +1736,7 @@ In a right join, all the rows of ~tab_b~ are included in the output, augmented
 by the matching columns of ~tab_a~ and augmented with nils where there is no
 match:
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
   tab_a.right_join(tab_b, 'id_a == emp_id_b').to_aoa
 #+END_SRC
 
@@ -1731,8 +1753,7 @@ A full join combines the effects of a left join and a right join. All the rows
 from both tables are included in the output augmented by columns of the other
 table where the join expression is satisfied and augmented with nils otherwise.
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
   tab_a.full_join(tab_b, 'id_a == emp_id_b').to_aoa
 #+END_SRC
 
@@ -1756,8 +1777,7 @@ Finally, a cross join outputs every row of ~tab_a~ augmented with every row of
 ~N~ rows and ~tab_b~ has ~M~ rows, the output table will have ~N * M~ rows.
 So be careful lest you consume all your computer's memory.
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
   tab_a.cross_join(tab_b).to_aoa
 #+END_SRC
 
@@ -1800,8 +1820,7 @@ We'll use the following two set-compatible tables in the examples. They each
 have some duplicates and some group boundaries so you can see the effect of the
 set operations on duplicates and groups.
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
   tab1.to_aoa
 #+END_SRC
 
@@ -1832,8 +1851,7 @@ set operations on duplicates and groups.
 | T016 | 2016-11-02 | P    |  8.25 | T   | T    |    100 |   14 |    86 | 0.2453 | 0.1924 |
 #+END_EXAMPLE
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
   tab2.to_aoa
 #+END_SRC
 
@@ -1871,8 +1889,7 @@ Any group boundaries in the input tables are destroyed by ~union~ but are
 preserved by ~union_all~. In addition, ~union_all~ (but not ~union~) adds a
 group boundary between the rows of the two input tables.
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
  tab1.union(tab2).to_aoa
 #+END_SRC
 
@@ -1902,8 +1919,7 @@ group boundary between the rows of the two input tables.
 | T021 | 2017-01-23 | P    |  7.16 | T   | T    |  12100 | 11050 |  1050 | 0.2453 | 0.1924 |
 #+END_EXAMPLE
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
  tab1.union_all(tab2).to_aoa
 #+END_SRC
 
@@ -1957,8 +1973,7 @@ group boundary between the rows of the two input tables.
 The ~intersect~ method returns a table having only rows common to both tables,
 eliminating any duplicate rows in the result.
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
  tab1.intersect(tab2).to_aoa
 #+END_SRC
 
@@ -1977,8 +1992,7 @@ With ~intersect_all~, all the rows of the first table, including duplicates, are
 included in the result if they also occur in the second table. However,
 duplicates in the second table do not appear.
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
  tab1.intersect_all(tab2).to_aoa
 #+END_SRC
 
@@ -1999,8 +2013,7 @@ As a result, it makes a difference which table is the receiver of the
 ~intersect_all~ method call and which is the argument.  In other words, order of
 operation matters.
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
  tab2.intersect_all(tab1).to_aoa
 #+END_SRC
 
@@ -2021,8 +2034,7 @@ operation matters.
 You can use the ~except~ method to delete from a table any rows that occur in
 another table, that is, compute the set difference between the tables.
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
  tab1.except(tab2).to_aoa
 #+END_SRC
 
@@ -2044,8 +2056,7 @@ another table, that is, compute the set difference between the tables.
 Like subtraction, though, the order of operands matters with set difference
 computed by ~except~.
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
  tab2.except(tab1).to_aoa
 #+END_SRC
 
@@ -2062,8 +2073,7 @@ computed by ~except~.
 As with ~intersect_all~, ~except_all~ includes any duplicates in the first,
 receiver table, but not those in the second, argument table.
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
  tab1.except_all(tab2).to_aoa
 #+END_SRC
 
@@ -2085,8 +2095,7 @@ receiver table, but not those in the second, argument table.
 
 And, of course, the order of operands matters here as well.
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
  tab2.except_all(tab1).to_aoa
 #+END_SRC
 
@@ -2107,8 +2116,7 @@ The ~uniq~ method takes no arguments and simply removes any duplicate rows from
 the input table.  The ~distinct~ method is an alias for ~uniq~.  Any groups in
 the input table are lost.
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
  tab1.uniq.to_aoa
 #+END_SRC
 
@@ -2138,8 +2146,7 @@ Finally, it is sometimes helpful to remove any group boundaries from a table.
 You can do this with ~.degroup!~, which, together with ~force_string!~, are
 the only operations that mutate their receiver tables.
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
  tab1.degroup!.to_aoa
 #+END_SRC
 
@@ -2211,8 +2218,7 @@ that, unlike to ~to_org~ formatter shown below, the intersections of lines are
 represented by a ~+~ character.  Embelishments such as color, bold, and so
 forth are ignored.
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
   tab_a.to_text
 #+end_SRC
 
@@ -2240,8 +2246,7 @@ ignored.  When working in Org Mode, note that Emacs will convert an Array of
 Arrays into an Org Mode table, so when constructing tables programmatically,
 it may be better to use that formatter as shown below.
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+begin_SRC ruby
+#+begin_SRC ruby :wrap EXAMPLE
   tab_a.to_org
 #+end_SRC
 
@@ -2266,8 +2271,7 @@ characters and escape codes, you can use this formatter to get a prettier
 table.  It also allows embelishments such as color and text styles to the
 extent the device supports it.
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+begin_SRC ruby
+#+begin_SRC ruby :wrap EXAMPLE
   tab_a.to_term
 #+end_SRC
 
@@ -2291,8 +2295,7 @@ This formatter outputs a table in the form suitable for inclusion in a LaTeX
 document using the ~logtable~ package.  Natualy it allows embelishments such
 as color and text styles to the full extent of LaTeX's formatting prowess.
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+begin_SRC ruby
+#+begin_SRC ruby :wrap EXAMPLE
   tab_b.to_latex
 #+end_SRC
 
@@ -2315,8 +2318,7 @@ Finance&
 #+end_EXAMPLE
 
 ***** To AoA (Array of Arrays)
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both :results verbatim
-#+begin_SRC ruby
+#+begin_SRC ruby :wrap EXAMPLE
   tab_b.to_aoa
 #+end_SRC
 
@@ -2326,8 +2328,7 @@ Finance&
 #+end_EXAMPLE
 
 ***** To AoH (Array of Hashes)
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both :results verbatim
-#+begin_SRC ruby
+#+begin_SRC ruby :wrap EXAMPLE
   tab_b.to_aoh
 #+end_SRC
 
@@ -2457,8 +2458,7 @@ numeric, and the second parameter overrides the formatting for numerics in
 general and calls for the ~:id~ column to be padded to three digits with zeros
 on the left (the '3.0' part) and to be centered (the 'C' part).
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
   tab_a.to_text do |f|
     f.format(numeric: '0.0,R', id: '3.0C')
     f.format_for(:body, string: 'R')
@@ -2549,8 +2549,7 @@ be applied to all column types.  Likewise, since all columns may contain nils,
 the ~NilClass:~ type applies to nils in all columns regardless of the column's
 type.
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
   tab_a.to_text do |f|
     f.format(string: 'R', id: '3.0C', nil: 'Cn[-]', salary: 'n[N/A]')
   end
@@ -2766,7 +2765,6 @@ footer.
   end
 #+END_SRC
 
-#+RESULTS:
 #+begin_EXAMPLE
 +=============+=======+=====+============+========+====================+
 | Id          | Name  | Age | Address    | Salary | Join Date          |
@@ -2972,8 +2970,7 @@ the ~output~ method on the ~XXXFormatter~.
 The ~XXXFormatter.new~ method yields the new instance to any block given, and
 you can call methods on it to affect the formatting of the output:
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
   FatTable::AoaFormatter.new(tab_a) do |f|
     f.format(numeric: '0.0,R', id: '3.0C')
   end.output
@@ -2998,8 +2995,7 @@ etc., to access a ~Formatter~ without having to create an instance yourself.
 Without a block, they apply the default formatting to the table and call the
 ~.output~ method automatically:
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
   FatTable.to_aoa(tab_a)
 #+END_SRC
 
@@ -3020,8 +3016,7 @@ With a block, these methods yield a ~Formatter~ instance on which you can call
 formatting and footer methods. The ~.output~ method is called on the ~Formatter~
 automatically after the block:
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
   FatTable.to_aoa(tab_a) do |f|
     f.format(numeric: '0.0,R', id: '3.0C')
   end
@@ -3044,8 +3039,7 @@ automatically after the block:
 Finally, as in many of the examples, you can call methods such as ~to_aoa~,
 ~to_text~, etc., directly on a Table:
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
   tab_a.to_aoa
 #+END_SRC
 
@@ -3064,8 +3058,7 @@ Finally, as in many of the examples, you can call methods such as ~to_aoa~,
 
 And you can supply a block to them as well to specify formatting or footers:
 
-#+HEADER: :colnames no :session readme :hlines yes :wrap EXAMPLE :exports both
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
   tab_a.to_aoa do |f|
     f.format(numeric: '0.0,R', id: '3.0C')
     f.sum_footer(:salary, :age)
