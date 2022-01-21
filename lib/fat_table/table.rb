@@ -346,6 +346,7 @@ module FatTable
       keys.each do |h|
         column(h).force_string!
       end
+      self
     end
 
     # :category: Attributes
