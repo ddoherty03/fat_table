@@ -87,7 +87,7 @@ org-mode buffer as an org-table, ready for processing by other code blocks.
     - [[#cells][Cells]]
     - [[#other-table-attributes][Other table attributes]]
   - [[#operations-on-tables][Operations on Tables]]
-    - [[#example-input-table][Example Input Table]]
+    - [[#example-input-tables][Example Input Tables]]
     - [[#select][Select]]
       - [[#selecting-existing-columns][Selecting Existing Columns]]
       - [[#adding-new-columns][Adding New Columns]]
@@ -439,12 +439,12 @@ Items of input must be either one of the permissible ruby objects or strings. If
 they are strings, ~FatTable~ attempts to parse them as one of the permissible
 types as follows:
 
-- Boolean :: the strings, ~t~, ~true~, ~yes~, or ~y~, regardless of
+- Boolean :: The strings, ~t~, ~true~, ~yes~, or ~y~, regardless of
      case, are interpreted as ~TrueClass~ and the strings, ~f~, ~false~,
      ~no~, or ~n~, regardless of case, are interpreted as ~FalseClass~, in
      either case resulting in a Boolean column. Empty strings in a column
      already having a Boolean type are converted to ~nil~.
-- DateTime :: strings that contain patterns of ~yyyy-mm-dd~ or ~yyyy/mm/dd~
+- DateTime :: Strings that contain patterns of ~yyyy-mm-dd~ or ~yyyy/mm/dd~
      or ~mm-dd-yyy~ or ~mm/dd/yyyy~ or any of the foregoing with an added
      ~Thh:mm:ss~ or ~Thh:mm~ will be interpreted as a ~DateTime~ or a ~Date~
      (if there are no sub-day time components present). The number of digits in
@@ -454,18 +454,18 @@ types as follows:
      by square ~[]~ or pointy ~<>~ brackets), active or inactive, are valid
      input strings for ~DateTime~ columns. Empty strings in a column already
      having the ~DateTime~ type are converted to ~nil~.
-- Numeric :: all commas ~,~, underscores, ~_~, and ~$~ dollar signs (or
-     other currency symbol as set by ~FatTable.currency_symbol~ are removed from
-     the string and if the remaining string can be interpreted as a ~Numeric~,
-     it will be. It is interpreted as an ~Integer~ if there are no decimal
-     places in the remaining string, as a ~Rational~ if the string has the form
-     ~<number>:<number>~ or ~<number>/<number>~, or as a ~BigDecimal~ if
-     there is a decimal point in the remaining string. Empty strings in a column
-     already having the Numeric type are converted to nil.
-- String :: if all else fails, ~FatTable~ applies ~#to_s~ to the input value
+- Numeric :: All commas (~,~) underscores (~_~) and (~$~) dollar signs (or
+  other currency symbol as set by ~FatTable.currency_symbol~ are removed from
+  the string and if the remaining string can be interpreted as a ~Numeric~, it
+  will be. It is interpreted as an ~Integer~ if there are no decimal places in
+  the remaining string, as a ~Rational~ if the string has the form
+  ~<number>:<number>~ or ~<number>/<number>~, or as a ~BigDecimal~ if there is
+  a decimal point in the remaining string. Empty strings in a column already
+  having the Numeric type are converted to nil.
+- String :: If all else fails, ~FatTable~ applies ~#to_s~ to the input value
      and, treats it as an item of type ~String~. Empty strings in a column
      already having the ~String~ type are kept as empty strings.
-- NilClass :: until the input contains a non-blank string that can be parsed as
+- NilClass :: Until the input contains a non-blank string that can be parsed as
      one of the other types, it has this type, meaning that the type is still
      open. A column comprised completely of blank strings or ~nils~ will retain
      the ~NilClass~ type.
@@ -491,7 +491,7 @@ The rows of a ~FatTable~ table can be divided into groups, either from markers
 in the input or as a result of certain operations. There is only one level of
 grouping, so ~FatTable~ has no concept of sub-groups. Groups can be shown on
 output with rules or "hlines" that underline the last row in each group, and
-you can decorate the output with group footers that summarize the columns in
+you can decorate the output with group footers that summarize the rows in
 each group.
 
 ** Constructing Tables
@@ -500,12 +500,6 @@ each group.
 You can create an empty table with ~FatTable::Table.new~ or, the shorter form,
 ~FatTable.new~, and then add rows with the ~<<~ operator and a Hash.  The keys
 in the added rows determine the names of the headers:
-
-#+BEGIN_SRC ruby :results silent
-  tab = FatTable::Table.new
-  tab << { a: 1, b: 2, c: "<2017-01-21>", d: 'f', e: '' }
-  tab << { a: 3.14, b: 2.17, c: '[2016-01-21 Thu]', d: 'Y', e: nil }
-#+END_SRC
 
 #+BEGIN_SRC ruby :results silent
   tab = FatTable.new
@@ -519,7 +513,7 @@ Column, ~:a~ and ~:b~ will have type Numeric, column ~:c~ will have type
 have an open type. Notice that dates in the input can be wrapped in brackets as
 in org-mode time stamps.
 
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :wrap EXAMPLE
   tab.to_text
 #+END_SRC
 
@@ -551,9 +545,6 @@ for which no key was give are assigned ~nil~ as well:
 +------+------+------------+---+---+---------+
 | 1    | 2    | 2017-01-21 | F |   |         |
 | 3.14 | 2.17 | 2016-01-21 | T |   |         |
-+------+------+------------+---+---+---------+
-|      |      |            |   |   | 335/113 |
-|      |      |            |   |   | 335/113 |
 +------+------+------------+---+---+---------+
 | 3/5  |      |            |   |   | 335/113 |
 +======+======+============+===+===+=========+
@@ -593,8 +584,8 @@ columns to be created:
 #+end_EXAMPLE
 
 **** Forcing String Type
-Occasionally, the ~FatTable~'s automatic type detection can get in the way and
-you just want it to treat one or more columns as Strings regardless of their
+Occasionally, ~FatTable~'s automatic type detection can get in the way and you
+just want it to treat one or more columns as Strings regardless of their
 appearance.  Think, for example, of zip codes.  At any time after creating a
 table, you can have it force the String type on any number of columns with the
 ~force_string!~ method.  When you do so, all exisiting items in the column are
@@ -855,7 +846,6 @@ adapter-specific ~Sequel~ connection methods and let ~FatTable~ know to use that
 connection:
 
 #+BEGIN_SRC ruby
-  require 'fat_table'
   FatTable.db = Sequel.connect('postgres://user:password@localhost/dbname')
   FatTable.db = Sequel.ado(conn_string: 'Provider=Microsoft.ACE.OLEDB.12.0;Data Source=drive:\path\filename.accdb')
 #+END_SRC
@@ -907,8 +897,8 @@ the items of the column with that header. Thus, ~tab[:ref]~ returns an Array of
 all the items of the table's ~:ref~ column.
 
 *** Cells
-The two forms of indexing can be combined to access individual cells of the
-table:
+The two forms of indexing can be combined, in either order, to access
+individual cells of the table:
 
 #+BEGIN_SRC ruby
   tab[13]         # => Hash of the 14th row
@@ -932,6 +922,29 @@ Here is a quick rundown of other table attributes that you can access:
   tab.groups        # => return an Array of the table's groups as Arrays of row Hashes.
 #+END_SRC
 
+You should note that what the ~.types~ and ~.type(head)~ methods return is a
+string naming the "type" assigned by ~FatTable~.  All of them are also the
+names of Ruby classes except to 'Boolean' a class that doesn't exist in Ruby.
+The value ~true~ is a member of the ~TrueClass~ and ~false~ a member of the
+~FalseClass~.  So for ~FatTable~ to provide a column of type 'Boolean'
+requires it to synthesize the type from these Ruby classes.
+
+#+begin_src ruby :wrap EXAMPLE :results raw
+  tab.types
+#+end_src
+
+#+begin_EXAMPLE
+{:a=>"Numeric", :b=>"Numeric", :c=>"DateTime", :d=>"Boolean", :e=>"NilClass", :f=>"Numeric"}
+#+end_EXAMPLE
+
+#+begin_src ruby :wrap EXAMPLE :results output
+  puts "Column :d says its type is '#{tab.type(:d)}' and that is a #{tab.type(:d).class}"
+#+end_src
+
+#+begin_EXAMPLE
+Column :d says its type is 'Boolean' and that is a String
+#+end_EXAMPLE
+
 ** Operations on Tables
 Once you have one or more tables, you will likely want to perform operations on
 them. The operations provided by ~FatTable~ are the subject of this section.
@@ -939,24 +952,26 @@ Before getting into the operations, though, there are a couple of issues that
 cut across all or many of the operations.
 
 First, tables are by and large immutable objects. Each operation creates a new
-table without affecting the input tables. The only exception is the ~degroup!~
-operation, which mutates the receiver table by removing its group boundaries.
+table without affecting the input tables. The only exceptions are the
+~degroup!~ operation, which mutates the receiver table by removing its group
+boundaries, and ~force_string!~ (explained above at [[*Forcing String Type][Forcing String Type]]),
+which forces columns to have the String type despite what the automatic typing
+rules determine.
 
 Second, because each operation returns a ~FatTable::Table~ object, the
 operations are chainable.
 
-<<Groups>>
 Third, ~FatTable::Table~ objects can have "groups" of rows within the table.
-These can be decorated with hlines and group footers on output. Some of these
-operations result in marking group boundaries in the result table, others remove
-group boundaries that may have existed in the input table. Operations that
-either create or remove groups will be noted below.
+These can be decorated with hlines and group footers on output. Some
+operations result in marking group boundaries in the result table, others
+remove group boundaries that may have existed in the input table. Operations
+that either create or remove groups will be noted below.
 
 Finally, the operations are for the most part patterned on SQL table operations,
 but when expressions play a role, you write them using ruby syntax rather than
 SQL.
 
-*** Example Input Table
+*** Example Input Tables
 For illustration purposes assume that the following tables are read into ruby
 variables called ~tab1~ and ~tab2~. We have given the table groups, marked by
 the hlines below, and included some duplicate rows to illustrate the effect of
@@ -1015,72 +1030,20 @@ EOS
 #+END_SRC
 
 Rendering ~tab1~ into Emacs org-mode:
-#+BEGIN_SRC ruby :wrap EXAMPLE
+#+BEGIN_SRC ruby :wrap EXAMPLE :results silent
   tab1 = FatTable.from_org_string(tab1_str)
-  tab1.to_aoa
 #+END_SRC
-
-#+begin_EXAMPLE
-| Ref  |       Date | Code | Price | G10 | QP10 | Shares |   Lp |    Qp |   Iplp |   Ipqp |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
-| T001 | 2016-11-01 | P    |   7.7 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 |
-| T002 | 2016-11-01 | P    |  7.75 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 |
-| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 |
-| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
-| T004 | 2016-11-01 | S    |  7.55 | T   | F    |   6811 |  966 |  5845 | 0.2453 | 0.1924 |
-| T005 | 2016-11-01 | S    |   7.5 | F   | F    |   4000 |  572 |  3428 | 0.2453 | 0.1924 |
-| T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 |
-| T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 |
-| T007 | 2016-11-01 | S    |  7.65 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 |
-| T008 | 2016-11-01 | P    |  7.65 | F   | F    |   2771 |  393 |  2378 | 0.2453 | 0.1924 |
-| T009 | 2016-11-01 | P    |   7.6 | F   | F    |   9550 | 1363 |  8187 | 0.2453 | 0.1924 |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
-| T010 | 2016-11-01 | P    |  7.55 | F   | T    |   3175 |  451 |  2724 | 0.2453 | 0.1924 |
-| T011 | 2016-11-02 | P    | 7.425 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 |
-| T012 | 2016-11-02 | P    |  7.55 | F   | F    |   4700 |  677 |  4023 | 0.2453 | 0.1924 |
-| T012 | 2016-11-02 | P    |  7.55 | F   | F    |   4700 |  677 |  4023 | 0.2453 | 0.1924 |
-| T013 | 2016-11-02 | P    |  7.35 | T   | T    |  53100 | 7656 | 45444 | 0.2453 | 0.1924 |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
-| T014 | 2016-11-02 | P    |  7.45 | F   | T    |   5847 |  835 |  5012 | 0.2453 | 0.1924 |
-| T015 | 2016-11-02 | P    |  7.75 | F   | F    |    500 |   72 |   428 | 0.2453 | 0.1924 |
-| T016 | 2016-11-02 | P    |  8.25 | T   | T    |    100 |   14 |    86 | 0.2453 | 0.1924 |
-#+end_EXAMPLE
 
 Rendering ~tab2~ into Emacs org-mode:
 
-#+BEGIN_SRC ruby :wrap EXAMPLE
+#+BEGIN_SRC ruby :wrap EXAMPLE :results silent
   tab2 = FatTable.from_org_string(tab2_str)
-  tab2.to_aoa
 #+END_SRC
 
-#+begin_EXAMPLE
-| Ref  |       Date | Code | Price | G10 | QP10 | Shares |    Lp |   Qp |   Iplp |   Ipqp |
-|------+------------+------+-------+-----+------+--------+-------+------+--------+--------|
-| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |   112 |  688 | 0.2453 | 0.1924 |
-| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |   112 |  688 | 0.2453 | 0.1924 |
-| T017 | 2016-11-01 | P    |   8.3 | F   | T    |   1801 |  1201 |  600 | 0.2453 | 0.1924 |
-|------+------------+------+-------+-----+------+--------+-------+------+--------+--------|
-| T018 | 2016-11-01 | S    | 7.152 | T   | F    |   2516 |  2400 |  116 | 0.2453 | 0.1924 |
-| T018 | 2016-11-01 | S    | 7.152 | T   | F    |   2516 |  2400 |  116 | 0.2453 | 0.1924 |
-| T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 |   143 |  857 | 0.2453 | 0.1924 |
-| T007 | 2016-11-01 | S    |  7.65 | T   | F    |    200 |    28 |  172 | 0.2453 | 0.1924 |
-|------+------------+------+-------+-----+------+--------+-------+------+--------+--------|
-| T014 | 2016-11-02 | P    |  7.45 | F   | T    |   5847 |   835 | 5012 | 0.2453 | 0.1924 |
-| T015 | 2016-11-02 | P    |  7.75 | F   | F    |    500 |    72 |  428 | 0.2453 | 0.1924 |
-| T015 | 2016-11-02 | P    |  7.75 | F   | F    |    500 |    72 |  428 | 0.2453 | 0.1924 |
-| T016 | 2016-11-02 | P    |  8.25 | T   | T    |    100 |    14 |   86 | 0.2453 | 0.1924 |
-|------+------------+------+-------+-----+------+--------+-------+------+--------+--------|
-| T019 | 2017-01-15 | S    |  8.75 | T   | F    |    300 |   175 |  125 | 0.2453 | 0.1924 |
-| T020 | 2017-01-19 | S    |  8.25 | F   | T    |    700 |   615 |   85 | 0.2453 | 0.1924 |
-| T021 | 2017-01-23 | P    |  7.16 | T   | T    |  12100 | 11050 | 1050 | 0.2453 | 0.1924 |
-| T021 | 2017-01-23 | P    |  7.16 | T   | T    |  12100 | 11050 | 1050 | 0.2453 | 0.1924 |
-#+end_EXAMPLE
-
 *** Select
-With the ~select~ method, you can select which existing columns should appear in
-the output table and create new columns in the output table that are a function
-of existing and new columns.
+With the ~select~ method, you can select columns to appear in the output
+table, rearrange their order, and create new columns that are a function of
+other columns.
 
 **** Selecting Existing Columns
 Here we select three existing columns by simply passing header symbols in the
