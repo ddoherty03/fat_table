@@ -221,6 +221,7 @@ module FatTable
 
       it 'creates a Table from a CSV string' do
         tab = Table.from_csv_string(csv_body)
+        expect(tab.number_of_groups).to eq(1)
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to be > 20
         expect(tab.headers.sort)
@@ -401,6 +402,53 @@ module FatTable
         expect(tab.groups[1].size).to eq(3)
         expect(tab.groups[2].size).to eq(7)
         expect(tab.groups[3].size).to eq(3)
+      end
+
+      # This is pretty subtle
+      it 'adds boundaries manually' do
+        tab = FatTable.new
+        expect(tab.number_of_groups).to eq(0)
+        # Does nothing on an empty table
+        tab.mark_boundary
+        expect(tab.number_of_groups).to eq(0)
+        tab << { a: 1, b: 2, c: 3 }
+        expect { tab.mark_boundary(5) }.to raise_error(/can't mark/)
+        tab.mark_boundary
+        expect(tab.number_of_groups).to eq(1)
+        tab << { a: 3, b: 4, c: 5 }
+        tab.mark_boundary
+        expect(tab.number_of_groups).to eq(2)
+        tab << { a: 6, b: 7, c: 8 }
+        tab << { a: 9, b: 0, c: 1 }
+        expect(tab.number_of_groups).to eq(3)
+
+        # This does not change the number of groups because the last row is
+        # already marked.
+        tab.mark_boundary
+        expect(tab.number_of_groups).to eq(3)
+
+        # Adding multiple boundaries to the end does nothing.
+        tab.mark_boundary
+        tab.mark_boundary
+        tab.mark_boundary
+        tab.mark_boundary
+        expect(tab.number_of_groups).to eq(3)
+
+        # Adding rows adds a new implict boundary at the end, so after these,
+        # we should have 4 groups.
+        tab << { a: 6, b: 7, c: 8 }
+        tab << { a: 9, b: 0, c: 1 }
+        tab << { a: 6, b: 7, c: 8 }
+        tab << { a: 9, b: 0, c: 1 }
+        tab << { a: 6, b: 7, c: 8 }
+        tab << { a: 9, b: 0, c: 1 }
+        tab << { a: 6, b: 7, c: 8 }
+        tab << { a: 9, b: 0, c: 1 }
+        expect(tab.number_of_groups).to eq(4)
+
+        # Mark at a specified row before the last; should add a group.
+        tab.mark_boundary(7)
+        expect(tab.number_of_groups).to eq(5)
       end
 
       it 'sets T F columns to Boolean' do

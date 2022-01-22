@@ -81,6 +81,8 @@ org-mode buffer as an org-table, ready for processing by other code blocks.
     - [[#from-arrays-of-hashes][From Arrays of Hashes]]
     - [[#from-sql-queries][From SQL queries]]
     - [[#marking-groups-in-input][Marking Groups in Input]]
+      - [[#manually][Manually]]
+      - [[#when-reading-in-tables][When Reading in Tables]]
   - [[#accessing-parts-of-tables][Accessing Parts of Tables]]
     - [[#rows][Rows]]
     - [[#columns-1][Columns]]
@@ -861,6 +863,14 @@ creates will be used for all subsequent ~.from_sql~ calls until ~.connect~ is
 called again.
 
 *** Marking Groups in Input
+**** Manually
+At any point, you can add a boundary to a table by invokong the
+~mark_boundary~ method.  Without an argument, it adds the boundary to the end
+of the table; with a numeric argument, ~n~, it adds the boundary after row
+~n~.
+
+**** When Reading in Tables
+
 ~FatTable~ tables has a concept of "groups" of rows that play a role in many of
 the methods for operating on them as explained [[Groups][below]].
 

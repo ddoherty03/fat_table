@@ -53,7 +53,14 @@ module FatTable
   class Table
     # An Array of FatTable::Columns that constitute the table.
     attr_reader :columns
-    attr_accessor :boundaries
+
+    # Record boundaries set explicitly with mark_boundaries or from reading
+    # hlines from input.  When we want to access boundaries, however, we want
+    # to add an implict boundary at the last row of the table.  Since, as the
+    # table grows, the implict boundary changes index, we synthesize the
+    # boundaries by dynamically adding the final boundary with the #boundaries
+    # method call.
+    attr_accessor :explicit_boundaries
 
     ###########################################################################
     # Constructors
@@ -64,7 +71,7 @@ module FatTable
     # Return an empty FatTable::Table object.
     def initialize(*heads)
       @columns = []
-      @boundaries = []
+      @explicit_boundaries = []
       unless heads.empty?
         heads.each do |h|
           @columns << Column.new(header: h)
@@ -84,10 +91,9 @@ module FatTable
 
     def __empty!
       @columns = []
-      @boundaries = []
+      @explicit_boundaries = []
       self
     end
-
 
     # :category: Constructors
 
@@ -454,8 +460,6 @@ module FatTable
     # large table, that would require that we construct all the rows for a range
     # of any size.
     def rows_range(first = 0, last = nil) # :nodoc:
-      last ||= size - 1
-      last = [last, 0].max
       raise UserError, 'first must be <= last' unless first <= last
 
       rows = []
@@ -501,6 +505,8 @@ module FatTable
     # the headers from the body) marks a boundary for the row immediately
     # preceding the hline.
     #
+    # Boundaries can also be added manually with the +mark_boundary+ method.
+    #
     # The #order_by method resets the boundaries then adds boundaries at the
     # last row of each group of rows on which the sort keys were equal as a
     # boundary.
@@ -536,7 +542,7 @@ module FatTable
 
     # Return the number of groups in the table.
     def number_of_groups
-      boundaries.size
+      empty? ? 0 : boundaries.size
     end
 
     # Return the range of row indexes for boundary number +k+
@@ -546,17 +552,13 @@ module FatTable
         raise ArgumentError, "boundary number '#{k}' out of range in boundary_row_range"
       end
 
-      if boundaries.empty?
-        (0..size-1)
-      elsif boundaries.size == 1
+      if boundaries.size == 1
         (0..boundaries.first)
-      else
+      elsif k.zero?
         # Keep index at or above zero
-        if k.zero?
-          (0..boundaries[k])
-        else
-          (boundaries[k-1]+1..boundaries[k])
-        end
+        (0..boundaries[k])
+      else
+        ((boundaries[k - 1] + 1)..boundaries[k])
       end
     end
 
@@ -581,19 +583,32 @@ module FatTable
     # the groups displayed in the output. This modifies the input table, so is a
     # departure from the otherwise immutability of Tables.
     def degroup!
-      @boundaries = []
+      self.explicit_boundaries = []
       self
     end
 
     # Mark a group boundary at row +row+, and if +row+ is +nil+, mark the last
-    # row in the table as a group boundary. This is mainly used for internal
-    # purposes.
-    def mark_boundary(row = nil) # :nodoc:
-      if row
-        boundaries.push(row)
-      else
-        boundaries.push(size - 1)
+    # row in the table as a group boundary.  An attempt to add a boundary to
+    # an empty table has no effect.  We adopt the convention that the last row
+    # of the table always marks an implicit boundary even if it is not in the
+    # @explicit_boundaries array.  When we "mark" a boundary, we intend it to
+    # be an explicit boundary, even if it marks the last row of the table.
+    def mark_boundary(row_num = nil)
+      return self if empty?
+
+      if row_num
+        unless row_num < size
+          raise ArgumentError, "can't mark boundary at row #{row_num}, last row is #{size - 1}"
+        end
+        unless row_num >= 0
+          raise ArgumentError, "can't mark boundary at non-positive row #{row_num}"
+        end
+        explicit_boundaries.push(row_num)
+      elsif size > 0
+        explicit_boundaries.push(size - 1)
       end
+      normalize_boundaries
+      self
     end
 
     # :stopdoc:
@@ -601,10 +616,21 @@ module FatTable
     # Make sure size - 1 is last boundary and that they are unique and sorted.
     def normalize_boundaries
       unless empty?
-        boundaries.push(size - 1) unless boundaries.include?(size - 1)
-        self.boundaries = boundaries.uniq.sort
+        self.explicit_boundaries = explicit_boundaries.uniq.sort
       end
-      boundaries
+      explicit_boundaries
+    end
+
+    # Return the explicit_boundaries, augmented by an implicit boundary for
+    # the end of the table, unless it's already an implicit boundary.
+    def boundaries
+      return [] if empty?
+
+      if explicit_boundaries.last == size - 1
+        explicit_boundaries
+      else
+        explicit_boundaries + [size - 1]
+      end
     end
 
     protected
@@ -613,24 +639,43 @@ module FatTable
     # increase each of the indexes in bounds by shift. This is used in the
     # #union_all method.
     def append_boundaries(bounds, shift: 0)
-      @boundaries += bounds.map { |k| k + shift }
+      @explicit_boundaries += bounds.map { |k| k + shift }
     end
 
-    # Return the group number to which row ~row~ belongs. Groups, from the
-    # user's point of view are indexed starting at 1.
-    def row_index_to_group_index(row)
+    # Return the group number to which row ~row_num~ belongs. Groups, from the
+    # user's point of view are indexed starting at 0.
+    def row_index_to_group_index(row_num)
       boundaries.each_with_index do |b_last, g_num|
-        return (g_num + 1) if row <= b_last
+        return (g_num + 1) if row_num <= b_last
       end
-      1
+      0
     end
 
-    def group_rows(row) # :nodoc:
-      normalize_boundaries
-      return [] unless row < boundaries.size
+    # Return the index of the first row in group number +grp_num+
+    def first_row_num_in_group(grp_num)
+      if grp_num >= boundaries.size || grp_num < 0
+        raise ArgumentError, "group number #{grp_num} out of bounds"
+      end
 
-      first = row.zero? ? 0 : boundaries[row - 1] + 1
-      last = boundaries[row]
+      grp_num.zero? ? 0 : boundaries[grp_num - 1] + 1
+    end
+
+    # Return the index of the last row in group number +grp_num+
+    def last_row_num_in_group(grp_num)
+      if grp_num > boundaries.size || grp_num < 0
+        raise ArgumentError, "group number #{grp_num} out of bounds"
+      else
+        boundaries[grp_num]
+      end
+    end
+
+    # Return the rows for group number +grp_num+.
+    def group_rows(grp_num) # :nodoc:
+      normalize_boundaries
+      return [] unless grp_num < boundaries.size
+
+      first = first_row_num_in_group(grp_num)
+      last = last_row_num_in_group(grp_num)
       rows_range(first, last)
     end
 
@@ -876,7 +921,7 @@ module FatTable
         ev.eval_after_hook(locals: new_row)
         result << new_row
       end
-      result.boundaries = boundaries
+      result.explicit_boundaries = explicit_boundaries
       result.normalize_boundaries
       result
     end
@@ -1013,8 +1058,6 @@ module FatTable
       set_operation(other, :difference, distinct: false)
     end
 
-    public
-
     # An Array of symbols for the valid join types.
     JOIN_TYPES = %i[inner left right full cross].freeze
 
@@ -1123,14 +1166,14 @@ module FatTable
                                   type: join_type)
           result << out_row
         end
-        next unless %i[left full].include?(join_type)
+        next unless [:left, :full].include?(join_type)
         next if self_row_matched
 
         result << build_out_row(row_a: self_row,
                                 row_b: other_row_nils,
                                 type: join_type)
       end
-      if %i[right full].include?(join_type)
+      if [:right, :full].include?(join_type)
         other_rows.each_with_index do |other_row, k|
           next if other_row_matches[k]
 
@@ -1259,7 +1302,7 @@ module FatTable
                 partial_result = nil
               else
                 # First of a pair of _a or _b
-                partial_result = String.new("(#{a_head}_a == ")
+                partial_result = +"(#{a_head}_a == "
               end
               last_sym = a_head
             when /\A(?<sy>.*)_b\z/
@@ -1278,7 +1321,7 @@ module FatTable
                 partial_result = nil
               else
                 # First of a pair of _a or _b
-                partial_result = String.new("(#{b_head}_b == ")
+                partial_result = +"(#{b_head}_b == "
               end
               b_common_heads << b_head
               last_sym = b_head
@@ -1382,15 +1425,6 @@ module FatTable
     ############################################################################
 
     public
-
-    # :category: Constructors
-
-    # Add a group boundary mark at the given row, or at the end of the table
-    # by default.
-    def add_boundary(at_row = nil)
-      row = at_row || (size - 1)
-      @boundaries << row
-    end
 
     # :category: Constructors
 
@@ -1603,8 +1637,7 @@ module FatTable
         result.mark_boundary if k == size - 1 && add_boundaries
       end
       if inherit_boundaries
-        result.boundaries = normalize_boundaries
-        other.normalize_boundaries
+        result.explicit_boundaries = boundaries
         result.append_boundaries(other.boundaries, shift: size)
       end
       result.normalize_boundaries

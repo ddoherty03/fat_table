@@ -12,7 +12,7 @@ module FatTable
         @tab = Table.from_aoh(aoh).order_by(:a)
       end
 
-      it 'should be able to remove groups after sort on one column' do
+      it 'remove groups after sort on one column' do
         tab = @tab.order_by(:a)
         expect(tab.groups.size).to eq(3)
         tab = tab.degroup!

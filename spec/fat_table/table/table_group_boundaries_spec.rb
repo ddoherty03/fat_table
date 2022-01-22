@@ -140,7 +140,7 @@ module FatTable
         expect(tab.groups[2].size).to eq(7)
         expect(tab.groups[3].size).to eq(1)
         # Now add a boundary after row 8, spliting group 2 at that point.
-        tab.add_boundary(8)
+        tab.mark_boundary(8)
         expect(tab.groups.size).to eq(5)
         expect(tab.groups[0].size).to eq(1)
         expect(tab.groups[1].size).to eq(3)
@@ -178,7 +178,7 @@ module FatTable
         expect(tab.groups[5].size).to eq(1)
       end
 
-      it 'add group boundaries on union_all' do
+      it 'adds group boundaries on union_all' do
         tab = @tab_a.union_all(@tab_a1)
         expect(tab.size).to eq(20)
         expect(tab.groups.size).to eq(2)
