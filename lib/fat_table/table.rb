@@ -62,19 +62,53 @@ module FatTable
     # method call.
     attr_accessor :explicit_boundaries
 
+    # An Array of FatTable::Columns that should be tolerant.
+    attr_reader :tolerant_columns
+
     ###########################################################################
     # Constructors
     ###########################################################################
 
     # :category: Constructors
 
-    # Return an empty FatTable::Table object.
-    def initialize(*heads)
+    # Return an empty FatTable::Table object.  Specifying headers is optional.
+    # Any headers ending with a ! are marked as tolerant, in that, if an
+    # incompatible type is added to it, the column is re-typed as a String
+    # column, and construction proceeds.  The ! is stripped from the header to
+    # form the column key, though.  You can also provide the names of columns
+    # that should be tolerant by using the +tolerant_columns key-word to
+    # provide an array of headers that should be tolerant.  The special string
+    # '*' or the symbol :* indicates that all columns should be created
+    # tolerant.
+    def initialize(*heads, tolerant_columns: [])
       @columns = []
       @explicit_boundaries = []
+      @tolerant_columns =
+        case tolerant_columns
+        when Array
+          tolerant_columns.map { |h| h.to_s.as_sym }
+        when String
+          if tolerant_columns.strip == '*'
+            ['*'.to_sym]
+          else
+            [tolerant_columns.as_sym]
+          end
+        when Symbol
+          if tolerant_columns.to_s.strip == '*'
+            ['*'.to_sym]
+          else
+            [tolerant_columns.to_s.as_sym]
+          end
+        else
+          raise ArgumentError, "set tolerant_columns to String, Symbol, or an Array of either"
+        end
       unless heads.empty?
         heads.each do |h|
-          @columns << Column.new(header: h)
+          if h.to_s.end_with?('!') || @tolerant_columns.include?(h)
+            @columns << Column.new(header: h.to_s.sub(/!\s*\z/, ''), tolerant: true)
+          else
+            @columns << Column.new(header: h)
+          end
         end
       end
     end
@@ -99,9 +133,9 @@ module FatTable
 
     # Construct a Table from the contents of a CSV file named +fname+. Headers
     # will be taken from the first CSV row and converted to symbols.
-    def self.from_csv_file(fname)
+    def self.from_csv_file(fname, tolerant_columns: [])
       File.open(fname, 'r') do |io|
-        from_csv_io(io)
+        from_csv_io(io, tolerant_columns: tolerant_columns)
       end
     end
 
@@ -109,8 +143,8 @@ module FatTable
 
     # Construct a Table from a CSV string +str+, treated in the same manner as
     # the input from a CSV file in ::from_org_file.
-    def self.from_csv_string(str)
-      from_csv_io(StringIO.new(str))
+    def self.from_csv_string(str, tolerant_columns: [])
+      from_csv_io(StringIO.new(str), tolerant_columns: tolerant_columns)
     end
 
     # :category: Constructors
@@ -119,9 +153,9 @@ module FatTable
     # file named +fname+. Headers are taken from the first row if the second row
     # is an hrule. Otherwise, synthetic headers of the form +:col_1+, +:col_2+,
     # etc. are created.
-    def self.from_org_file(fname)
+    def self.from_org_file(fname, tolerant_columns: [])
       File.open(fname, 'r') do |io|
-        from_org_io(io)
+        from_org_io(io, tolerant_columns: tolerant_columns)
       end
     end
 
@@ -129,8 +163,8 @@ module FatTable
 
     # Construct a Table from a string +str+, treated in the same manner as the
     # contents of an org-mode file in ::from_org_file.
-    def self.from_org_string(str)
-      from_org_io(StringIO.new(str))
+    def self.from_org_string(str, tolerant_columns: [])
+      from_org_io(StringIO.new(str), tolerant_columns: tolerant_columns)
     end
 
     # :category: Constructors
@@ -149,8 +183,8 @@ module FatTable
     # :hlines no +) org-mode strips all hrules from the table; otherwise (+
     # HEADER: :hlines yes +) they are indicated with nil elements in the outer
     # array.
-    def self.from_aoa(aoa, hlines: false)
-      from_array_of_arrays(aoa, hlines: hlines)
+    def self.from_aoa(aoa, hlines: false, tolerant_columns: [])
+      from_array_of_arrays(aoa, hlines: hlines, tolerant_columns: tolerant_columns)
     end
 
     # :category: Constructors
@@ -160,9 +194,9 @@ module FatTable
     # keys, which, when converted to symbols will become the headers for the
     # Table. If hlines is set true, mark a group boundary whenever a nil, rather
     # than a hash appears in the outer array.
-    def self.from_aoh(aoh, hlines: false)
+    def self.from_aoh(aoh, hlines: false, tolerant_columns: [])
       if aoh.first.respond_to?(:to_h)
-        from_array_of_hashes(aoh, hlines: hlines)
+        from_array_of_hashes(aoh, hlines: hlines, tolerant_columns: tolerant_columns)
       else
         raise UserError,
               "Cannot initialize Table with an array of #{input[0].class}"
@@ -181,7 +215,7 @@ module FatTable
 
     # Construct a Table by running a SQL +query+ against the database set up
     # with FatTable.connect, with the rows of the query result as rows.
-    def self.from_sql(query)
+    def self.from_sql(query, tolerant_columns: [])
       msg = 'FatTable.db must be set with FatTable.connect'
       raise UserError, msg if FatTable.db.nil?
 
@@ -203,8 +237,8 @@ module FatTable
       # Construct table from an array of hashes or an array of any object that
       # can respond to #to_h. If an array element is a nil, mark it as a group
       # boundary in the Table.
-      def from_array_of_hashes(hashes, hlines: false)
-        result = new
+      def from_array_of_hashes(hashes, hlines: false, tolerant_columns: [])
+        result = new(tolerant_columns: tolerant_columns)
         hashes.each do |hsh|
           if hsh.nil?
             unless hlines
@@ -232,8 +266,8 @@ module FatTable
       # hlines are stripped from the table, otherwise (:hlines yes) they are
       # indicated with nil elements in the outer array as expected by this
       # method when hlines is set true.
-      def from_array_of_arrays(rows, hlines: false)
-        result = new
+      def from_array_of_arrays(rows, hlines: false, tolerant_columns: [])
+        result = new(tolerant_columns: tolerant_columns)
         headers = []
         if !hlines
           # Take the first row as headers
@@ -269,8 +303,8 @@ module FatTable
         result
       end
 
-      def from_csv_io(io)
-        result = new
+      def from_csv_io(io, tolerant_columns: [])
+        result = new(tolerant_columns: tolerant_columns)
         ::CSV.new(io, headers: true, header_converters: :symbol,
                   skip_blanks: true).each do |row|
           result << row.to_h
@@ -283,7 +317,7 @@ module FatTable
       # header row must be marked with an hline (i.e, a row that looks like
       # '|---+--...--|') and groups of rows may be marked with hlines to
       # indicate group boundaries.
-      def from_org_io(io)
+      def from_org_io(io, tolerant_columns: [])
         table_re = /\A\s*\|/
         hrule_re = /\A\s*\|[-+]+/
         rows = []
@@ -318,7 +352,7 @@ module FatTable
             rows << line.split('|').map(&:clean)
           end
         end
-        from_array_of_arrays(rows, hlines: true)
+        from_array_of_arrays(rows, hlines: true, tolerant_columns: tolerant_columns)
       end
     end
 
@@ -408,6 +442,15 @@ module FatTable
     # Return the headers for the Table as an Array of Symbols.
     def headers
       columns.map(&:header)
+    end
+
+    # :category: Attributes
+
+    # Return whether the column with the given head should be made tolerant.
+    def tolerant_col?(h)
+      return true if tolerant_columns.include?(:'*')
+
+      tolerant_columns.include?(h)
     end
 
     # :category: Attributes
@@ -571,7 +614,8 @@ module FatTable
         range = group_row_range(k)
         tab_col = column(col)
         gitems = tab_col.items[range]
-        cols << Column.new(header: col, items: gitems, type: tab_col.type)
+        cols << Column.new(header: col, items: gitems,
+                           type: tab_col.type, tolerant: tab_col.tolerant?)
       end
       cols
     end
@@ -941,7 +985,12 @@ module FatTable
       expr = expr.to_s
       result = empty_dup
       headers.each do |h|
-        col = Column.new(header: h)
+        col =
+        if tolerant_col?(h)
+          Column.new(header: h, tolerant: true)
+        else
+          Column.new(header: h)
+        end
         result.add_column(col)
       end
       ev = Evaluator.new(ivars: { row: 0, group: 0 })
@@ -1406,6 +1455,9 @@ module FatTable
 
     private
 
+    # Collapse a group of rows to a single row by applying the aggregator from
+    # the +agg_cols+ to the items in that column and the presumably identical
+    # value in the +grp_cols to those columns.
     def row_from_group(rows, grp_cols, agg_cols)
       new_row = {}
       grp_cols.each do |h|
@@ -1440,7 +1492,7 @@ module FatTable
         # This column is new, so it needs nil items for all prior rows lest
         # the value be added to a prior row.
         items = Array.new(size, nil)
-        columns << Column.new(header: h, items: items)
+        columns << Column.new(header: h, items: items, tolerant: tolerant_col?(h))
       end
       headers.each do |h|
         # NB: This adds a nil if h is not in row.

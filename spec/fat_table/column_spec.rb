@@ -237,6 +237,46 @@ module FatTable
           end
         end
       end
+
+      describe 'tolerant columns' do
+        let(:date_mix) do
+          [
+            nil, nil, '2018-01-21', Date.parse('1957/9/22'), '1957/9/22',
+            'Not a Date', '[2017-04-22 Sat]', '<2017-04-23>',
+          ]
+        end
+        let(:bool_mix) do
+          [nil, 't', 'true', 'False', 'nO', 'y', 'Y', 'A non-Boolean']
+        end
+        let(:num_mix) do
+          [
+            nil, nil, '$2_018', 3.14159, '1,957/9', '2:3', 64646464646,
+            '$-2_018', -3.14159, '+1,957/-9', '-2:3', +64646464646,
+            '-$2_018', +3.14159, 'Cannot be parsed as num', '+2:-3', -64646464646,
+          ]
+        end
+
+        it 'can be tolerant of dates' do
+          expect { Column.new(header: :date, items: date_mix) }.to raise_error(/already typed/)
+          col = Column.new(header: :date, items: date_mix, tolerant: true)
+          expect(col.type).to eq('String')
+          expect(col[2]).to eq('2018-01-21')
+        end
+
+        it 'can be tolerant of booleans' do
+          expect { Column.new(header: :date, items: bool_mix) }.to raise_error(/already typed/)
+          col = Column.new(header: :date, items: bool_mix, tolerant: true)
+          expect(col.type).to eq('String')
+          expect(col[2]).to eq('true')
+        end
+
+        it 'can be tolerant of numerics' do
+          expect { Column.new(header: :date, items: num_mix) }.to raise_error(/already typed/)
+          col = Column.new(header: :date, items: num_mix, tolerant: true)
+          expect(col.type).to eq('String')
+          expect(col[3]).to eq('3.14159')
+        end
+      end
     end
 
     describe 'attribute access' do

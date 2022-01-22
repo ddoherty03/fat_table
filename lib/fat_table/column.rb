@@ -83,7 +83,7 @@ module FatTable
     #   col.type #=> 'Numeric'
     #   col.header #=> :prices
     #   col.sum #=> 18376.75
-    def initialize(header:, items: [], type: 'NilClass')
+    def initialize(header:, items: [], type: 'NilClass', tolerant: false)
       @raw_header = header
       @header =
         if @raw_header.is_a?(Symbol)
@@ -92,6 +92,7 @@ module FatTable
           @raw_header.to_s.as_sym
         end
       @type = type
+      @tolerant = tolerant
       msg = "unknown column type '#{type}"
       raise UserError, msg unless TYPES.include?(@type.to_s)
 
@@ -137,6 +138,14 @@ module FatTable
     # Return the index of the last item in the Column.
     def last_i
       size - 1
+    end
+
+    # :category: Attributes
+
+    # Is this column tolerant of type incompatibilities?  If so, the Column
+    # type will be forced to String if an incompatible type is found.
+    def tolerant?
+      @tolerant
     end
 
     # :category: Attributes
@@ -400,9 +409,18 @@ module FatTable
 
     # Append +itm+ to end of the Column after converting it to the Column's
     # type. If the Column's type is still open, i.e. NilClass, attempt to fix
-    # the Column's type based on the type of +itm+ as with Column.new.
+    # the Column's type based on the type of +itm+ as with Column.new.  If its
+    # a tolerant column, respond to type errors by converting the column to a
+    # String type.
     def <<(itm)
       items << convert_to_type(itm)
+    rescue IncompatibleTypeError => ex
+      if tolerant?
+        force_string!
+        retry
+      else
+        raise ex
+      end
     end
 
     # :category: Constructors

@@ -9,6 +9,10 @@ module FatTable
   # cannot correct.
   class LogicError < StandardError; end
 
+  # Raised when attempting to add an incompatible type to an already-typed
+  # Column.
+  class IncompatibleTypeError < UserError; end
+
   # Raised when an external resource is not available due to caller or
   # programmer error or some failure of the external resource to be available.
   class TransientError < StandardError; end

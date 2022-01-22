@@ -52,6 +52,12 @@ module FatTable
         expect(tab1).to be_empty
       end
 
+      it 'can initialize with headers and kw args from FatTable module method' do
+        tab1 = FatTable.new(:a, :b, :c, tolerant_columns: [:b])
+        expect(tab1).to be_a(Table)
+        expect(tab1).to be_empty
+      end
+
       it 'can initialize with headers from FatTable module method' do
         tab = FatTable.new('a', :b, '   four scORE', '**Batt@ry**', :zip)
         expect(tab).to be_a(Table)
@@ -265,7 +271,7 @@ module FatTable
       end
     end
 
-    describe 'from Org' do
+    describe 'from Org without tolerance' do
       let(:org_body) do
         <<~ORG
           * Morgan Transactions
@@ -404,6 +410,165 @@ module FatTable
         expect(tab.groups[3].size).to eq(3)
       end
 
+      it 'sets T F columns to Boolean' do
+        cwd = File.dirname(__FILE__)
+        dwtab = Table.from_org_file(cwd + '/../../example_files/datawatch.org')
+        expect(dwtab.column(:g10).type).to eq('Boolean')
+        expect(dwtab.column(:qp10).type).to eq('Boolean')
+        dwo = dwtab.where('qp10 || g10')
+        dwo.rows.each do |row|
+          expect(row[:qp10].class.to_s).to match(/TrueClass|FalseClass/)
+        end
+      end
+    end
+
+    describe 'from Org with tolerance' do
+      let(:org_body) do
+        <<~ORG
+          * Morgan Transactions
+            :PROPERTIES:
+            :TABLE_EXPORT_FILE: morgan.csv
+            :END:
+
+            #+TBLNAME: morgan_tab
+            | Ref |       Date | Code |     Raw | Shares |    Price | Info   |
+            |-----+------------+------+---------+--------+----------+--------|
+            |  29 | 2013-05-02 | P    | 795,546 |  2,609 |  1.18500 | ZMPEF1 |
+            |  30 | 2013-05-02 | P    | 118,186 |    388 | 11.85000 | ZMPEF1 |
+            |  31 | 2013-05-02 | P    | 340,948 |  1,926 |  1.18500 | ZMPEF2 |
+            |  32 | 2013-05-02 | P    |  50,651 |    286 | 11.85000 | ZMPEF2 |
+            |  33 | 2013-05-20 | S    |  12,000 |     32 | 28.28040 | ZMEAC  |
+            |  T34 | 2013-05-20 | S    |  85,000 |    226 | 28.32240 | ZMEAC  |
+            |  35 | 2013-05-20 | S    |  33,302 |     88 | 28.63830 | ZMEAC  |
+            |  36 | 2013-05-23 | S    |   8,000 |     21 | 27.10830 | ZMEAC  |
+            |  37 | 2013-05-23 | S    |  Some Junk |     61 | 26.80150 | ZMEAC  |
+            |  38 | 2013-05-23 | S    |  39,906 |    106 | 25.17490 | ZMEAC  |
+            |  39 | 2013-05-29 | S    |  13,459 |     36 | 24.74640 | ZMEAC  |
+            |  40 | 2013-05-29 | S    |  15,700 |     42 | 24.77900 | ZMEAC  |
+            |  41 | 2013-05-29 | S    |  15,900 |     42 | 24.58020 | ZMEAC  |
+            |  42 | 2013-05-30 | S    |   6,679 |     18 | 25.04710 | ZMEAC  |
+
+          * Another Heading
+        ORG
+      end
+
+      let(:org_body_with_groups) do
+        <<~ORG
+          #+TBLNAME: morgan_tab
+          |-----+------------+------+---------+--------+----------+--------|
+          | Ref |       Date | Code |     Raw | Shares |    Price | Info   |
+          |-----+------------+------+---------+--------+----------+--------|
+          |  29 | 2013-05-02 | P    | 795,546 |  2,609 |  1.18500 | ZMPEF1 |
+          |-----+------------+------+---------+--------+----------+--------|
+          |  30 | 2013-05-02 | P    | 118,186 |    388 | 11.85000 | ZMPEF1 |
+          |  31 | 2013-05-02 | P    | 340,948 |  1,926 |  1.18500 | ZMPEF2 |
+          |  32 | 2013-05-02 | P    |  50,651 |    286 | 11.85000 | ZMPEF2 |
+          |-----+------------+------+---------+--------+----------+--------|
+          |  33 | 2013-05-20 | S    |  12,000 |     32 | 28.28040 | ZMEAC  |
+          |  T34 | 2013-05-20 | S    |  85,000 |    226 | 28.32240 | ZMEAC  |
+          |  35 | 2013-05-20 | S    |  33,302 |     88 | 28.63830 | ZMEAC  |
+          |  36 | 2013-05-23 | S    |   8,000 |     21 | 27.10830 | ZMEAC  |
+          |  37 | 2013-05-23 | S    |  More Junk |     61 | 26.80150 | ZMEAC  |
+          |  38 | 2013-05-23 | S    |  39,906 |    106 | 25.17490 | ZMEAC  |
+          |  39 | 2013-05-29 | S    |  13,459 |     36 | 24.74640 | ZMEAC  |
+          |-----+------------+------+---------+--------+----------+--------|
+          |  40 | 2013-05-29 | S    |  15,700 |     42 | 24.77900 | ZMEAC  |
+          |  41 | 2013-05-29 | S    |  Not what I expected |     42 | 24.58020 | ZMEAC  |
+          |  42 | 2013-05-30 | S    |   6,679 |     18 | 25.04710 | ZMEAC  |
+          |-----+------------+------+---------+--------+----------+--------|
+        ORG
+      end
+
+      it 'creates from an Org string' do
+        tab = Table.from_org_string(org_body, tolerant_columns: [:ref, :raw])
+        expect(tab.class).to eq(Table)
+        expect(tab.rows.size).to be > 10
+        expect(tab.headers.sort)
+          .to eq [:code, :date, :info, :price, :raw, :ref, :shares]
+        tab.rows.each do |row|
+          expect(row[:code].class).to eq String
+          expect(row[:ref].class).to eq String
+          expect(row[:raw].class).to eq String
+          expect(row[:date].class).to eq Date
+          expect(row[:shares].is_a?(Numeric)).to be true
+          expect(row[:price].is_a?(BigDecimal)).to be true
+          expect([Numeric, String].any? { |t| row[:ref].is_a?(t) }).to be true
+          expect(row[:info].class).to eq String
+        end
+      end
+
+      it 'creates from an Org string with module method' do
+        tab = FatTable.from_org_string(org_body, tolerant_columns: [:ref, :raw])
+        expect(tab.class).to eq(Table)
+        expect(tab.rows.size).to be > 10
+        expect(tab.headers.sort)
+          .to eq [:code, :date, :info, :price, :raw, :ref, :shares]
+        tab.rows.each do |row|
+          expect(row[:code].class).to eq String
+          expect(row[:ref].class).to eq String
+          expect(row[:raw].class).to eq String
+          expect(row[:date].class).to eq Date
+          expect(row[:shares].is_a?(Numeric)).to be true
+          expect(row[:price].is_a?(BigDecimal)).to be true
+          expect([Numeric, String].any? { |t| row[:ref].is_a?(t) }).to be true
+          expect(row[:info].class).to eq String
+        end
+      end
+
+      it 'creates from an Org string with groups' do
+        tab = Table.from_org_string(org_body_with_groups, tolerant_columns: '*')
+        expect(tab.class).to eq(Table)
+        expect(tab.rows.size).to be > 10
+        expect(tab.headers.sort)
+          .to eq [:code, :date, :info, :price, :raw, :ref, :shares]
+        expect(tab.number_of_groups).to eq(4)
+        sub_cols = tab.group_cols(:shares)
+        expect(sub_cols[0].size).to eq(1)
+        expect(sub_cols[1].size).to eq(3)
+        expect(sub_cols[2].size).to eq(7)
+        expect(sub_cols[3].size).to eq(3)
+        tab.rows.each do |row|
+          row.each_pair do |k, _v|
+            expect(k.class).to eq Symbol
+          end
+          expect(row[:ref].class).to eq String
+          expect(row[:raw].class).to eq String
+          expect(row[:code].class).to eq String
+          expect(row[:date].class).to eq Date
+          expect(row[:shares].is_a?(Numeric)).to be true
+          expect(row[:price].is_a?(BigDecimal)).to be true
+          expect(row[:info].class).to eq String
+        end
+      end
+
+      it 'creates from an Org file' do
+        File.write('/tmp/junk.org', org_body)
+        tab = Table.from_org_file('/tmp/junk.org', tolerant_columns: [:ref, :raw, :shares])
+        expect(tab.class).to eq(Table)
+        expect(tab.rows.size).to be > 10
+        expect(tab.rows[0].keys.sort)
+          .to eq [:code, :date, :info, :price, :raw, :ref, :shares]
+        tab.rows.each do |row|
+          expect(row[:ref]).to be_a(String)
+          expect(row[:raw]).to be_a(String)
+          expect(row[:shares]).to be_a(Numeric)
+          expect(row[:price].is_a?(BigDecimal)).to be true
+          expect(row[:info].class).to eq String
+        end
+      end
+
+      it 'adds group boundaries on reading from org text' do
+        tab = Table.from_org_string(org_body_with_groups,
+                                    tolerant_columns: [:ref, :raw, :shares])
+        expect(tab.groups.size).to eq(4)
+        expect(tab.groups[0].size).to eq(1)
+        expect(tab.groups[1].size).to eq(3)
+        expect(tab.groups[2].size).to eq(7)
+        expect(tab.groups[3].size).to eq(3)
+      end
+    end
+
+    describe 'marking boundaries' do
       # This is pretty subtle
       it 'adds boundaries manually' do
         tab = FatTable.new
@@ -449,17 +614,6 @@ module FatTable
         # Mark at a specified row before the last; should add a group.
         tab.mark_boundary(7)
         expect(tab.number_of_groups).to eq(5)
-      end
-
-      it 'sets T F columns to Boolean' do
-        cwd = File.dirname(__FILE__)
-        dwtab = Table.from_org_file(cwd + '/../../example_files/datawatch.org')
-        expect(dwtab.column(:g10).type).to eq('Boolean')
-        expect(dwtab.column(:qp10).type).to eq('Boolean')
-        dwo = dwtab.where('qp10 || g10')
-        dwo.rows.each do |row|
-          expect(row[:qp10].class.to_s).to match(/TrueClass|FalseClass/)
-        end
       end
     end
 

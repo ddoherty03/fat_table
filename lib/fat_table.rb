@@ -61,22 +61,22 @@ module FatTable
 
   # Return an empty FatTable::Table object. You can use FatTable::Table#add_row
   # or FatTable::Table#add_column to populate the table with data.
-  def self.new(*args)
-    Table.new(*args)
+  def self.new(*args, tolerant_columns: [])
+    Table.new(*args, tolerant_columns: tolerant_columns)
   end
 
   # Construct a FatTable::Table from the contents of a CSV file given by the
   # file name +fname+. Headers will be taken from the first row and converted to
   # symbols.
-  def self.from_csv_file(fname)
-    Table.from_csv_file(fname)
+  def self.from_csv_file(fname, tolerant_columns: [])
+    Table.from_csv_file(fname, tolerant_columns: tolerant_columns)
   end
 
   # Construct a FatTable::Table from the string +str+, treated in the same
   # manner as if read the input from a CSV file. Headers will be taken from the
   # first row and converted to symbols.
-  def self.from_csv_string(str)
-    Table.from_csv_string(str)
+  def self.from_csv_string(str, tolerant_columns: [])
+    Table.from_csv_string(str, tolerant_columns: tolerant_columns)
   end
 
   # Construct a FatTable::Table from the first table found in the Emacs org-mode
@@ -84,8 +84,8 @@ module FatTable
   # is an hline. Otherwise, synthetic headers of the form +:col_1+, +:col_2+,
   # etc. are created. Any other hlines will be treated as marking a boundary in
   # the table.
-  def self.from_org_file(fname)
-    Table.from_org_file(fname)
+  def self.from_org_file(fname, tolerant_columns: [])
+    Table.from_org_file(fname, tolerant_columns: tolerant_columns)
   end
 
   # Construct a FatTable::Table from the first table found in the string +str+,
@@ -93,8 +93,8 @@ module FatTable
   # are taken from the first row if the second row is an hrule. Otherwise,
   # synthetic headers of the form :col_1, :col_2, etc. are created. Any other
   # hlines will be treated as marking a boundary in the table.
-  def self.from_org_string(str)
-    Table.from_org_string(str)
+  def self.from_org_string(str, tolerant_columns: [])
+    Table.from_org_string(str, tolerant_columns: tolerant_columns)
   end
 
   # Construct a FatTable::Table from the array of arrays +aoa+. By default, with
@@ -108,8 +108,8 @@ module FatTable
   # org-mode code blocks, by default (+:hlines no+) all hlines are stripped from
   # the table, otherwise (+:hlines yes+) they are indicated with nil elements in
   # the outer array.
-  def self.from_aoa(aoa, hlines: false)
-    Table.from_aoa(aoa, hlines: hlines)
+  def self.from_aoa(aoa, hlines: false, tolerant_columns: [])
+    Table.from_aoa(aoa, hlines: hlines, tolerant_columns: tolerant_columns)
   end
 
   # Construct a FatTable::Table from the array of hashes +aoh+, which can be an
@@ -117,8 +117,8 @@ module FatTable
   # interpret nil separators as marking boundaries in the new Table. All hashes
   # must have the same keys, which, converted to symbols, become the headers for
   # the new Table.
-  def self.from_aoh(aoh, hlines: false)
-    Table.from_aoh(aoh, hlines: hlines)
+  def self.from_aoh(aoh, hlines: false, tolerant_columns: [])
+    Table.from_aoh(aoh, hlines: hlines, tolerant_columns: tolerant_columns)
   end
 
   # Construct a FatTable::Table from another FatTable::Table. Inherit any group
@@ -130,8 +130,8 @@ module FatTable
   # Construct a Table by running a SQL query against the database set up with
   # FatTable.connect. Return the Table with the query results as rows and the
   # headers from the query, converted to symbols, as headers.
-  def self.from_sql(query)
-    Table.from_sql(query)
+  def self.from_sql(query, tolerant_columns: [])
+    Table.from_sql(query, tolerant_columns: tolerant_columns)
   end
 
   ########################################################################
