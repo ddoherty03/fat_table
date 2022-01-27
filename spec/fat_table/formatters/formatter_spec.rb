@@ -395,9 +395,9 @@ module FatTable
         # Body, :price
         expect(fmt.format_at[:body][:price].commas).to eq(true)
         expect(fmt.format_at[:body][:price].pre_digits).to eq(0)
-        expect(fmt.format_at[:body][:price].post_digits).to eq(2)
+        expect(fmt.format_at[:body][:price].post_digits).to eq(-1)
         # Body, :shares
-        expect(fmt.format_at[:body][:shares].commas).to eq(true)
+        expect(fmt.format_at[:body][:shares].commas).to eq(false)
         expect(fmt.format_at[:body][:shares].pre_digits).to eq(0)
         expect(fmt.format_at[:body][:shares].post_digits).to eq(4)
         # Body, :bool

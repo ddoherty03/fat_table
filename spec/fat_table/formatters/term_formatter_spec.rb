@@ -122,10 +122,10 @@ module FatTable
         fmt = TermFormatter.new(@tab, framecolor: 'black.yellow') do |t|
           t.format_for(:header, string: 'BCc[tomato.white]')
           t.format_for(:body, string: 'c[.yellow]', boolean: 'c[green.yellow,red.yellow]',
-                       numeric: 'Rc[purple]', shares: '0.0,', ref: '5.0')
+                       numeric: 'Rc[purple]', shares: 'R0.0,', ref: '5.0')
         end
         trm = fmt.output
-        expect(trm).to match(/\e\[38;5;129m\e\[43m 795,546 \e\[0m/)
+        expect(trm).to match(/\e\[30m\e\[43m╒═════/)
         expect(trm).to match(/\e\[31m\e\[43m F    \e\[0m/)
         expect(trm).to match(/\e\[32m\e\[43m T    \e\[0m/)
       end

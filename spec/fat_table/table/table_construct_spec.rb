@@ -487,8 +487,8 @@ module FatTable
           .to eq [:code, :date, :info, :price, :raw, :ref, :shares]
         tab.rows.each do |row|
           expect(row[:code].class).to eq String
-          expect(row[:ref].class).to eq String
-          expect(row[:raw].class).to eq String
+          expect(tab.column(:ref).type).to eq('Numeric')
+          expect(tab.column(:raw).type).to eq('Numeric')
           expect(row[:date].class).to eq Date
           expect(row[:shares].is_a?(Numeric)).to be true
           expect(row[:price].is_a?(BigDecimal)).to be true
@@ -503,16 +503,13 @@ module FatTable
         expect(tab.rows.size).to be > 10
         expect(tab.headers.sort)
           .to eq [:code, :date, :info, :price, :raw, :ref, :shares]
-        tab.rows.each do |row|
-          expect(row[:code].class).to eq String
-          expect(row[:ref].class).to eq String
-          expect(row[:raw].class).to eq String
-          expect(row[:date].class).to eq Date
-          expect(row[:shares].is_a?(Numeric)).to be true
-          expect(row[:price].is_a?(BigDecimal)).to be true
-          expect([Numeric, String].any? { |t| row[:ref].is_a?(t) }).to be true
-          expect(row[:info].class).to eq String
-        end
+        expect(tab.column(:ref).type).to eq('Numeric')
+        expect(tab.column(:raw).type).to eq('Numeric')
+        expect(tab[:ref].select { |i| i.is_a?(String) }).not_to be_empty
+        expect(tab[:raw].select { |i| i.is_a?(String) }).not_to be_empty
+        expect(tab[:date].select { |i| i.is_a?(String) }).to be_empty
+        expect(tab[:price].select { |i| i.is_a?(String) }).to be_empty
+        expect(tab[:shares].select { |i| i.is_a?(String) }).to be_empty
       end
 
       it 'creates from an Org string with groups' do
@@ -527,18 +524,13 @@ module FatTable
         expect(sub_cols[1].size).to eq(3)
         expect(sub_cols[2].size).to eq(7)
         expect(sub_cols[3].size).to eq(3)
-        tab.rows.each do |row|
-          row.each_pair do |k, _v|
-            expect(k.class).to eq Symbol
-          end
-          expect(row[:ref].class).to eq String
-          expect(row[:raw].class).to eq String
-          expect(row[:code].class).to eq String
-          expect(row[:date].class).to eq Date
-          expect(row[:shares].is_a?(Numeric)).to be true
-          expect(row[:price].is_a?(BigDecimal)).to be true
-          expect(row[:info].class).to eq String
-        end
+        expect(tab.column(:ref).type).to eq('Numeric')
+        expect(tab.column(:raw).type).to eq('Numeric')
+        expect(tab[:ref].select { |i| i.is_a?(String) }).not_to be_empty
+        expect(tab[:raw].select { |i| i.is_a?(String) }).not_to be_empty
+        expect(tab[:date].select { |i| i.is_a?(String) }).to be_empty
+        expect(tab[:price].select { |i| i.is_a?(String) }).to be_empty
+        expect(tab[:shares].select { |i| i.is_a?(String) }).to be_empty
       end
 
       it 'creates from an Org file' do
@@ -548,13 +540,11 @@ module FatTable
         expect(tab.rows.size).to be > 10
         expect(tab.rows[0].keys.sort)
           .to eq [:code, :date, :info, :price, :raw, :ref, :shares]
-        tab.rows.each do |row|
-          expect(row[:ref]).to be_a(String)
-          expect(row[:raw]).to be_a(String)
-          expect(row[:shares]).to be_a(Numeric)
-          expect(row[:price].is_a?(BigDecimal)).to be true
-          expect(row[:info].class).to eq String
-        end
+        expect(tab.column(:ref).type).to eq('Numeric')
+        expect(tab.column(:raw).type).to eq('Numeric')
+        expect(tab.column(:shares).type).to eq('Numeric')
+        expect(tab.column(:price).type).to eq('Numeric')
+        expect(tab.column(:info).type).to eq('String')
       end
 
       it 'adds group boundaries on reading from org text' do
