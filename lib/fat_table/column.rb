@@ -413,11 +413,10 @@ module FatTable
     # a tolerant column, respond to type errors by converting the column to a
     # String type.
     def <<(itm)
-      items << convert_to_type(itm)
+      items << convert_and_set_type(itm)
     rescue IncompatibleTypeError => ex
       if tolerant?
-        force_string!
-        retry
+        items << Convert.convert_to_string(itm)
       else
         raise ex
       end
@@ -436,9 +435,9 @@ module FatTable
 
     private
 
-    def convert_to_type(val)
-      new_val = Convert.convert_to_type(val, type)
-      if new_val && type == 'NilClass'
+    def convert_and_set_type(val)
+      new_val = Convert.convert_to_type(val, type, tolerant: tolerant?)
+      if new_val && (type == 'NilClass' || type == 'String')
         @type =
           if [true, false].include?(new_val)
             'Boolean'
