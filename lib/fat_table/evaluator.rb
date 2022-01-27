@@ -45,17 +45,15 @@ module FatTable
     end
 
     # Return the result of evaluating +expr+ as a Ruby expression in which the
-    # instance variables set in Evaluator.new and any local variables set in the
-    # Hash parameter +locals+ are available to the expression.
+    # instance variables set in Evaluator.new and any local variables set in
+    # the Hash parameter +locals+ are available to the expression.  Certain
+    # errors simply return nil as the result.  This can happen, for example,
+    # when a string gets into an otherwise numeric column because the column
+    # is set to tolerant.
     def evaluate(expr = '', locals: {})
       eval(expr, local_vars(binding, locals))
     rescue NoMethodError, TypeError => ex
-      if ex.to_s =~ /for nil:NilClass|nil can't be coerced/
-        # Likely one of the locals was nil, so let nil be the result.
-        return nil
-      else
-        raise ex
-      end
+      nil
     end
 
     private

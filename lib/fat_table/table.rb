@@ -779,7 +779,6 @@ module FatTable
       last_key = nil
       new_rows.each_with_index do |nrow, k|
         new_tab << nrow
-        # key = nrow.fetch_values(*sort_heads)
         key = nrow.fetch_values(*key_hash.keys)
         new_tab.mark_boundary(k - 1) if last_key && key != last_key
         last_key = key
@@ -1712,11 +1711,19 @@ module FatTable
     end
 
     # The <=> operator cannot handle nils without some help.  Treat a nil as
-    # smaller than any other value, but equal to other nils.  The two keys are assumed to be arrays of values to be
-    # compared with <=>.
+    # smaller than any other value, but equal to other nils.  The two keys are
+    # assumed to be arrays of values to be compared with <=>.  Since
+    # tolerant_columns permit strings to be mixed in with columns of type
+    # Numeric, DateTime, and Boolean, treat strings mixed with another type
+    # the same as nils.
     def compare_with_nils(key1, key2)
       result = nil
       key1.zip(key2) do |k1, k2|
+        if k1.is_a?(String) && !k2.is_a?(String)
+          k1 = nil
+        elsif !k1.is_a?(String) && k2.is_a?(String)
+          k2 = nil
+        end
         if k1.nil? && k2.nil?
           result = 0
           next
