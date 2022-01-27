@@ -638,8 +638,11 @@ something that can't be parsed as a Numeric.  ~FatTable~ raises an exception
 is such cases, and that may be what you want if you can control the input.
 But, especially when you cannot do so, it can be helpful to designate one or
 more columns as "tolerant."  This means that when a conversion problem occurs,
-the column is forced to String type instead of throwing an exception, and the
-table can continue to be read.
+the column item is retained as a string type in a column that is otherwise of
+one of the types Numeric, DateTime, or Boolean.  Those string items are
+treated as nils for purposes of sorting or evaluation in a ~select~ method.
+When formatted, they participate in string formatting directive, but not those
+for other types.
 
 All of the table construction methods, allow a keyword parameter,
 ~tolerant_columns~, where you can designate what columns should be convert to
@@ -2641,9 +2644,10 @@ the table, but they can be overridden by more specific directives given in a
 ~format_for~ directive.
 
 **** Type and Column priority
-A directive based on type applies to all columns having that type unless
-overridden by a directive specific to a named column; a directive based on a
-column name applies only to cells in that column.
+A directive based the column name overrides any directive based on type.  If
+any cell has both a type-based formatting and column-based, the column
+instructions prevail.  In earlier versions the instuctions were "merged" but
+that is no longer the case.
 
 However, there is a twist.  Since the end result of formatting is to convert
 all columns to strings, the formatting directives for the ~String~ type can
