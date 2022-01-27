@@ -562,20 +562,21 @@ module FatTable
           end
         end
 
-        # Merge in formatting for column h based on the column type, or based
-        # on the string type for the header location.
+        # Merge in formatting instructions for column h based on the column
+        # name, or if there is no formatting instructions for the column by
+        # name, merge in the formatting instructions based on the column's
+        # type.  Insist on only the string type for the header location.
         typ = (location == :header ? :string : table.type(h).as_sym)
         parse_typ_method_name = 'parse_' + typ.to_s + '_fmt'
-        if fmts.key?(typ)
-          # Merge in type-based formatting
-          typ_fmt = send(parse_typ_method_name, fmts[typ]).first
-          format_h = format_h.merge(typ_fmt)
-        end
         if fmts[h]
           # Merge in column formatting
           col_fmt = send(parse_typ_method_name, fmts[h],
                          strict: location != :header).first
           format_h = format_h.merge(col_fmt)
+        elsif fmts.key?(typ)
+          # Merge in type-based formatting
+          typ_fmt = send(parse_typ_method_name, fmts[typ]).first
+          format_h = format_h.merge(typ_fmt)
         end
 
         # Copy :body formatting for column h to :bfirst and :gfirst if they
