@@ -196,7 +196,7 @@ module FatTable
       if type == 'String'
         items.reject(&:blank?).first
       else
-        items.compact.first
+        items.filter_to_type(type).first
       end
     end
 
@@ -207,7 +207,7 @@ module FatTable
       if type == 'String'
         items.reject(&:blank?).last
       else
-        items.compact.last
+        items.filter_to_type(type).last
       end
     end
 
@@ -219,7 +219,7 @@ module FatTable
       if type == 'String'
         items.reject(&:blank?).count.to_d
       else
-        items.compact.count.to_d
+        items.filter_to_type(type).count.to_d
       end
     end
 
@@ -232,7 +232,7 @@ module FatTable
       if type == 'String'
         items.reject(&:blank?).min
       else
-        items.compact.min
+        items.filter_to_type(type).min
       end
     end
 
@@ -245,7 +245,7 @@ module FatTable
       if type == 'String'
         items.reject(&:blank?).max
       else
-        items.compact.max
+        items.filter_to_type(type).max
       end
     end
 
@@ -268,7 +268,7 @@ module FatTable
       if type == 'String'
         items.reject(&:blank?).join(' ')
       else
-        items.compact.sum
+        items.filter_to_type(type).sum
       end
     end
 
@@ -280,7 +280,7 @@ module FatTable
     # average back to a DateTime.
     def avg
       only_with('avg', 'DateTime', 'Numeric')
-      itms = items.compact
+      itms = items.filter_to_type(type)
       size = itms.size.to_d
       if type == 'DateTime'
         avg_jd = itms.map(&:jd).sum / size
@@ -301,9 +301,9 @@ module FatTable
       only_with('var', 'DateTime', 'Numeric')
       all_items =
         if type == 'DateTime'
-          items.compact.map(&:jd)
+          items.filter_to_type(type).map(&:jd)
         else
-          items.compact
+          items.filter_to_type(type)
         end
       n = count
       return BigDecimal('0.0') if n <= 1
@@ -324,7 +324,7 @@ module FatTable
     # number and computes the variance of those numbers.
     def pvar
       only_with('var', 'DateTime', 'Numeric')
-      n = items.compact.size.to_d
+      n = items.filter_to_type(type).size.to_d
       return BigDecimal('0.0') if n <= 1
       var * ((n - 1) / n)
     end
@@ -361,7 +361,7 @@ module FatTable
     # false.  Works only with boolean Columns.
     def any?
       only_with('any?', 'Boolean')
-      items.compact.any?
+      items.filter_to_type(type).any?
     end
 
     # :category: Aggregates
@@ -370,7 +370,7 @@ module FatTable
     # false.  Works only with boolean Columns.
     def all?
       only_with('all?', 'Boolean')
-      items.compact.all?
+      items.filter_to_type(type).all?
     end
 
     # :category: Aggregates
@@ -379,7 +379,7 @@ module FatTable
     # false.  Works only with boolean Columns.
     def none?
       only_with('none?', 'Boolean')
-      items.compact.none?
+      items.filter_to_type(type).none?
     end
 
     # :category: Aggregates
@@ -388,7 +388,7 @@ module FatTable
     # otherwise return false.  Works only with boolean Columns.
     def one?
       only_with('one?', 'Boolean')
-      items.compact.one?
+      items.filter_to_type(type).one?
     end
 
     private
