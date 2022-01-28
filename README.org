@@ -32,7 +32,7 @@ The following is for org.
 #+end_src
 
 #+begin_EXAMPLE
-Current version is: 0.5.3
+Current version is: 0.5.4
 #+end_EXAMPLE
 
 * Introduction
