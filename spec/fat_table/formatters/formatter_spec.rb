@@ -638,6 +638,30 @@ module FatTable
           expect(str.length).to be > 10
         end
 
+        it 'prioritizes header formatting over type formatting' do
+          txt = tab.to_text do |f|
+            f.format(numeric: 'R0.2,', price: 'R0.4', ref: 'C4.0')
+          end
+          # The :ref, :share, :raw_shares, and :price columns are all numeric,
+          # but the :price and :ref format directives override the :numeric
+          # directive while the :raw_shares and :shares columns obey the
+          # :numeric directive.
+          line = "| 0001 | 2013-05-02 | P    | 795,546.20 | 795,546.20 |  1.1850 | ZMPEF1 | T    |"
+          expect(txt).to match(Regexp.quote(line))
+
+          # Order of instructions should not matter
+          txt = tab.to_text do |f|
+            f.format(ref: 'C4.0', numeric: 'R0.2,', price: 'R0.4')
+          end
+          expect(txt).to match(Regexp.quote(line))
+
+          # Order of instructions should not matter
+          txt = tab.to_text do |f|
+            f.format(ref: 'C4.0', price: 'R0.4', numeric: 'R0.2,')
+          end
+          expect(txt).to match(Regexp.quote(line))
+        end
+
         it 'sets format and output by footer and gfooter method calls' do
           fmt = described_class.new(tab)
           fmt.format(ref: '5.0', code: 'C', raw: ',0.0R', shares: ',0.0R',
