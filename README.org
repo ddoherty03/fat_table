@@ -442,11 +442,26 @@ or nil. There are only five permissible types for a ~Column~:
 5. *NilClass* (for the undetermined column type).
 
 When a ~Table~ is constructed from an external source, all ~Columns~ start out
-having a type of ~NilClass~, that is, their type is as yet undetermined. When a
-string or object of one of the four determined types is added to a ~Column~, it
-fixes the type of the column and all further items added to the ~Column~ must
-either be ~nil~ (indicating no value) or be capable of being coerced to the
-column's type. Otherwise, ~FatTable~ raises an exception.
+having a type of ~NilClass~, that is, their type is as yet undetermined. When
+a string or object of one of the four determined types is added to a ~Column~
+and it can be converted into one of the permissible types, it fixes the type
+of the column, and all further items added to the ~Column~ must either be
+~nil~ (indicating no value) or be capable of being coerced to the column's
+type. Otherwise, ~FatTable~ raises an exception.
+
+The strictness of requiring all items to be of the same type can be relaxed by
+declaring a column to be "tolerant."  You can do so when you create the table
+by adding a tolerant_columns keyword parameter.  If a Column is tolerant,
+~FatTable~ tries to convert new items into a type other than a ~String~ and,
+if it can do so, sets /that/ as the Column's type.  Any later items that
+cannot be converted into the Column's type are converted to strings.  These
+interloper strings are treated like nils for purposes of sorting and
+evaluation, but are displayed according to any string formatting on output.
+See [[*Designating "Tolerant" Columns][Designating "Tolerant" Columns]] below.
+
+It is also possible to force ~FatTable~ to treat a column as a String type,
+even its items look like one of the other types.  See [[*Forcing String Type][Forcing String Type]]
+below.
 
 Items of input must be either one of the permissible ruby objects or strings. If
 they are strings, ~FatTable~ attempts to parse them as one of the permissible
@@ -603,10 +618,18 @@ columns to be created:
 **** Forcing String Type
 Occasionally, ~FatTable~'s automatic type detection can get in the way and you
 just want it to treat one or more columns as Strings regardless of their
-appearance.  Think, for example, of zip codes.  At any time after creating a
-table, you can have it force the String type on any number of columns with the
-~force_string!~ method.  When you do so, all exisiting items in the column are
-converted to strings with the #to_s method.
+appearance.  Think, for example, of zip codes.  If headers are given when a
+table is contructed, you can designate a forced-string column by appending a
+~!~ to the end of the header.  It will not become part of the header, it will
+just mark it as a forced-string Column.
+
+#+begin_SRC emacs-lisp :wrap EXAMPLE
+  tab = FatTable.new(:a, 'b', 'C!', :d, :zip!)
+#+end_SRC
+
+In addition, at any time after creating a table, you can force the String type
+on any number of columns with the ~force_string!~ method.  When you do so, all
+exisiting items in the column are converted to strings with the #to_s method.
 
 #+begin_src ruby :wrap EXAMPLE
   tab = FatTable.new(:a, 'b', 'C', :d, :zip)
