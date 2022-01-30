@@ -19,6 +19,32 @@ module FatTable
       Table.from_aoa(aoa)
     }
 
+    describe 'empty table' do
+      it 'produces just headers on an empty table with headers' do
+        empty_tab = Table.new(:a, :b, :c, :d)
+        out = empty_tab.to_text
+        expect(out).to match(/\| A \| B \|/)
+        expect(out.split("\n").size).to eq(3)
+      end
+
+      it 'produces headers and blank footer on an empty table with headers and footers' do
+        empty_tab = Table.new(:a, :b, :c, :d)
+        out = empty_tab.to_text do |f|
+          f.sum_footer(:d)
+          f.sum_gfooter(:d)
+        end
+        expect(out).to match(/\| A *\| B \|/)
+        expect(out).to match(/\| Total \|/)
+        expect(out.split("\n").size).to eq(5)
+      end
+
+      it 'produces an empty string on an empty table with no headers' do
+        empty_tab = Table.new
+        out = empty_tab.to_text
+        expect(out).to eq('')
+      end
+    end
+
     describe 'parsing and validity' do
       describe 'invalid format strings' do
         it 'raises an error for invalid location' do

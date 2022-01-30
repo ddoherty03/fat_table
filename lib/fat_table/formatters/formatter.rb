@@ -1004,9 +1004,14 @@ module FatTable
     # converted to strings formatted according to the Formatter's formatting
     # directives given in Formatter.format_for or Formatter.format.
     def output
-      # This results in a hash of two-element arrays. The key is the header and
-      # the value is an array of the header and formatted header. We do the
-      # latter so the structure parallels the structure for rows explained next.
+      # If there are neither headers nor any rows in the table, return an
+      # empty string.
+      return '' if table.empty? && table.headers.empty?
+
+      # This results in a hash of two-element arrays. The key
+      # is the header and the value is an array of the header and formatted
+      # header. We do the latter so the structure parallels the structure for
+      # rows explained next.
       formatted_headers = build_formatted_headers
 
       # These produce an array with each element representing a row of the
