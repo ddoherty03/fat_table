@@ -105,7 +105,7 @@ module FatTable
       unless heads.empty?
         heads.each do |h|
           if h.to_s.end_with?('!') || @tolerant_columns.include?(h)
-            @columns << Column.new(header: h.to_s.sub(/!\s*\z/, ''), tolerant: true)
+            @columns << Column.new(header: h.to_s.sub(/!\s*\z/, ''), type: 'String')
           else
             @columns << Column.new(header: h)
           end
@@ -120,7 +120,7 @@ module FatTable
     # though FatTable::Table objects have no instance variables, a class that
     # inherits from it might.
     def empty_dup
-      self.dup.__empty!
+      dup.__empty!
     end
 
     def __empty!
