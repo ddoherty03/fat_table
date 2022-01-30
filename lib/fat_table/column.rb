@@ -264,6 +264,8 @@ module FatTable
     # string Columns. For a string Column, it will return the concatenation of
     # the non-nil items.
     def sum
+      return nil if type == 'NilClass'
+
       only_with('sum', 'Numeric', 'String')
       if type == 'String'
         items.reject(&:blank?).join(' ')
@@ -279,6 +281,8 @@ module FatTable
     # to its Julian day number, computes the average, and then converts the
     # average back to a DateTime.
     def avg
+      return nil if type == 'NilClass'
+
       only_with('avg', 'DateTime', 'Numeric')
       itms = items.filter_to_type(type)
       size = itms.size.to_d
@@ -298,6 +302,8 @@ module FatTable
     # Columns. For datetime Columns, it converts each date to its Julian day
     # number and computes the variance of those numbers.
     def var
+      return nil if type == 'NilClass'
+
       only_with('var', 'DateTime', 'Numeric')
       all_items =
         if type == 'DateTime'
@@ -323,6 +329,8 @@ module FatTable
     # Columns. For datetime Columns, it converts each date to its Julian day
     # number and computes the variance of those numbers.
     def pvar
+      return nil if type == 'NilClass'
+
       only_with('var', 'DateTime', 'Numeric')
       n = items.filter_to_type(type).size.to_d
       return BigDecimal('0.0') if n <= 1
@@ -338,6 +346,8 @@ module FatTable
     # to its Julian day number and computes the standard deviation of those
     # numbers.
     def dev
+      return nil if type == 'NilClass'
+
       only_with('dev', 'DateTime', 'Numeric')
       var.sqrt(20)
     end
@@ -351,6 +361,8 @@ module FatTable
     # to its Julian day number and computes the standard deviation of those
     # numbers.
     def pdev
+      return nil if type == 'NilClass'
+
       only_with('dev', 'DateTime', 'Numeric')
       Math.sqrt(pvar)
     end
@@ -360,6 +372,8 @@ module FatTable
     # Return true if any of the items in the Column are true; otherwise return
     # false.  Works only with boolean Columns.
     def any?
+      return nil if type == 'NilClass'
+
       only_with('any?', 'Boolean')
       items.filter_to_type(type).any?
     end
@@ -369,6 +383,8 @@ module FatTable
     # Return true if all of the items in the Column are true; otherwise return
     # false.  Works only with boolean Columns.
     def all?
+      return nil if type == 'NilClass'
+
       only_with('all?', 'Boolean')
       items.filter_to_type(type).all?
     end
@@ -378,6 +394,8 @@ module FatTable
     # Return true if none of the items in the Column are true; otherwise return
     # false.  Works only with boolean Columns.
     def none?
+      return nil if type == 'NilClass'
+
       only_with('none?', 'Boolean')
       items.filter_to_type(type).none?
     end
@@ -387,6 +405,8 @@ module FatTable
     # Return true if precisely one of the items in the Column is true;
     # otherwise return false.  Works only with boolean Columns.
     def one?
+      return nil if type == 'NilClass'
+
       only_with('one?', 'Boolean')
       items.filter_to_type(type).one?
     end
