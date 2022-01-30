@@ -221,7 +221,7 @@ module FatTable
     end
 
     def pre_header(widths)
-      result = upper_left
+      result = +upper_left
       widths.each_value do |w|
         result += double_rule * (w + 2) + upper_tee
       end
@@ -255,7 +255,7 @@ module FatTable
     end
 
     def hline(widths)
-      result = left_tee
+      result = +left_tee
       widths.each_value do |w|
         result += horizontal_rule * (w + 2) + single_cross
       end
@@ -289,7 +289,7 @@ module FatTable
     end
 
     def post_footers(widths)
-      result = lower_left
+      result = +lower_left
       widths.each_value do |w|
         result += double_rule * (w + 2) + lower_tee
       end

@@ -20,7 +20,7 @@ module FatTable
     end
 
     def pre_header(widths)
-      result = '|'
+      result = +'|'
       widths.each_value do |w|
         result += '-' * (w + 2) + '+'
       end
@@ -53,7 +53,7 @@ module FatTable
     end
 
     def hline(widths)
-      result = '|'
+      result = +'|'
       widths.each_value do |w|
         result += '-' * (w + 2) + '+'
       end
@@ -62,7 +62,7 @@ module FatTable
     end
 
     def post_footers(widths)
-      result = '|'
+      result = +'|'
       widths.each_value do |w|
         result += '-' * (w + 2) + '+'
       end
