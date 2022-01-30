@@ -456,7 +456,12 @@ module FatTable
     private
 
     def convert_and_set_type(val)
-      new_val = Convert.convert_to_type(val, type, tolerant: tolerant?)
+      begin
+        new_val = Convert.convert_to_type(val, type, tolerant: tolerant?)
+      rescue IncompatibleTypeError
+        err_msg = "attempt to add '#{val}' to column '#{header}' already typed as #{type}"
+        raise IncompatibleTypeError, err_msg
+      end
       if new_val && (type == 'NilClass' || type == 'String')
         @type =
           if [true, false].include?(new_val)

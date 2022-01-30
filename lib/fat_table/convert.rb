@@ -36,8 +36,7 @@ module FatTable
         else
           new_val = convert_to_boolean(val)
           if new_val.nil?
-            msg = "attempt to add '#{val}' to a column already typed as #{type}"
-            raise IncompatibleTypeError, msg
+            raise IncompatibleTypeError
           end
           new_val
         end
@@ -47,8 +46,7 @@ module FatTable
         else
           new_val = convert_to_date_time(val)
           if new_val.nil?
-            msg = "attempt to add '#{val}' to a column already typed as #{type}"
-            raise IncompatibleTypeError, msg
+            raise IncompatibleTypeError
           end
           new_val
         end
@@ -58,8 +56,7 @@ module FatTable
         else
           new_val = convert_to_numeric(val)
           if new_val.nil?
-            msg = "attempt to add '#{val}' to a column already typed as #{type}"
-            raise IncompatibleTypeError, msg
+            raise IncompatibleTypeError
           end
           new_val
         end
@@ -82,8 +79,7 @@ module FatTable
         else
           new_val = convert_to_string(val)
           if new_val.nil?
-            msg = "attempt to add '#{val}' to a column already typed as #{type}"
-            raise IncompatibleTypeError, msg
+            raise IncompatibleTypeError
           end
           new_val
         end

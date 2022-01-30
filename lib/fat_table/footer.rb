@@ -166,7 +166,7 @@ module FatTable
       when String
         begin
           converted_val = Convert.convert_to_type(agg, column.type)
-        rescue UserError
+        rescue UserError, IncompatibleTypeError
           converted_val = false
         end
         if converted_val
