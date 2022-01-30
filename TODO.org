@@ -1,10 +1,37 @@
+
+* TODO Specify Column Widths
+Allow a formatter to specify column widths.  This could be a number of
+characters, which would be interpreted as a number of "ems" for LaTeX.
+Cell content larger than the width would be truncated.  Any column without a
+width specified would be set at the width of the longest value in that cell,
+after initial formatting.
+
+#+begin_SRC ruby
+  tab.to_text do |f|
+    f.widths(a: 13, b: 30)
+  end
+#+end_SRC
+
+Possible enhancements:
+- specify an overall width and column widths as decimal or fractions, so that
+  a column's width would be that fraction of the overall width.
+- specify a Range for a width, so that the column would at least min and at
+  most max, otherwise the width of its largest cell.
+
 * TODO Conversion to Spreadsheets
 - State "TODO"       from              [2017-04-21 Fri 10:36]
 This is a [[https://github.com/westonganger/spreadsheet_architect][gem]] that I can include into the Table model to convert a table into
 a spread-sheet, or even a sheet in a multi-sheet spreadsheet file.
 
-* TODO Add from_yql for fetching from Yahoo
+* TODO Add Quandl or EODDATA Queries
+Possible replacements for YQL.
+
+* CNCL Add from_yql for fetching from Yahoo
+CLOSED: [2022-01-30 Sun 06:03]
 - State "TODO"       from              [2017-04-21 Fri 10:35]
+
+Cancelled because Yahoo shut down the YQL api service.
+
 Add a constructor to allow fetching stock data from yql.  Perhaps grab all
 available fields, then allow a select of those of interest.
 
