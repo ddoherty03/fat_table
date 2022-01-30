@@ -532,7 +532,7 @@ module FatTable
       valid_keys = table.headers + %i[string numeric datetime boolean nil]
       invalid_keys = (fmts.keys - valid_keys).uniq
       unless invalid_keys.empty?
-        msg = "invalid #{location} column or type: #{invalid_keys.join(',')}"
+        msg = "invalid #{location} column or type: #{invalid_keys.join(', ')}"
         raise UserError, msg
       end
 
