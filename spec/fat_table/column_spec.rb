@@ -379,6 +379,7 @@ module FatTable
         @dates = Column.new(header: 'dates', items: dates)
         strs = ['four', nil, 'score', 'and seven', nil, 'years', 'ago', nil]
         @strs = Column.new(header: 'strs', items: strs)
+        @nils = Column.new(header: 'nils', items: [nil, nil, nil, nil, nil])
       end
 
       it 'applies the `first` aggregate' do
@@ -386,6 +387,7 @@ module FatTable
         expect(@bools.first).to eq(true)
         expect(@dates.first).to eq(Date.new(2017, 1, 22))
         expect(@strs.first).to eq('four')
+        expect(@nils.first).to eq(nil)
       end
 
       it 'applies the `last` aggregate' do
@@ -393,6 +395,7 @@ module FatTable
         expect(@bools.last).to eq(false)
         expect(@dates.last).to eq(Date.new(2011, 2, 18))
         expect(@strs.last).to eq('ago')
+        expect(@nils.last).to eq(nil)
       end
 
       it 'applies the `range` aggregate' do
@@ -400,6 +403,7 @@ module FatTable
         expect{ @bools.range }.to raise_error /cannot/
         expect(@dates.range).to eq(Date.parse('1957-09-22')..Date.parse('2017-01-22'))
         expect(@strs.range).to eq('ago'..'years')
+        expect(@nils.range).to eq(nil)
       end
 
       it 'applies the `sum` aggregate' do
@@ -408,6 +412,7 @@ module FatTable
         expect { @bools.sum }.to raise_error(/cannot be applied/)
         expect { @dates.sum }.to raise_error(/cannot be applied/)
         # expect { @strs.sum }.to raise_error(/cannot be applied/)
+        expect(@nils.sum).to eq(0)
       end
 
       it 'applies the `count` aggregate' do
@@ -415,6 +420,7 @@ module FatTable
         expect(@bools.count).to eq(4)
         expect(@dates.count).to eq(4)
         expect(@strs.count).to eq(5)
+        expect(@nils.count).to eq(5)
       end
 
       it 'applies the `min` aggregate' do
@@ -422,6 +428,7 @@ module FatTable
         expect { @bools.min }.to raise_error(/cannot be applied/)
         expect(@dates.min).to eq(Date.parse('1957-09-22'))
         expect(@strs.min).to eq('ago')
+        expect(@nils.min).to eq(nil)
       end
 
       it 'applies the `max` aggregate' do
@@ -429,6 +436,7 @@ module FatTable
         expect { @bools.max }.to raise_error(/cannot be applied/)
         expect(@dates.max).to eq(Date.parse('2017-01-22'))
         expect(@strs.max).to eq('years')
+        expect(@nils.max).to eq(nil)
       end
 
       it 'applies the `avg` aggregate' do
@@ -436,6 +444,7 @@ module FatTable
         expect { @bools.avg }.to raise_error(/cannot be applied/)
         expect(@dates.avg).to eq(DateTime.parse('1999-04-28 18:00'))
         expect { @strs.avg }.to raise_error(/cannot be applied/)
+        expect(@nils.avg).to eq(0)
       end
 
       it 'applies the `var` aggregate' do
@@ -443,6 +452,7 @@ module FatTable
         expect { @bools.var }.to raise_error(/cannot be applied/)
         expect(@dates.var).to eq(103600564.25)
         expect { @strs.var }.to raise_error(/cannot be applied/)
+        expect(@nils.var).to eq(0)
       end
 
       it 'applies the `pvar` aggregate' do
@@ -452,6 +462,7 @@ module FatTable
         expect { @bools.pvar }.to raise_error(/cannot be applied/)
         expect(@dates.pvar).to eq(77700423.1875)
         expect { @strs.pvar }.to raise_error(/cannot be applied/)
+        expect(@nils.pvar).to eq(0)
       end
 
       it 'applies the `dev` aggregate' do
@@ -459,6 +470,7 @@ module FatTable
         expect { @bools.dev }.to raise_error(/cannot be applied/)
         expect(@dates.dev.round(2)).to eq(10178.44)
         expect { @strs.dev }.to raise_error(/cannot be applied/)
+        expect(@nils.dev).to eq(0)
       end
 
       it 'applies the `pdev` aggregate' do
@@ -466,6 +478,7 @@ module FatTable
         expect { @bools.pdev }.to raise_error(/cannot be applied/)
         expect(@dates.pdev.round(2)).to eq(8814.78)
         expect { @strs.pdev }.to raise_error(/cannot be applied/)
+        expect(@nils.dev).to eq(0)
       end
 
       it 'applies the `any?` aggregate' do
@@ -473,6 +486,7 @@ module FatTable
         expect(@bools.any?).to eq(true)
         expect { @dates.any? }.to raise_error(/cannot be applied/)
         expect { @strs.any? }.to raise_error(/cannot be applied/)
+        expect(@nils.any?).to eq(false)
       end
 
       it 'applies the `all?` aggregate' do
@@ -480,6 +494,7 @@ module FatTable
         expect(@bools.all?).to eq(false)
         expect { @dates.all? }.to raise_error(/cannot be applied/)
         expect { @strs.all? }.to raise_error(/cannot be applied/)
+        expect(@nils.all?).to eq(false)
       end
 
       it 'applies the `none?` aggregate' do
@@ -487,6 +502,7 @@ module FatTable
         expect(@bools.none?).to eq(false)
         expect { @dates.none? }.to raise_error(/cannot be applied/)
         expect { @strs.none? }.to raise_error(/cannot be applied/)
+        expect(@nils.none?).to eq(true)
       end
 
       it 'applies the `one?` aggregate' do
@@ -494,6 +510,7 @@ module FatTable
         expect(@bools.one?).to eq(false)
         expect { @dates.one? }.to raise_error(/cannot be applied/)
         expect { @strs.one? }.to raise_error(/cannot be applied/)
+        expect(@nils.one?).to eq(false)
       end
     end
   end

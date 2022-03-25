@@ -191,8 +191,11 @@ module FatTable
 
     # :category: Aggregates
 
-    # Return the first non-nil item in the Column.  Works with any Column type.
+    # Return the first non-nil item in the Column, or nil if all items are
+    # nil.  Works with any Column type.
     def first
+      return nil if items.all?(&:nil?)
+
       if type == 'String'
         items.reject(&:blank?).first
       else
@@ -204,6 +207,8 @@ module FatTable
 
     # Return the last non-nil item in the Column.  Works with any Column type.
     def last
+      return nil if items.all?(&:nil?)
+
       if type == 'String'
         items.reject(&:blank?).last
       else
@@ -213,9 +218,11 @@ module FatTable
 
     # :category: Aggregates
 
-    # Return a count of the non-nil items in the Column.  Works with any Column
-    # type.
+    # Return a count of the non-nil items in the Column, or the size of the
+    # column if all items are nil.  Works with any Column type.
     def count
+      return items.size if items.all?(&:nil?)
+
       if type == 'String'
         items.reject(&:blank?).count.to_d
       else
@@ -225,8 +232,8 @@ module FatTable
 
     # :category: Aggregates
 
-    # Return the smallest non-nil, non-blank item in the Column.  Works with
-    # numeric, string, and datetime Columns.
+    # Return the smallest non-nil, non-blank item in the Column, or nil if all
+    # items are nil.  Works with numeric, string, and datetime Columns.
     def min
       only_with('min', 'NilClass', 'Numeric', 'String', 'DateTime')
       if type == 'String'
@@ -238,8 +245,8 @@ module FatTable
 
     # :category: Aggregates
 
-    # Return the largest non-nil, non-blank item in the Column.  Works with
-    # numeric, string, and datetime Columns.
+    # Return the largest non-nil, non-blank item in the Column, or nil if all
+    # items are nil.  Works with numeric, string, and datetime Columns.
     def max
       only_with('max', 'NilClass', 'Numeric', 'String', 'DateTime')
       if type == 'String'
@@ -251,20 +258,23 @@ module FatTable
 
     # :category: Aggregates
 
-    # Return a Range object for the smallest to largest value in the column.
-    # Works with numeric, string, and datetime Columns.
+    # Return a Range object for the smallest to largest value in the column,
+    # or nil if all items are nil.  Works with numeric, string, and datetime
+    # Columns.
     def range
       only_with('range', 'NilClass', 'Numeric', 'String', 'DateTime')
+      return nil if items.all?(&:nil?)
+
       Range.new(min, max)
     end
 
     # :category: Aggregates
 
-    # Return the sum of the non-nil items in the Column.  Works with numeric and
-    # string Columns. For a string Column, it will return the concatenation of
-    # the non-nil items.
+    # Return the sum of the non-nil items in the Column, or 0 if all items are
+    # nil.  Works with numeric and string Columns. For a string Column, it
+    # will return the concatenation of the non-nil items.
     def sum
-      return nil if type == 'NilClass'
+      return 0 if type == 'NilClass' || items.all?(&:nil?)
 
       only_with('sum', 'Numeric', 'String')
       if type == 'String'
@@ -276,12 +286,12 @@ module FatTable
 
     # :category: Aggregates
 
-    # Return the average value of the non-nil items in the Column.  Works with
-    # numeric and datetime Columns.  For datetime Columns, it converts each date
-    # to its Julian day number, computes the average, and then converts the
-    # average back to a DateTime.
+    # Return the average value of the non-nil items in the Column, or 0 if all
+    # items are nil.  Works with numeric and datetime Columns.  For datetime
+    # Columns, it converts each date to its Julian day number, computes the
+    # average, and then converts the average back to a DateTime.
     def avg
-      return nil if type == 'NilClass'
+      return 0 if type == 'NilClass' || items.all?(&:nil?)
 
       only_with('avg', 'DateTime', 'Numeric')
       itms = items.filter_to_type(type)
@@ -297,12 +307,13 @@ module FatTable
     # :category: Aggregates
 
     # Return the sample variance (the unbiased estimator of the population
-    # variance using a divisor of N-1) as the average squared deviation from the
-    # mean, of the non-nil items in the Column. Works with numeric and datetime
-    # Columns. For datetime Columns, it converts each date to its Julian day
-    # number and computes the variance of those numbers.
+    # variance using a divisor of N-1) as the average squared deviation from
+    # the mean, of the non-nil items in the Column, or 0 if all items are
+    # nil. Works with numeric and datetime Columns. For datetime Columns, it
+    # converts each date to its Julian day number and computes the variance of
+    # those numbers.
     def var
-      return nil if type == 'NilClass'
+      return 0 if type == 'NilClass' || items.all?(&:nil?)
 
       only_with('var', 'DateTime', 'Numeric')
       all_items =
@@ -325,11 +336,12 @@ module FatTable
 
     # Return the population variance (the biased estimator of the population
     # variance using a divisor of N) as the average squared deviation from the
-    # mean, of the non-nil items in the Column. Works with numeric and datetime
-    # Columns. For datetime Columns, it converts each date to its Julian day
-    # number and computes the variance of those numbers.
+    # mean, of the non-nil items in the Column, or 0 if all items are
+    # nil. Works with numeric and datetime Columns. For datetime Columns, it
+    # converts each date to its Julian day number and computes the variance of
+    # those numbers.
     def pvar
-      return nil if type == 'NilClass'
+      return 0 if type == 'NilClass' || items.all?(&:nil?)
 
       only_with('var', 'DateTime', 'Numeric')
       n = items.filter_to_type(type).size.to_d
@@ -341,12 +353,12 @@ module FatTable
 
     # Return the sample standard deviation (the unbiased estimator of the
     # population standard deviation using a divisor of N-1) as the square root
-    # of the sample variance, of the non-nil items in the Column. Works with
-    # numeric and datetime Columns. For datetime Columns, it converts each date
-    # to its Julian day number and computes the standard deviation of those
-    # numbers.
+    # of the sample variance, of the non-nil items in the Column, or 0 if all
+    # items are nil. Works with numeric and datetime Columns. For datetime
+    # Columns, it converts each date to its Julian day number and computes the
+    # standard deviation of those numbers.
     def dev
-      return nil if type == 'NilClass'
+      return 0 if type == 'NilClass' || items.all?(&:nil?)
 
       only_with('dev', 'DateTime', 'Numeric')
       var.sqrt(20)
@@ -355,13 +367,13 @@ module FatTable
     # :category: Aggregates
 
     # Return the population standard deviation (the biased estimator of the
-    # population standard deviation using a divisor of N) as the square root of
-    # the population variance, of the non-nil items in the Column. Works with
-    # numeric and datetime Columns. For datetime Columns, it converts each date
-    # to its Julian day number and computes the standard deviation of those
-    # numbers.
+    # population standard deviation using a divisor of N) as the square root
+    # of the population variance, of the non-nil items in the Column, or 0 if
+    # all items are nil. Works with numeric and datetime Columns. For datetime
+    # Columns, it converts each date to its Julian day number and computes the
+    # standard deviation of those numbers.
     def pdev
-      return nil if type == 'NilClass'
+      return 0 if type == 'NilClass' || items.all?(&:nil?)
 
       only_with('dev', 'DateTime', 'Numeric')
       Math.sqrt(pvar)
@@ -370,9 +382,9 @@ module FatTable
     # :category: Aggregates
 
     # Return true if any of the items in the Column are true; otherwise return
-    # false.  Works only with boolean Columns.
+    # false, or false if all items are nil.  Works only with boolean Columns.
     def any?
-      return nil if type == 'NilClass'
+      return false if type == 'NilClass' || items.all?(&:nil?)
 
       only_with('any?', 'Boolean')
       items.filter_to_type(type).any?
@@ -381,9 +393,9 @@ module FatTable
     # :category: Aggregates
 
     # Return true if all of the items in the Column are true; otherwise return
-    # false.  Works only with boolean Columns.
+    # false, or false if all items are nil.  Works only with boolean Columns.
     def all?
-      return nil if type == 'NilClass'
+      return false if type == 'NilClass' || items.all?(&:nil?)
 
       only_with('all?', 'Boolean')
       items.filter_to_type(type).all?
@@ -391,10 +403,11 @@ module FatTable
 
     # :category: Aggregates
 
-    # Return true if none of the items in the Column are true; otherwise return
-    # false.  Works only with boolean Columns.
+    # Return true if none of the items in the Column are true; otherwise
+    # return false, or true if all items are nil.  Works only with boolean
+    # Columns.
     def none?
-      return nil if type == 'NilClass'
+      return true if type == 'NilClass' || items.all?(&:nil?)
 
       only_with('none?', 'Boolean')
       items.filter_to_type(type).none?
@@ -405,7 +418,7 @@ module FatTable
     # Return true if precisely one of the items in the Column is true;
     # otherwise return false.  Works only with boolean Columns.
     def one?
-      return nil if type == 'NilClass'
+      return false if type == 'NilClass' || items.all?(&:nil?)
 
       only_with('one?', 'Boolean')
       items.filter_to_type(type).one?
@@ -415,6 +428,7 @@ module FatTable
 
     def only_with(agg, *valid_types)
       return self if valid_types.include?(type)
+
       msg = "aggregate '#{agg}' cannot be applied to a #{type} column"
       raise UserError, msg
     end
