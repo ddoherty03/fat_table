@@ -711,15 +711,16 @@ module FatTable
           fmt.format(ref: '5.0', code: 'C', raw: ',0.0R', shares: ',0.0R',
                      price: '0.3', bool: 'Y')
           fmt.format_for(:header, string: 'CB')
-          tgfoot = fmt.gfoot('Group Total', price: :sum, raw: :sum, shares: :sum, bool: 'Static')
-          sqft = fmt.gfoot('Sqrt Group Total', price: ->(f, c, k) { tgfoot.price(k).sqrt(12) },
-                    raw: ->(f, c, k) { tgfoot.raw(k).sqrt(12) },
-                    shares: ->(f, c, k) { tgfoot.shares(k).sqrt(12) },
-                    bool: 'Static')
-          tfoot = fmt.foot('Total', :date, price: :sum, raw: :sum, shares: :sum)
-          fmt.foot('Sqrt Total', :date, price: ->(f, c) { tfoot.price.sqrt(12) },
-                   shares: ->(f, c) { tfoot.shares.sqrt(12) },
-                   raw: ->(f, c) { tfoot.raw.sqrt(12) })
+          tgfoot = fmt.gfoot(label: 'Group Total', price: :sum, raw: :sum, shares: :sum, bool: 'Static')
+          sqft = fmt.gfoot(label: 'Sqrt Group Total',
+                           price: ->(k) { tgfoot.price(k).sqrt(12) },
+                           raw: ->(k) { tgfoot.raw(k).sqrt(12) },
+                           shares: ->(k) { tgfoot.shares(k).sqrt(12) },
+                           bool: 'Static')
+          tfoot = fmt.foot(label: 'Total', label_col: :date, price: :sum, raw: :sum, shares: :sum)
+          fmt.foot(label: 'Sqrt Total', label_col: :date, price: -> { tfoot.price.sqrt(12) },
+                   shares: -> { tfoot.shares.sqrt(12) },
+                   raw: -> { tfoot.raw.sqrt(12) })
           str = fmt.output
           expect(str.length).to be > 10
           expect(str).to include("Group Total|||913,733|913,733|13.035||Static")

@@ -133,17 +133,16 @@ module FatTable
 
         it 'computes a lambda aggregator' do
           foot = Footer.new('Summary', tab, label_col: :s)
-          foot.add_value(:a, ->(f, c) { f.items(c).inject(&:*) })
+          foot.add_value(:a, ->(c) { c.items.inject(&:*) })
           expect(foot.a).to eq(5 * 4 * 7)
-          foot.add_value(:c, ->(f, c) { f.items(c).map { |x| x*x }.sum.sqrt(12) })
+          foot.add_value(:c, ->(c) { c.items.map { |x| x*x }.sum.sqrt(12) })
           expect(foot.c).to be_within(0.001).of(7377.99)
         end
 
-        it 'lambda rejects incompatible types' do
+        it 'lambda converts incompatible types to inspect strings' do
           foot = Footer.new('Summary', tab, label_col: :s)
-          expect {
-            foot.add_value(:a, ->(f, _c) { f.table })
-          }.to raise_error(/lambda cannot return/)
+          foot.add_value(:a, ->(_c, f) { f.table })
+          expect(foot[:a]).to match(/FatTable::Table/)
         end
       end
     end
@@ -189,6 +188,29 @@ module FatTable
           expect(g.label_col).to eq(:ref)
           expect(g.group).to be true
           expect(g.number_of_groups).to eq(4)
+        end
+
+        it 'calculates group labels from a one-argument lambda' do
+          g = Footer.new(->(k) { "Group #{k}"}, tab, group: true)
+          expect(g.table).to eq(tab)
+          expect(g.label_col).to eq(:ref)
+          expect(g.group).to be true
+          expect(g.number_of_groups).to eq(4)
+          g.number_of_groups.times do |k|
+            expect(g.label(k)).to match(/group #{k}/i)
+          end
+        end
+
+        it 'calculates group labels from a two-argument lambda' do
+          g = Footer.new(->(k, f) { "Group #{k} as of #{f.column(:date, k).max}"},
+                         tab, group: true)
+          expect(g.table).to eq(tab)
+          expect(g.label_col).to eq(:ref)
+          expect(g.group).to be true
+          expect(g.number_of_groups).to eq(4)
+          g.number_of_groups.times do |k|
+            expect(g.label(k)).to match(/group #{k}/i)
+          end
         end
 
         it 'adds a single value to a group footer' do
@@ -366,17 +388,19 @@ module FatTable
         end
 
         it 'computes a lambda aggregator' do
-          foot.add_value(:raw, ->(f, c, k) { f.items(c, k).map { |x| x*x }.sum.sqrt(12) })
-          expect(foot.raw[0]).to be_within(0.0001).of(795546.2)
-          expect(foot.raw[1]).to be_within(0.0001).of(146071.986175)
-          expect(foot.raw[2]).to be_within(0.0001).of(63066.9773891)
-          expect(foot.raw[3]).to be_within(0.0001).of(6679.0)
+          foot.add_value(:raw, ->(k, c, f) { f.table[:raw].map { |x| x*x*(k+1)/c.count }.sum.sqrt(12) })
+          expect(foot.raw[0]).to be_within(0.0001).of(811327.8216)
+          expect(foot.raw[1]).to be_within(0.0001).of(662446.3924)
+          expect(foot.raw[2]).to be_within(0.0001).of(531138.73658)
+          expect(foot.raw[3]).to be_within(0.0001).of(1622655.6433)
         end
 
-        it 'lambda rejects incompatible types' do
-          expect {
-            foot.add_value(:shares, ->(f, c, k) { f.table })
-          }.to raise_error(/lambda cannot return/)
+        it 'lambda converts incompatible types to inspect strings' do
+          foot.add_value(:shares, ->(_k, _c, f) { f.table })
+          expect(foot[:shares][0]).to match(/FatTable::Table/)
+          expect(foot[:shares][1]).to match(/FatTable::Table/)
+          expect(foot[:shares][2]).to match(/FatTable::Table/)
+          expect(foot[:shares][3]).to match(/FatTable::Table/)
         end
       end
     end
