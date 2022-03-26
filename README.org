@@ -31,8 +31,9 @@ The following is for org.
   "Current version is: #{FatTable::VERSION}"
 #+end_src
 
+#+RESULTS:
 #+begin_EXAMPLE
-Current version is: 0.5.4
+Current version is: 0.6.0
 #+end_EXAMPLE
 
 * Introduction
@@ -148,6 +149,7 @@ org-mode buffer as an org-table, ready for processing by other code blocks.
       - [[#type-and-column-priority][Type and Column priority]]
     - [[#footers][Footers]]
       - [[#adding-footers][Adding Footers]]
+      - [[#dynamic-labels][Dynamic Labels]]
       - [[#aggregators][Aggregators]]
       - [[#footer-objects][Footer objects]]
       - [[#footer-examples][Footer Examples]]
@@ -534,6 +536,7 @@ You can create an empty table with ~FatTable::Table.new~ or, the shorter form,
 in the added rows determine the names of the headers:
 
 #+BEGIN_SRC ruby :results silent
+  require 'fat_table'
   tab = FatTable.new
   tab << { a: 1, b: 2, c: "<2017-01-21>", d: 'f', e: '' }
   tab << { a: 3.14, b: 2.17, c: '[2016-01-21 Thu]', d: 'Y', e: nil }
@@ -1754,8 +1757,6 @@ available in ~ft_console~ as ~@tab_a~ and ~@tab_b~:
     |  2 | Engineering |      2 |
     |  3 | Finance     |      7 |
     EOS
-
-  tab_b = FatTable.from_org_string(tab_b_str)
 #+END_SRC
 
 Here is ~tab_a~:
@@ -2465,7 +2466,6 @@ Finance&
  {:id=>"3", :dept=>"Finance", :emp_id=>"7"}]
 #+end_EXAMPLE
 
-
 *** Formatting Directives
 The formatting methods explained in the next section all take formatting
 directives as strings in which letters and other characters signify what
@@ -2706,12 +2706,27 @@ but not for other nils, such as in the last row of the ~:join_date~ column.
 
 *** Footers
 **** Adding Footers
-You can call the ~footer,~ ~gfooter, foot, and gfoot~ methods on ~Formatter~
-objects to add footers and group footers. Note that all of these methods
-return a ~Footer~ object that can be accessed to extract the computed values.
-All of these methods return the ~FatTable::Footer~ object so constructed. It
-can be used to access the values and other attributes of the footer
-computed. Their signatures are:
+You can call the ~foot~, ~gfoot~, ~footer,~ or ~gfooter~, methods on
+~Formatter~ objects to add footers and group footers. Note that all of these
+methods return a ~Footer~ object that can be accessed to extract the computed
+values.  All of these methods return the ~FatTable::Footer~ object so
+constructed. It can be used to access the values and other attributes of the
+footer computed. Their signatures are:
+
+- ~foot(label: label, label_col: nil, **agg_cols)~ :: where ~label~ is a label
+  to be placed in the column with header ~label_col~, or, if ommitted, in the
+  first cell of the footer (unless that column is named as one of the
+  ~agg_cols~, in which case the label is ignored), and ~**agg_cols~ is zero or
+  more hash-like parameters with a column symbol as a key and a valid
+  aggregate as the value. This causes a table-wide header to be added at the
+  bottom of the table applying ~agg~, to the ~agg_cols~. A table can have any
+  number of footers attached, and they will appear at the bottom of the output
+  table in the order they are given.
+
+- ~gfoot(label: 'Group Total', label_col: nil, **agg_cols)~ :: where the
+  parameters have the same meaning as for the ~foot~ method, but results in a
+  footer for each group in the table rather than the table as a whole. These
+  will appear in the output table just below each group.
 
 - ~footer(label, *sum_cols, **agg_cols)~ :: where ~label~ is a label to be
   placed in the first cell of the footer (unless that column is named as one
@@ -2724,25 +2739,10 @@ computed. Their signatures are:
   number of footers attached, and they will appear at the bottom of the output
   table in the order they are given.
 
-- ~foot(label, label_col, **agg_cols)~ :: where ~label~ is a label to be
-  placed in the column with header ~label_col~, or, if ommitted, in the first
-  cell of the footer (unless that column is named as one of the ~agg_cols~, in
-  which case the label is ignored), and ~**agg_cols~ is zero or more hash-like
-  parameters with a column symbol as a key and a valid aggregate as the
-  value. This causes a table-wide header to be added at the bottom of the
-  table applying ~agg~, to the ~agg_cols~. A table can have any number of
-  footers attached, and they will appear at the bottom of the output table in
-  the order they are given.
-
 - ~gfooter(label, *sum_cols, **agg_cols)~ :: where the parameters have the
   same meaning as for the ~footer~ method, but results in a footer for each
   group in the table rather than the table as a whole. These will appear in
   the output table just below each group.
-
-- ~gfoot(label, label_col, **agg_cols)~ :: where the parameters have the same
-  meaning as for the ~foot~ method, but results in a footer for each group in
-  the table rather than the table as a whole. These will appear in the output
-  table just below each group.
 
 There are also a number of convenience methods for adding common footers:
 - ~sum_footer(*cols)~ :: Add a footer summing the given columns with the label
@@ -2762,6 +2762,39 @@ There are also a number of convenience methods for adding common footers:
 - ~max_gfooter(*cols)~ :: Add a group footer showing the maximum for the given
      columns with the label 'Group Maximum'.
 
+**** Dynamic Labels
+Most of the time, you will want a fixed string as the label.  However,
+especially in the case of a group footer, you might want a dynamically
+contructed label.  You can use a proc or lambda for a label, and it will be
+computed for you.  In the case of non-group footers, the proc takes a single
+parameter, the footer object itself.  This allows you to make the label a
+function of other footer values, for example, you could make the label
+include the most recent year from the date column:
+
+#+begin_src ruby
+  fmtr.foot(label: -> (f) { "Average (latest year #{f.column(:date).max.year})" },
+  temp: :avg)
+#+end_src
+
+In the case of a group footer, the lambda or proc may take either one or qtwo parameters.
+If it takes one, the parameter is simply the 0-based number of the group:
+
+#+begin_src ruby
+  fmtr.gfoot(label: -> (k) { "Group #{(k+1).to_roman} Average" }, temp: :avg)
+#+end_src
+This would format the label with a roman numeral (assuming you defined a
+method to do so) for the group number.
+
+If it takes two arguments, the second argument is the footer itself, as with
+non-group footers:
+
+#+begin_src ruby
+    fmtr.gfoot(label: -> (k, f) { "Year #{f.column(:date, k).max.year} Group #{(k+1).to_roman} Average" },
+               temp: :avg)
+#+end_src
+This would add the group's year to label, assuming the :date column of the
+footer's table had the same year for each item in the group.
+
 **** Aggregators
 When adding a footer with the above methods, you can specify an aggregator for
 each column named in the ~agg_cols~ parameter.  There are several candidates
@@ -2778,6 +2811,9 @@ for what you can use for an aggregator:
     In the case of datetime columns, these aggrgators convert the dates to
     julian date numbers, perform the calculation, then convert the result back
     to a datetime object.
+    Apart from the built-in aggrgators, you could define your own by opening the
+    FatTable::Column class and adding a suitable instance method.  In that
+    case, the symbol could also refer to the method you defined.
 - String :: using a string as an aggrgegator can result in:
   + the string being converted to an object matching the type of the column
     (for example, using '$1,888' in a numeric column puts the constant number
@@ -2792,11 +2828,16 @@ for what you can use for an aggregator:
 - A Lambda :: finally, you can provide a lambda for performing arbitrary
   calculations and placing the result in the footer field.  The number of
   arguments the lambda takes can vary:
-  * If the lambda is used in a group footer, it must take a single integer
-    argument that is set to the group number being calculated and /can/ take a
-    second argument for the column symbol in which it appears, or
-  * If the lambda is used in an ordinary footer, it either takes no arguments,
-    or a single argument for the column symbol in which it appears.
+  * If the lambda is used in an ordinary footer column, it can take 0, 1, or 2
+    arguments: (1) the first argument, if given, will be set to the
+    FatTable::Column object for that column and (2) the second argument, if
+    given, will be set to the Footer object itself.
+  * If the lambda is used in a group footer column, it can 0, 1, 2, or 3
+    arguments: (1) the first argument, if given, will be set to the group's
+    0-based index number, (2) the second argument, if given, will be set to a
+    FatTable::Column object consisting of those items in the group's column,
+    and (3) the third argument, if given, will be set to the Footer object
+    itself.
 
 **** Footer objects
 Each of the methods for adding a footer to a ~Formatter~ returns a ~Footer~ object
@@ -2819,7 +2860,6 @@ their computed values.  Here are the accessors available on a
 - ~to_h~, ~to_h(k)~ :: Return a Hash with a key for each column header mapped
   to the footer value for that column, nil for unused columns.  Use the index
   ~k~ to specify which group to access in the case of a group footer.
-
 
 **** Footer Examples
 As a reminder, here is the table, ~tab_a~ defined earlier:
@@ -2981,18 +3021,20 @@ But it can be any type.  Here we pick a lottery winner from the employee ids.
 #+end_EXAMPLE
 
 ***** Lambdas
-Perhaps the most flexible form of aggregator is a lambda form.  They require 2
-or 3 parameters in non-group and group footers, respectively:
+Perhaps the most flexible form of aggregator is a lambda form.  They can take
+up to 2 or up to 3 parameters in non-group and group footers, respectively:
 
-- ~->(f, c) {...}~ :: in a normal, non-group footer, you must provide for two
-  paramters: the first, ~f~, will be bound to the footer in which the lambda
-  appears and the second, ~c~, will be bound to the column header to which the
-  lambda is attached.
-- ~->(f, c, k)~ :: in a group footer, you must provide for three paramters:
-  the first, ~f~, will be bound to the footer in which the lambda appears, the
-  second, ~c~, will be bound to the column header to which the lambda is
-  attached, and the third, ~k~ will be bound to the group number of the group
-  being evaluated.
+- ~->(c, f) {...}~ :: in a normal, non-group footer, you may provide for up to
+  two paramters: the first, ~c~, if given, will be bound to the column header
+  to which the lambda is attached and and the second, ~f~, if given will be
+  bound to the footer in which the lambda appears.  A lambda with no
+  parameters can be provided as well if none are needed.
+- ~->(k, c, f)~ :: in a group footer, you may provide for up to three
+  paramters: the the first, ~k~, if provided, will be bound to the group
+  number of the group being evaluated, the second, ~c~, if provided, will be
+  bound to the column header to which the lambda is attached, and the third,
+  ~f~, will be bound to the footer in which the lambda appears. A lambda with
+  no parameters can be provided as well if none are needed.
 
 With the first argument, the footer itself becomes available and with it all
 the things accessible with the footers, including the items in the current
@@ -3003,7 +3045,7 @@ Compute the summ of the squares if the items in the ~:age~ column:
   tab_a.to_text do |f|
     f.format(numeric: '0.0R,', datetime: 'd[%v]D[%v]')
     f.footer('Average', age: :avg, salary: :avg, join_date: :avg)
-    f.footer('SSQ', age: ->(f, c) { sa = f.items(c).map {|x| x * x}.sum; Math.sqrt(sa) })
+    f.footer('SSQ', age: ->(c) { sa = c.items.map {|x| x * x}.sum; Math.sqrt(sa) })
   end
 #+END_SRC
 
@@ -3032,8 +3074,8 @@ summ of the squares if the ages in each group:
   tab_a.order_with('join_date.year').to_text do |f|
     f.format(numeric: '0.0R,', datetime: 'd[%v]D[%v]', sort_key: '0.0~,')
     f.footer('Average', age: :avg, salary: :avg, join_date: :avg)
-    f.gfooter('Group SSQ', age: ->(f, c, k) { sa = f.items(c, k).map {|x| x * x}.sum; Math.sqrt(sa) })
-    f.footer('Total SSQ', age: ->(f, c) { sa = f.items(c).map {|x| x * x}.sum; Math.sqrt(sa) })
+    f.gfooter('Group SSQ', age: ->(k, c, f) { sa = c.items.map {|x| x * x}.sum; Math.sqrt(sa) })
+    f.footer('Total SSQ', age: ->(c, f) { sa = c.items.map {|x| x * x}.sum; Math.sqrt(sa) })
   end
 #+END_SRC
 
@@ -3045,19 +3087,19 @@ summ of the squares if the ages in each group:
 +-----------+-------+-----+------------+--------+-------------+----------+
 | Group SSQ |       |  45 |            |        |             |          |
 +-----------+-------+-----+------------+--------+-------------+----------+
-|         1 | Paul  |  32 | California | 20,000 | 13-JUL-2001 |     2001 |
+|         1 | Paul  |  32 | California | 20,000 | 13-JUL-2001 | 2001     |
 +-----------+-------+-----+------------+--------+-------------+----------+
 | Group SSQ |       |  32 |            |        |             |          |
 +-----------+-------+-----+------------+--------+-------------+----------+
-|         2 | Allen |  25 | Texas      |        | 13-JUL-2005 |     2005 |
-|         8 | Paul  |  24 | Houston    | 20,000 | 13-JUL-2005 |     2005 |
-|         9 | James |  44 | Norway     |  5,000 | 13-JUL-2005 |     2005 |
+|         2 | Allen |  25 | Texas      |        | 13-JUL-2005 | 2005     |
+|         8 | Paul  |  24 | Houston    | 20,000 | 13-JUL-2005 | 2005     |
+|         9 | James |  44 | Norway     |  5,000 | 13-JUL-2005 | 2005     |
 +-----------+-------+-----+------------+--------+-------------+----------+
 | Group SSQ |       |  56 |            |        |             |          |
 +-----------+-------+-----+------------+--------+-------------+----------+
-|         3 | Teddy |  23 | Norway     | 20,000 | 13-DEC-2007 |     2007 |
-|         4 | Mark  |  25 | Rich-Mond  | 65,000 | 13-DEC-2007 |     2007 |
-|         5 | David |  27 | Texas      | 85,000 | 13-DEC-2007 |     2007 |
+|         3 | Teddy |  23 | Norway     | 20,000 | 13-DEC-2007 | 2007     |
+|         4 | Mark  |  25 | Rich-Mond  | 65,000 | 13-DEC-2007 | 2007     |
+|         5 | David |  27 | Texas      | 85,000 | 13-DEC-2007 | 2007     |
 +-----------+-------+-----+------------+--------+-------------+----------+
 | Group SSQ |       |  43 |            |        |             |          |
 +-----------+-------+-----+------------+--------+-------------+----------+
