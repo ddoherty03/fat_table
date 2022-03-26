@@ -2,7 +2,7 @@
 
 module FatTable
   class Footer
-    attr_reader :table, :label, :label_col, :values, :group
+    attr_reader :table, :label_col, :values, :group
 
     ###########################################################################
     # Constructors
@@ -15,6 +15,7 @@ module FatTable
     # for the footer are added later with the #add_value method.
     def initialize(label = 'Total', table, label_col: nil, group: false)
       @label = label
+
       unless table.is_a?(Table)
         raise ArgumentError, 'Footer.new needs a table argument'
       end
@@ -30,14 +31,7 @@ module FatTable
       @group = group
       @group_cols = {}
       @values = {}
-      if group
-        @values[@label_col] = []
-        table.number_of_groups.times do
-          @values[@label_col] << @label
-        end
-      else
-        @values[@label_col] = [@label]
-      end
+      insert_labels_in_label_col
       make_accessor_methods
     end
 
@@ -69,6 +63,11 @@ module FatTable
       else
         values[col] = [calc_val(agg, col)]
       end
+    end
+
+    # Return the value of the label, for the kth group if grouped.
+    def label(k = 0)
+      calc_label(k)
     end
 
     # :category: Accessors
@@ -108,8 +107,10 @@ module FatTable
       if group && k.nil?
         raise ArgumentError, 'Footer#column(h, k) missing the group number argument k'
       end
+
       if group
-        k.nil? ? @group_cols[h] : @group_cols[h][k]
+        @group_cols[h] ||= table.group_cols(h)
+        @group_cols[h][k]
       else
         table.column(h)
       end
@@ -151,14 +152,13 @@ module FatTable
 
     # Evaluate the given agg for the header col and, in the case of a group
     # footer, the group k.
-    def calc_val(agg, col, k = nil)
-      column =
-        if group
-          @group_cols[col] ||= table.group_cols(col)
-          @group_cols[col][k]
-        else
-          table.column(col)
-        end
+    def calc_val(agg, h, k = nil)
+      column = column(h, k)
+
+      # Convert Date and Time objects to DateTime
+      if [Date, Time].include?(agg.class)
+        agg = agg.to_datetime
+      end
 
       case agg
       when Symbol
@@ -197,11 +197,23 @@ module FatTable
           calc_val(result, col, k)
         when column.type.constantize
           result
+    # Calculate the label for the kth group, using k = 0 for non-group
+    # footers.  If the label is a proc, call it with the group number.
+    def calc_label(k)
+      case @label
+      when Proc
+        case @label.arity
+        when 0
+          @label.call
+        when 1
+          @label.call(k)
+        when 2
+          @label.call(k, self)
         else
-          raise ArgumentError, "lambda cannot return an object of class #{result.class}"
+          raise ArgumentError, "footer label proc may only have 1 argument for group number k"
         end
       else
-        agg
+        @label.to_s
       end
     end
 
