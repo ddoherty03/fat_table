@@ -181,41 +181,74 @@ module FatTable
     end
 
     # :category: Add Footers
-
-    # A simpler method for adding a footer to the formatted output having the
-    # label +label+ placed in the column with the header +label_col+ or in the
-    # first column if +label_col+ is ommitted.  The remaining hash arguments
-    # apply an aggregate to the values of the column, which can be:
     #
-    # (1) a symbol representing one of the builtin aggregates, i.e., :first,
-    # :last, :range, :sum, :count, :min, :max, :avg, :var, :pvar, :dev, :pdev,
-    # :any?, :all?, :none?, and :one?,
+    # A keyword method for adding a footer to the formatted output having the
+    # label +label:+ (default 'Total') placed in the column with the header
+    # +label_col:+ or in the first column if +label_col+ is ommitted.
+    # This assigns a fixed group label to be placed in the :date column:
+    # #+begin_src ruby
+    #   fmtr.foot(label: "Year's Average", label_col: :date, temp: avg)
+    # #+end_src
     #
-    # (2) an arbitrary value of one of the four supported types: Boolean,
-    # DateTime, Numeric, or String: true, false, 3.14159, 'Total debits', or a
-    # string that is convertible into one of these types by the usual methods
-    # used in contructing a table,
+    # Besides being a fixed string, the +label:+ can also be a proc or lambda
+    # taking one argument, the foooter itself.
+    # Thus, a label such as:
+    #
+    # #+begin_src ruby
+    #     fmtr.foot(label: -> (f) { "Average (latest year #{f.column(:date).max.year})" },
+    #                temp: :avg)
+    # #+end_src
+    # And this would add the highest number to label, assuming the :date column
+    # of the footer's table had the year for each item.
+    #
+    # The remaining hash arguments apply an aggregate to the values of the
+    # column, which can be:
+    #
+    # 1. a symbol representing one of the builtin aggregates, i.e., :first,
+    #    :last, :range, :sum, :count, :min, :max, :avg, :var, :pvar, :dev,
+    #    :pdev, :any?, :all?, :none?, and :one?, or a symbol for your own
+    #    aggregate defined as an instance method on FatTable::Column.
+    # 2. a fixed string, but it the string can be converted into the Column's
+    #    type, it will be converted, so the string '3.14159' will be converted
+    #    to 3.14159 in a Numeric column.
+    # 3. a value of the Column's type, so Date.today would simply be evaluated
+    #    for a Numeric column.
+    # 4. most flexibly of all, a proc or lambda taking arguments: f, the
+    #    footer object itself; c, the column (or in the case of a group
+    #    footer, the sub-column) corresponding to the current header, and in
+    #    the case of a group footer, k, the number of the group (0-based).
+    # 5. Any other value is converted to a string with #to_s.
     #
     # Examples:
     #
     # Put the label in the :dickens column of the footer and the maximum value
     # from the :alpha column in the :alpha column of the footer.
     #
-    #   fmtr.foot('Best', :dickens, alpha: :max)
+    #   fmtr.foot(label: 'Best', label_col: :dickens, alpha: :max)
     #
     # Put the label 'Today' in the first column of the footer and today's date
     # in the :beta column.
     #
-    #   fmtr.foot('Today', beta: Date.today)
+    #   fmtr.foot(label: 'Today', beta: Date.today)
     #
     # Put the label 'Best' in the :dickens column of the footer and the string
     # 'Tale of Two Cities' in the :alpha column of the footer.  Since it can't
     # be interpreted as Boolean, Numeric, or DateTime, it is placed in the
     # footer literally.
     #
-    #   fmtr.foot('Best', :dickens, alpha: 'A Tale of Two Cities')
+    #   fmtr.foot(label: 'Best', label_col: :dickens, alpha: 'A Tale of Two
+    #   Cities')
     #
-    def foot(label, label_col = nil, **agg_cols)
+    # Use a lambda to calculate the value to be placed in the column :gamma.
+    #
+    #   fmtr.foot(label: 'Gamma', beta: :avg, gamma: ->(f, c) {
+    #     (Math.gamma(c.count) + f[:beta] } )
+    #
+    # Note that this way a footer can be made a function of the other footer
+    # values (using f[:other_col]) as well as the Column object corresponding
+    # to the lamda's column.
+    #
+    def foot(label: 'Total', label_col: nil, **agg_cols)
       foot = Footer.new(label, table, label_col: label_col)
       agg_cols.each_pair do |h, agg|
         foot.add_value(h, agg)
@@ -255,9 +288,92 @@ module FatTable
       foot
     end
 
-    # Add a group footer to the formatted output.  This method has the same
-    # usage as the #foot method, but it adds group footers.
-    def gfoot(label, label_col = nil, **agg_cols)
+    # :category: Add Footers
+    #
+    # A keyword method for adding a group footer to the formatted output
+    # having the label +label:+ (default 'Total') placed in the column with
+    # the header +label_col:+ or in the first column if +label_col+ is
+    # ommitted.
+    #
+    # This assigns a fixed group label to be placed in the :date column:
+    # #+begin_src ruby
+    #   fmtr.gfoot(label: "Year's Average", label_col: :date, temp: avg)
+    # #+end_src
+    #
+    # Besides being a fixed string, the +label:+ can also be a proc or lambda
+    # taking one or two arguments.  In the one argument form, the argument is
+    # the group number k.  If a second argument is specified, the foooter
+    # itself is passed as the argument.  Thus, a label such as:
+    #
+    # #+begin_src ruby
+    #   fmtr.gfoot(label: -> (k) { "Group #{(k+1).to_roman} Average" }, temp: :avg)
+    # #+end_src
+    # This would format the label with a roman numeral (assuming you defined a
+    # method to do so) for the group number.
+    #
+    # #+begin_src ruby
+    #     fmtr.gfoot(label: -> (k, f) { "Year #{f.column(:date, k).max.year} Group #{(k+1).to_roman} Average" },
+    #                temp: :avg)
+    # #+end_src
+    # And this would add the group's year to label, assuming the :date column
+    # of the footer's table had the same year for each item in the group.
+    #
+    #
+    # The remaining hash arguments apply an aggregate to the values
+    # of the column, which can be:
+    #
+    # 1. a symbol representing one of the builtin aggregates, i.e., :first,
+    #    :last, :range, :sum, :count, :min, :max, :avg, :var, :pvar, :dev,
+    #    :pdev, :any?, :all?, :none?, and :one?, or a symbol for your own
+    #    aggregate defined as an instance method on FatTable::Column.
+    # 2. a fixed string, but it the string can be converted into the Column's
+    #    type, it will be converted, so the string '3.14159' will be converted
+    #    to 3.14159 in a Numeric column.
+    # 3. a value of the Column's type, so Date.today would simply be evaluated
+    #    for a Numeric column.
+    # 4. most flexibly of all, a proc or lambda taking arguments: f, the
+    #    footer object itself; c, the column (or in the case of a group
+    #    footer, the sub-column) corresponding to the current header, and k,
+    #    this group's group number (0-based).
+    # 5. Any other value is converted to a string with #to_s.
+    #
+    # Examples:
+    #
+    # Put the label in the :dickens column of the footer and the maximum value
+    # from the :alpha column in the :alpha column of the footer.
+    #
+    # #+begin_src ruby
+    #   fmtr.gfoot(label: 'Best', label_col: :dickens, alpha: :max)
+    # #+end_src
+    #
+    # Put the label 'Today' in the first column of the footer and today's date
+    # in the :beta column.
+    #
+    # #+begin_src ruby
+    #   fmtr.gfoot(label: 'Today', beta: Date.today)
+    # #+end_src
+    #
+    # Put the label 'Best' in the :dickens column of the footer and the string
+    # 'Tale of Two Cities' in the :alpha column of the footer.  Since it can't
+    # be interpreted as Boolean, Numeric, or DateTime, it is placed in the
+    # footer literally.
+    #
+    # #+begin_src ruby
+    #   fmtr.gfoot(label: 'Best', label_col: :dickens, alpha: 'A Tale of Two
+    #   Cities')
+    # #+end_src
+    #
+    # Use a lambda to calculate the value to be placed in the column :gamma.
+    #
+    # #+begin_src ruby
+    #   fmtr.gfoot(label: 'Gamma', beta: :avg, gamma: ->(f, c) {
+    #     (Math.gamma(c.count) + f[:beta] } )
+    # #+end_src
+    #
+    # Note that this way a footer can be made a function of the other footer
+    # values (using f[:other_col]) as well as the Column object corresponding
+    # to the lamda's column.
+    def gfoot(label: 'Group Total', label_col: nil, **agg_cols)
       foot = Footer.new(label, table, label_col: label_col, group: true)
       agg_cols.each_pair do |h, agg|
         foot.add_value(h, agg)
