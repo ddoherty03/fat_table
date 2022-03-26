@@ -179,24 +179,52 @@ module FatTable
       when Proc
         result =
           if group
-            unless agg.arity == 3
-              msg = 'a lambda used in a group footer must have three arguments: (f, c, k)'
+            case agg.arity
+            when 0
+              agg.call
+            when 1
+              agg.call(k)
+            when 2
+              agg.call(k, column)
+            when 3
+              agg.call(k, column, self)
+            else
+              msg = 'a lambda used in a group footer may have 0 to 3  three arguments: (k, c, f)'
               raise ArgumentError, msg
             end
-            agg.call(self, col, k)
           else
-            unless agg.arity == 2
-              msg = 'a lambda used in a non-group footer must have two arguments: (f, c)'
+            case agg.arity
+            when 0
+              agg.call
+            when 1
+              agg.call(column)
+            when 2
+              agg.call(column, self)
+            else
+              msg = 'a lambda used in a non-group footer may have 0 to 2 arguments: (c, f)'
               raise ArgumentError, msg
             end
-            agg.call(self, col)
           end
-        # Make sure the result returned can be inserted into footer field.
-        case result
-        when Symbol, String
-          calc_val(result, col, k)
-        when column.type.constantize
-          result
+        # Pass the result back into this method as the new agg
+        calc_val(result, h, k)
+      else
+        agg.to_s
+      end
+    end
+
+    # Insert a possibly calculated value for the label in the appropriate
+    # @values column.
+    def insert_labels_in_label_col
+      if group
+        @values[@label_col] = []
+        table.number_of_groups.times do |k|
+          @values[@label_col] << calc_label(k)
+        end
+      else
+        @values[@label_col] = [calc_label(0)]
+      end
+    end
+
     # Calculate the label for the kth group, using k = 0 for non-group
     # footers.  If the label is a proc, call it with the group number.
     def calc_label(k)
