@@ -173,7 +173,12 @@ module FatTable
     # Column. This makes Columns Enumerable, so all the Enumerable methods are
     # available on a Column.
     def each
-      items.each { |itm| yield itm }
+      if block_given?
+        items.each { |itm| yield itm }
+        self
+      else
+        to_enum(:each)
+      end
     end
 
     ##########################################################################

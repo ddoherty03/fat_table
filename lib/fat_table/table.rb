@@ -530,8 +530,13 @@ module FatTable
 
     # Yield each row of the table as a Hash with the column symbols as keys.
     def each
-      rows.each do |row|
-        yield row
+      if block_given?
+        rows.each do |row|
+          yield row
+        end
+        self
+      else
+        to_enum(:each)
       end
     end
 
