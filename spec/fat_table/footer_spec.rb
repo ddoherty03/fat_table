@@ -145,6 +145,29 @@ module FatTable
           expect(foot[:a]).to match(/FatTable::Table/)
         end
       end
+
+      describe 'dynamic labels' do
+        it 'calculates labels from a zero-argument lambda' do
+          f = Footer.new(-> { "As of #{Date.parse('1957-09-22')}" }, tab)
+          expect(f.label_col).to eq(:a)
+          expect(f.group).to be false
+          expect(f.label).to match(/as of.*1957/i)
+        end
+
+        it 'calculates labels from a one-argument lambda' do
+          f = Footer.new(->(f) { "Summary of #{f.table.size} rows"}, tab)
+          expect(f.table).to eq(tab)
+          expect(f.label_col).to eq(:a)
+          expect(f.group).to be false
+          expect(f.number_of_groups).to eq(1)
+          expect(f.label).to match(/Summary of 3 rows/i)
+        end
+
+        it 'raises error for labels from a two-argument lambda' do
+          expect { Footer.new(->(k, f) { "#{k} of #{f.table.size}"}, tab) }
+            .to raise_error(/label proc may only have 1/)
+        end
+      end
     end
 
     context 'group footers' do
@@ -188,6 +211,17 @@ module FatTable
           expect(g.label_col).to eq(:ref)
           expect(g.group).to be true
           expect(g.number_of_groups).to eq(4)
+        end
+
+        it 'calculates group labels from a zero-argument lambda' do
+          g = Footer.new(-> { "Group as of #{Date.parse('1957-09-22')}"}, tab, group: true)
+          expect(g.table).to eq(tab)
+          expect(g.label_col).to eq(:ref)
+          expect(g.group).to be true
+          expect(g.number_of_groups).to eq(4)
+          g.number_of_groups.times do |k|
+            expect(g.label(k)).to match(/group.*1957/i)
+          end
         end
 
         it 'calculates group labels from a one-argument lambda' do

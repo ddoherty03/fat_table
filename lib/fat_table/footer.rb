@@ -67,7 +67,7 @@ module FatTable
 
     # Return the value of the label, for the kth group if grouped.
     def label(k = 0)
-      calc_label(k)
+      @values[@label_col][k]
     end
 
     # :category: Accessors
@@ -221,24 +221,32 @@ module FatTable
           @values[@label_col] << calc_label(k)
         end
       else
-        @values[@label_col] = [calc_label(0)]
+        @values[@label_col] = [calc_label]
       end
     end
 
-    # Calculate the label for the kth group, using k = 0 for non-group
+    # Calculate the label for the kth group, using k = nil for non-group
     # footers.  If the label is a proc, call it with the group number.
-    def calc_label(k)
+    def calc_label(k = nil)
       case @label
       when Proc
         case @label.arity
         when 0
           @label.call
         when 1
-          @label.call(k)
+          k ? @label.call(k) : @label.call(self)
         when 2
-          @label.call(k, self)
+          if k
+            @label.call(k, self)
+          else
+            raise ArgumentError, "a non-group footer label proc may only have 1 argument for the containing footer f"
+          end
         else
-          raise ArgumentError, "footer label proc may only have 1 argument for group number k"
+          if k
+            raise ArgumentError, "group footer label proc may only have 0, 1, or 2 arguments for group number k and containing footer f"
+          else
+            raise ArgumentError, "a non-group footer label proc may only have 0 or 1 arguments for the containing footer f"
+          end
         end
       else
         @label.to_s
