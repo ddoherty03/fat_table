@@ -1,3 +1,5 @@
+require 'simplecov'
+
 require 'bundler/setup'
 require 'fat_table'
 require 'pry'
