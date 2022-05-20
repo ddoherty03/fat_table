@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 module FatTable
   RSpec.describe OrgFormatter do
     describe 'table output' do

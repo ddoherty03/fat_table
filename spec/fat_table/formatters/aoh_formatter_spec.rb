@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 module FatTable
   RSpec.describe AohFormatter do
     describe 'table output' do

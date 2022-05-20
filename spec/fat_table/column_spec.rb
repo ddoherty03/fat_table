@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 module FatTable
   RSpec.describe 'Column' do
     before :all do

@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 module FatTable
   RSpec.describe TextFormatter do
     describe 'intolerant table output' do
