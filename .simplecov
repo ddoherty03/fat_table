@@ -1,3 +1,5 @@
+# -*- mode: ruby -*-
+
 SimpleCov.start do
   # any custom configs like groups and filters can be here at a central place
   add_filter '/spec/'
@@ -11,4 +13,6 @@ SimpleCov.start do
   use_merging false
   command_name 'Rspec'
   nocov_token 'no_cover'
+  # Branch coverage
+  enable_coverage :branch
 end
