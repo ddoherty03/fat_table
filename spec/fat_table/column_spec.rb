@@ -119,6 +119,16 @@ module FatTable
         expect(col.size).to eq(17)
       end
 
+      it 'initializes a badly numeric with decimal but no post-decimal digits' do
+        items = [
+          '.6', '600.0', '600.'
+        ]
+        col = Column.new(header: 'junk', items:)
+        0.upto(2) do |k|
+          expect(col[k]).to be_kind_of(Numeric)
+        end
+      end
+
       it 'initializes a good numeric column with trailing nils' do
         items = [nil, nil, '2018', 3.14159, '1957/9', nil, '', '2:3', 64646464646]
         col = Column.new(header: 'junk', items:)

@@ -161,13 +161,22 @@ module FatTable
     def self.convert_to_numeric(val)
       return BigDecimal(val, Float::DIG) if val.is_a?(Float)
       return val if val.is_a?(Numeric)
+
       # Eliminate any commas, $'s (or other currency symbol), or _'s.
       cursym = Regexp.quote(FatTable.currency_symbol)
       clean_re = /[,_#{cursym}]/
       val = val.to_s.clean.gsub(clean_re, '')
       return nil if val.blank?
+
       case val
-      when /(\A[-+]?\d+\.\d*\z)|(\A[-+]?\d*\.\d+\z)/
+      when /\A[-+]?\d+\.\z/
+        # Catch quirk in Ruby's BigDecimal converter where a number ending in
+        # a decimal but with no digits after the decimal throws an
+        # ArgumentError as an invalid value for BigDecimal().  Just append a
+        # '0'.
+        val += '0'
+        BigDecimal(val.to_s.clean)
+      when /(\A[-+]?\d+\.\d+\z)|(\A[-+]?\d*\.\d+\z)/
         BigDecimal(val.to_s.clean)
       when /\A[-+]?[\d]+\z/
         val.to_i
