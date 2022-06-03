@@ -957,9 +957,16 @@ module FatTable
 
             new_row[key] = vars[expr]
           when String
+            begin
             new_row[key] = ev.evaluate(expr, locals: vars)
+            rescue SyntaxError, NameError => ex
+              # Treat uninitialized constant errors as literal strings.
+              new_row[key] = expr # if ex.to_s.match?(/uninitialized constant/)
+            end
+          when Numeric, DateTime, Date, TrueClass, FalseClass
+            new_row[key] = expr
           else
-            msg = "Hash parameter '#{key}' to select must be a symbol or string"
+            msg = "Setting column at '#{key}' to '#{expr}' not allowed"
             raise UserError, msg
           end
         end

@@ -21,6 +21,64 @@ module FatTable
           expect(tab2.headers).to eq [:s, :a, :c]
         end
 
+        it 'adds new numeric column if asked nicely' do
+          tab2 = tab1.select(:s, :a, :c, d: 3.14159)
+          expect(tab2.headers).to eq [:s, :a, :c, :d]
+          expect(tab2[:d].all? { |v| v == BigDecimal("3.14159")}).to be true
+        end
+
+        it 'adds new numeric column via string if asked nicely' do
+          tab2 = tab1.select(:s, :a, :c, d: '3.14159')
+          expect(tab2.headers).to eq [:s, :a, :c, :d]
+          expect(tab2[:d].all? { |v| v == BigDecimal("3.14159")}).to be true
+        end
+
+        it 'adds new fraction column via string if asked nicely' do
+          tab2 = tab1.select(:s, :a, :c, d: '3:13')
+          expect(tab2.headers).to eq [:s, :a, :c, :d]
+          expect(tab2[:d].all? { |v| v == Rational("3/13")}).to be true
+        end
+
+        it 'adds new Date column if asked nicely' do
+          tab2 = tab1.select(:s, :a, :c, d: Date.today)
+          expect(tab2.headers).to eq [:s, :a, :c, :d]
+          expect(tab2[:d].all? { |v| v == Date.today}).to be true
+        end
+
+        it 'adds new DateTime column if asked nicely' do
+          now = DateTime.now
+          tab2 = tab1.select(:s, :a, :c, d: now)
+          expect(tab2.headers).to eq [:s, :a, :c, :d]
+          expect(tab2[:d].all? { |v| v == now}).to be true
+        end
+
+        it 'adds new boolean column if asked nicely' do
+          tab2 = tab1.select(:s, :a, :c, d: true)
+          expect(tab2.headers).to eq [:s, :a, :c, :d]
+          expect(tab2[:d].all? { |v| v == true}).to be true
+        end
+
+        it 'adds new boolean column via string if asked nicely' do
+          tab2 = tab1.select(:s, :a, :c, d: 'yes')
+          expect(tab2.headers).to eq [:s, :a, :c, :d]
+          expect(tab2[:d].all? { |v| v }).to be true
+          tab2 = tab1.select(:s, :a, :c, d: 'F')
+          expect(tab2.headers).to eq [:s, :a, :c, :d]
+          expect(tab2[:d].all? { |v| !v }).to be true
+        end
+
+        it 'adds new string column if asked nicely' do
+          tab2 = tab1.select(:s, :a, :c, d: 'Hello')
+          expect(tab2.headers).to eq [:s, :a, :c, :d]
+          expect(tab2[:d].all? { |v| v == 'Hello'}).to be true
+        end
+
+        it 'adds new nil column if handed a blank string' do
+          tab2 = tab1.select(:s, :a, :c, d: '   ')
+          expect(tab2.headers).to eq [:s, :a, :c, :d]
+          expect(tab2[:d].all? { |v| v.nil? }).to be true
+        end
+
         it 'selects by :omni special column' do
           tab2 = tab1.select(:omni)
           expect(tab2.headers).to eq [:a, :two_words, :s, :c]
