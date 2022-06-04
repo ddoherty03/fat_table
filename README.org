@@ -32,8 +32,9 @@ The following is for org.
   "Current version is: #{FatTable::VERSION}"
 #+end_src
 
+#+RESULTS:
 #+begin_EXAMPLE
-Current version is: 0.6.0
+Current version is: 0.6.3
 #+end_EXAMPLE
 
 * Introduction
