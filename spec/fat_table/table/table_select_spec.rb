@@ -16,9 +16,9 @@ module FatTable
           expect(tab2.headers).to eq [:s, :a, :c]
         end
 
-        it 'selects by column names' do
-          tab2 = tab1.select(:s, :a, :c)
-          expect(tab2.headers).to eq [:s, :a, :c]
+        it 'selects subset of column names' do
+          tab2 = tab1.select(:s, :a)
+          expect(tab2.headers).to eq [:s, :a]
         end
 
         it 'adds new numeric column if asked nicely' do
@@ -34,7 +34,7 @@ module FatTable
         end
 
         it 'adds new fraction column via string if asked nicely' do
-          tab2 = tab1.select(:s, :a, :c, d: '3:13')
+          tab2 = tab1.select(:s, :a, :c, d: ': 3:13')
           expect(tab2.headers).to eq [:s, :a, :c, :d]
           expect(tab2[:d].all? { |v| v == Rational("3/13")}).to be true
         end
@@ -59,22 +59,28 @@ module FatTable
         end
 
         it 'adds new boolean column via string if asked nicely' do
-          tab2 = tab1.select(:s, :a, :c, d: 'yes')
+          tab2 = tab1.select(:s, :a, :c, d: ': yes')
           expect(tab2.headers).to eq [:s, :a, :c, :d]
           expect(tab2[:d].all? { |v| v }).to be true
-          tab2 = tab1.select(:s, :a, :c, d: 'F')
+          tab2 = tab1.select(:s, :a, :c, d: ': F')
           expect(tab2.headers).to eq [:s, :a, :c, :d]
           expect(tab2[:d].all? { |v| !v }).to be true
         end
 
         it 'adds new string column if asked nicely' do
-          tab2 = tab1.select(:s, :a, :c, d: 'Hello')
+          tab2 = tab1.select(:s, :a, :c, d: ':Hello')
           expect(tab2.headers).to eq [:s, :a, :c, :d]
           expect(tab2[:d].all? { |v| v == 'Hello'}).to be true
         end
 
+        it 'keeps white space after colon in string literal' do
+          tab2 = tab1.select(:s, :a, :c, d: '   :    Hello')
+          expect(tab2.headers).to eq [:s, :a, :c, :d]
+          expect(tab2[:d].all? { |v| v == '    Hello'}).to be true
+        end
+
         it 'adds new nil column if handed a blank string' do
-          tab2 = tab1.select(:s, :a, :c, d: '   ')
+          tab2 = tab1.select(:s, :a, :c, d: ':   ')
           expect(tab2.headers).to eq [:s, :a, :c, :d]
           expect(tab2[:d].all? { |v| v.nil? }).to be true
         end

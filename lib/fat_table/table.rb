@@ -952,27 +952,25 @@ module FatTable
           vars = old_row.merge(new_row)
           case expr
           when Symbol
-            msg = "Column '#{expr}' in select does not exist"
+            msg = "select column '#{expr}' does not exist"
             raise UserError, msg unless vars.key?(expr)
 
             new_row[key] = vars[expr]
           when String
-            begin
-            new_row[key] = ev.evaluate(expr, locals: vars)
-            rescue SyntaxError, NameError => ex
-              # Treat uninitialized constant errors as literal strings.
-              new_row[key] = expr # if ex.to_s.match?(/uninitialized constant/)
+            if expr.match?(/\A\s*:/)
+              # Leading colon signal a literal string
+              new_row[key] = expr.sub(/\A\s*:/, '')
+            else
+              # Otherwise, evaluate the string.
+              new_row[key] = ev.evaluate(expr, locals: vars)
             end
           when Numeric, DateTime, Date, TrueClass, FalseClass
             new_row[key] = expr
           else
-            msg = "Setting column at '#{key}' to '#{expr}' not allowed"
+            msg = "select can't set column at '#{key}' to '#{expr}' of class #{expr.class}"
             raise UserError, msg
           end
         end
-        # Set the group number and run the hook with the local variables set to
-        # the row after the new row is evaluated.
-        # vars = new_row.merge(__group: grp)
         ev.eval_after_hook(locals: new_row)
         result << new_row
       end

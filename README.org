@@ -1,6 +1,7 @@
 #+TITLE: FatTable User Guide
 #+OPTIONS: toc:4
 #+LATEX_HEADER: \usepackage[margin=0.75in]{geometry}
+#+LATEX_HEADER: \usepackage[utf8]{inputenc}
 #+PROPERTY: header-args:ruby :colnames no :session readme :hlines yes :exports both
 #+PROPERTY: header-args:sh :exports code
 #+STARTUP: inlineimages
@@ -104,8 +105,9 @@ org-mode buffer as an org-table, ready for processing by other code blocks.
     - [[#example-input-tables][Example Input Tables]]
     - [[#select][Select]]
       - [[#selecting-existing-columns-also-of-omni][Selecting Existing Columns (Also of :omni)]]
-      - [[#copying-and-renaming-existing-columns][Copying and Renaming Existing Columns]]
+      - [[#copying-and-renaming-existing-columns][Copying and Renaming Existing Columns.]]
       - [[#adding-new-columns][Adding New Columns]]
+      - [[#adding-constant-strings-and-other-types-in-select][Adding Constant Strings and Other Types in select]]
       - [[#custom-instance-variables-and-hooks][Custom Instance Variables and Hooks]]
       - [[#argument-order-and-boundaries][Argument Order and Boundaries]]
     - [[#where][Where]]
@@ -530,6 +532,7 @@ each group.
 ** Constructing Tables
 *** Empty Tables
 **** Without Headers
+
 You can create an empty table with ~FatTable::Table.new~ or, the shorter form,
 ~FatTable.new~, and then add rows with the ~<<~ operator and a Hash.  The keys
 in the added rows determine the names of the headers:
@@ -585,6 +588,7 @@ for which no key was give are assigned ~nil~ as well:
 #+end_EXAMPLE
 
 **** With Headers
+
 Alternatively, you can specify the headers at the outset, in which case,
 headers in added rows that do not match any of the initial headers cause new
 columns to be created:
@@ -618,6 +622,7 @@ columns to be created:
 #+end_EXAMPLE
 
 **** Forcing String Type
+
 Occasionally, ~FatTable~'s automatic type detection can get in the way and you
 just want it to treat one or more columns as Strings regardless of their
 appearance.  Think, for example, of zip codes.  If headers are given when a
@@ -657,6 +662,7 @@ exisiting items in the column are converted to strings with the #to_s method.
 #+end_EXAMPLE
 
 **** Designating "Tolerant" Columns
+
 Related to the problem just discussed is the problem of reading files in from
 the wild where a column may get typed as, say Numeric, but then contain
 something that can't be parsed as a Numeric.  ~FatTable~ raises an exception
@@ -789,12 +795,13 @@ header row, and the headers are converted to symbols as described above.
 
 *** From Arrays of Arrays
 **** In Ruby Code
+
 You can also initialize a table directly from ruby data structures. You can,
 for example, build a table from an array of arrays.  Remember that you can
 make any column tolerant with a ~tolerant_columns:~ keyword argument or make
 them all tolerant by designating the pseudo-column ~:*~ as tolerant.
 
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :eval never
   aoa = [
     ['Ref', 'Date', 'Code', 'Raw', 'Shares', 'Price', 'Info', 'Bool'],
     [1, '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850, 'ENTITY1', 'T'],
@@ -817,11 +824,14 @@ Notice that the values can either be ruby objects, such as the Integer ~85_000~,
 or strings that can be parsed into one of the permissible column types.
 
 **** In Emacs Org Files
+
 This method of building a table, ~.from_aoa~, is particularly useful in dealing
 with Emacs org-mode code blocks. Tables in org-mode are passed to code blocks as
 arrays of arrays. Likewise, a result of a code block in the form of an array of
 arrays is displayed as an org-mode table:
 
+#+ATTR_LATEX: :environment footnotesize
+#+ATTR_LATEX: :environment verbatim
 #+BEGIN_EXAMPLE
 #+NAME: trades1
 | Ref  |       Date | Code |  Price | G10 | QP10 | Shares |    LP |     QP |   IPLP |   IPQP |
@@ -984,6 +994,7 @@ keyword argument or make them all tolerant by designating the pseudo-column
 
 *** Marking Groups in Input
 **** Manually
+
 At any point, you can add a boundary to a table by invokong the
 ~mark_boundary~ method.  Without an argument, it adds the boundary to the end
 of the table; with a numeric argument, ~n~, it adds the boundary after row
@@ -1179,6 +1190,7 @@ table, rearrange their order, and create new columns that are a function of
 other columns.
 
 **** Selecting Existing Columns (Also of :omni)
+
 Here we select three existing columns by simply passing header symbols in the
 order we want them to appear in the output. Thus, one use of =select= is to
 filter and permute the order of existing columns. The =select= method preserves
@@ -1255,7 +1267,8 @@ you cannot add additional column names:
 | T016 | 2016-11-02 | P    |  8.25 | T   | T    |    100 |   14 |    86 | 0.2453 | 0.1924 |    825.0 |
 #+end_EXAMPLE
 
-**** Copying and Renaming Existing Columns
+**** Copying and Renaming Existing Columns.
+
 After the list of selected column names in the call to ~select~, you can add
 any number of hash-like arguments.  You can use these to add a copy of an
 existing column.  By calling select again, you can include only the copied
@@ -1295,6 +1308,7 @@ changed to ~:id~, just add an argument to define the new ~:id~ column:
 #+end_EXAMPLE
 
 **** Adding New Columns
+
 More interesting is that ~select~ can take hash-like keyword arguments after
 the symbol arguments to create new columns in the output as functions of other
 columns. For each hash-like parameter, the keyword given must be a symbol,
@@ -1386,7 +1400,32 @@ second, chained call to ~select~:
 | T016 | 2016-11-02 |  8.25 |    100 |    825.0 |
 #+end_EXAMPLE
 
+**** Adding Constant Strings and Other Types in select
+
+Because ~select~'s hash-like parameters evaluate a string as a ruby
+expression, as just described, it must provide a way to set a new column to a
+string literal.  To indicate that a string should be inserted literally, add a
+~:~ as the first non-blank character in the string.  This will supress
+evaluation and insert the remainder of the string in the named column.
+
+#+BEGIN_SRC ruby :wrap EXAMPLE
+  tab1.select(:ref, :price, :shares, traded_on: :date, cost: ':the price of freedom').
+    select(:ref, :traded_on, :price, :shares, :cost).to_aoa
+#+END_SRC
+
+This sets the ~:cost~ column to the string constant 'the price of freedom' for
+the whole table.
+
+You can set a column to a constant of any of the acceptable types, ~Numeric~,
+~Date~, ~DateTime~, true, false, or nil.
+
+#+BEGIN_SRC ruby :wrap EXAMPLE
+  tab1.select(:ref, :price, :shares, traded_on: :date, cost: Math::PI, today: Date.today).
+    select(:ref, :traded_on, :price, :shares, :cost, :today).to_aoa
+#+END_SRC
+
 **** Custom Instance Variables and Hooks
+
 As the above examples demonstrate, the instance variables ~@row~ and ~@group~
 are available when evaluating expressions that add new columns. You can also set
 up your own instance variables as well for keeping track of things that cross
@@ -1445,6 +1484,7 @@ of the running cost of shares, then formats the table.
 #+END_EXAMPLE
 
 **** Argument Order and Boundaries
+
 Notice that ~select~ can take any number of arguments but all the symbol
 arguments must come first followed by all the hash-like keyword arguments,
 including the special arguments for instance variables and hooks.
@@ -1580,7 +1620,6 @@ row, and the table is sorted as with ~order_by~ on that column.
 | T013 | 2016-11-02 | P    |  7.35 | T   | T    |  53100 | 7656 | 45444 | 0.2453 | 0.1924 | 390285.0 |
 #+end_EXAMPLE
 
-
 *** Group_by
 Like ~order_by~, ~group_by~ takes a set of parameters of column header symbols,
 the "grouping parameters", by which to sort the table into a set of groups that
@@ -1668,6 +1707,7 @@ implicit ~order_by~ on the grouping columns is collapsed into a single row.
 
 *** Join
 **** Join Types
+
 So far, all the operations have operated on a single table. ~FatTable~ provides
 several ~join~ methods for combining two tables, each of which takes as
 parameters (1) a second table and (2) except in the case of ~cross_join~, zero
@@ -1704,6 +1744,7 @@ for inclusion in the joined output table.
      M~ rows.
 
 **** Join Expressions
+
 For each of the join types, if no join expressions are given, the tables will be
 joined on columns having the same column header in both tables, and the join
 condition is satisfied when all the values in those columns are equal. If the
@@ -1731,6 +1772,7 @@ local variables within the expression, but the instance variables ~@row~ and
 ~@group~ are not.
 
 **** Join Examples
+
 The following examples are taken from the [[https://www.tutorialspoint.com/postgresql/postgresql_using_joins.htm][Postgresql tutorial]], with some slight
 modifications. The examples will use the following two tables, which are also
 available in ~ft_console~ as ~@tab_a~ and ~@tab_b~:
@@ -2007,6 +2049,7 @@ set operations on duplicates and groups.
 #+END_EXAMPLE
 
 **** Unions
+
 Two tables that are set-compatible can be combined with the ~union~ or
 ~union_all~ methods so that the rows of both tables appear in the output. In the
 output table, the headers of the receiver table are used. You can use ~select~
@@ -2098,6 +2141,7 @@ group boundary between the rows of the two input tables.
 #+END_EXAMPLE
 
 **** Intersections
+
 The ~intersect~ method returns a table having only rows common to both tables,
 eliminating any duplicate rows in the result.
 
@@ -2159,6 +2203,7 @@ operation matters.
 #+END_EXAMPLE
 
 **** Set Differences with Except
+
 You can use the ~except~ method to delete from a table any rows that occur in
 another table, that is, compute the set difference between the tables.
 
@@ -2321,6 +2366,7 @@ but ruby data structures, and for them, things such as alignment are irrelevant.
 
 *** Available Formatter Output Targets
 **** Output Media
+
 ~FatTable~ supports the following output targets for its tables:
 
 - Text :: form the table with ACSII characters,
@@ -2341,6 +2387,7 @@ formats can be defined by adding additional classes.
 
 **** Examples
 ***** To Text
+
 This formatter uses nothing by ASCII characters to draw the table.  Notice
 that, unlike to ~to_org~ formatter shown below, the intersections of lines are
 represented by a ~+~ character.  Embelishments such as color, bold, and so
@@ -2366,6 +2413,7 @@ forth are ignored.
 #+END_EXAMPLE
 
 ***** To Org
+
 This formatter is designed to format tables in a manner consistent with the
 way tables are drawn within Emacs Org Mode.  It also uses nothing by ASCII
 characters to draw the table, but, the intersections of lines are represented
@@ -2394,6 +2442,7 @@ it may be better to use that formatter as shown below.
 #+end_EXAMPLE
 
 ***** To Term
+
 When outputting to a terminal or other device that can interpret ANSI
 characters and escape codes, you can use this formatter to get a prettier
 table.  It also allows embelishments such as color and text styles to the
@@ -2419,6 +2468,7 @@ extent the device supports it.
 #+end_EXAMPLE
 
 ***** To LaTeX
+
 This formatter outputs a table in the form suitable for inclusion in a LaTeX
 document using the ~logtable~ package.  Natualy it allows embelishments such
 as color and text styles to the full extent of LaTeX's formatting prowess.
@@ -2446,6 +2496,7 @@ Finance&
 #+end_EXAMPLE
 
 ***** To AoA (Array of Arrays)
+
 #+begin_SRC ruby :wrap EXAMPLE
   tab_b.to_aoa
 #+end_SRC
@@ -2456,6 +2507,7 @@ Finance&
 #+end_EXAMPLE
 
 ***** To AoH (Array of Hashes)
+
 #+begin_SRC ruby :wrap EXAMPLE
   tab_b.to_aoh
 #+end_SRC
@@ -2476,6 +2528,7 @@ order, so '$R,' and ',$R' are equivalent.
 Here is a list of all the formatting directives that apply to each cell type:
 
 **** String
+
 For a string element, the following instructions are valid. Note that these can
 also be applied to all the other cell types as well since they are all converted
 to a string in forming the output.
@@ -2504,6 +2557,7 @@ columns of a given type, it can be countermanded in formatting directives for
 particular columns.
 
 **** Numeric
+
 For a numeric element, all the instructions valid for string are available, in
 addition to the following:
 
@@ -2522,6 +2576,7 @@ For example, the directive 'R5.0c[blue]' would right-align the numeric
 element, pad it on the left with zeros, and color it blue.
 
 **** DateTime
+
 For a ~DateTime~, all the instructions valid for string are available, in
 addition to the following:
 
@@ -2537,6 +2592,7 @@ For example, 'c[pink]d[%b %-d, %Y]C', would format a date element like 'Sep
 22, 1957', center it, and color it pink.
 
 **** Boolean
+
 For a boolean cell, all the instructions valid for string are available, in
 addition to the following:
 
@@ -2554,6 +2610,7 @@ render a true boolean as ~Yeppers~ colored green on pink and render a false
 boolean as ~Nope~ colored red on pink. See [[https://www.youtube.com/watch?v=oLdFFD8II8U][Yeppers]] for additional information.
 
 **** NilClass
+
 By default, ~nil~ elements are rendered as blank cells, but you can make them
 visible with the following, and in that case, all the formatting instructions
 valid for strings are also available:
@@ -2564,6 +2621,7 @@ For example, you might want to use 'n[-]Cc[purple]' to make nils visible as a
 centered purple hyphen.
 
 *** The ~format~ and ~format_for~ methods
+
 Formatters take only two kinds of methods, those that attach footers to a
 table, which are discussed in the next section, and those that specify
 formatting for table cells, which are the subject of this section.
@@ -2705,6 +2763,7 @@ but not for other nils, such as in the last row of the ~:join_date~ column.
 
 *** Footers
 **** Adding Footers
+
 You can call the ~foot~, ~gfoot~, ~footer,~ or ~gfooter~, methods on
 ~Formatter~ objects to add footers and group footers. Note that all of these
 methods return a ~Footer~ object that can be accessed to extract the computed
@@ -2762,6 +2821,7 @@ There are also a number of convenience methods for adding common footers:
      columns with the label 'Group Maximum'.
 
 **** Dynamic Labels
+
 Most of the time, you will want a fixed string as the label.  However,
 especially in the case of a group footer, you might want a dynamically
 contructed label.  You can use a proc or lambda for a label, and it will be
@@ -2795,6 +2855,7 @@ This would add the group's year to label, assuming the :date column of the
 footer's table had the same year for each item in the group.
 
 **** Aggregators
+
 When adding a footer with the above methods, you can specify an aggregator for
 each column named in the ~agg_cols~ parameter.  There are several candidates
 for what you can use for an aggregator:
@@ -2839,6 +2900,7 @@ for what you can use for an aggregator:
     itself.
 
 **** Footer objects
+
 Each of the methods for adding a footer to a ~Formatter~ returns a ~Footer~ object
 that you can query for attributes of the generated footer, including accessing
 their computed values.  Here are the accessors available on a
@@ -2861,6 +2923,7 @@ their computed values.  Here are the accessors available on a
   ~k~ to specify which group to access in the case of a group footer.
 
 **** Footer Examples
+
 As a reminder, here is the table, ~tab_a~ defined earlier:
 
 #+BEGIN_SRC ruby :wrap EXAMPLE
@@ -3115,6 +3178,7 @@ call one of the ~to_xxx~ methods directly on a table, which will yield a
 convenient way to do it.  But there are a few other ways.
 
 **** By Instantiating a Formatter
+
 You can instantiate a ~XXXFormatter~ object and feed it a table as a
 parameter.  There is a Formatter subclass for each target output medium, for
 example, ~AoaFormatter~ will produce a ruby array of arrays. You can then call
@@ -3160,6 +3224,7 @@ you can call methods on it to affect the formatting of the output:
 #+END_EXAMPLE
 
 **** By Using ~FatTable~ module-level method calls
+
 The ~FatTable~ module provides a set of methods of the form ~to_aoa~, ~to_text~,
 etc., to access a ~Formatter~ without having to create an instance yourself.
 Without a block, they apply the default formatting to the table and call the
@@ -3206,6 +3271,7 @@ automatically after the block:
 #+END_EXAMPLE
 
 **** By Calling Methods on Table Objects
+
 Finally, as in many of the examples, you can call methods such as ~to_aoa~,
 ~to_text~, etc., directly on a Table:
 
