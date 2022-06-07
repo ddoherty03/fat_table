@@ -42,7 +42,7 @@ module FatTable
         expect(org.size).to be > 1000
         expect(org).to match(/\bRef\b/)
         expect(org).to match(/\bBool\b/)
-        expect(org).to match(/\[2013-05-02\]/)
+        expect(org).to match(/\[2013-05-02 Thu\]/)
         expect(org).to match(/^\|[-+]+\|$/)
         expect(org).to match(/\D795,546\D/)
         expect(org).to match(/\D1,031,919\D/)

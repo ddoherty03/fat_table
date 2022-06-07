@@ -7,7 +7,7 @@ module FatTable
   # a '+' as for text tables.
   class OrgFormatter < Formatter
     self.default_format = default_format.dup
-    default_format[:date_fmt] = '[%F]'
+    default_format[:date_fmt] = '[%F %a]'
     default_format[:datetime_fmt] = '[%F %a %H:%M:%S]'
 
     private
