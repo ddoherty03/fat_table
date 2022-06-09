@@ -1,4 +1,21 @@
 
+* TODO Explicitly typed columns
+Having FatTable infer column types from the content of a table is nice, but as
+I learned from the need to have force_string!, sometimes we want to restrict
+the type of the column and throw an error if the content does not conform.
+So, perhaps when the table columns are specified, we can allow them to be
+terminated with a "sigil" that restricts its type:
+
+- @ :: at Date or DateTime column,
+- # :: a Numeric column
+- ? :: a Boolean column
+- ~ :: a String Column,
+- * :: a tolerant Column, i.e., it infers the type from the content, but
+  allows strings to be added as items in an otherwise typed column but treat
+  them a nil for calculation purposes.
+- @*, #*, ?* :: a Date, Numeric, or Boolean column that is also tolerant.
+  `~*` could be treated the same as `~`.
+
 * TODO Specify Column Widths
 Allow a formatter to specify column widths.  This could be a number of
 characters, which would be interpreted as a number of "ems" for LaTeX.
@@ -22,6 +39,13 @@ Possible enhancements:
 - State "TODO"       from              [2017-04-21 Fri 10:36]
 This is a [[https://github.com/westonganger/spreadsheet_architect][gem]] that I can include into the Table model to convert a table into
 a spread-sheet, or even a sheet in a multi-sheet spreadsheet file.
+
+* TODO Conversion to HTML
+Perhaps an obvious formatter would be HTML tables, but CSS controls the
+styling, so have to think on that one.
+
+* TODO Conversion to JSON, YAML
+These would need no color formatting and might prove useful.
 
 * TODO Add Quandl or EODDATA Queries
 Possible replacements for YQL.
