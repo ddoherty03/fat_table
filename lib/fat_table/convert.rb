@@ -102,23 +102,25 @@ module FatTable
       end
     end
 
-    ISO_DATE_RE = %r{(?<yr>\d\d\d\d)[-\/]
+    ISO_DATE_RE = %r{\A(?<yr>\d\d\d\d)[-\/]
                 (?<mo>\d\d?)[-\/]
                 (?<dy>\d\d?)\s*
-                (T?\s*\d\d:\d\d(:\d\d)?
-                ([-+](\d\d?)(:\d\d?))?)?}x
+                (T?\s*\d\d:\d\d(:\d\d)?\s*
+                ([-+](\d\d?)(:\d\d?))?)?\s*
+                ((mon|tue|wed|thu|fri|sat|sun)[a-zA-z]*)?\s*
+                \z}xi
 
-    AMR_DATE_RE = %r{(?<dy>\d\d?)[-/](?<mo>\d\d?)[-/](?<yr>\d\d\d\d)\s*
-                     (?<tm>T\d\d:\d\d:\d\d(\+\d\d:\d\d)?)?}x
+    AMR_DATE_RE = %r{\A(?<dy>\d\d?)[-/](?<mo>\d\d?)[-/](?<yr>\d\d\d\d)\s*
+                     (?<tm>T\d\d:\d\d:\d\d(\+\d\d:\d\d)?)?\z}xi
 
     # A Date like 'Tue, 01 Nov 2016' or 'Tue 01 Nov 2016' or '01 Nov 2016'.
     # These are emitted by Postgresql, so it makes from_sql constructor
     # possible without special formatting of the dates.
-    INV_DATE_RE = %r{((mon|tue|wed|thu|fri|sat|sun)[a-zA-z]*,?)?\s+  # looks like dow
+    INV_DATE_RE = %r{\A((mon|tue|wed|thu|fri|sat|sun)[a-zA-z]*,?)?\s+  # looks like dow
     (?<dy>\d\d?)\s+  # one or two-digit day
     (?<mo_name>[jfmasondJFMASOND][A-Za-z]{2,})\s+  # looks like a month name
     (?<yr>\d\d\d\d) # and a 4-digit year
-    }xi
+    \z}xi
 
     # Convert the val to a DateTime if it is either a DateTime, a Date, a Time, or a
     # String that can be parsed as a DateTime, otherwise return nil. It only
@@ -132,7 +134,7 @@ module FatTable
       return val.to_datetime if val.is_a?(Time)
 
       begin
-        str = val.to_s.clean
+        str = val.to_s.clean.sub(/\A[\[\(\{\<]\s*/, '').sub(/[\]\)\}\>]\s*\z/, '')
         return nil if str.blank?
 
         if str.match(ISO_DATE_RE)

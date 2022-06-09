@@ -266,7 +266,7 @@ module FatTable
           end
           expect(row[:price].is_a?(BigDecimal)).to be true
           expect([Numeric, String].any? { |t| row[:ref].is_a?(t) }).to be true
-          expect(row[:info].class).to eq Date
+          expect(row[:info].class).to eq String
         end
       end
     end
