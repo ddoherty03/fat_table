@@ -153,8 +153,6 @@ module FatTable
     # Force the column to have String type and then convert all items to
     # strings.
     def force_string!
-      # msg = "Can only force an empty column to String type"
-      # raise UserError, msg unless empty?
       @type = 'String'
       unless empty?
         @items = items.map(&:to_s)
