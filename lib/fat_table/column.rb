@@ -70,7 +70,7 @@ module FatTable
     #      except in the case of String columns, which retain them a blank
     #      strings.
     #
-    # Examples:
+    # @example
     #
     #   require 'fat_table'
     #   col = FatTable::Column.new(header: 'date')
@@ -83,6 +83,8 @@ module FatTable
     #   col.type #=> 'Numeric'
     #   col.header #=> :prices
     #   col.sum #=> 18376.75
+    #
+    # @param
     def initialize(header:, items: [], type: 'NilClass', tolerant: false)
       @raw_header = header
       @header =
