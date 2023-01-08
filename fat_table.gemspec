@@ -6,7 +6,7 @@ Gem::Specification.new do |spec|
   spec.name          = 'fat_table'
   spec.version       = FatTable::VERSION
   spec.authors       = ['Daniel E. Doherty']
-  spec.email         = ['ded-law@ddoherty.net']
+  spec.email         = ['ded@ddoherty.net']
 
   spec.summary       = 'Provides tools for working with tables as a data type.'
   spec.description   = <<-DESC
