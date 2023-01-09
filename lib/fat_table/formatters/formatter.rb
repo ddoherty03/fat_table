@@ -1026,46 +1026,59 @@ module FatTable
     # specializing this method.
     def format_numeric(val, istruct)
       return istruct.nil_text if val.nil?
+      return val.secs_to_hms if istruct.hms
 
-      val = val.round(istruct.post_digits) if istruct.post_digits >= 0
-      if istruct.hms
-        result = val.secs_to_hms
-        istruct.commas = false
-      elsif istruct.currency
-        delim = istruct.commas ? ',' : ''
-        result =
-        if istruct.post_digits < 0
-          val.to_s(:currency, delimiter: delim,
-                          unit: FatTable.currency_symbol)
-        else
-          val.to_s(:currency, precision: istruct.post_digits, delimiter: delim,
-                          unit: FatTable.currency_symbol)
-        end
-        # istruct.commas = false
-      elsif istruct.pre_digits.positive?
-        if val.whole?
-          # No fractional part, ignore post_digits
-          result = sprintf("%0#{istruct.pre_digits}d", val)
-        elsif istruct.post_digits >= 0
-          # There's a fractional part and pre_digits.  sprintf width includes
-          # space for fractional part and decimal point, so add pre, post, and 1
-          # to get the proper sprintf width.
-          wid = istruct.pre_digits + 1 + istruct.post_digits
-          result = sprintf("%0#{wid}.#{istruct.post_digits}f", val)
-        else
-          val = val.round(0)
-          result = sprintf("%0#{istruct.pre_digits}d", val)
-        end
-      elsif istruct.post_digits >= 0
-        # Round to post_digits but no padding of whole number, pad fraction with
-        # trailing zeroes.
-        result = sprintf("%.#{istruct.post_digits}f", val)
-      else
-        result = val.to_s
-      end
       if istruct.commas
         # Commify the whole number part if not done already.
-        result = result.commas
+        result = val.commas(istruct.post_digits)
+      else
+        result = val.round(istruct.post_digits).to_s
+        match = result.match(/\.(\d+)\z/)
+        if match && match[1]&.size < istruct.post_digits
+          # Add trailing zeros to pad out post_digits
+          n_zeros = [istruct.post_digits - match[1].size, 0].max
+          zeros = '0' * n_zeros
+          result = result + zeros
+        end
+        result
+      end
+
+      if istruct.pre_digits.positive?
+        match = result.match(/\A([\d,]+)(\.\d+)?\z/)
+        whole_part = match[1]
+        frac_part = match[2]
+        n_zeros = [istruct.pre_digits - whole_part.gsub(',', '').size, 0].max
+        result =
+          if n_zeros.positive?
+            if istruct.commas
+              # Insert leading zeros with commas
+              pre_comma_match = whole_part.match(/\A(\d+),/)
+              if pre_comma_match
+                n_partial_zeros = 3 - pre_comma_match[1].size
+                whole_part = "0" * n_partial_zeros + whole_part
+                n_zeros -= n_partial_zeros
+              end
+              zeros = ''
+              if n_zeros.positive?
+                zeros = "0" * n_zeros
+                if n_zeros > 3 && istruct.commas
+                  zeros = zeros.reverse.gsub!(/([0-9]{3})/, "\\1,").reverse
+                end
+              end
+              "#{zeros},#{whole_part}#{frac_part}"
+            else
+              # Insert leading zeros without commas
+              zeros = "0" * n_zeros
+              "#{zeros}#{whole_part}#{frac_part}"
+            end
+          else
+            "#{whole_part}#{frac_part}"
+          end
+      else
+        result
+      end
+      if istruct.currency
+        result = "#{FatTable.currency_symbol}#{result}"
       end
       result
     end
