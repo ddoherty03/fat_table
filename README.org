@@ -140,7 +140,7 @@ org-mode buffer as an org-table, ready for processing by other code blocks.
         - [[#to-aoa-array-of-arrays][To AoA (Array of Arrays)]]
         - [[#to-aoh-array-of-hashes][To AoH (Array of Hashes)]]
     - [[#formatting-directives][Formatting Directives]]
-      - [[#string][String]]
+      - [[#all-types-as-strings][All Types as Strings]]
       - [[#numeric][Numeric]]
       - [[#datetime][DateTime]]
       - [[#boolean][Boolean]]
@@ -2389,7 +2389,7 @@ formats can be defined by adding additional classes.
 **** Examples
 ***** To Text
 
-This formatter uses nothing by ASCII characters to draw the table.  Notice
+This formatter uses nothing but ASCII characters to draw the table.  Notice
 that, unlike to ~to_org~ formatter shown below, the intersections of lines are
 represented by a ~+~ character.  Embelishments such as color, bold, and so
 forth are ignored.
@@ -2421,7 +2421,7 @@ characters to draw the table, but, the intersections of lines are represented
 by a ~|~ character.  Embelishments such as color, bold, and so forth are
 ignored.  When working in Org Mode, note that Emacs will convert an Array of
 Arrays into an Org Mode table, so when constructing tables programmatically,
-it may be better to use that formatter as shown below.
+it may be better to use the =to_aoa= formatter shown below.
 
 #+begin_SRC ruby :wrap EXAMPLE
   tab_a.to_org
@@ -2528,28 +2528,28 @@ order, so '$R,' and ',$R' are equivalent.
 
 Here is a list of all the formatting directives that apply to each cell type:
 
-**** String
+**** All Types as Strings
 
-For a string element, the following instructions are valid. Note that these can
-also be applied to all the other cell types as well since they are all converted
-to a string in forming the output.
+For a string element, or any an element of any type (since these are applied
+after the element has been converted to a String), the following instructions
+are valid.
 
-- u :: convert the element to all lowercase,
-- U :: convert the element to all uppercase,
+- u :: convert the element to all lowercase [default false],
+- U :: convert the element to all uppercase [default false],
 - t :: title case the element, that is, upcase the initial letter in
-    each word and lower case the other letters
-- B ~B :: make the element bold, or turn off bold
-- I ~I :: make the element italic, or turn off italic
-- R :: align the element on the right of the column
-- L :: align the element on the left of the column
-- C :: align the element in the center of the column
+    each word and lower case the other letters [default false],
+- B ~B :: make the element bold, or turn off bold [default ~B]
+- I ~I :: make the element italic, or turn off italic [default ~I]
+- R :: align the element on the right of the column [default off]
+- L :: align the element on the left of the column [default on]
+- C :: align the element in the center of the column [default off]
 - c[<color_spec>] :: render the element in the given color; the <color_spec>
   can have the form fgcolor, fgcolor.bgcolor, or .bgcolor, to set the
   foreground or background colors respectively, and each of those can be an
   ANSI or X11 color name in addition to the special color, 'none', which keeps
-  the output's default color.
-- _ ~_ :: underline the element, or turn off underline
-- * ~* :: cause the element to blink, or turn off blink
+  the output's default color [default none].
+- _ ~_ :: underline the element, or turn off underline [default off]
+- * ~* :: cause the element to blink, or turn off blink [default off]
 
 For example, the directive 'tCc[red.yellow]' would title-case the element,
 center it, and color it red on a yellow background. The directives that are
@@ -2562,16 +2562,21 @@ particular columns.
 For a numeric element, all the instructions valid for string are available, in
 addition to the following:
 
-- , ~, :: insert grouping commas, or do not insert grouping commas,
-- $ ~$ :: format the number as currency according to the locale, or not,
-- m.n :: include at least m digits before the decimal point, padding on
-    the left with zeroes as needed, and round the number to the n
-    decimal places and include n digits after the decimal point,
-    padding on the right with zeroes as needed,
+- , ~, :: insert grouping commas, or do not insert grouping commas [default
+  ~,],
+- $ ~$ :: format the number as currency according to the locale, or not
+  [default ~$],
+- m.n :: include at least m digits before the decimal point, padding on the
+  left with zeroes as needed, and round the number to the n decimal places and
+  include n digits after the decimal point, padding on the right with zeroes
+  as needed.  If n is negative, the value will be rounded to the left of the
+  decimal point: e.g., if n is -2, the number will be rounded to the nearest
+  hundred, if -3, to the nearest thousand, etc. [default 0.0]
 - H :: convert the number (assumed to be in units of seconds) to ~HH:MM:SS.ss~
-     form. So a column that is the result of subtracting two :datetime forms
-     will result in a :numeric expressed as seconds and can be displayed in
-     hours, minutes, and seconds with this formatting instruction.
+  form. So a column that is the result of subtracting two :datetime forms will
+  result in a :numeric expressed as seconds and can be displayed in hours,
+  minutes, and seconds with this formatting instruction.  If this directive is
+  included, all other numeric directives will be ignored. [default off]
 
 For example, the directive 'R5.0c[blue]' would right-align the numeric
 element, pad it on the left with zeros, and color it blue.
@@ -2598,7 +2603,7 @@ For a boolean cell, all the instructions valid for string are available, in
 addition to the following:
 
 - Y :: print true as ~Y~ and false as ~N~,
-- T :: print true as ~T~ and false as ~F~,
+- T :: print true as ~T~ and false as ~F~ [this is the default],
 - X :: print true as ~X~ and false as an empty string '',
 - b[xxx,yyy] :: print true as the string given as ~xxx~ and false as the string
      given as ~yyy~,
@@ -2616,7 +2621,7 @@ By default, ~nil~ elements are rendered as blank cells, but you can make them
 visible with the following, and in that case, all the formatting instructions
 valid for strings are also available:
 
-- n[niltext] :: render a ~nil~ item with the given niltext.
+- n[niltext] :: render a ~nil~ item with the given niltext [default ''].
 
 For example, you might want to use 'n[-]Cc[purple]' to make nils visible as a
 centered purple hyphen.
