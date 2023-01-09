@@ -360,7 +360,7 @@ module FatTable
           expect(fmt.format_at[:header][h].datetime_fmt).to eq('%F %H:%M:%S')
           expect(fmt.format_at[:header][h].nil_text).to eq('')
           expect(fmt.format_at[:header][h].pre_digits).to eq(0)
-          expect(fmt.format_at[:header][h].post_digits).to eq(-1)
+          expect(fmt.format_at[:header][h].post_digits).to eq(0)
           expect(fmt.format_at[:header][h].bold).to eq(false)
           expect(fmt.format_at[:header][h].italic).to eq(false)
           expect(fmt.format_at[:header][h].alignment).to eq(:left)
@@ -385,7 +385,7 @@ module FatTable
           expect(fmt.format_at[:header][h].datetime_fmt).to eq('%F %H:%M:%S')
           expect(fmt.format_at[:gfooter][h].nil_text).to eq('')
           expect(fmt.format_at[:gfooter][h].pre_digits).to eq(0)
-          expect(fmt.format_at[:gfooter][h].post_digits).to eq(-1)
+          expect(fmt.format_at[:gfooter][h].post_digits).to eq(0)
           expect(fmt.format_at[:gfooter][h].italic).to eq(false)
           expect(fmt.format_at[:gfooter][h].alignment).to eq(:left)
           expect(fmt.format_at[:gfooter][h].commas).to eq(false)
@@ -406,7 +406,7 @@ module FatTable
           expect(fmt.format_at[:header][h].datetime_fmt).to eq('%F %H:%M:%S')
           expect(fmt.format_at[:footer][h].nil_text).to eq('')
           expect(fmt.format_at[:footer][h].pre_digits).to eq(0)
-          expect(fmt.format_at[:footer][h].post_digits).to eq(-1)
+          expect(fmt.format_at[:footer][h].post_digits).to eq(0)
           expect(fmt.format_at[:footer][h].bold).to eq(h == :date)
           expect(fmt.format_at[:footer][h].italic).to eq(false)
           expect(fmt.format_at[:footer][h].alignment).to eq(:left)
@@ -421,7 +421,7 @@ module FatTable
         # Body, :price
         expect(fmt.format_at[:body][:price].commas).to eq(true)
         expect(fmt.format_at[:body][:price].pre_digits).to eq(0)
-        expect(fmt.format_at[:body][:price].post_digits).to eq(-1)
+        expect(fmt.format_at[:body][:price].post_digits).to eq(0)
         # Body, :shares
         expect(fmt.format_at[:body][:shares].commas).to eq(false)
         expect(fmt.format_at[:body][:shares].pre_digits).to eq(0)
@@ -457,117 +457,118 @@ module FatTable
 
     describe 'cell formatting' do
       let(:fmt) { described_class.new }
-
-      before do
-        @istruct = OpenStruct.new(described_class.default_format)
-      end
+      let(:istruct) { OpenStruct.new(described_class.default_format) }
 
       # let(:istruct) { OpenStruct.new(described_class.default_format) }
 
       describe 'string formatting' do
         it 'properly uppercases a string' do
-          @istruct = OpenStruct.new(described_class.default_format)
-          @istruct.case = :upper
-          expect(fmt.format_cell('hello world', @istruct)).to eq('HELLO WORLD')
+          istruct.case = :upper
+          expect(fmt.format_cell('hello world', istruct)).to eq('HELLO WORLD')
         end
 
         it 'properly downcases a string' do
-          @istruct.case = :lower
-          expect(fmt.format_cell('HELLO WORLD', @istruct)).to eq('hello world')
+          istruct.case = :lower
+          expect(fmt.format_cell('HELLO WORLD', istruct)).to eq('hello world')
         end
 
         it 'properly title cases a string' do
-          @istruct.case = :title
-          expect(fmt.format_cell('HELLO TO THE WORLD', @istruct))
+          istruct.case = :title
+          expect(fmt.format_cell('HELLO TO THE WORLD', istruct))
             .to eq('Hello to the World')
         end
 
         it 'properly formats a nil as an empty string' do
-          expect(fmt.format_cell(nil, @istruct)).to eq('')
+          expect(fmt.format_cell(nil, istruct)).to eq('')
         end
       end
 
       describe 'numeric formatting' do
+        let(:fmt) { described_class.new }
+        let(:istruct) { OpenStruct.new(described_class.default_format) }
+
         it 'adds grouping commas' do
-          @istruct.commas = true
-          expect(fmt.format_cell(78546.254, @istruct)).to eq('78,546.254')
+          istruct.commas = true
+          expect(fmt.format_cell(78546.254, istruct)).to eq('78,546')
         end
 
         it 'converts to HMS' do
-          @istruct.hms = true
-          expect(fmt.format_cell(78546.254, @istruct)).to eq('21:49:06.25')
+          istruct.hms = true
+          expect(fmt.format_cell(78546.254, istruct)).to eq('21:49:06.25')
         end
 
         it 'handles pre-digits with zero padding' do
-          @istruct.pre_digits = 8
-          expect(fmt.format_cell(78546.254, @istruct)).to eq('00078546')
+          istruct.pre_digits = 8
+          expect(fmt.format_cell(78546.254, istruct)).to eq('00078546')
         end
 
         it 'rounds to the the number of post-digits' do
-          @istruct.pre_digits = 8
-          @istruct.post_digits = 1
-          expect(fmt.format_cell(78546.254, @istruct)).to eq('00078546.3')
-          expect(fmt.format_cell(78546.234, @istruct)).to eq('00078546.2')
+          istruct.pre_digits = 8
+          istruct.post_digits = 1
+          expect(fmt.format_cell(78546.254, istruct)).to eq('00078546.3')
+          expect(fmt.format_cell(78546.234, istruct)).to eq('00078546.2')
         end
 
         it 'adds commas and pre-digit padding' do
-          @istruct.commas = true
-          @istruct.pre_digits = 8
-          @istruct.post_digits = 1
-          expect(fmt.format_cell(78546.254, @istruct)).to eq('00,078,546.3')
+          istruct.commas = true
+          istruct.pre_digits = 8
+          istruct.post_digits = 1
+          expect(fmt.format_cell(78546.254, istruct)).to eq('00,078,546.3')
         end
 
         it 'handles negative pre-digits' do
-          @istruct.commas = false
-          @istruct.pre_digits = -1
-          @istruct.post_digits = 2
-          expect(fmt.format_cell(78546.254, @istruct)).to eq('78546.25')
+          istruct.commas = false
+          istruct.pre_digits = -1
+          istruct.post_digits = 2
+          expect(fmt.format_cell(78546.254, istruct)).to eq('78546.25')
         end
 
         it 'handles currency with post-digits' do
-          @istruct.currency = true
-          @istruct.post_digits = 5
-          expect(fmt.format_cell(78546.254, @istruct)).to eq('$78546.25400')
+          istruct.currency = true
+          istruct.post_digits = 5
+          expect(fmt.format_cell(78546.254, istruct)).to eq('$78546.25400')
         end
 
         it 'formats currency with commas' do
-          @istruct.currency = true
-          @istruct.commas = true
-          expect(fmt.format_cell(78546.254, @istruct)).to eq('$78,546.25')
+          istruct.currency = true
+          istruct.commas = true
+          expect(fmt.format_cell(78546.54, istruct)).to eq('$78,547')
         end
       end
 
       describe 'boolean formatting' do
+        let(:fmt) { described_class.new }
+        let(:istruct) { OpenStruct.new(described_class.default_format) }
+
         it 'properly formats a boolean' do
-          fmt = described_class.new
-          @istruct = OpenStruct.new(described_class.default_format)
-          expect(fmt.format_cell(true, @istruct)).to eq('T')
-          expect(fmt.format_cell(false, @istruct)).to eq('F')
-          @istruct.true_text = 'Yippers'
-          @istruct.false_text = 'Nappers'
-          expect(fmt.format_cell(true, @istruct)).to eq('Yippers')
-          expect(fmt.format_cell(false, @istruct)).to eq('Nappers')
+          expect(fmt.format_cell(true, istruct)).to eq('T')
+          expect(fmt.format_cell(false, istruct)).to eq('F')
+          istruct.true_text = 'Yippers'
+          istruct.false_text = 'Nappers'
+          expect(fmt.format_cell(true, istruct)).to eq('Yippers')
+          expect(fmt.format_cell(false, istruct)).to eq('Nappers')
         end
       end
 
       describe 'datetime formatting' do
+        let(:istruct) { OpenStruct.new(described_class.default_format) }
+
         it 'properly formats a datetime with sub-day components' do
           fmt = described_class.new
-          @istruct = OpenStruct.new(described_class.default_format)
           val = DateTime.parse('2017-02-23 9pm')
-          expect(fmt.format_cell(val, @istruct)).to eq('2017-02-23 21:00:00')
-          @istruct.datetime_fmt = '%Y in %B at %l%P, which was on a %A'
-          expect(fmt.format_cell(val, @istruct))
+          expect(fmt.format_cell(val, istruct)).to eq('2017-02-23 21:00:00')
+          istruct.datetime_fmt = '%Y in %B at %l%P, which was on a %A'
+          expect(fmt.format_cell(val, istruct))
             .to eq('2017 in February at  9pm, which was on a Thursday')
         end
 
         it 'properly formats a datetime without sub-day components' do
           fmt = described_class.new
-          @istruct = OpenStruct.new(described_class.default_format)
+          istruct = OpenStruct.new(described_class.default_format)
           val = DateTime.parse('2017-02-23')
-          expect(fmt.format_cell(val, @istruct)).to eq('2017-02-23')
-          @istruct.date_fmt = '%Y in %B at %l%P, which was on a %A'
-          expect(fmt.format_cell(val, @istruct))
+          expect(fmt.format_cell(val, istruct)).to eq('2017-02-23')
+          istruct.date_fmt = '%Y in %B at %l%P, which was on a %A'
+          expect(fmt.format_cell(val, istruct))
             .to eq('2017 in February at 12am, which was on a Thursday')
         end
       end
@@ -642,8 +643,8 @@ module FatTable
       describe 'table output' do
         let(:tab) {
           aoa = [
-            %w[Ref Date Code Raw Shares Price Info Bool],
-            [1  , '2013-05-02' , 'P' , 795_546.20 , 795_546.2 , 1.1850  , 'ZMPEF1' , 'T'] ,
+            %w[Ref Date         Code     Raw         Shares      Price      Info    Bool],
+            [1  , '2013-05-02' , 'P' , 795_546.203 , 795_546.2 , 1.1850  , 'ZMPEF1' , 'T'] ,
             [2  , '2013-05-02' , 'P' , 118_186.40 , 118_186.4 , 11.8500 , 'ZMPEF1' , 'T'] ,
             [7  , '2013-05-20' , 'S' , 12_000.00  , 5046.00   , 28.2804 , 'ZMEAC'  , 'F'] ,
             [8  , '2013-05-20' , 'S' , 85_000.00  , 35_742.50 , 28.3224 , 'ZMEAC'  , 'T'] ,
