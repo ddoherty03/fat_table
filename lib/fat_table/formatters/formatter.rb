@@ -1212,26 +1212,16 @@ module FatTable
         result += post_header(widths)
       end
       new_rows.each do |loc_row|
-        result += hline(widths) if loc_row.nil?
-        next if loc_row.nil?
+        if loc_row.nil?
+          result += hline(widths)
+          next
+        end
 
         _loc, row = *loc_row
         result += pre_row
         cells = []
         row.each_pair do |h, (_v, fmt_v)|
-          formatted_cell =
-            if aligned?
-              # We did not "decorate" the cells with characters (e.g., color
-              # escape codes in the terminal, LaTeX control sequences, etc.)
-              # that could affect the width calculation on the first pass if
-              # this is a formatter that does its own alignment, so we do it
-              # here.
-              istruct = format_at[_loc][h]
-              format_cell(row[h].first, istruct, width: widths[h], decorate: true)
-            else
-              fmt_v
-            end
-          cells << pre_cell(h) + quote_cell(formatted_cell) + post_cell
+          cells << pre_cell(h) + quote_cell(fmt_v) + post_cell
         end
         result += cells.join(inter_cell)
         result += post_row
