@@ -159,7 +159,7 @@ module FatTable
     end
 
     def alignment_code(al_sym)
-      case al_sym
+      case al_sym.to_sym
       when :center
         'c'
       when :right
