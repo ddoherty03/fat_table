@@ -6,9 +6,12 @@ module FatTable
   # timestamps and the connector at the beginning of hlines is a '|' rather than
   # a '+' as for text tables.
   class OrgFormatter < Formatter
-    self.default_format = default_format.dup
-    default_format[:date_fmt] = '[%F %a]'
-    default_format[:datetime_fmt] = '[%F %a %H:%M:%S]'
+    def self.default_format
+      fmt = super
+      fmt[:date_fmt] = '[%F %a]'
+      fmt[:datetime_fmt] = '[%F %a %H:%M:%S]'
+      fmt
+    end
 
     private
 

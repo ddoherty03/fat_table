@@ -53,34 +53,37 @@ module FatTable
     # 'Average'.
     attr_reader :gfooters
 
-    class_attribute :default_format
-    self.default_format = {
-      nil_text: '',
-      case: :none,
-      alignment: :left,
-      bold: false,
-      italic: false,
-      color: 'none',
-      bgcolor: 'none',
-      hms: false,
-      pre_digits: 0,
-      post_digits: 0,
-      commas: false,
-      currency: false,
-      datetime_fmt: '%F %H:%M:%S',
-      date_fmt: '%F',
-      true_text: 'T',
-      false_text: 'F',
-      true_color: 'none',
-      true_bgcolor: 'none',
-      false_color: 'none',
-      false_bgcolor: 'none',
-      underline: false,
-      blink: false,
-    }
-
     class_attribute :valid_colors
     self.valid_colors = ['none']
+
+    def self.default_format
+      {
+        nil_text: '',
+        case: :none,
+        alignment: :left,
+        bold: false,
+        italic: false,
+        color: 'none',
+        bgcolor: 'none',
+        hms: false,
+        pre_digits: 0,
+        post_digits: 0,
+        commas: false,
+        currency: false,
+        datetime_fmt: '%F %H:%M:%S',
+        date_fmt: '%F',
+        true_text: 'T',
+        false_text: 'F',
+        true_color: 'none',
+        true_bgcolor: 'none',
+        false_color: 'none',
+        false_bgcolor: 'none',
+        underline: false,
+        blink: false,
+        _h: nil,
+        _location: nil
+      }
+    end
 
     # :category: Constructors
 
@@ -659,7 +662,7 @@ module FatTable
         # hash.
         format_h =
           if format_at[location][h].empty?
-            default_format.dup
+            default_format
           else
             format_at[location][h].to_h
           end
@@ -700,17 +703,17 @@ module FatTable
         # format_for call with those locations.
         if location == :body
           format_h.each_pair do |k, v|
-            if format_at[:bfirst][h].send(k) == default_format[k]
+            if format_at[:bfirst][h].send(k) == self.class.default_format[k]
               format_at[:bfirst][h].send("#{k}=", v)
             end
-            if format_at[:gfirst][h].send(k) == default_format[k]
+            if format_at[:gfirst][h].send(k) == self.class.default_format[k]
               format_at[:gfirst][h].send("#{k}=", v)
             end
           end
         elsif location == :gfirst
           # Copy :gfirst formatting to :bfirst if it is still the default
           format_h.each_pair do |k, v|
-            if format_at[:bfirst][h].send(k) == default_format[k]
+            if format_at[:bfirst][h].send(k) == self.class.default_format[k]
               format_at[:bfirst][h].send("#{k}=", v)
             end
           end
@@ -942,9 +945,10 @@ module FatTable
     # Convert a value to a string based on the instructions in istruct,
     # depending on the type of val. "Formatting," which changes the content of
     # the string, such as adding commas, is always performed, except alignment
-    # which is only performed when the width parameter is non-nil. "Decorating",
-    # which changes the appearance without changing the content, is performed
-    # only if the decorate parameter is true.
+    # which is only performed when the width parameter is
+    # non-nil. "Decorating", which changes the appearance without changing the
+    # content, is performed only if the decorate parameter is true.  Priority:
+    # lowest to highest: type, location, column_name
     def format_cell(val, istruct, width: nil, decorate: false)
       case val
       when Numeric
