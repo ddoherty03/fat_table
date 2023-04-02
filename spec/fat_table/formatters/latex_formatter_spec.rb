@@ -1,5 +1,45 @@
 module FatTable
   RSpec.describe LaTeXFormatter do
+    describe 'decorate string' do
+      it 'obeys a bold directive' do
+        istruct = OpenStruct.new(LaTeXFormatter.default_format)
+        istruct.bold = true
+        dstr = LaTeXFormatter.new.decorate_string('Words', istruct)
+        expect(dstr).to eq("\\bfseries{Words}")
+      end
+
+      it 'obeys an italic directive' do
+        istruct = OpenStruct.new(LaTeXFormatter.default_format)
+        istruct.italic = true
+        dstr = LaTeXFormatter.new.decorate_string('Words, words, words', istruct)
+        expect(dstr).to eq("\\itshape{Words, words, words}")
+      end
+
+      it 'obeys a color directive' do
+        istruct = OpenStruct.new(LaTeXFormatter.default_format)
+        istruct.color = 'Turquoise'
+        dstr = LaTeXFormatter.new.decorate_string('Words, words, words', istruct)
+        expect(dstr).to eq("{\\textcolor{Turquoise}{Words, words, words}}")
+      end
+
+      it 'obeys a bg_color directive' do
+        istruct = OpenStruct.new(LaTeXFormatter.default_format)
+        istruct.bgcolor = 'Pink'
+        dstr = LaTeXFormatter.new.decorate_string('Words, words, words', istruct)
+        expect(dstr).to eq("{\\cellcolor{Pink}{Words, words, words}}")
+      end
+
+      it 'obeys an alignment directive' do
+        istruct = OpenStruct.new(LaTeXFormatter.default_format)
+        istruct.alignment = 'right'
+        dstr = LaTeXFormatter.new.decorate_string('Words, words, words', istruct)
+        expect(dstr).to eq("\\multicolumn{1}{r}{Words, words, words}")
+        istruct.alignment = 'center'
+        dstr = LaTeXFormatter.new.decorate_string('Words, words, words', istruct)
+        expect(dstr).to eq("\\multicolumn{1}{c}{Words, words, words}")
+      end
+    end
+
     describe 'table output' do
       before :all do
         tmp_dir = "#{__dir__}/../../tmp"
@@ -60,7 +100,7 @@ module FatTable
 
       it 'should be able to set format and output LaTeX with block' do
         fmt = LaTeXFormatter.new(@tab, document: true) do |f|
-          f.format(ref: '5.0', code: 'C', raw: ',0.0', shares: ',0.0',
+          f.format(ref: '5.0', code: 'C', raw: 'R,0.0', shares: 'R,0.0',
                    price: '0.3R', bool: 'CYc[green,red]',
                    numeric: 'Rc[Goldenrod1]')
           f.format_for(:header, string: 'CB')
@@ -71,7 +111,7 @@ module FatTable
           f.sum_footer(:price, :raw, :shares)
           f.footer('Std Dev', price: :dev, shares: :dev, bool: :all?)
           f.footer('Any?', bool: :any?)
-          f.format_for(:footer, ref: 'LBc[Blue2]')
+          f.format_for(:footer, bool: 'LBXc[Blue2,Pink]')
         end
         ltx = fmt.output
         expect(ltx.class).to eq(String)
@@ -88,6 +128,7 @@ module FatTable
         expect(ltx).to match(/\bZMPEF1\b/)
         expect(ltx).to match(/\bGroup Total\b/)
         expect(ltx).to match(/\bGrp Std Dev\b/)
+        expect(ltx).to match(/\\textcolor{Tomato1}{\\bfseries{\\itshape{Std Dev}}/)
         tmp = File.open("#{__dir__}/../../tmp/example2.tex", 'w')
         result = false
         Dir.chdir(File.dirname(tmp.path)) do
