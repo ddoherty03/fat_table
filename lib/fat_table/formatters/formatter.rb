@@ -1099,7 +1099,7 @@ module FatTable
           val
         end
       if width && aligned?
-        pad = width - width(val)
+        pad = [width - width(val), 0].max
         case istruct.alignment
         when :left
           val += ' ' * pad
