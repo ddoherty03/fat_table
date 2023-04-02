@@ -95,18 +95,6 @@ module FatTable
       result
     end
 
-    private
-
-    def color_valid?(clr)
-      valid_colors.include?(clr)
-    end
-
-    def invalid_color_msg(clr)
-      valid_colors_list = valid_colors.join(' ').wrap
-      "LaTeXFormatter invalid color '#{clr}'. Valid colors are:\n" +
-        valid_colors_list
-    end
-
     # Add LaTeX control sequences. Ignore background color, underline, and
     # blink. Alignment needs to be done by LaTeX, so we have to take it into
     # account unless it's the same as the body alignment, since that is the
@@ -126,6 +114,18 @@ module FatTable
         result = "\\multicolumn{1}{#{ac}}{#{result}}"
       end
       result
+    end
+
+    private
+
+    def color_valid?(clr)
+      valid_colors.include?(clr)
+    end
+
+    def invalid_color_msg(clr)
+      valid_colors_list = valid_colors.join(' ').wrap
+      "LaTeXFormatter invalid color '#{clr}'. Valid colors are:\n" +
+        valid_colors_list
     end
 
     # Return +str+ with quote marks oriented and special TeX characters quoted.

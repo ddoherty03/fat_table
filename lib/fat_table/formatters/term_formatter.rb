@@ -38,6 +38,17 @@ module FatTable
     self.valid_colors = ['none'] +
                         ::Rainbow::X11ColorNames::NAMES.keys.map(&:to_s).sort
 
+    # Add ANSI codes to string to implement the given decorations
+    def decorate_string(str, istruct)
+      result = Rainbow(str)
+      result = colorize(result, istruct.color, istruct.bgcolor)
+      result = result.bold if istruct.bold
+      result = result.italic if istruct.italic
+      result = result.underline if istruct.underline
+      result = result.blink if istruct.blink
+      result
+    end
+
     private
 
     def color_valid?(clr)
@@ -64,17 +75,6 @@ module FatTable
       return '' unless str
 
       str.gsub(/\e\[[0-9;]+m/, '')
-    end
-
-    # Add ANSI codes to string to implement the given decorations
-    def decorate_string(str, istruct)
-      result = Rainbow(str)
-      result = colorize(result, istruct.color, istruct.bgcolor)
-      result = result.bold if istruct.bold
-      result = result.italic if istruct.italic
-      result = result.underline if istruct.underline
-      result = result.blink if istruct.blink
-      result
     end
 
     def colorize(str, fg_color, bg_color)

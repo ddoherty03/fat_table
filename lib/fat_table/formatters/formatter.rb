@@ -982,8 +982,6 @@ module FatTable
       end
     end
 
-    private
-
     # Add LaTeX control sequences, ANSI terminal escape codes, or other
     # decorations to string to decorate it with the given attributes. None of
     # the decorations may affect the displayed width of the string. Return the
@@ -991,6 +989,8 @@ module FatTable
     def decorate_string(str, _istruct)
       str
     end
+
+    private
 
     # Convert a boolean to a string according to instructions in istruct, which
     # is assumed to be the result of parsing a formatting instruction string as
