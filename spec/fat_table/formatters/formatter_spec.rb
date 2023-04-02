@@ -175,6 +175,17 @@ module FatTable
           expect(fmt.format_at[:body][:shares].commas).to eq(true)
         end
 
+        it 'parses pre- and post-digits for numerics' do
+          fmt = described_class.new(tab)
+                  .format_for(:body, numeric: '4.2,')
+          expect(fmt.format_at[:body][:shares].pre_digits).to eq(4)
+          expect(fmt.format_at[:body][:shares].post_digits).to eq(2)
+          fmt = described_class.new(tab)
+                  .format_for(:footer, numeric: '0.2,')
+          expect(fmt.format_at[:footer][:shares].pre_digits).to eq(0)
+          expect(fmt.format_at[:footer][:shares].post_digits).to eq(2)
+        end
+
         it 'parses negated comma described_class' do
           fmt = described_class.new(tab)
                   .format_for(:body, numeric: '4.0,', shares: '4.0~,')
@@ -504,9 +515,24 @@ module FatTable
 
         it 'rounds to the the number of post-digits' do
           istruct.pre_digits = 8
+          istruct.post_digits = 0
+          expect(fmt.format_cell(78546.254, istruct)).to eq('00078546')
           istruct.post_digits = 1
           expect(fmt.format_cell(78546.254, istruct)).to eq('00078546.3')
-          expect(fmt.format_cell(78546.234, istruct)).to eq('00078546.2')
+          istruct.post_digits = 2
+          expect(fmt.format_cell(78546.234654, istruct)).to eq('00078546.23')
+          istruct.post_digits = 3
+          expect(fmt.format_cell(78546.234654, istruct)).to eq('00078546.235')
+          istruct.post_digits = 4
+          expect(fmt.format_cell(78546.234654, istruct)).to eq('00078546.2347')
+          istruct.post_digits = 5
+          expect(fmt.format_cell(78546.234654, istruct)).to eq('00078546.23465')
+        end
+
+        it 'handles post-digits with zero padding' do
+          istruct.commas = true
+          istruct.post_digits = 8
+          expect(fmt.format_cell(78546.254, istruct)).to eq('78,546.25400000')
         end
 
         it 'adds commas and pre-digit padding' do
@@ -518,9 +544,20 @@ module FatTable
 
         it 'handles negative pre-digits' do
           istruct.commas = false
-          istruct.pre_digits = -1
+          istruct.pre_digits = -3
           istruct.post_digits = 2
           expect(fmt.format_cell(78546.254, istruct)).to eq('78546.25')
+        end
+
+        it 'handles negative post-digits' do
+          istruct.commas = false
+          istruct.pre_digits = -5
+          istruct.post_digits = -2
+          expect(fmt.format_cell(78546.254, istruct)).to eq('78500')
+          istruct.commas = true
+          istruct.pre_digits = -5
+          istruct.post_digits = -2
+          expect(fmt.format_cell(78546.254, istruct)).to eq('78,500')
         end
 
         it 'handles currency with post-digits' do
