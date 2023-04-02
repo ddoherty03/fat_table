@@ -107,9 +107,11 @@ module FatTable
         result = "{\\textcolor{#{istruct.color}}{#{result}}}"
       end
       if istruct.bgcolor && istruct.bgcolor != 'none'
-        result = "\\cellcolor{#{istruct.bgcolor}}#{result}"
+        result = "{\\cellcolor{#{istruct.bgcolor}}{#{result}}}"
       end
-      unless istruct.alignment == format_at[:body][istruct._h].alignment
+      if (istruct._h && format_at[:body][istruct._h] &&
+         istruct.alignment != format_at[:body][istruct._h].alignment) ||
+         (istruct._h.nil? && istruct.alignment.to_sym != :left)
         ac = alignment_code(istruct.alignment)
         result = "\\multicolumn{1}{#{ac}}{#{result}}"
       end
