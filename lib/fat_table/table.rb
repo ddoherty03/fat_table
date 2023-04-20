@@ -54,6 +54,10 @@ module FatTable
     # An Array of FatTable::Columns that constitute the table.
     attr_reader :columns
 
+    # Headers of columns that are to be tolerant when they are built.
+    attr_accessor :tolerant_cols
+    attr_reader :omni_typ, :omni_tol
+
     # Record boundaries set explicitly with mark_boundaries or from reading
     # hlines from input.  When we want to access boundaries, however, we want
     # to add an implict boundary at the last row of the table.  Since, as the
@@ -62,55 +66,58 @@ module FatTable
     # method call.
     attr_accessor :explicit_boundaries
 
-    # An Array of FatTable::Columns that should be tolerant.
-    attr_reader :tolerant_columns
-
     ###########################################################################
     # Constructors
-    ###########################################################################
-
+    #
+    #
     # :category: Constructors
-
+    #
     # Return an empty FatTable::Table object.  Specifying headers is optional.
-    # Any headers ending with a ! are marked as tolerant, in that, if an
-    # incompatible type is added to it, the column is re-typed as a String
-    # column, and construction proceeds.  The ! is stripped from the header to
-    # form the column key, though.  You can also provide the names of columns
-    # that should be tolerant by using the +tolerant_columns key-word to
-    # provide an array of headers that should be tolerant.  The special string
-    # '*' or the symbol :* indicates that all columns should be created
-    # tolerant.
-    def initialize(*heads, tolerant_columns: [])
+    # By default, all columns start our as having an "open" type and get
+    # assigned a type based on their contents.  For example, if a column
+    # contains items that can be interpreted as dates, the column gets
+    # assigned a DateTime type.  Other types are Numeric, Boolean, and String.
+    # Once a type is assigned to a column, any non-conforming vaules in that
+    # column raise an IncompatibleType error.  If a column is marked
+    # "tolerant", however, the incompatible item is converted to a string and
+    # allowed to remain in the column without raising an error.  They count as
+    # nils when calculations are performed on the column and paricipate only
+    # in string formatting directives on output.
+    #
+    # Rather than have a column's type determined by content, you can also
+    # specify a column type by providing a type hash, where the key is the
+    # header's name and the value is the desired type.  In that case, any
+    # incompatible type raises an an IncompatibleTypeError unless the column
+    # is also marked tolerant, in which case it gets converted to a string as
+    # discussed above.  If the type name in the types hash ends in a '~', it
+    # is treated as a specifying the given type but marking it as tolerant as
+    # well.  The values in the type hash can be any string or sybol that
+    # starts with  'num', 'dat', 'bool', or 'str' to specify Numeric,
+    # DateTime, Boolean, or String types respectively.
+    def initialize(*heads, **types)
       @columns = []
-      @explicit_boundaries = []
-      @tolerant_columns =
-        case tolerant_columns
-        when Array
-          tolerant_columns.map { |h| h.to_s.as_sym }
-        when String
-          if tolerant_columns.strip == '*'
-            ['*'.to_sym]
-          else
-            [tolerant_columns.as_sym]
-          end
-        when Symbol
-          if tolerant_columns.to_s.strip == '*'
-            ['*'.to_sym]
-          else
-            [tolerant_columns.to_s.as_sym]
-          end
-        else
-          raise ArgumentError, "set tolerant_columns to String, Symbol, or an Array of either"
-        end
-      unless heads.empty?
-        heads.each do |h|
-          if h.to_s.end_with?('!') || @tolerant_columns.include?(h)
-            @columns << Column.new(header: h.to_s.sub(/!\s*\z/, ''), type: 'String')
-          else
-            @columns << Column.new(header: h)
-          end
-        end
+      @tolerant_cols = []
+      @headers = []
+      # Check for the special 'omni' key
+      @omni_type = 'NilClass'
+      @omni_tol = false
+      if types.keys.map(&:to_s).include?('omni')
+        # All columns not otherwise included in types should have the type and
+        # tolerance of omni.
+        omni_val = (types['omni'] || types[:omni])
+        @omni_type, @omni_tol = Table.typ_tol(omni_val)
+        # Remove omni from types.
+        types.delete(:omni)
+        types.delete('omni')
       end
+      heads += types.keys
+      heads.uniq.each do |h|
+        typ, tol = Table.typ_tol(types[h])
+        @tolerant_cols << h.to_s.as_sym if tol
+        @columns << Column.new(header: h.to_s.sub(/~\s*\z/, ''), type: typ,
+                               tolerant: tol)
+      end
+      @explicit_boundaries = []
     end
 
     # :category: Constructors
@@ -133,9 +140,9 @@ module FatTable
 
     # Construct a Table from the contents of a CSV file named +fname+. Headers
     # will be taken from the first CSV row and converted to symbols.
-    def self.from_csv_file(fname, tolerant_columns: [])
+    def self.from_csv_file(fname, **types)
       File.open(fname, 'r') do |io|
-        from_csv_io(io, tolerant_columns: tolerant_columns)
+        from_csv_io(io, **types)
       end
     end
 
@@ -143,8 +150,8 @@ module FatTable
 
     # Construct a Table from a CSV string +str+, treated in the same manner as
     # the input from a CSV file in ::from_org_file.
-    def self.from_csv_string(str, tolerant_columns: [])
-      from_csv_io(StringIO.new(str), tolerant_columns: tolerant_columns)
+    def self.from_csv_string(str, **types)
+      from_csv_io(StringIO.new(str), **types)
     end
 
     # :category: Constructors
@@ -153,9 +160,9 @@ module FatTable
     # file named +fname+. Headers are taken from the first row if the second row
     # is an hrule. Otherwise, synthetic headers of the form +:col_1+, +:col_2+,
     # etc. are created.
-    def self.from_org_file(fname, tolerant_columns: [])
+    def self.from_org_file(fname, **types)
       File.open(fname, 'r') do |io|
-        from_org_io(io, tolerant_columns: tolerant_columns)
+        from_org_io(io, **types)
       end
     end
 
@@ -163,8 +170,8 @@ module FatTable
 
     # Construct a Table from a string +str+, treated in the same manner as the
     # contents of an org-mode file in ::from_org_file.
-    def self.from_org_string(str, tolerant_columns: [])
-      from_org_io(StringIO.new(str), tolerant_columns: tolerant_columns)
+    def self.from_org_string(str, **types)
+      from_org_io(StringIO.new(str), **types)
     end
 
     # :category: Constructors
@@ -183,8 +190,8 @@ module FatTable
     # :hlines no +) org-mode strips all hrules from the table; otherwise (+
     # HEADER: :hlines yes +) they are indicated with nil elements in the outer
     # array.
-    def self.from_aoa(aoa, hlines: false, tolerant_columns: [])
-      from_array_of_arrays(aoa, hlines: hlines, tolerant_columns: tolerant_columns)
+    def self.from_aoa(aoa, hlines: false, **types)
+      from_array_of_arrays(aoa, hlines: hlines, **types)
     end
 
     # :category: Constructors
@@ -194,9 +201,9 @@ module FatTable
     # keys, which, when converted to symbols will become the headers for the
     # Table. If hlines is set true, mark a group boundary whenever a nil, rather
     # than a hash appears in the outer array.
-    def self.from_aoh(aoh, hlines: false, tolerant_columns: [])
+    def self.from_aoh(aoh, hlines: false, **types)
       if aoh.first.respond_to?(:to_h)
-        from_array_of_hashes(aoh, hlines: hlines, tolerant_columns: tolerant_columns)
+        from_array_of_hashes(aoh, hlines: hlines, **types)
       else
         raise UserError,
               "Cannot initialize Table with an array of #{input[0].class}"
@@ -215,7 +222,7 @@ module FatTable
 
     # Construct a Table by running a SQL +query+ against the database set up
     # with FatTable.connect, with the rows of the query result as rows.
-    def self.from_sql(query, tolerant_columns: [])
+    def self.from_sql(query, **types)
       msg = 'FatTable.db must be set with FatTable.connect'
       raise UserError, msg if FatTable.db.nil?
 
@@ -232,13 +239,32 @@ module FatTable
     ############################################################################
 
     class << self
+      # Return [typ, tol] based on the type string, str.
+      def typ_tol(str)
+        tol = str ? str.match?(/~\s*\Z/) : false
+        typ =
+          case str
+          when /\A\s*num/i
+            'Numeric'
+          when /\A\s*boo/i
+            'Boolean'
+          when /\A\s*dat/i
+            'DateTime'
+          when /\A\s*str/i
+            'String'
+          else
+            'NilClass'
+          end
+        [typ, tol]
+      end
+
       private
 
       # Construct table from an array of hashes or an array of any object that
       # can respond to #to_h. If an array element is a nil, mark it as a group
       # boundary in the Table.
-      def from_array_of_hashes(hashes, hlines: false, tolerant_columns: [])
-        result = new(tolerant_columns: tolerant_columns)
+      def from_array_of_hashes(hashes, hlines: false, **types)
+        result = new(**types)
         hashes.each do |hsh|
           if hsh.nil?
             unless hlines
@@ -266,8 +292,8 @@ module FatTable
       # hlines are stripped from the table, otherwise (:hlines yes) they are
       # indicated with nil elements in the outer array as expected by this
       # method when hlines is set true.
-      def from_array_of_arrays(rows, hlines: false, tolerant_columns: [])
-        result = new(tolerant_columns: tolerant_columns)
+      def from_array_of_arrays(rows, hlines: false, **types)
+        result = new(**types)
         headers = []
         if !hlines
           # Take the first row as headers
@@ -303,8 +329,8 @@ module FatTable
         result
       end
 
-      def from_csv_io(io, tolerant_columns: [])
-        result = new(tolerant_columns: tolerant_columns)
+      def from_csv_io(io, **types)
+        result = new(**types)
         ::CSV.new(io, headers: true, header_converters: :symbol,
                   skip_blanks: true).each do |row|
           result << row.to_h
@@ -317,7 +343,7 @@ module FatTable
       # header row must be marked with an hline (i.e, a row that looks like
       # '|---+--...--|') and groups of rows may be marked with hlines to
       # indicate group boundaries.
-      def from_org_io(io, tolerant_columns: [])
+      def from_org_io(io, **types)
         table_re = /\A\s*\|/
         hrule_re = /\A\s*\|[-+]+/
         rows = []
@@ -352,7 +378,7 @@ module FatTable
             rows << line.split('|').map(&:clean)
           end
         end
-        from_array_of_arrays(rows, hlines: true, tolerant_columns: tolerant_columns)
+        from_array_of_arrays(rows, hlines: true, **types)
       end
     end
 
@@ -375,6 +401,16 @@ module FatTable
     # header as a String.
     def type(key)
       column(key).type
+    end
+
+    # Return the type of the Column with the given +key+ as its
+    # header as a String.
+    def types
+      result = {}
+      headers.each do |h|
+        result[h] = type(h)
+      end
+      result
     end
 
     # :category: Attributes
@@ -428,7 +464,7 @@ module FatTable
     # :category: Attributes
 
     # Return a Hash of the Table's Column header symbols to type strings.
-    def types
+    def col_types
       result = {}
       columns.each do |c|
         result[c.header] = c.type
@@ -445,11 +481,11 @@ module FatTable
 
     # :category: Attributes
 
-    # Return whether the column with the given head should be made tolerant.
+    # Return whether the column with the given head is supposed to be
+    # tolerant.  We can't just look up the Column because it may not be build
+    # yet, as when we do a row-by-row add.
     def tolerant_col?(h)
-      return true if tolerant_columns.include?(:'*')
-
-      tolerant_columns.include?(h)
+      tolerant_cols.include?(h.to_s.as_sym) || self.omni_tol
     end
 
     # :category: Attributes
@@ -994,11 +1030,11 @@ module FatTable
       result = empty_dup
       headers.each do |h|
         col =
-        if tolerant_col?(h)
-          Column.new(header: h, tolerant: true)
-        else
-          Column.new(header: h)
-        end
+          if tolerant_col?(h)
+            Column.new(header: h, tolerant: true)
+          else
+            Column.new(header: h)
+          end
         result.add_column(col)
       end
       ev = Evaluator.new(ivars: { row: 0, group: 0 })

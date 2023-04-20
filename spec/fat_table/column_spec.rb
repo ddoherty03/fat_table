@@ -304,7 +304,7 @@ module FatTable
         it 'types Numeric even with early string' do
           col1 = Column.new(header: :date, items: string_then_num_mix)
           expect(col1.type).to eq('String')
-          col2 = Column.new(header: :date, items: string_then_num_mix, tolerant: true)
+          col2 = Column.new(header: :date, items: string_then_num_mix, type: 'Numeric', tolerant: true)
           expect(col2.type).to eq('Numeric')
           expect(col2[3]).to eq(3.14159)
           expect(col2[14]).to eq('Cannot be parsed as num')
@@ -312,20 +312,64 @@ module FatTable
 
         it 'can up-type to Numeric' do
           items = ['Four', 'score', 'and', 7, 'years ago']
-          col = Column.new(header: 'nums', items: items, tolerant: true)
+          col = Column.new(header: 'nums', items: items, type: 'Numeric', tolerant: true)
           expect(col.type).to eq('Numeric')
         end
 
         it 'can up-type to DateTime' do
           items = ['Four', 'score', 'and', '1776-07-04', 'years ago']
-          col = Column.new(header: 'nums', items: items, tolerant: true)
+          col = Column.new(header: 'nums', items: items, type: 'DateTime', tolerant: true)
           expect(col.type).to eq('DateTime')
         end
 
         it 'can up-type to Boolean' do
           items = ['Four', 'score', 'and', true, 'years ago']
-          col = Column.new(header: 'nums', items: items, tolerant: true)
+          col = Column.new(header: 'nums', items: items, type: 'Boolean', tolerant: true)
           expect(col.type).to eq('Boolean')
+        end
+      end
+
+      describe 'intolerant columns' do
+        let(:date_mix) do
+          [
+            nil, nil, '2018-01-21', Date.parse('1957/9/22'), '1957/9/22',
+            'Not a Date', '[2017-04-22 Sat]', '<2017-04-23>',
+          ]
+        end
+        let(:bool_mix) do
+          [nil, 't', 'true', 'False', 'nO', 'y', 'Y', 'A non-Boolean']
+        end
+        let(:num_mix) do
+          [
+            nil, nil, '$2_018', 3.14159, '1,957/9', '2:3', 64646464646,
+            '$-2_018', -3.14159, '+1,957/-9', '-2:3', +64646464646,
+            '-$2_018', +3.14159, 'Cannot be parsed as num', '+2:-3', -64646464646,
+          ]
+        end
+        let(:string_then_num_mix) do
+          [
+            nil, nil, 'Hello', 3.14159, '1,957/9', '2:3', 64646464646,
+            '$-2_018', -3.14159, '+1,957/-9', '-2:3', +64646464646,
+            '-$2_018', +3.14159, 'Cannot be parsed as num', '+2:-3', -64646464646,
+          ]
+        end
+
+        it 'tolerates only dates' do
+          expect { Column.new(header: :date, type: 'DateTime', items: date_mix) }.to raise_error(/already typed/)
+        end
+
+        it 'tolerates only booleans' do
+          expect { Column.new(header: :date, items: bool_mix) }.to raise_error(/already typed/)
+        end
+
+        it 'tolerates only numerics' do
+          expect { Column.new(header: :date, items: num_mix) }.to raise_error(/already typed/)
+        end
+
+        it 'types Numeric even with early string' do
+          expect {
+            Column.new(header: :date, type: 'Numeric', items: string_then_num_mix)
+          }.to raise_error(IncompatibleTypeError)
         end
       end
     end

@@ -53,7 +53,7 @@ module FatTable
       end
 
       it 'can initialize with headers and kw args from FatTable module method' do
-        tab1 = FatTable.new(:a, :b, :c, tolerant_columns: [:b])
+        tab1 = FatTable.new(:a, :b, :c, b: '~')
         expect(tab1).to be_a(Table)
         expect(tab1).to be_empty
       end
@@ -480,7 +480,7 @@ module FatTable
       end
 
       it 'creates from an Org string' do
-        tab = Table.from_org_string(org_body, tolerant_columns: [:ref, :raw])
+        tab = Table.from_org_string(org_body, ref: '~', raw: '~')
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to be > 10
         expect(tab.headers.sort)
@@ -497,8 +497,30 @@ module FatTable
         end
       end
 
+      it 'creates from an Org string with specified types' do
+        tab = Table.from_org_string(org_body, ref: 'str~', raw: 'num~')
+        expect(tab.class).to eq(Table)
+        expect(tab.type(:ref)).to eq('String')
+        expect(tab.tolerant_col?(:ref)).to be true
+        expect(tab.type(:raw)).to eq('Numeric')
+        expect(tab.tolerant_col?(:raw)).to be true
+        # expect(tab.rows.size).to be > 10
+        # expect(tab.headers.sort)
+        #   .to eq [:code, :date, :info, :price, :raw, :ref, :shares]
+        # tab.rows.each do |row|
+        #   expect(row[:code].class).to eq String
+        #   expect(tab.column(:ref).type).to eq('Numeric')
+        #   expect(tab.column(:raw).type).to eq('Numeric')
+        #   expect(row[:date].class).to eq Date
+        #   expect(row[:shares].is_a?(Numeric)).to be true
+        #   expect(row[:price].is_a?(BigDecimal)).to be true
+        #   expect([Numeric, String].any? { |t| row[:ref].is_a?(t) }).to be true
+        #   expect(row[:info].class).to eq String
+        # end
+      end
+
       it 'creates from an Org string with module method' do
-        tab = FatTable.from_org_string(org_body, tolerant_columns: [:ref, :raw])
+        tab = FatTable.from_org_string(org_body, ref: '~', raw: '~')
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to be > 10
         expect(tab.headers.sort)
@@ -513,7 +535,7 @@ module FatTable
       end
 
       it 'creates from an Org string with groups' do
-        tab = Table.from_org_string(org_body_with_groups, tolerant_columns: '*')
+        tab = Table.from_org_string(org_body_with_groups, omni: '~')
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to be > 10
         expect(tab.headers.sort)
@@ -535,7 +557,7 @@ module FatTable
 
       it 'creates from an Org file' do
         File.write('/tmp/junk.org', org_body)
-        tab = Table.from_org_file('/tmp/junk.org', tolerant_columns: [:ref, :raw, :shares])
+        tab = Table.from_org_file('/tmp/junk.org', ref: '~', raw: '~', shares: '~')
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to be > 10
         expect(tab.rows[0].keys.sort)
@@ -548,8 +570,7 @@ module FatTable
       end
 
       it 'adds group boundaries on reading from org text' do
-        tab = Table.from_org_string(org_body_with_groups,
-                                    tolerant_columns: [:ref, :raw, :shares])
+        tab = Table.from_org_string(org_body_with_groups, ref: '~', raw: '~', shares: '~')
         expect(tab.groups.size).to eq(4)
         expect(tab.groups[0].size).to eq(1)
         expect(tab.groups[1].size).to eq(3)

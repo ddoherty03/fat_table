@@ -63,19 +63,6 @@ module FatTable
       when 'String'
         if val.nil?
           nil
-        elsif tolerant
-          # Allow String to upgrade to one of Numeric, DateTime, or Boolean if
-          # possible.
-          if (new_val = convert_to_numeric(val))
-            new_val
-          elsif (new_val = convert_to_date_time(val))
-            new_val
-          elsif (new_val = convert_to_boolean(val))
-            new_val
-          else
-            new_val = convert_to_string(val)
-          end
-          new_val
         else
           new_val = convert_to_string(val)
           if new_val.nil?
