@@ -445,27 +445,49 @@ or nil. There are only five permissible types for a ~Column~:
 4. *String* (for ruby ~String~ objects), or
 5. *NilClass* (for the undetermined column type).
 
-When a ~Table~ is constructed from an external source, all ~Columns~ start out
-having a type of ~NilClass~, that is, their type is as yet undetermined. When
-a string or object of one of the four determined types is added to a ~Column~
-and it can be converted into one of the permissible types, it fixes the type
-of the column, and all further items added to the ~Column~ must either be
-~nil~ (indicating no value) or be capable of being coerced to the column's
-type. Otherwise, ~FatTable~ raises an exception.
+By default, when a ~Table~ is constructed from an external source, all
+~Columns~ start out having a type of ~NilClass~, that is, their type is as yet
+undetermined. When a string or object is added to a ~Column~ and it can be
+converted into one of the permissible types, it fixes the type of the column,
+and all further items added to the ~Column~ must either be ~nil~ (indicating
+no value) or be capable of being coerced to the column's type. Otherwise,
+~FatTable~ raises an ~IncompatibleTypeError~ exception.
+
+*** Type Keywords Arguments
+All of the table constructors allow you to set the type for a column in
+advance by adding keyword arguments to the end of the contructor arguments
+where the keyword is a header symbol and the value is a string designating one
+of the types.  For example, suppose we are constructing a table from a CSV
+file, and we know that one of the columns is labeled 'Start' and another
+'Price'.  We want to require the items in the 'Start' column to be a valid
+date and the items in the 'Price' column to be valid numbers:
+
+#+begin_example
+  FatTable.from_csv_file('data.csv', start: 'date', price: 'num')
+#+end_example
+
+The type string can be anything that starts with 'dat', 'num', 'boo', or
+'str', regardless of case, to designate ~DateTime~, ~Numeric~, ~Boolean~, or
+~String~ types, respectively.  Any other string keeps the type as NilClass,
+that is, it remains open for automatic typing.
 
 The strictness of requiring all items to be of the same type can be relaxed by
-declaring a column to be "tolerant."  You can do so when you create the table
-by adding a tolerant_columns keyword parameter.  If a Column is tolerant,
-~FatTable~ tries to convert new items into a type other than a ~String~ and,
-if it can do so, sets /that/ as the Column's type.  Any later items that
-cannot be converted into the Column's type are converted to strings.  These
-interloper strings are treated like nils for purposes of sorting and
-evaluation, but are displayed according to any string formatting on output.
-See [[*Designating "Tolerant" Columns][Designating "Tolerant" Columns]] below.
+declaring a column to be "tolerant."  You can do so by adding a '~' to the end
+of a keyword type specifier in the table constructor.  In the above example,
+if we wanted to allow strings to be mixed up with the numeric prices, we would
+use the following:
 
-It is also possible to force ~FatTable~ to treat a column as a String type,
-even its items look like one of the other types.  See [[*Forcing String Type][Forcing String Type]]
-below.
+#+begin_example
+  FatTable.from_csv_file('data.csv', start: 'date', price: 'num~')
+#+end_example
+
+If a Column is tolerant, ~FatTable~ tries to convert new items into the
+column's specified type, or if the type is still open, to one of ~DateTime~,
+~Numeric~, or ~Boolean~ and then fixing the column's type, or, if it cannot do
+so converts the item into a ~String~ but does not raise an
+~IncompatibleTypeError~ exception.  These interloper strings are treated like
+nils for purposes of sorting and evaluation, but are displayed according to
+any string formatting on output.  See [[*Designating "Tolerant" Columns][Designating "Tolerant" Columns]] below.
 
 Items of input must be either one of the permissible ruby objects or strings. If
 they are strings, ~FatTable~ attempts to parse them as one of the permissible
@@ -626,14 +648,32 @@ columns to be created:
 
 Occasionally, ~FatTable~'s automatic type detection can get in the way and you
 just want it to treat one or more columns as Strings regardless of their
-appearance.  Think, for example, of zip codes.  If headers are given when a
-table is contructed, you can designate a forced-string column by appending a
-~!~ to the end of the header.  It will not become part of the header, it will
-just mark it as a forced-string Column.
+appearance.  Think, for example, of zip codes.  As mentioned above, when a
+table is contructed, you can designate a 'String' type for a column by
+using a keyword parameter.
 
-#+begin_SRC emacs-lisp :wrap EXAMPLE
-  tab = FatTable.new(:a, 'b', 'C!', :d, :zip!)
-#+end_SRC
+#+begin_src ruby :wrap EXAMPLE
+  require 'fat_table'
+  tab = FatTable.new(:a, 'b!', 'C', :d, :zip, zip: 'str')
+  tab << { a: 1, b: 2, c: "<2017-01-21>", d: 'f', e: '', zip: 18552 }
+  tab << { a: 3.14, b: 2.17, c: '[2016-01-21 Thu]', d: 'Y', e: nil }
+  tab << { zip: '01879--7884' }
+  tab << { zip: '66210', b: 'Not a Number' }
+  tab << { zip: '90210' }
+  tab.to_text
+#+end_src
+
+#+begin_EXAMPLE
++===+===+============+===+=============+===+
+| A | B | C          | D | Zip         | E |
++---+---+------------+---+-------------+---+
+| 1 | 2 | 2017-01-21 | F | 18552       |   |
+| 3 | 2 | 2016-01-21 | T |             |   |
+|   |   |            |   | 01879--7884 |   |
+|   |   |            |   | 90210       |   |
+|   |   |            |   |             |   |
++===+===+============+===+=============+===+
+#+end_EXAMPLE
 
 In addition, at any time after creating a table, you can force the String type
 on any number of columns with the ~force_string!~ method.  When you do so, all
@@ -662,84 +702,9 @@ exisiting items in the column are converted to strings with the #to_s method.
 +======+======+============+===+=======+===+
 #+end_EXAMPLE
 
-**** Designating "Tolerant" Columns
-
-Related to the problem just discussed is the problem of reading files in from
-the wild where a column may get typed as, say Numeric, but then contain
-something that can't be parsed as a Numeric.  ~FatTable~ raises an exception
-is such cases, and that may be what you want if you can control the input.
-But, especially when you cannot do so, it can be helpful to designate one or
-more columns as "tolerant."  This means that when a conversion problem occurs,
-the column item is retained as a string type in a column that is otherwise of
-one of the types Numeric, DateTime, or Boolean.  Those string items are
-treated as nils for purposes of sorting or evaluation in a ~select~ method.
-When formatted, they participate in string formatting directive, but not those
-for other types.
-
-All of the table construction methods, allow a keyword parameter,
-~tolerant_columns~, where you can designate what columns should be convert to
-String type when conversion to the auto-typed column type is not possible.
-The parameter should be an array of headers, in either string or symbol form,
-for which this behavior is desired.  In addition, it can be set to the special
-string '*' or symbol ~:*~ to indicate that all the columns should be made
-tolerant.
-
-#+begin_src ruby :wrap EXAMPLE
-  require 'fat_table'
-  tab = FatTable.new(:a, 'b', 'C', :d, :zip, tolerant_columns: [:zip])
-  tab << { a: 1, b: 2, c: "<2017-01-21>", d: 'f', e: '', zip: 18552 }
-  tab << { a: 3.14, b: 2.17, c: '[2016-01-21 Thu]', d: 'Y', e: nil }
-  tab << { zip: '01879--7884' }
-  tab << { zip: '66210' }
-  tab << { zip: '90210' }
-  tab.to_text
-#+end_src
-
-#+RESULTS:
-#+begin_EXAMPLE
-+======+======+============+===+=============+===+
-| A    | B    | C          | D | Zip         | E |
-+------+------+------------+---+-------------+---+
-| 1    | 2    | 2017-01-21 | F | 18552       |   |
-| 3.14 | 2.17 | 2016-01-21 | T |             |   |
-|      |      |            |   | 01879--7884 |   |
-|      |      |            |   | 66210       |   |
-|      |      |            |   | 90210       |   |
-+======+======+============+===+=============+===+
-#+end_EXAMPLE
-
-Another way to designate a column as tolerant is to end a column you want to
-designate as tolerant with a ~!~.  The ~!~ will be stripped from the header,
-but it will be marked as tolerant.
-#+begin_src ruby :wrap EXAMPLE
-  require 'fat_table'
-  tab = FatTable.new(:a, 'b!', 'C', :d, :zip!)
-  tab << { a: 1, b: 2, c: "<2017-01-21>", d: 'f', e: '', zip: 18552 }
-  tab << { a: 3.14, b: 2.17, c: '[2016-01-21 Thu]', d: 'Y', e: nil }
-  tab << { zip: '01879--7884' }
-  tab << { zip: '66210', b: 'Not a Number' }
-  tab << { zip: '90210' }
-  tab.to_text
-#+end_src
-
-#+RESULTS:
-#+begin_EXAMPLE
-+======+==============+============+===+=============+===+
-| A    | B            | C          | D | Zip         | E |
-+------+--------------+------------+---+-------------+---+
-| 1    | 2            | 2017-01-21 | F | 18552       |   |
-| 3.14 | 2.17         | 2016-01-21 | T |             |   |
-|      |              |            |   | 01879--7884 |   |
-|      | Not a Number |            |   | 66210       |   |
-|      |              |            |   | 90210       |   |
-+======+==============+============+===+=============+===+
-#+end_EXAMPLE
-
 *** From CSV or Org Mode files or strings
 Tables can also be read from ~.csv~ files or files containing ~org-mode~
-tables.  Remember that you can make any column tolerant with a
-~tolerant_columns:~ keyword argument or make them all tolerant by designating
-the pseudo-column ~:*~ as tolerant.
+tables.
 
 In the case of org-mode files, ~FatTable~ skips through the file until it finds
 a line that look like a table, that is, it begins with any number of spaces
@@ -799,10 +764,10 @@ header row, and the headers are converted to symbols as described above.
 
 You can also initialize a table directly from ruby data structures. You can,
 for example, build a table from an array of arrays.  Remember that you can
-make any column tolerant with a ~tolerant_columns:~ keyword argument or make
-them all tolerant by designating the pseudo-column ~:*~ as tolerant.
+make any column tolerant with a keyword argument for the column symbol and
+ending it with a '~'.
 
-#+BEGIN_SRC ruby :eval never
+#+BEGIN_SRC ruby
   aoa = [
     ['Ref', 'Date', 'Code', 'Raw', 'Shares', 'Price', 'Info', 'Bool'],
     [1, '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850, 'ENTITY1', 'T'],
@@ -816,10 +781,26 @@ them all tolerant by designating the pseudo-column ~:*~ as tolerant.
     [13, '2013-05-29', 'S', 13_459.00, 5659.51, 24.7464, 'ENTITY3', 'T'],
     [14, '2013-05-29', 'S', 15_700.00, 6601.85, 24.7790, 'ENTITY3', 'F'],
     [15, '2013-05-29', 'S', 15_900.00, 6685.95, 24.5802, 'ENTITY3', 'T'],
-    [16, '2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'ENTITY3', 'T']
-  ]
-  tab = FatTable.from_aoa(aoa)
+    [16, '2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'ENTITY3', 'T'] ]
+
+  tab = FatTable.from_aoa(aoa).to_aoa
 #+END_SRC
+
+#+RESULTS:
+| Ref | Date       | Code |    Raw | Shares | Price | Info    | Bool |
+|-----+------------+------+--------+--------+-------+---------+------|
+|   1 | 2013-05-02 | P    | 795546 | 795546 |     1 | ENTITY1 | T    |
+|   2 | 2013-05-02 | P    | 118186 | 118186 |    12 | ENTITY1 | T    |
+|   7 | 2013-05-20 | S    |  12000 |   5046 |    28 | ENTITY3 | F    |
+|   8 | 2013-05-20 | S    |  85000 |  35743 |    28 | ENTITY3 | T    |
+|   9 | 2013-05-20 | S    |  33302 |  14003 |    29 | ENTITY3 | T    |
+|  10 | 2013-05-23 | S    |   8000 |   3364 |    27 | ENTITY3 | T    |
+|  11 | 2013-05-23 | S    |  23054 |   9694 |    27 | ENTITY3 | F    |
+|  12 | 2013-05-23 | S    |  39906 |  16780 |    25 | ENTITY3 | T    |
+|  13 | 2013-05-29 | S    |  13459 |   5660 |    25 | ENTITY3 | T    |
+|  14 | 2013-05-29 | S    |  15700 |   6602 |    25 | ENTITY3 | F    |
+|  15 | 2013-05-29 | S    |  15900 |   6686 |    25 | ENTITY3 | T    |
+|  16 | 2013-05-30 | S    |   6679 |   2809 |    25 | ENTITY3 | T    |
 
 Notice that the values can either be ruby objects, such as the Integer ~85_000~,
 or strings that can be parsed into one of the permissible column types.
@@ -898,9 +879,7 @@ This example illustrates several things:
 A second ruby data structure that can be used to initialize a ~FatTable~ table
 is an array of ruby Hashes. Each hash represents a row of the table, and the
 headers of the table are taken from the keys of the hashes. Accordingly, all
-the hashes must have the same keys.  Remember that you can make any column
-tolerant with a ~tolerant_columns:~ keyword argument or make them all tolerant
-by designating the pseudo-column ~:*~ as tolerant.
+the hashes must have the same keys.
 
 This same method can in fact take an array of any objects that can be converted
 to a Hash with the ~#to_h~ method, so you can use an array of your own objects
@@ -988,10 +967,6 @@ Consult ~Sequel's~ documentation for details on its connection methods.
 The ~.connect~ function need only be called once, and the database handle it
 creates will be used for all subsequent ~.from_sql~ calls until ~.connect~ is
 called again.
-
-Remember that you can make any column tolerant with a ~tolerant_columns:~
-keyword argument or make them all tolerant by designating the pseudo-column
-~:*~ as tolerant.
 
 *** Marking Groups in Input
 **** Manually
