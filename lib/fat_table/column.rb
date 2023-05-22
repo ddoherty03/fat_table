@@ -29,6 +29,8 @@ module FatTable
     # perhaps after removing nils with +.items.compact+.
     attr_reader :items
 
+    attr_accessor :tolerant
+
     # Valid Column types as strings.
     TYPES = %w[NilClass Boolean DateTime Numeric String].freeze
 
