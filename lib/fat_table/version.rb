@@ -2,5 +2,5 @@
 
 module FatTable
   # The current version of FatTable
-  VERSION = '0.9.1'
+  VERSION = '0.9.2'
 end
