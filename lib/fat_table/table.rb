@@ -419,6 +419,7 @@ module FatTable
     def force_string!(*keys)
       keys.each do |h|
         raise UserError, "force_string!: #{h} not a column in table" unless column(h)
+
         column(h).force_string!
       end
       self
@@ -845,6 +846,7 @@ module FatTable
       unless expr.is_a?(String)
         raise "must call FatTable::Table\#order_with with a single string expression"
       end
+
       rev = false
       if expr.match?(/\s*!\s*\z/)
         rev = true
@@ -1094,10 +1096,13 @@ module FatTable
     # boundaries of the constituent tables. Preserves and adjusts the group
     # boundaries of the constituent table.
     def union_all(other)
-      set_operation(other, :+,
-                    distinct: false,
-                    add_boundaries: true,
-                    inherit_boundaries: true)
+      set_operation(
+        other,
+        :+,
+        distinct: false,
+        add_boundaries: true,
+        inherit_boundaries: true
+      )
     end
 
     # :category: Operators
