@@ -143,7 +143,7 @@ module FatTable
         result.column(h).tolerant = true
       end
       (instance_variables - result.instance_variables).each do |v|
-        result.instance_variable_set(instance_variable_get(v))
+        result.instance_variable_set(v, instance_variable_get(v))
       end
       result
     end
