@@ -73,7 +73,7 @@ module FatTable
           [15,   '2013-05-29', 'S', 15_900.00,  6685.95,   24.5802, 'ZMEAC',  'T'],
           [16,   '2013-05-30', 'S', 6_679.00,   2808.52,   25.0471, 'ZMEAC',  'T']
         ]
-        Table.from_aoa(aoa, omni: '~')
+        Table.from_aoa(aoa, bool: 'boolean~', omni: '~')
           .select(:omni, sqrtraw: 'Math.sqrt(raw)').order_by(:date)
       }
 
