@@ -137,7 +137,7 @@ module FatTable
     def empty_dup(result_cols = nil)
       result_cols ||= heads
       result_types = types.select { |k,_v| result_cols.include?(k) }
-      result = Table.new(result_cols, **result_types)
+      result = self.class.new(result_cols, **result_types)
       tolerant_cols.each do |h|
         result.tolerant_cols << h
         result.column(h).tolerant = true
