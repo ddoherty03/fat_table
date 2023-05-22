@@ -53,6 +53,7 @@ module FatTable
   class Table
     # An Array of FatTable::Columns that constitute the table.
     attr_reader :columns
+    attr_reader :heads
 
     # Headers of columns that are to be tolerant when they are built.
     attr_accessor :tolerant_cols
@@ -95,9 +96,10 @@ module FatTable
     # starts with  'num', 'dat', 'bool', or 'str' to specify Numeric,
     # DateTime, Boolean, or String types respectively.
     def initialize(*heads, **types)
+      @heads = heads.flatten.map(&:as_sym)
+      @types = types
       @columns = []
       @tolerant_cols = []
-      @headers = []
       # Check for the special 'omni' key
       @omni_type = 'NilClass'
       @omni_tol = false
@@ -110,9 +112,14 @@ module FatTable
         types.delete(:omni)
         types.delete('omni')
       end
-      heads += types.keys
-      heads.uniq.each do |h|
-        typ, tol = Table.typ_tol(types[h])
+      # heads += types.keys
+      (heads.flatten + types.keys).uniq.each do |h|
+        if types[h]
+          typ, tol = Table.typ_tol(types[h])
+        else
+          typ = @omni_type
+          tol = @omni_tol
+        end
         @tolerant_cols << h.to_s.as_sym if tol
         @columns << Column.new(header: h.to_s.sub(/~\s*\z/, ''), type: typ,
                                tolerant: tol)
@@ -122,18 +129,23 @@ module FatTable
 
     # :category: Constructors
 
-    # Return an empty duplicate of self.  This allows the library to create an
-    # empty table that preserves all the instance variables from self.  Even
-    # though FatTable::Table objects have no instance variables, a class that
-    # inherits from it might.
-    def empty_dup
-      dup.__empty!
-    end
-
-    def __empty!
-      @columns = []
-      @explicit_boundaries = []
-      self
+    # Return an new table based on this Table but with empty columns named by
+    # the result_cols parameter, by default the this Table's columns.  If any
+    # of the result_cols have the same name as an existing column, inherit
+    # that column's type and tolerance.  Also, set any instance variables that
+    # might have been set by a subclass instance.
+    def empty_dup(result_cols = nil)
+      result_cols ||= heads
+      result_types = types.select { |k,_v| result_cols.include?(k) }
+      result = Table.new(result_cols, **result_types)
+      tolerant_cols.each do |h|
+        result.tolerant_cols << h
+        result.column(h).tolerant = true
+      end
+      (instance_variables - result.instance_variables).each do |v|
+        result.instance_variable_set(instance_variable_get(v))
+      end
+      result
     end
 
     # :category: Constructors
@@ -264,7 +276,8 @@ module FatTable
       # can respond to #to_h. If an array element is a nil, mark it as a group
       # boundary in the Table.
       def from_array_of_hashes(hashes, hlines: false, **types)
-        result = new(**types)
+        heads = hashes.first.keys
+        result = new(*heads, **types)
         hashes.each do |hsh|
           if hsh.nil?
             unless hlines
@@ -293,7 +306,6 @@ module FatTable
       # indicated with nil elements in the outer array as expected by this
       # method when hlines is set true.
       def from_array_of_arrays(rows, hlines: false, **types)
-        result = new(**types)
         headers = []
         if !hlines
           # Take the first row as headers
@@ -312,6 +324,7 @@ module FatTable
           headers = (1..rows[0].size).to_a.map { |k| "col_#{k}".as_sym }
           first_data_row = 0
         end
+        result = new(*headers, **types)
         rows[first_data_row..-1].each do |row|
           if row.nil?
             unless hlines
@@ -959,8 +972,15 @@ module FatTable
                          before: before_hook,
                          after: after_hook)
       # Compute the new Table from this Table
-      result = empty_dup
+      result_cols =
+        if cols.include?(:omni)
+          (headers + new_cols.keys - [:omni])
+        else
+          (cols + new_cols.keys)
+        end
+      result = empty_dup(result_cols)
       normalize_boundaries
+
       rows.each_with_index do |old_row, old_k|
         # Set the group number in the before hook and run the hook with the
         # local variables set to the row before the new row is evaluated.
@@ -1030,15 +1050,6 @@ module FatTable
     def where(expr)
       expr = expr.to_s
       result = empty_dup
-      headers.each do |h|
-        col =
-          if tolerant_col?(h)
-            Column.new(header: h, tolerant: true)
-          else
-            Column.new(header: h)
-          end
-        result.add_column(col)
-      end
       ev = Evaluator.new(ivars: { row: 0, group: 0 })
       rows.each_with_index do |row, k|
         grp = row_index_to_group_index(k)
@@ -1494,7 +1505,8 @@ module FatTable
       groups = sorted_tab.rows.group_by do |r|
         group_cols.map { |k| r[k] }
       end
-      result = empty_dup
+      grp_types = types.select { |k, _v| group_cols.include?(k) }
+      result = Table.new(*group_cols, **grp_types)
       groups.each_pair do |_vals, grp_rows|
         result << row_from_group(grp_rows, group_cols, agg_cols)
       end
