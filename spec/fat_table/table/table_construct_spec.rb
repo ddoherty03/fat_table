@@ -504,19 +504,20 @@ module FatTable
         expect(tab.tolerant_col?(:ref)).to be true
         expect(tab.type(:raw)).to eq('Numeric')
         expect(tab.tolerant_col?(:raw)).to be true
-        # expect(tab.rows.size).to be > 10
-        # expect(tab.headers.sort)
-        #   .to eq [:code, :date, :info, :price, :raw, :ref, :shares]
-        # tab.rows.each do |row|
-        #   expect(row[:code].class).to eq String
-        #   expect(tab.column(:ref).type).to eq('Numeric')
-        #   expect(tab.column(:raw).type).to eq('Numeric')
-        #   expect(row[:date].class).to eq Date
-        #   expect(row[:shares].is_a?(Numeric)).to be true
-        #   expect(row[:price].is_a?(BigDecimal)).to be true
-        #   expect([Numeric, String].any? { |t| row[:ref].is_a?(t) }).to be true
-        #   expect(row[:info].class).to eq String
-        # end
+
+        expect(tab.rows.size).to be > 10
+        expect(tab.headers.sort)
+          .to eq [:code, :date, :info, :price, :raw, :ref, :shares]
+        tab.rows.each do |row|
+          expect(row[:code].class).to eq String
+          expect(tab.column(:ref).type).to eq('String')
+          expect(tab.column(:raw).type).to eq('Numeric')
+          expect(row[:date].class).to eq Date
+          expect(row[:shares].is_a?(Numeric)).to be true
+          expect(row[:price].is_a?(BigDecimal)).to be true
+          expect([Numeric, String].any? { |t| row[:ref].is_a?(t) }).to be true
+          expect(row[:info].class).to eq String
+        end
       end
 
       it 'creates from an Org string with module method' do
