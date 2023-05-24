@@ -2614,19 +2614,22 @@ parameter.  See below at [[*Table Locations][Table Locations]] for an explanatio
 locations available.
 
 Other than that first parameter, the two methods take the same types of
-parameters. The remaining parameters are hash-like parameters that use either a
-column name or a type as the key and a string with the formatting directives to
-apply as the value. The following example says to set the formatting for all
-locations in the table and to format all numeric fields as strings that are
-rounded to whole numbers (the '0.0' part), that are right-aligned (the 'R'
-part), and have grouping commas inserted (the ',' part). But the ~:id~ column is
-numeric, and the second parameter overrides the formatting for numerics in
-general and calls for the ~:id~ column to be padded to three digits with zeros
-on the left (the '3.0' part) and to be centered (the 'C' part).
+parameters. The remaining parameters are hash-like parameters that use either
+a column name or a type as the key and a string with the formatting directives
+to apply as the value. If a key represents neither a column name nor a valid
+type, it is silently ignored.  The following example says to set the
+formatting for all locations in the table and to format all numeric fields as
+strings that are rounded to whole numbers (the '0.0' part), that are
+right-aligned (the 'R' part), and have grouping commas inserted (the ','
+part). But the ~:id~ column is numeric, and the second parameter overrides the
+formatting for numerics in general and calls for the ~:id~ column to be padded
+to three digits with zeros on the left (the '3.0' part) and to be centered
+(the 'C' part).
 
 #+BEGIN_SRC ruby :wrap EXAMPLE
   tab_a.to_text do |f|
-    f.format(numeric: '0.0,R', id: '3.0C')
+    # Note: blat: is silently ignored
+    f.format(numeric: '0.0,R', id: '3.0C', blat: 'B')
     f.format_for(:body, string: 'R')
     f.format_for(:header, string: 'C')
   end

@@ -648,12 +648,6 @@ module FatTable
           k
         end
       end
-      valid_keys = table.headers + %i[string numeric datetime boolean nil]
-      invalid_keys = (fmts.keys - valid_keys).uniq
-      unless invalid_keys.empty?
-        msg = "invalid #{location} column or type: #{invalid_keys.join(', ')}"
-        raise UserError, msg
-      end
 
       @format_at[location] ||= {}
       table.headers.each do |h|

@@ -54,6 +54,13 @@ module FatTable
           }.to raise_error(/unknown format location/)
         end
 
+        it 'does not raise an error for invalid header' do
+          fmt = described_class.new(tab)
+          expect {
+            fmt.format_for(:trout, string: 'BC', raf: 'R')
+          }.to raise_error(/unknown format location/)
+        end
+
         it 'raises an error for invalid format string' do
           fmt = described_class.new(tab)
           expect {
