@@ -378,6 +378,7 @@ module FatTable
         table_re = /\A\s*\|/
         hrule_re = /\A\s*\|[-+]+/
         rows = []
+        ncols = nil
         table_found = false
         header_found = false
         io.each do |line|
@@ -406,7 +407,13 @@ module FatTable
             break
           else
             line = line.sub(/\A\s*\|/, '').sub(/\|\s*\z/, '')
-            rows << line.split('|').map(&:clean)
+            # Don't include any rows with a size different from that
+            # established by the header row.
+            cols = line.split('|').map(&:clean)
+            ncols ||= cols.size
+            next unless cols.size == ncols
+
+            rows << cols
           end
         end
         raise NoTable unless table_found

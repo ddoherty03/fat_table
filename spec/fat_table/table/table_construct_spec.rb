@@ -448,6 +448,34 @@ module FatTable
         ORG
       end
 
+      # This has missing and extra separators on some rows: refs 30, 32, and
+      # 38 should be skipped.
+      let(:bad_org_body) do
+        <<~ORG
+          #+TBLNAME: bad_tab
+          |-----+------------+------+---------+--------+----------+--------|
+          | Ref |       Date | Code |     Raw | Shares |    Price | Info   |
+          |-----+------------+------+---------+--------+----------+--------|
+          |  29 | 2013-05-02 | P    | 795,546 |  2,609 |  1.18500  ZMPEF1 |
+          |-----+------------+------+---------+--------+----------+--------|
+          |  30 | 2013-05-02 | P    || 118,186 |    388 | 11.85000 | ZMPEF1 |
+          |  31 | 2013-05-02 | P    | 340,948 |  1,926 |  1.18500 | ZMPEF2 |
+          |  32 | 2013-05-02 | P      50,651 |    286 | 11.85000 | ZMPEF2 |
+          |-----+------------+------+---------+--------+----------+--------|
+          |  33 | 2013-05-20 | S    |  12,000 |     32 | 28.28040 | ZMEAC  |
+          |  34 | 2013-05-20 | S    |  85,000 |    226 | 28.32240 | ZMEAC  |
+          |  35 | 2013-05-20 | S    |  33,302 |     88 | 28.63830 | ZMEAC  |
+          |  36 | 2013-05-23 | S    |   8,000 |     21 | 27.10830 | ZMEAC  |
+          |  37 | 2013-05-23  S    |  7,250 |     61 | 26.80150 | ZMEAC  |
+          |  38 | 2013-05-23 | S    |  39,906 |    106 | 25.17490 | ZMEAC  | | |
+          |  39 | 2013-05-29 | S    |  13,459 |     36 | 24.74640 | ZMEAC  |
+          |-----+------------+------+---------+--------+----------+--------|
+          |  40 | 2013-05-29 | S    |  15,700 |     42 | 24.77900 | ZMEAC  |
+          |  42 | 2013-05-30 | S    |   6,679 |     18 | 25.04710 | ZMEAC  |
+          |-----+------------+------+---------+--------+----------+--------|
+        ORG
+      end
+
       it 'creates from an Org string' do
         tab = Table.from_org_string(org_body, ref: '~', raw: '~')
         expect(tab.class).to eq(Table)
@@ -546,6 +574,15 @@ module FatTable
         expect(tab.groups[1].size).to eq(3)
         expect(tab.groups[2].size).to eq(7)
         expect(tab.groups[3].size).to eq(3)
+      end
+
+      it 'skips rows that are malformed' do
+        tab = Table.from_org_string(bad_org_body)
+        good_refs = [31, 33, 34, 35, 36, 39, 40, 42]
+        expect(tab[:ref]).to eq(good_refs)
+        expect(tab[:ref]).not_to include(30)
+        expect(tab[:ref]).not_to include(32)
+        expect(tab[:ref]).not_to include(38)
       end
     end
 
