@@ -16,4 +16,7 @@ module FatTable
   # Raised when an external resource is not available due to caller or
   # programmer error or some failure of the external resource to be available.
   class TransientError < StandardError; end
+
+  # Raise when an expected table was not found.
+  class NoTable < UserError; end
 end
