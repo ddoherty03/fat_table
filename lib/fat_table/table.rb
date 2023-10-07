@@ -156,14 +156,18 @@ module FatTable
       File.open(fname, 'r') do |io|
         from_csv_io(io, **types)
       end
+    rescue NoTable
+      raise NoTable, "no table found in CSV file '#{fname}'"
     end
 
     # :category: Constructors
 
     # Construct a Table from a CSV string +str+, treated in the same manner as
     # the input from a CSV file in ::from_org_file.
-    def self.from_csv_string(str, **types)
-      from_csv_io(StringIO.new(str), **types)
+    def self.from_csv_string(str, has_headers: true, **)
+      from_csv_io(StringIO.new(str), has_headers:, **)
+    rescue NoTable
+      raise NoTable, "no table found in string '#{str[0..20]}...'"
     end
 
     # :category: Constructors
@@ -176,6 +180,8 @@ module FatTable
       File.open(fname, 'r') do |io|
         from_org_io(io, **types)
       end
+    rescue NoTable
+      raise NoTable, "no table found in file '#{fname}'"
     end
 
     # :category: Constructors
@@ -184,6 +190,8 @@ module FatTable
     # contents of an org-mode file in ::from_org_file.
     def self.from_org_string(str, **types)
       from_org_io(StringIO.new(str), **types)
+    rescue NoTable
+      raise NoTable, "no table found in string '#{str[0..20]...}'"
     end
 
     # :category: Constructors
@@ -275,9 +283,9 @@ module FatTable
       # Construct table from an array of hashes or an array of any object that
       # can respond to #to_h. If an array element is a nil, mark it as a group
       # boundary in the Table.
-      def from_array_of_hashes(hashes, hlines: false, **types)
+      def from_array_of_hashes(hashes, hlines: false, **)
         heads = hashes.first.keys
-        result = new(*heads, **types)
+        result = new(*heads, **)
         hashes.each do |hsh|
           if hsh.nil?
             unless hlines
@@ -305,7 +313,7 @@ module FatTable
       # hlines are stripped from the table, otherwise (:hlines yes) they are
       # indicated with nil elements in the outer array as expected by this
       # method when hlines is set true.
-      def from_array_of_arrays(rows, hlines: false, **types)
+      def from_array_of_arrays(rows, hlines: false, **)
         headers = []
         if !hlines
           # Take the first row as headers
@@ -324,7 +332,7 @@ module FatTable
           headers = (1..rows[0].size).to_a.map { |k| "col_#{k}".as_sym }
           first_data_row = 0
         end
-        result = new(*headers, **types)
+        result = new(*headers, **)
         rows[first_data_row..-1].each do |row|
           if row.nil?
             unless hlines
@@ -342,21 +350,31 @@ module FatTable
         result
       end
 
-      def from_csv_io(io, **types)
-        result = new(**types)
-        ::CSV.new(io, headers: true, header_converters: :symbol,
-                  skip_blanks: true).each do |row|
-          result << row.to_h
+      def from_csv_io(io, has_headers: true, **)
+        result = new(**)
+        if has_headers
+          ::CSV.new(io, headers: has_headers, header_converters: :symbol, skip_blanks: true).each do |row|
+            result << row.to_h
+          end
+        else
+          nfields = io.readline.split(',').size
+          io.seek(0, IO::SEEK_SET)
+          heads = (1..nfields).map {|n| "col_#{n}"}
+          ::CSV.new(io, headers: heads, skip_blanks: true).each do |row|
+            result << row.to_h
+          end
         end
         result.normalize_boundaries
         result
+      rescue StandardError
+        raise NoTable
       end
 
       # Form rows of table by reading the first table found in the org file. The
       # header row must be marked with an hline (i.e, a row that looks like
       # '|---+--...--|') and groups of rows may be marked with hlines to
       # indicate group boundaries.
-      def from_org_io(io, **types)
+      def from_org_io(io, **)
         table_re = /\A\s*\|/
         hrule_re = /\A\s*\|[-+]+/
         rows = []
@@ -391,7 +409,8 @@ module FatTable
             rows << line.split('|').map(&:clean)
           end
         end
-        from_array_of_arrays(rows, hlines: true, **types)
+        raise NoTable unless table_found
+        from_array_of_arrays(rows, hlines: true, **)
       end
     end
 
@@ -717,6 +736,7 @@ module FatTable
         self.explicit_boundaries = explicit_boundaries.uniq.sort
       end
       explicit_boundaries
+      self
     end
 
     # Return the explicit_boundaries, augmented by an implicit boundary for
