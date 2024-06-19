@@ -11,6 +11,7 @@ module FatTable
   require 'fat_core/array'
   require 'fat_core/hash'
   require 'fat_core/numeric'
+  require 'ostruct'
   require 'csv'
   require 'sequel'
   require 'active_support'
