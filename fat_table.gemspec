@@ -63,20 +63,8 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
   spec.metadata['yard.run'] = 'yri' # use "yard" to build full HTML docs.
 
-  spec.add_development_dependency 'bundler'
-  spec.add_development_dependency 'debug', '>= 1.0.0'
-  spec.add_development_dependency 'pry'
-  spec.add_development_dependency 'pry-doc'
-  spec.add_development_dependency 'rake', '~> 13.0'
-  spec.add_development_dependency 'redcarpet'
-  spec.add_development_dependency 'pg'
-  spec.add_development_dependency 'sqlite3'
-  spec.add_development_dependency 'rspec', '~> 3.0'
-  spec.add_development_dependency 'rubocop-rspec'
-  spec.add_development_dependency 'rubocop-performance'
-  spec.add_development_dependency 'simplecov'
-
   spec.add_runtime_dependency 'fat_core', '>= 4.9.0'
+  spec.add_runtime_dependency 'csv'
   spec.add_runtime_dependency 'rainbow'
   spec.add_runtime_dependency 'sequel'
   spec.add_runtime_dependency 'gem-path'
