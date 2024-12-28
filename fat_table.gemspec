@@ -55,7 +55,7 @@ Gem::Specification.new do |spec|
       'public gem pushes.'
   end
 
-  spec.files = `git ls-files -z`.split("\x0").reject do |f|
+  spec.files = %x(git ls-files -z).split("\x0").reject do |f|
     f.match(%r{^(test|spec|features)/})
   end
   spec.bindir        = 'bin'
@@ -63,9 +63,9 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
   spec.metadata['yard.run'] = 'yri' # use "yard" to build full HTML docs.
 
-  spec.add_runtime_dependency 'fat_core', '>= 4.9.0'
-  spec.add_runtime_dependency 'csv'
-  spec.add_runtime_dependency 'rainbow'
-  spec.add_runtime_dependency 'sequel'
-  spec.add_runtime_dependency 'gem-path'
+  spec.add_dependency 'csv'
+  spec.add_dependency 'fat_core', '>= 4.9.0'
+  spec.add_dependency 'gem-path'
+  spec.add_dependency 'rainbow'
+  spec.add_dependency 'sequel'
 end
