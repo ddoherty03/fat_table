@@ -2,6 +2,9 @@ inherit_from:
   - ~/.rubocop.yml
 
 AllCops:
+  Include:
+    - 'lib/**/*'
+    - 'spec/**/*'
   Exclude:
     - 'test/tmp/**/*'
     - 'vendor/bundle/**/*'
@@ -14,3 +17,9 @@ Style/MethodCallWithArgsParentheses:
 Style/ClassAndModuleChildren:
   Exclude:
     - 'test/**/*'
+
+Naming/VariableName:
+  Enabled: false
+
+RSpec/VariableName:
+  Enabled: false
