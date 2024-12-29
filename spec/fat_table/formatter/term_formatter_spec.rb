@@ -1,5 +1,5 @@
 module FatTable
-  RSpec.describe TermFormatter do
+  RSpec.describe Formatter::TermFormatter do
     describe 'table output' do
       before :all do
         UPPER_LEFT = "\u2552".freeze
@@ -16,7 +16,7 @@ module FatTable
         LOWER_TEE = "\u2567".freeze
       end
 
-      before :each do
+      before do
         @aoa = [
           %w[Ref Date Code Raw Shares Price Info Bool],
           [1,  '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850,  'ZMPEF1',          'T'],
@@ -36,7 +36,7 @@ module FatTable
         @tab = Table.from_aoa(@aoa).order_by(:date)
       end
 
-      it 'should raise an error for an invalid color' do
+      it 'raises an error for an invalid color' do
         expect {
           TermFormatter.new(@tab) do |f|
             f.format_for(:body, date: 'c[Yeller]')
@@ -44,15 +44,22 @@ module FatTable
         }.to raise_error(/invalid color 'Yeller'/)
       end
 
-      it 'should output unicode with default formatting' do
+      it 'outputs unicode with default formatting' do
         trm = TermFormatter.new(@tab).output
         expect(trm.class).to eq(String)
       end
 
-      it 'should be able to set format and output unicode with block' do
+      it 'is able to set format and output unicode with block' do
         fmt = TermFormatter.new(@tab)
-        fmt.format(ref: '5.0', code: 'C', raw: ',0.0', shares: ',0.0',
-                   price: '0.3R', bool: 'Y', numeric: 'R')
+        fmt.format(
+          ref: '5.0',
+          code: 'C',
+          raw: ',0.0',
+          shares: ',0.0',
+          price: '0.3R',
+          bool: 'Y',
+          numeric: 'R',
+        )
         fmt.format_for(:header, string: 'CB')
         fmt.sum_gfooter(:price, :raw, :shares)
         fmt.gfooter('Grp Std Dev', price: :dev, shares: :dev, bool: :one?)
@@ -60,9 +67,9 @@ module FatTable
         fmt.footer('Std Dev', price: :dev, shares: :dev, bool: :all?)
         fmt.footer('Any?', bool: :any?)
         trm = fmt.output
-        expect(trm).to match(/^#{UPPER_LEFT}[#{DOUBLE_RULE}#{UPPER_TEE}]+#{UPPER_RIGHT}$/)
-        expect(trm).to match(/^#{LEFT_TEE}[#{HORIZONTAL_RULE}#{SINGLE_CROSS}]+#{RIGHT_TEE}$/)
-        expect(trm).to match(/^#{LOWER_LEFT}[#{DOUBLE_RULE}#{LOWER_TEE}]+#{LOWER_RIGHT}$/)
+        expect(trm).to match(/^#{UPPER_LEFT}[#{DOUBLE_RULE}#{UPPER_TEE}]+#{UPPER_RIGHT}$/o)
+        expect(trm).to match(/^#{LEFT_TEE}[#{HORIZONTAL_RULE}#{SINGLE_CROSS}]+#{RIGHT_TEE}$/o)
+        expect(trm).to match(/^#{LOWER_LEFT}[#{DOUBLE_RULE}#{LOWER_TEE}]+#{LOWER_RIGHT}$/o)
         expect(trm.size).to be > 1000
         expect(trm).to match(/\bRef\b/)
         expect(trm).to match(/\bBool\b/)
@@ -79,15 +86,22 @@ module FatTable
         expect(trm).to match(/\bGrp Std Dev\b/)
       end
 
-      it 'should output non-unicode with default formatting' do
+      it 'outputs non-unicode with default formatting' do
         trm = TermFormatter.new(@tab, unicode: false).output
         expect(trm.class).to eq(String)
       end
 
-      it 'should be able to set format and output without unicode' do
+      it 'is able to set format and output without unicode' do
         fmt = TermFormatter.new(@tab, unicode: false)
-        fmt.format(ref: '5.0', code: 'C', raw: ',0.0', shares: ',0.0',
-                   price: '0.3R', bool: 'Y', numeric: 'R')
+        fmt.format(
+          ref: '5.0',
+          code: 'C',
+          raw: ',0.0',
+          shares: ',0.0',
+          price: '0.3R',
+          bool: 'Y',
+          numeric: 'R',
+        )
         fmt.format_for(:header, string: 'CB')
         fmt.sum_gfooter(:price, :raw, :shares)
         fmt.gfooter('Grp Std Dev', price: :dev, shares: :dev, bool: :one?)
@@ -114,11 +128,17 @@ module FatTable
         expect(trm).to match(/\bGrp Std Dev\b/)
       end
 
-      it 'should be able to display colors and decorations' do
+      it 'is able to display colors and decorations' do
         fmt = TermFormatter.new(@tab, framecolor: 'black.yellow') do |t|
           t.format_for(:header, string: 'BCc[tomato.white]')
-          t.format_for(:body, string: 'c[.yellow]', boolean: 'c[green.yellow,red.yellow]',
-                       numeric: 'Rc[purple]', shares: 'R0.0,', ref: '5.0')
+          t.format_for(
+            :body,
+            string: 'c[.yellow]',
+            boolean: 'c[green.yellow,red.yellow]',
+                                   numeric: 'Rc[purple]',
+            shares: 'R0.0,',
+            ref: '5.0',
+          )
         end
         trm = fmt.output
         expect(trm).to match(/\e\[30m\e\[43m╒═════/)
@@ -126,16 +146,48 @@ module FatTable
         expect(trm).to match(/\e\[32m\e\[43m T    \e\[0m/)
       end
 
-      it 'should be able to display to term after forcing a column to string' do
+      it 'is able to display to term after forcing a column to string' do
         rows = [
-          {ref: 1, date: '2013-05-02', code: 'P', raw: 795_546.20,
-           shares: 795_546.2, price: 1.1850, info: 'ZMPEF1', bool: 'T'},
-          {ref: 2, date: '2013-05-02', code: 'P', raw: 'ChgToStr',
-           shares: 118_186.4, price: 11.8500, info: 'ZMPEF1', bool: 'T'},
-          {ref: 5, date: '2013-05-02', code: 'P', raw: 118_186.40,
-           shares: 118_186.4, price: 11.8500, info: 'ZMPEF1\'s "Ent"', bool: 'T'},
-          {ref: 16, date: '2013-05-30', code: 'S', raw: 6_679.00,
-           shares: 2808.52, price: 25.0471, info: 'ZMEAC', bool: 'T'}
+          {
+            ref: 1,
+            date: '2013-05-02',
+            code: 'P',
+            raw: 795_546.20,
+            shares: 795_546.2,
+            price: 1.1850,
+            info: 'ZMPEF1',
+            bool: 'T'
+          },
+          {
+            ref: 2,
+            date: '2013-05-02',
+            code: 'P',
+            raw: 'ChgToStr',
+            shares: 118_186.4,
+            price: 11.8500,
+            info: 'ZMPEF1',
+            bool: 'T'
+          },
+          {
+            ref: 5,
+            date: '2013-05-02',
+            code: 'P',
+            raw: 118_186.40,
+            shares: 118_186.4,
+            price: 11.8500,
+            info: 'ZMPEF1\'s "Ent"',
+            bool: 'T'
+          },
+          {
+            ref: 16,
+            date: '2013-05-30',
+            code: 'S',
+            raw: 6_679.00,
+            shares: 2808.52,
+            price: 25.0471,
+            info: 'ZMEAC',
+            bool: 'T'
+          }
         ]
         heads = rows[0].keys
         tab = Table.new

@@ -1,7 +1,7 @@
 module FatTable
-  RSpec.describe TextFormatter do
+  RSpec.describe Formatter::TextFormatter do
     describe 'intolerant table output' do
-      let(:tab) {
+      let(:tab) do
         aoa = [
           %w[Ref Date Code Raw Shares Price Info Bool],
           [1,  '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850,  'ZMPEF1',          'T'],
@@ -19,16 +19,24 @@ module FatTable
           [16, '2013-05-30', 'S', 6_679.00,   2808.52,   25.0471, 'ZMEAC',           'T']
         ]
         Table.from_aoa(aoa).order_by(:date)
-      }
-      it 'should output a table with default formatting' do
+      end
+
+      it 'outputs a table with default formatting' do
         txt = TextFormatter.new(tab).output
         expect(txt.class).to eq(String)
       end
 
-      it 'should be able to set format and output by method calls' do
+      it 'is able to set format and output by method calls' do
         fmt = TextFormatter.new(tab)
-        fmt.format(ref: '5.0', code: 'C', raw: ',0.0', shares: ',0.0',
-                   price: '0.3R', bool: 'Y', numeric: 'R')
+        fmt.format(
+          ref: '5.0',
+          code: 'C',
+          raw: ',0.0',
+          shares: ',0.0',
+          price: '0.3R',
+          bool: 'Y',
+          numeric: 'R',
+        )
         fmt.format_for(:header, string: 'CB')
         fmt.sum_gfooter(:price, :raw, :shares)
         fmt.gfooter('Grp Std Dev', price: :dev, shares: :dev, bool: :one?)
@@ -56,7 +64,7 @@ module FatTable
     end
 
     describe 'tolerant table output' do
-      let(:tab) {
+      let(:tab) do
         aoa = [
           %w[Ref Date Code Raw Shares Price Info Bool],
           [1,    '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850,  'ZMPEF1', 'Perhaps'],
@@ -75,17 +83,24 @@ module FatTable
         ]
         Table.from_aoa(aoa, bool: 'boolean~', omni: '~')
           .select(:omni, sqrtraw: 'Math.sqrt(raw)').order_by(:date)
-      }
+      end
 
-      it 'should output a table with default formatting' do
+      it 'outputs a table with default formatting' do
         txt = TextFormatter.new(tab).output
         expect(txt.class).to eq(String)
       end
 
-      it 'should be able to set format and output by method calls' do
+      it 'is able to set format and output by method calls' do
         fmt = TextFormatter.new(tab)
-        fmt.format(ref: '5.0C', code: 'C', raw: ',0.0', shares: ',0.0R',
-                   price: '0.3R', bool: 'Y', numeric: '0.3,R')
+        fmt.format(
+          ref: '5.0C',
+          code: 'C',
+          raw: ',0.0',
+          shares: ',0.0R',
+          price: '0.3R',
+          bool: 'Y',
+          numeric: '0.3,R',
+        )
         fmt.format_for(:header, string: 'CB')
         fmt.sum_gfooter(:price, :raw, :shares)
         fmt.gfooter('Grp Std Dev', price: :dev, shares: :dev, bool: :one?)

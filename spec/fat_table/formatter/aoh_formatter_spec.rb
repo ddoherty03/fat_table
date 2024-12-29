@@ -1,7 +1,7 @@
 module FatTable
-  RSpec.describe AohFormatter do
+  RSpec.describe Formatter::AohFormatter do
     describe 'table output' do
-      before :each do
+      before do
         @aoa = [
           %w[Ref Date Code Raw Shares Price Info Bool],
           [1,  '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850,  'ZMPEF1',          'T'],
@@ -21,16 +21,22 @@ module FatTable
         @tab = Table.from_aoa(@aoa).order_by(:date)
       end
 
-      it 'should output a table with default formatting' do
+      it 'outputs a table with default formatting' do
         aoh = AohFormatter.new(@tab).output
         expect(aoh.class).to eq(Array)
         expect(aoh.first.class).to eq(Hash)
       end
 
-      it 'should be able to set format and output by method calls' do
+      it 'is able to set format and output by method calls' do
         fmt = AohFormatter.new(@tab)
-        fmt.format(ref: '5.0', code: 'C', raw: ',0.0R', shares: ',0.0R',
-                   price: '0.3', bool: 'Y')
+        fmt.format(
+          ref: '5.0',
+          code: 'C',
+          raw: ',0.0R',
+          shares: ',0.0R',
+          price: '0.3',
+          bool: 'Y',
+        )
         fmt.format_for(:header, string: 'CB')
         fmt.sum_gfooter(:price, :raw, :shares)
         fmt.gfooter('Grp Std Dev', price: :dev, shares: :dev, bool: :one?)

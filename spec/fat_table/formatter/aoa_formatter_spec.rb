@@ -1,8 +1,8 @@
 module FatTable
   RSpec.describe AoaFormatter do
     describe 'table output' do
-      before :each do
-        @aoa = [
+      let(:tab) do
+        aoa = [
           %w[Ref Date Code Raw Shares Price Info Bool],
           [1,  '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850,  'ZMPEF1',          'T'],
           [2,  '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500, 'ZMPEF1',          'T'],
@@ -18,19 +18,25 @@ module FatTable
           [15, '2013-05-29', 'S', 15_900.00,  6685.95,   24.5802, 'ZMEAC',           'T'],
           [16, '2013-05-30', 'S', 6_679.00,   2808.52,   25.0471, 'ZMEAC',           'T']
         ]
-        @tab = Table.from_aoa(@aoa).order_by(:date)
+        Table.from_aoa(aoa).order_by(:date)
       end
 
-      it 'should output table with default formatting' do
-        aoa = AoaFormatter.new(@tab).output
+      it 'outputs table with default formatting' do
+        aoa = AoaFormatter.new(tab).output
         expect(aoa.class).to eq(Array)
         expect(aoa.first.class).to eq(Array)
       end
 
-      it 'should set format and output by method calls' do
-        fmt = AoaFormatter.new(@tab)
-        fmt.format(ref: '5.0', code: 'C', raw: ',0.0R', shares: ',0.0R',
-                   price: '0.3', bool: 'Y')
+      it 'sets format and output by method calls' do
+        fmt = AoaFormatter.new(tab)
+        fmt.format(
+          ref: '5.0',
+          code: 'C',
+          raw: ',0.0R',
+          shares: ',0.0R',
+          price: '0.3',
+          bool: 'Y',
+        )
         fmt.format_for(:header, string: 'CB')
         fmt.sum_gfooter(:price, :raw, :shares)
         fmt.gfooter('Grp Std Dev', price: :dev, shares: :dev, bool: :one?)

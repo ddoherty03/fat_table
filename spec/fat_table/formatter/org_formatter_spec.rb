@@ -1,7 +1,7 @@
 module FatTable
-  RSpec.describe OrgFormatter do
+  RSpec.describe Formatter::OrgFormatter do
     describe 'table output' do
-      before :each do
+      before do
         @aoa = [
           %w[Ref Date Code Raw Shares Price Info Bool],
           [1,  '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850,  'ZMPEF1',          'T'],
@@ -21,15 +21,22 @@ module FatTable
         @tab = Table.from_aoa(@aoa).order_by(:date)
       end
 
-      it 'should output a table with default formatting' do
+      it 'outputs a table with default formatting' do
         org = OrgFormatter.new(@tab).output
         expect(org.class).to eq(String)
       end
 
-      it 'should be able to set format and output by method calls' do
+      it 'is able to set format and output by method calls' do
         fmt = OrgFormatter.new(@tab)
-        fmt.format(ref: '5.0', code: 'C', raw: ',0.0', shares: ',0.0',
-                   price: '0.3R', bool: 'Y', numeric: 'R')
+        fmt.format(
+          ref: '5.0',
+          code: 'C',
+          raw: ',0.0',
+          shares: ',0.0',
+          price: '0.3R',
+          bool: 'Y',
+          numeric: 'R',
+        )
         fmt.format_for(:header, string: 'CB')
         fmt.sum_gfooter(:price, :raw, :shares)
         fmt.gfooter('Grp Std Dev', price: :dev, shares: :dev, bool: :one?)

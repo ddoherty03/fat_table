@@ -1,5 +1,5 @@
 module FatTable
-  RSpec.describe LaTeXFormatter do
+  RSpec.describe Formatter::LaTeXFormatter do
     describe 'decorate string' do
       it 'obeys a bold directive' do
         istruct = OpenStruct.new(LaTeXFormatter.default_format)
@@ -52,7 +52,7 @@ module FatTable
         FileUtils.cp(xmpl_name, tmp_name)
       end
 
-      before :each do
+      before do
         @aoa = [
           %w[Ref Date Code Raw Shares Price Info Bool],
           [1,  '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850,  'ZMPEF1 $100',     'T'],
@@ -73,7 +73,7 @@ module FatTable
         @ltxcmd = 'pdflatex -interaction nonstopmode'
       end
 
-      it 'should raise an error for an invalid color' do
+      it 'raises an error for an invalid color' do
         expect {
           LaTeXFormatter.new(@tab) do |f|
             f.format_for(:body, date: 'c[Yeller]')
@@ -81,7 +81,7 @@ module FatTable
         }.to raise_error(/invalid color 'Yeller'/)
       end
 
-      it 'should output valid LaTeX with default formatting' do
+      it 'outputs valid LaTeX with default formatting' do
         tmp = File.open("#{__dir__}/../../tmp/example1.tex", 'w')
         ltx = LaTeXFormatter.new(@tab, document: true).output
         result = false
@@ -95,11 +95,17 @@ module FatTable
         expect(result).to be true
       end
 
-      it 'should be able to set format and output LaTeX with block' do
+      it 'is able to set format and output LaTeX with block' do
         fmt = LaTeXFormatter.new(@tab, document: true) do |f|
-          f.format(ref: '5.0', code: 'C', raw: 'R,0.0', shares: 'R,0.0',
-                   price: '0.3R', bool: 'CYc[green,red]',
-                   numeric: 'Rc[Goldenrod1]')
+          f.format(
+            ref: '5.0',
+            code: 'C',
+            raw: 'R,0.0',
+            shares: 'R,0.0',
+            price: '0.3R',
+            bool: 'CYc[green,red]',
+            numeric: 'Rc[Goldenrod1]',
+          )
           f.format_for(:header, string: 'CB')
           f.format_for(:footer, string: 'B')
           f.sum_gfooter(:price, :raw, :shares)
