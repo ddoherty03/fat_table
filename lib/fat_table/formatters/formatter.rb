@@ -25,9 +25,9 @@ module FatTable
 
     # A Hash of Hashes with the outer Hash keyed on location.  The value for
     # the outer Hash is an inner Hash keyed on column names.  The values of
-    # the inner Hash are OpenStruct objects that contain the formatting
-    # instructions for the location and column.  For example,
-    # +format_at[:body][:shares].commas+ is set either true or false depending
+    # the inner Hash are hashes that contain the formatting instructions for
+    # the location and column.  For example,
+    # +format_at[:body][:shares][:commas]+ is set either true or false depending
     # on whether the +:shares+ column in the table body is to have grouping
     # commas inserted in the output.
     attr_reader :format_at
@@ -111,7 +111,7 @@ module FatTable
       # hash of hashes. The outer hash is keyed on the location, and each inner
       # hash is keyed on either a column sym or a type sym, :string, :numeric,
       # :datetime, :boolean, or :nil. The value of the inner hashes are
-      # OpenStruct structs.
+      # also hashes.
       @format_at = {}
       %i[header bfirst gfirst body footer gfooter].each do |loc|
         @format_at[loc] = {}
@@ -119,7 +119,7 @@ module FatTable
           fmt_hash = self.class.default_format
           fmt_hash[:_h] = h
           fmt_hash[:_location] = loc
-          format_at[loc][h] = OpenStruct.new(fmt_hash)
+          format_at[loc][h] = fmt_hash
         end
       end
       yield self if block_given?
@@ -700,18 +700,18 @@ module FatTable
         # format_for call with those locations.
         if location == :body
           format_h.each_pair do |k, v|
-            if format_at[:bfirst][h].send(k) == self.class.default_format[k]
-              format_at[:bfirst][h].send(:"#{k}=", v)
+            if format_at[:bfirst][h][k] == self.class.default_format[k]
+              format_at[:bfirst][h][k] = v
             end
-            if format_at[:gfirst][h].send(k) == self.class.default_format[k]
-              format_at[:gfirst][h].send(:"#{k}=", v)
+            if format_at[:gfirst][h][k] == self.class.default_format[k]
+              format_at[:gfirst][h][k] = v
             end
           end
         elsif location == :gfirst
           # Copy :gfirst formatting to :bfirst if it is still the default
           format_h.each_pair do |k, v|
-            if format_at[:bfirst][h].send(k) == self.class.default_format[k]
-              format_at[:bfirst][h].send(:"#{k}=", v)
+            if format_at[:bfirst][h][k] == self.class.default_format[k]
+              format_at[:bfirst][h][k] = v
             end
           end
         end
@@ -720,7 +720,7 @@ module FatTable
         # headers named h or location) and convert to struct
         format_h[:_h] = h
         format_h[:_location] = location
-        format_at[location][h] = OpenStruct.new(format_h)
+        format_at[location][h] = format_h
       end
       self
     end
@@ -961,18 +961,18 @@ module FatTable
         str = format_boolean(val, istruct)
         str = format_string(str, istruct, width)
         true_istruct = istruct.dup
-        true_istruct.color = istruct.true_color
-        true_istruct.bgcolor = istruct.true_bgcolor
+        true_istruct[:color] = istruct[:true_color]
+        true_istruct[:bgcolor] = istruct[:true_bgcolor]
         decorate ? decorate_string(str, true_istruct) : str
       when FalseClass
         str = format_boolean(val, istruct)
         str = format_string(str, istruct, width)
         false_istruct = istruct.dup
-        false_istruct.color = istruct.false_color
-        false_istruct.bgcolor = istruct.false_bgcolor
+        false_istruct[:color] = istruct[:false_color]
+        false_istruct[:bgcolor] = istruct[:false_bgcolor]
         decorate ? decorate_string(str, false_istruct) : str
       when NilClass
-        str = istruct.nil_text
+        str = istruct[:nil_text]
         str = format_string(str, istruct, width)
         decorate ? decorate_string(str, istruct) : str
       when String
@@ -1000,9 +1000,9 @@ module FatTable
     # formatting (e.g., color) can be done in a subclass of Formatter by
     # specializing this method.
     def format_boolean(val, istruct)
-      return istruct.nil_text if val.nil?
+      return istruct[:nil_text] if val.nil?
 
-      val ? istruct.true_text : istruct.false_text
+      val ? istruct[:true_text] : istruct[:false_text]
     end
 
     # Convert a datetime to a string according to instructions in istruct, which
@@ -1011,13 +1011,13 @@ module FatTable
     # formatting (e.g., color) can be done in a subclass of Formatter by
     # specializing this method.
     def format_datetime(val, istruct)
-      return istruct.nil_text if val.nil?
+      return istruct[:nil_text] if val.nil?
 
       if val.to_date == val
         # It is a Date, with no time component.
-        val.strftime(istruct.date_fmt)
+        val.strftime(istruct[:date_fmt])
       else
-        val.strftime(istruct.datetime_fmt)
+        val.strftime(istruct[:datetime_fmt])
       end
     end
 
@@ -1027,32 +1027,32 @@ module FatTable
     # formatting (e.g., color) can be done in a subclass of Formatter by
     # specializing this method.
     def format_numeric(val, istruct)
-      return istruct.nil_text if val.nil?
-      return val.secs_to_hms if istruct.hms
+      return istruct[:nil_text] if val.nil?
+      return val.secs_to_hms if istruct[:hms]
 
-      if istruct.commas
+      if istruct[:commas]
         # Commify the whole number part if not done already.
-        result = val.commas(istruct.post_digits)
+        result = val.commas(istruct[:post_digits])
       else
-        result = val.round(istruct.post_digits).to_s
+        result = val.round(istruct[:post_digits]).to_s
         match = result.match(/\.(\d+)\z/)
-        if match && (match[1]&.size&.< istruct.post_digits)
+        if match && (match[1]&.size&.< istruct[:post_digits])
           # Add trailing zeros to pad out post_digits
-          n_zeros = [istruct.post_digits - match[1].size, 0].max
+          n_zeros = [istruct[:post_digits] - match[1].size, 0].max
           zeros = '0' * n_zeros
           result += zeros
         end
         result
       end
 
-      if istruct.pre_digits.positive?
+      if istruct[:pre_digits].positive?
         match = result.match(/\A([\d,]+)(\.\d+)?\z/)
         whole_part = match[1]
         frac_part = match[2]
-        n_zeros = [istruct.pre_digits - whole_part.delete(',').size, 0].max
+        n_zeros = [istruct[:pre_digits] - whole_part.delete(',').size, 0].max
         result =
           if n_zeros.positive?
-            if istruct.commas
+            if istruct[:commas]
               # Insert leading zeros with commas
               pre_comma_match = whole_part.match(/\A(\d+),/)
               if pre_comma_match
@@ -1063,7 +1063,7 @@ module FatTable
               zeros = ''
               if n_zeros.positive?
                 zeros = "0" * n_zeros
-                if n_zeros > 3 && istruct.commas
+                if n_zeros > 3 && istruct[:commas]
                   zeros = zeros.reverse.gsub!(/([0-9]{3})/, "\\1,").reverse
                 end
               end
@@ -1079,7 +1079,7 @@ module FatTable
       else
         result
       end
-      if istruct.currency
+      if istruct[:currency]
         result = "#{FatTable.currency_symbol}#{result}"
       end
       result
@@ -1089,7 +1089,7 @@ module FatTable
     def format_string(val, istruct, width = nil)
       val = istruct.nil_text if val.nil?
       val =
-        case istruct.case
+        case istruct[:case]
         when :lower
           val.downcase
         when :upper
@@ -1102,7 +1102,7 @@ module FatTable
         end
       if width && aligned?
         pad = [width - width(val), 0].max
-        case istruct.alignment
+        case istruct[:alignment]
         when :left
           val += ' ' * pad
         when :right

@@ -92,48 +92,48 @@ module FatTable
         it 'parses nil directive' do
           fmt = described_class.new(tab)
           fmt.format_for(:body, nil: 'Rn[No Data]')
-          expect(fmt.format_at[:body][:info].nil_text).to eq('No Data')
-          expect(fmt.format_at[:body][:info].alignment).to eq(:right)
+          expect(fmt.format_at[:body][:info][:nil_text]).to eq('No Data')
+          expect(fmt.format_at[:body][:info][:alignment]).to eq(:right)
           fmt = described_class.new(tab)
           fmt.format_for(:body, nilclass: 'Rn[No Data]')
-          expect(fmt.format_at[:body][:info].nil_text).to eq('No Data')
-          expect(fmt.format_at[:body][:info].alignment).to eq(:right)
+          expect(fmt.format_at[:body][:info][:nil_text]).to eq('No Data')
+          expect(fmt.format_at[:body][:info][:alignment]).to eq(:right)
         end
 
         it 'parses nil for a string type' do
           fmt = described_class.new(tab)
           fmt.format_for(:body, string: 'Rn[No Data]')
-          expect(fmt.format_at[:body][:info].nil_text).to eq('No Data')
+          expect(fmt.format_at[:body][:info][:nil_text]).to eq('No Data')
           fmt = described_class.new(tab)
           fmt.format_for(:body, info: 'Rn[No Data]')
-          expect(fmt.format_at[:body][:info].nil_text).to eq('No Data')
+          expect(fmt.format_at[:body][:info][:nil_text]).to eq('No Data')
         end
 
         it 'parses nil for a numeric type' do
           fmt = described_class.new(tab)
           fmt.format_for(:body, numeric: '3.2n[No Data]')
-          expect(fmt.format_at[:body][:shares].nil_text).to eq('No Data')
+          expect(fmt.format_at[:body][:shares][:nil_text]).to eq('No Data')
           fmt = described_class.new(tab)
           fmt.format_for(:body, shares: '3.2n[No Data]')
-          expect(fmt.format_at[:body][:shares].nil_text).to eq('No Data')
+          expect(fmt.format_at[:body][:shares][:nil_text]).to eq('No Data')
         end
 
         it 'parses nil for a boolean type' do
           fmt = described_class.new(tab)
           fmt.format_for(:body, boolean: 'Yn[No Data]')
-          expect(fmt.format_at[:body][:bool].nil_text).to eq('No Data')
+          expect(fmt.format_at[:body][:bool][:nil_text]).to eq('No Data')
           fmt = described_class.new(tab)
           fmt.format_for(:body, bool: 'Yn[No Data]')
-          expect(fmt.format_at[:body][:bool].nil_text).to eq('No Data')
+          expect(fmt.format_at[:body][:bool][:nil_text]).to eq('No Data')
         end
 
         it 'parses nil for a datetime type' do
           fmt = described_class.new(tab)
           fmt.format_for(:body, datetime: 'd[%Y %m]n[No Data]')
-          expect(fmt.format_at[:body][:date].nil_text).to eq('No Data')
+          expect(fmt.format_at[:body][:date][:nil_text]).to eq('No Data')
           fmt = described_class.new(tab)
           fmt.format_for(:body, date: 'd[%Y %m]n[No Data]')
-          expect(fmt.format_at[:body][:date].nil_text).to eq('No Data')
+          expect(fmt.format_at[:body][:date][:nil_text]).to eq('No Data')
         end
       end
 
@@ -141,361 +141,327 @@ module FatTable
         it 'parses bold or not bold' do
           fmt = described_class.new(tab)
                   .format_for(:body, numeric: '4.0B')
-          expect(fmt.format_at[:body][:shares].bold).to be(true)
+          expect(fmt.format_at[:body][:shares][:bold]).to be(true)
           fmt = described_class.new(tab)
                   .format_for(:body, numeric: '4.0~ B')
-          expect(fmt.format_at[:body][:shares].bold).to be(false)
+          expect(fmt.format_at[:body][:shares][:bold]).to be(false)
         end
 
         it 'parses italic or not italic' do
           fmt = described_class.new(tab)
                   .format_for(:body, numeric: '4.0I')
-          expect(fmt.format_at[:body][:shares].italic).to be(true)
-          fmt = described_class.new(tab)
-                  .format_for(:body, numeric: '4.0~ I')
-          expect(fmt.format_at[:body][:shares].italic).to be(false)
+          expect(fmt.format_at[:body][:shares][:italic]).to be(true)
+          fmt = described_class.new(tab).format_for(:body, numeric: '4.0~ I')
+          expect(fmt.format_at[:body][:shares][:italic]).to be(false)
         end
 
         it 'parses underline or not underline' do
-          fmt = described_class.new(tab)
-                  .format_for(:body, numeric: '4.0_')
-          expect(fmt.format_at[:body][:shares].underline).to be(true)
-          fmt = described_class.new(tab)
-                  .format_for(:body, numeric: '4.0~ _')
-          expect(fmt.format_at[:body][:shares].underline).to be(false)
+          fmt = described_class.new(tab).format_for(:body, numeric: '4.0_')
+          expect(fmt.format_at[:body][:shares][:underline]).to be(true)
+          fmt = described_class.new(tab).format_for(:body, numeric: '4.0~ _')
+          expect(fmt.format_at[:body][:shares][:underline]).to be(false)
         end
 
         it 'parses blink or not blink' do
           fmt = described_class.new(tab)
                   .format_for(:body, numeric: '4.0*')
-          expect(fmt.format_at[:body][:shares].blink).to be(true)
-          fmt = described_class.new(tab)
-                  .format_for(:body, numeric: '4.0~ *')
-          expect(fmt.format_at[:body][:shares].blink).to be(false)
+          expect(fmt.format_at[:body][:shares][:blink]).to be(true)
+          fmt = described_class.new(tab).format_for(:body, numeric: '4.0~ *')
+          expect(fmt.format_at[:body][:shares][:blink]).to be(false)
         end
       end
 
       describe 'grouping commas for numerics' do
         it 'parses comma described_class' do
-          fmt = described_class.new(tab)
-                  .format_for(:body, numeric: '4.0,')
-          expect(fmt.format_at[:body][:shares].commas).to be(true)
+          fmt = described_class.new(tab).format_for(:body, numeric: '4.0,')
+          expect(fmt.format_at[:body][:shares][:commas]).to be(true)
         end
 
         it 'parses pre- and post-digits for numerics' do
-          fmt = described_class.new(tab)
-                  .format_for(:body, numeric: '4.2,')
-          expect(fmt.format_at[:body][:shares].pre_digits).to eq(4)
-          expect(fmt.format_at[:body][:shares].post_digits).to eq(2)
-          fmt = described_class.new(tab)
-                  .format_for(:footer, numeric: '0.2,')
-          expect(fmt.format_at[:footer][:shares].pre_digits).to eq(0)
-          expect(fmt.format_at[:footer][:shares].post_digits).to eq(2)
+          fmt = described_class.new(tab).format_for(:body, numeric: '4.2,')
+          expect(fmt.format_at[:body][:shares][:pre_digits]).to eq(4)
+          expect(fmt.format_at[:body][:shares][:post_digits]).to eq(2)
+          fmt = described_class.new(tab).format_for(:footer, numeric: '0.2,')
+          expect(fmt.format_at[:footer][:shares][:pre_digits]).to eq(0)
+          expect(fmt.format_at[:footer][:shares][:post_digits]).to eq(2)
         end
 
         it 'parses negated comma described_class' do
-          fmt = described_class.new(tab)
-                  .format_for(:body, numeric: '4.0,', shares: '4.0~,')
-          expect(fmt.format_at[:body][:shares].commas).to be(false)
+          fmt = described_class.new(tab).format_for(:body, numeric: '4.0,', shares: '4.0~,')
+          expect(fmt.format_at[:body][:shares][:commas]).to be(false)
         end
       end
 
       it 'parses currency or not currency' do
-        fmt = described_class.new(tab)
-                .format_for(:body, numeric: '4.0$')
-        expect(fmt.format_at[:body][:shares].currency).to be(true)
-        fmt = described_class.new(tab)
-                .format_for(:body, numeric: '4.0~ $')
-        expect(fmt.format_at[:body][:shares].currency).to be(false)
+        fmt = described_class.new(tab).format_for(:body, numeric: '4.0$')
+        expect(fmt.format_at[:body][:shares][:currency]).to be(true)
+        fmt = described_class.new(tab).format_for(:body, numeric: '4.0~ $')
+        expect(fmt.format_at[:body][:shares][:currency]).to be(false)
       end
 
       it 'parses hms or not hms' do
-        fmt = described_class.new(tab)
-                .format_for(:body, numeric: '4.0H')
-        expect(fmt.format_at[:body][:shares].hms).to be(true)
-        fmt = described_class.new(tab)
-                .format_for(:body, numeric: '4.0~ H')
-        expect(fmt.format_at[:body][:shares].hms).to be(false)
+        fmt = described_class.new(tab).format_for(:body, numeric: '4.0H')
+        expect(fmt.format_at[:body][:shares][:hms]).to be(true)
+        fmt = described_class.new(tab).format_for(:body, numeric: '4.0~ H')
+        expect(fmt.format_at[:body][:shares][:hms]).to be(false)
       end
 
       it 'gives priority to column over type formatting' do
-        fmt = described_class.new(tab)
-                .format_for(:body, numeric: '4.0', shares: '0.4')
-        expect(fmt.format_at[:body][:shares].pre_digits).to eq(0)
-        expect(fmt.format_at[:body][:shares].post_digits).to eq(4)
+        fmt = described_class.new(tab).format_for(:body, numeric: '4.0', shares: '0.4')
+        expect(fmt.format_at[:body][:shares][:pre_digits]).to eq(0)
+        expect(fmt.format_at[:body][:shares][:post_digits]).to eq(4)
       end
 
       it 'gives priority to column over string formatting' do
-        fmt = described_class.new(tab)
-                .format_for(:body, string: 'c[red]', shares: 'c[blue]')
-        expect(fmt.format_at[:body][:shares].color).to eq('blue')
+        fmt = described_class.new(tab).format_for(:body, string: 'c[red]', shares: 'c[blue]')
+        expect(fmt.format_at[:body][:shares][:color]).to eq('blue')
       end
 
       it 'gives priority to column over nil formatting' do
-        fmt = described_class.new(tab)
-                .format_for(:body, nil: 'n[Blank]', shares: 'n[Nada]')
-        expect(fmt.format_at[:body][:shares].nil_text).to eq('Nada')
+        fmt = described_class.new(tab).format_for(:body, nil: 'n[Blank]', shares: 'n[Nada]')
+        expect(fmt.format_at[:body][:shares][:nil_text]).to eq('Nada')
       end
 
       it 'gives priority to type over string formatting' do
-        fmt = described_class.new(tab)
-                .format_for(:body, string: 'c[red]', numeric: 'c[blue]')
-        expect(fmt.format_at[:body][:shares].color).to eq('blue')
+        fmt = described_class.new(tab).format_for(:body, string: 'c[red]', numeric: 'c[blue]')
+        expect(fmt.format_at[:body][:shares][:color]).to eq('blue')
       end
 
       it 'gives priority to type over nil formatting' do
-        fmt = described_class.new(tab)
-                .format_for(:body, nil: 'n[Blank]', numeric: 'n[Nada]')
-        expect(fmt.format_at[:body][:shares].nil_text).to eq('Nada')
+        fmt = described_class.new(tab).format_for(:body, nil: 'n[Blank]', numeric: 'n[Nada]')
+        expect(fmt.format_at[:body][:shares][:nil_text]).to eq('Nada')
       end
 
       it 'gives priority to nil over string formatting' do
-        fmt = described_class.new(tab)
-                .format_for(:body, nil: 'n[Blank]', string: 'n[Nada]')
-        expect(fmt.format_at[:body][:shares].nil_text).to eq('Blank')
+        fmt = described_class.new(tab).format_for(:body, nil: 'n[Blank]', string: 'n[Nada]')
+        expect(fmt.format_at[:body][:shares][:nil_text]).to eq('Blank')
       end
 
       it 'gives priority to bfirst over body formatting' do
-        fmt = described_class.new(tab)
-                .format_for(:bfirst, ref: '3.1')
-                .format_for(:body, ref: '4.0')
+        fmt = described_class.new(tab).format_for(:bfirst, ref: '3.1').format_for(:body, ref: '4.0')
         expect(fmt.format_at[:bfirst][:ref][:_location]).to eq(:bfirst)
         expect(fmt.format_at[:bfirst][:ref][:_h]).to eq(:ref)
-        expect(fmt.format_at[:bfirst][:ref].pre_digits).to eq(3)
-        expect(fmt.format_at[:bfirst][:ref].post_digits).to eq(1)
+        expect(fmt.format_at[:bfirst][:ref][:pre_digits]).to eq(3)
+        expect(fmt.format_at[:bfirst][:ref][:post_digits]).to eq(1)
       end
 
       it 'bfirst should inherit body formatting with possible override' do
-        fmt = described_class.new(tab)
-                .format_for(:bfirst, ref: 'c[red]')
-                .format_for(:body, ref: '4.0')
+        fmt = described_class.new(tab).format_for(:bfirst, ref: 'c[red]').format_for(:body, ref: '4.0')
         expect(fmt.format_at[:bfirst][:ref][:_location]).to eq(:bfirst)
         expect(fmt.format_at[:bfirst][:ref][:_h]).to eq(:ref)
-        expect(fmt.format_at[:bfirst][:ref].pre_digits).to eq(4)
-        expect(fmt.format_at[:bfirst][:ref].post_digits).to eq(0)
-        expect(fmt.format_at[:bfirst][:ref].color).to eq('red')
-        expect(fmt.format_at[:body][:ref].color).to eq('none')
+        expect(fmt.format_at[:bfirst][:ref][:pre_digits]).to eq(4)
+        expect(fmt.format_at[:bfirst][:ref][:post_digits]).to eq(0)
+        expect(fmt.format_at[:bfirst][:ref][:color]).to eq('red')
+        expect(fmt.format_at[:body][:ref][:color]).to eq('none')
         # Regardless of the order
-        fmt = described_class.new(tab)
-                .format_for(:body, ref: '4.0')
-                .format_for(:bfirst, ref: 'c[red]')
+        fmt = described_class.new(tab).format_for(:body, ref: '4.0').format_for(:bfirst, ref: 'c[red]')
         expect(fmt.format_at[:bfirst][:ref][:_location]).to eq(:bfirst)
         expect(fmt.format_at[:bfirst][:ref][:_h]).to eq(:ref)
-        expect(fmt.format_at[:bfirst][:ref].pre_digits).to eq(4)
-        expect(fmt.format_at[:bfirst][:ref].post_digits).to eq(0)
-        expect(fmt.format_at[:bfirst][:ref].color).to eq('red')
-        expect(fmt.format_at[:body][:ref].color).to eq('none')
+        expect(fmt.format_at[:bfirst][:ref][:pre_digits]).to eq(4)
+        expect(fmt.format_at[:bfirst][:ref][:post_digits]).to eq(0)
+        expect(fmt.format_at[:bfirst][:ref][:color]).to eq('red')
+        expect(fmt.format_at[:body][:ref][:color]).to eq('none')
       end
 
       it 'gfirst should inherit body formatting with possible override' do
-        fmt = described_class.new(tab)
-                .format_for(:gfirst, ref: 'c[red]')
-                .format_for(:body, ref: '4.0')
+        fmt = described_class.new(tab).format_for(:gfirst, ref: 'c[red]').format_for(:body, ref: '4.0')
         expect(fmt.format_at[:gfirst][:ref][:_location]).to eq(:gfirst)
         expect(fmt.format_at[:gfirst][:ref][:_h]).to eq(:ref)
-        expect(fmt.format_at[:gfirst][:ref].pre_digits).to eq(4)
-        expect(fmt.format_at[:gfirst][:ref].post_digits).to eq(0)
-        expect(fmt.format_at[:gfirst][:ref].color).to eq('red')
-        expect(fmt.format_at[:body][:ref].color).to eq('none')
+        expect(fmt.format_at[:gfirst][:ref][:pre_digits]).to eq(4)
+        expect(fmt.format_at[:gfirst][:ref][:post_digits]).to eq(0)
+        expect(fmt.format_at[:gfirst][:ref][:color]).to eq('red')
+        expect(fmt.format_at[:body][:ref][:color]).to eq('none')
         # Regardless of the order
-        fmt = described_class.new(tab)
-                .format_for(:body, ref: '4.0')
-                .format_for(:gfirst, ref: 'c[red]')
+        fmt = described_class.new(tab).format_for(:body, ref: '4.0').format_for(:gfirst, ref: 'c[red]')
         expect(fmt.format_at[:gfirst][:ref][:_location]).to eq(:gfirst)
         expect(fmt.format_at[:gfirst][:ref][:_h]).to eq(:ref)
-        expect(fmt.format_at[:gfirst][:ref].pre_digits).to eq(4)
-        expect(fmt.format_at[:gfirst][:ref].post_digits).to eq(0)
-        expect(fmt.format_at[:gfirst][:ref].color).to eq('red')
-        expect(fmt.format_at[:body][:ref].color).to eq('none')
+        expect(fmt.format_at[:gfirst][:ref][:pre_digits]).to eq(4)
+        expect(fmt.format_at[:gfirst][:ref][:post_digits]).to eq(0)
+        expect(fmt.format_at[:gfirst][:ref][:color]).to eq('red')
+        expect(fmt.format_at[:body][:ref][:color]).to eq('none')
       end
 
       it 'bfirst should inherit gfirst formatting with possible override' do
-        fmt = described_class.new(tab)
-                .format_for(:bfirst, ref: 'c[red]')
-                .format_for(:gfirst, ref: '4.0')
+        fmt = described_class.new(tab).format_for(:bfirst, ref: 'c[red]').format_for(:gfirst, ref: '4.0')
         expect(fmt.format_at[:bfirst][:ref][:_location]).to eq(:bfirst)
         expect(fmt.format_at[:bfirst][:ref][:_h]).to eq(:ref)
-        expect(fmt.format_at[:bfirst][:ref].pre_digits).to eq(4)
-        expect(fmt.format_at[:bfirst][:ref].post_digits).to eq(0)
-        expect(fmt.format_at[:bfirst][:ref].color).to eq('red')
-        expect(fmt.format_at[:gfirst][:ref].color).to eq('none')
+        expect(fmt.format_at[:bfirst][:ref][:pre_digits]).to eq(4)
+        expect(fmt.format_at[:bfirst][:ref][:post_digits]).to eq(0)
+        expect(fmt.format_at[:bfirst][:ref][:color]).to eq('red')
+        expect(fmt.format_at[:gfirst][:ref][:color]).to eq('none')
         # Regardless of the order
-        fmt = described_class.new(tab)
-                .format_for(:gfirst, ref: '4.0')
-                .format_for(:bfirst, ref: 'c[red]')
+        fmt = described_class.new(tab).format_for(:gfirst, ref: '4.0').format_for(:bfirst, ref: 'c[red]')
         expect(fmt.format_at[:bfirst][:ref][:_location]).to eq(:bfirst)
         expect(fmt.format_at[:bfirst][:ref][:_h]).to eq(:ref)
-        expect(fmt.format_at[:bfirst][:ref].pre_digits).to eq(4)
-        expect(fmt.format_at[:bfirst][:ref].post_digits).to eq(0)
-        expect(fmt.format_at[:bfirst][:ref].color).to eq('red')
-        expect(fmt.format_at[:gfirst][:ref].color).to eq('none')
+        expect(fmt.format_at[:bfirst][:ref][:pre_digits]).to eq(4)
+        expect(fmt.format_at[:bfirst][:ref][:post_digits]).to eq(0)
+        expect(fmt.format_at[:bfirst][:ref][:color]).to eq('red')
+        expect(fmt.format_at[:gfirst][:ref][:color]).to eq('none')
       end
 
       it 'is able to set element formats' do
         fmt = described_class.new(tab)
                 .format_for(:header,
                             string: 'Uc[red]',
-                                                        ref: 'uc[blue.aquamarine]')
+                            ref: 'uc[blue.aquamarine]')
                 .format_for(:gfooter, string: 'B')
                 .format_for(:footer, datetime: 'Bd[%Y]')
                 .format_for(:body,
                             numeric: ',0.2',
                             shares: '0.4',
                             ref: 'B',
-                                                        price: '$,',
-                                                        bool: '  c[white.green, red.white] b[  Yippers, Nah Sir]',
-                                                        datetime: 'd[%Y]D[%v]',
-                                                        nil: 'n[  Nothing to see here   ]')
+                  price: '$,',
+                  bool: '  c[white.green, red.white] b[  Yippers, Nah Sir]',
+                  datetime: 'd[%Y]D[%v]',
+                  nil: 'n[  Nothing to see here   ]')
         # Header color
-        expect(fmt.format_at[:header][:ref].color).to eq('blue')
-        expect(fmt.format_at[:header][:ref].bgcolor).to eq('aquamarine')
-        expect(fmt.format_at[:header][:date].color).to eq('red')
-        expect(fmt.format_at[:header][:date].bgcolor).to eq('none')
-        expect(fmt.format_at[:header][:code].color).to eq('red')
-        expect(fmt.format_at[:header][:code].bgcolor).to eq('none')
-        expect(fmt.format_at[:header][:raw].color).to eq('red')
-        expect(fmt.format_at[:header][:raw].bgcolor).to eq('none')
-        expect(fmt.format_at[:header][:shares].color).to eq('red')
-        expect(fmt.format_at[:header][:shares].bgcolor).to eq('none')
-        expect(fmt.format_at[:header][:price].color).to eq('red')
-        expect(fmt.format_at[:header][:price].bgcolor).to eq('none')
-        expect(fmt.format_at[:header][:info].color).to eq('red')
-        expect(fmt.format_at[:header][:info].bgcolor).to eq('none')
-        expect(fmt.format_at[:header][:bool].color).to eq('red')
-        expect(fmt.format_at[:header][:bool].bgcolor).to eq('none')
+        expect(fmt.format_at[:header][:ref][:color]).to eq('blue')
+        expect(fmt.format_at[:header][:ref][:bgcolor]).to eq('aquamarine')
+        expect(fmt.format_at[:header][:date][:color]).to eq('red')
+        expect(fmt.format_at[:header][:date][:bgcolor]).to eq('none')
+        expect(fmt.format_at[:header][:code][:color]).to eq('red')
+        expect(fmt.format_at[:header][:code][:bgcolor]).to eq('none')
+        expect(fmt.format_at[:header][:raw][:color]).to eq('red')
+        expect(fmt.format_at[:header][:raw][:bgcolor]).to eq('none')
+        expect(fmt.format_at[:header][:shares][:color]).to eq('red')
+        expect(fmt.format_at[:header][:shares][:bgcolor]).to eq('none')
+        expect(fmt.format_at[:header][:price][:color]).to eq('red')
+        expect(fmt.format_at[:header][:price][:bgcolor]).to eq('none')
+        expect(fmt.format_at[:header][:info][:color]).to eq('red')
+        expect(fmt.format_at[:header][:info][:bgcolor]).to eq('none')
+        expect(fmt.format_at[:header][:bool][:color]).to eq('red')
+        expect(fmt.format_at[:header][:bool][:bgcolor]).to eq('none')
         # Header case
-        expect(fmt.format_at[:header][:ref].case).to eq(:lower)
-        expect(fmt.format_at[:header][:date].case).to eq(:upper)
-        expect(fmt.format_at[:header][:code].case).to eq(:upper)
-        expect(fmt.format_at[:header][:raw].case).to eq(:upper)
-        expect(fmt.format_at[:header][:shares].case).to eq(:upper)
-        expect(fmt.format_at[:header][:price].case).to eq(:upper)
-        expect(fmt.format_at[:header][:info].case).to eq(:upper)
-        expect(fmt.format_at[:header][:bool].case).to eq(:upper)
+        expect(fmt.format_at[:header][:ref][:case]).to eq(:lower)
+        expect(fmt.format_at[:header][:date][:case]).to eq(:upper)
+        expect(fmt.format_at[:header][:code][:case]).to eq(:upper)
+        expect(fmt.format_at[:header][:raw][:case]).to eq(:upper)
+        expect(fmt.format_at[:header][:shares][:case]).to eq(:upper)
+        expect(fmt.format_at[:header][:price][:case]).to eq(:upper)
+        expect(fmt.format_at[:header][:info][:case]).to eq(:upper)
+        expect(fmt.format_at[:header][:bool][:case]).to eq(:upper)
         # Header all others, the default
         tab.headers.each do |h|
-          expect(fmt.format_at[:header][h].true_color).to eq('none')
-          expect(fmt.format_at[:header][h].false_color).to eq('none')
-          expect(fmt.format_at[:header][h].true_text).to eq('T')
-          expect(fmt.format_at[:header][h].false_text).to eq('F')
-          expect(fmt.format_at[:header][h].date_fmt).to eq('%F')
-          expect(fmt.format_at[:header][h].datetime_fmt).to eq('%F %H:%M:%S')
-          expect(fmt.format_at[:header][h].nil_text).to eq('')
-          expect(fmt.format_at[:header][h].pre_digits).to eq(0)
-          expect(fmt.format_at[:header][h].post_digits).to eq(0)
-          expect(fmt.format_at[:header][h].bold).to be(false)
-          expect(fmt.format_at[:header][h].italic).to be(false)
-          expect(fmt.format_at[:header][h].alignment).to eq(:left)
-          expect(fmt.format_at[:header][h].commas).to be(false)
-          expect(fmt.format_at[:header][h].currency).to be(false)
-          expect(fmt.format_at[:header][h].nil_text).to eq('')
-          expect(fmt.format_at[:header][h].underline).to be(false)
-          expect(fmt.format_at[:header][h].blink).to be(false)
+          expect(fmt.format_at[:header][h][:true_color]).to eq('none')
+          expect(fmt.format_at[:header][h][:false_color]).to eq('none')
+          expect(fmt.format_at[:header][h][:true_text]).to eq('T')
+          expect(fmt.format_at[:header][h][:false_text]).to eq('F')
+          expect(fmt.format_at[:header][h][:date_fmt]).to eq('%F')
+          expect(fmt.format_at[:header][h][:datetime_fmt]).to eq('%F %H:%M:%S')
+          expect(fmt.format_at[:header][h][:nil_text]).to eq('')
+          expect(fmt.format_at[:header][h][:pre_digits]).to eq(0)
+          expect(fmt.format_at[:header][h][:post_digits]).to eq(0)
+          expect(fmt.format_at[:header][h][:bold]).to be(false)
+          expect(fmt.format_at[:header][h][:italic]).to be(false)
+          expect(fmt.format_at[:header][h][:alignment]).to eq(:left)
+          expect(fmt.format_at[:header][h][:commas]).to be(false)
+          expect(fmt.format_at[:header][h][:currency]).to be(false)
+          expect(fmt.format_at[:header][h][:nil_text]).to eq('')
+          expect(fmt.format_at[:header][h][:underline]).to be(false)
+          expect(fmt.format_at[:header][h][:blink]).to be(false)
         end
         # Gfooter bold
         tab.headers.each do |h|
-          expect(fmt.format_at[:gfooter][h].bold).to be(true)
+          expect(fmt.format_at[:gfooter][h][:bold]).to be(true)
         end
         # Gfooter all others, the default
         tab.headers.each do |h|
-          expect(fmt.format_at[:gfooter][h].true_color).to eq('none')
-          expect(fmt.format_at[:gfooter][h].false_color).to eq('none')
-          expect(fmt.format_at[:gfooter][h].color).to eq('none')
-          expect(fmt.format_at[:gfooter][h].true_text).to eq('T')
-          expect(fmt.format_at[:gfooter][h].false_text).to eq('F')
-          expect(fmt.format_at[:header][h].date_fmt).to eq('%F')
-          expect(fmt.format_at[:header][h].datetime_fmt).to eq('%F %H:%M:%S')
-          expect(fmt.format_at[:gfooter][h].nil_text).to eq('')
-          expect(fmt.format_at[:gfooter][h].pre_digits).to eq(0)
-          expect(fmt.format_at[:gfooter][h].post_digits).to eq(0)
-          expect(fmt.format_at[:gfooter][h].italic).to be(false)
-          expect(fmt.format_at[:gfooter][h].alignment).to eq(:left)
-          expect(fmt.format_at[:gfooter][h].commas).to be(false)
-          expect(fmt.format_at[:gfooter][h].currency).to be(false)
-          expect(fmt.format_at[:gfooter][h].nil_text).to eq('')
+          expect(fmt.format_at[:gfooter][h][:true_color]).to eq('none')
+          expect(fmt.format_at[:gfooter][h][:false_color]).to eq('none')
+          expect(fmt.format_at[:gfooter][h][:color]).to eq('none')
+          expect(fmt.format_at[:gfooter][h][:true_text]).to eq('T')
+          expect(fmt.format_at[:gfooter][h][:false_text]).to eq('F')
+          expect(fmt.format_at[:header][h][:date_fmt]).to eq('%F')
+          expect(fmt.format_at[:header][h][:datetime_fmt]).to eq('%F %H:%M:%S')
+          expect(fmt.format_at[:gfooter][h][:nil_text]).to eq('')
+          expect(fmt.format_at[:gfooter][h][:pre_digits]).to eq(0)
+          expect(fmt.format_at[:gfooter][h][:post_digits]).to eq(0)
+          expect(fmt.format_at[:gfooter][h][:italic]).to be(false)
+          expect(fmt.format_at[:gfooter][h][:alignment]).to eq(:left)
+          expect(fmt.format_at[:gfooter][h][:commas]).to be(false)
+          expect(fmt.format_at[:gfooter][h][:currency]).to be(false)
+          expect(fmt.format_at[:gfooter][h][:nil_text]).to eq('')
         end
         # Footer date_fmt for :date
-        expect(fmt.format_at[:footer][:date].date_fmt).to eq('%Y')
-        expect(fmt.format_at[:footer][:date].bold).to be(true)
+        expect(fmt.format_at[:footer][:date][:date_fmt]).to eq('%Y')
+        expect(fmt.format_at[:footer][:date][:bold]).to be(true)
         # Footer all others, the default
         tab.headers.each do |h|
-          expect(fmt.format_at[:footer][h].true_color).to eq('none')
-          expect(fmt.format_at[:footer][h].false_color).to eq('none')
-          expect(fmt.format_at[:footer][h].color).to eq('none')
-          expect(fmt.format_at[:footer][h].true_text).to eq('T')
-          expect(fmt.format_at[:footer][h].false_text).to eq('F')
-          expect(fmt.format_at[:header][h].date_fmt).to eq('%F')
-          expect(fmt.format_at[:header][h].datetime_fmt).to eq('%F %H:%M:%S')
-          expect(fmt.format_at[:footer][h].nil_text).to eq('')
-          expect(fmt.format_at[:footer][h].pre_digits).to eq(0)
-          expect(fmt.format_at[:footer][h].post_digits).to eq(0)
-          expect(fmt.format_at[:footer][h].bold).to eq(h == :date)
-          expect(fmt.format_at[:footer][h].italic).to be(false)
-          expect(fmt.format_at[:footer][h].alignment).to eq(:left)
-          expect(fmt.format_at[:footer][h].commas).to be(false)
-          expect(fmt.format_at[:footer][h].currency).to be(false)
-          expect(fmt.format_at[:footer][h].nil_text).to eq('')
+          expect(fmt.format_at[:footer][h][:true_color]).to eq('none')
+          expect(fmt.format_at[:footer][h][:false_color]).to eq('none')
+          expect(fmt.format_at[:footer][h][:color]).to eq('none')
+          expect(fmt.format_at[:footer][h][:true_text]).to eq('T')
+          expect(fmt.format_at[:footer][h][:false_text]).to eq('F')
+          expect(fmt.format_at[:header][h][:date_fmt]).to eq('%F')
+          expect(fmt.format_at[:header][h][:datetime_fmt]).to eq('%F %H:%M:%S')
+          expect(fmt.format_at[:footer][h][:nil_text]).to eq('')
+          expect(fmt.format_at[:footer][h][:pre_digits]).to eq(0)
+          expect(fmt.format_at[:footer][h][:post_digits]).to eq(0)
+          expect(fmt.format_at[:footer][h][:bold]).to eq(h == :date)
+          expect(fmt.format_at[:footer][h][:italic]).to be(false)
+          expect(fmt.format_at[:footer][h][:alignment]).to eq(:left)
+          expect(fmt.format_at[:footer][h][:commas]).to be(false)
+          expect(fmt.format_at[:footer][h][:currency]).to be(false)
+          expect(fmt.format_at[:footer][h][:nil_text]).to eq('')
         end
         # Body, :raw (inherit numeric)
-        expect(fmt.format_at[:body][:raw].commas).to be(true)
-        expect(fmt.format_at[:body][:raw].pre_digits).to eq(0)
-        expect(fmt.format_at[:body][:raw].post_digits).to eq(2)
+        expect(fmt.format_at[:body][:raw][:commas]).to be(true)
+        expect(fmt.format_at[:body][:raw][:pre_digits]).to eq(0)
+        expect(fmt.format_at[:body][:raw][:post_digits]).to eq(2)
         # Body, :price
-        expect(fmt.format_at[:body][:price].commas).to be(true)
-        expect(fmt.format_at[:body][:price].pre_digits).to eq(0)
-        expect(fmt.format_at[:body][:price].post_digits).to eq(0)
+        expect(fmt.format_at[:body][:price][:commas]).to be(true)
+        expect(fmt.format_at[:body][:price][:pre_digits]).to eq(0)
+        expect(fmt.format_at[:body][:price][:post_digits]).to eq(0)
         # Body, :shares
-        expect(fmt.format_at[:body][:shares].commas).to be(false)
-        expect(fmt.format_at[:body][:shares].pre_digits).to eq(0)
-        expect(fmt.format_at[:body][:shares].post_digits).to eq(4)
+        expect(fmt.format_at[:body][:shares][:commas]).to be(false)
+        expect(fmt.format_at[:body][:shares][:pre_digits]).to eq(0)
+        expect(fmt.format_at[:body][:shares][:post_digits]).to eq(4)
         # Body, :bool
-        expect(fmt.format_at[:body][:bool].true_color).to eq('white')
-        expect(fmt.format_at[:body][:bool].true_bgcolor).to eq('green')
-        expect(fmt.format_at[:body][:bool].false_color).to eq('red')
-        expect(fmt.format_at[:body][:bool].false_bgcolor).to eq('white')
-        expect(fmt.format_at[:body][:bool].true_text).to eq('Yippers')
-        expect(fmt.format_at[:body][:bool].false_text).to eq('Nah Sir')
+        expect(fmt.format_at[:body][:bool][:true_color]).to eq('white')
+        expect(fmt.format_at[:body][:bool][:true_bgcolor]).to eq('green')
+        expect(fmt.format_at[:body][:bool][:false_color]).to eq('red')
+        expect(fmt.format_at[:body][:bool][:false_bgcolor]).to eq('white')
+        expect(fmt.format_at[:body][:bool][:true_text]).to eq('Yippers')
+        expect(fmt.format_at[:body][:bool][:false_text]).to eq('Nah Sir')
         # Body, :datetime
-        expect(fmt.format_at[:body][:date].date_fmt).to eq('%Y')
-        expect(fmt.format_at[:body][:date].datetime_fmt).to eq('%v')
+        expect(fmt.format_at[:body][:date][:date_fmt]).to eq('%Y')
+        expect(fmt.format_at[:body][:date][:datetime_fmt]).to eq('%v')
         # Body, :ref
-        expect(fmt.format_at[:body][:ref].bold).to be(true)
+        expect(fmt.format_at[:body][:ref][:bold]).to be(true)
         # Body, :price
-        expect(fmt.format_at[:body][:price].currency).to be(true)
+        expect(fmt.format_at[:body][:price][:currency]).to be(true)
         # Body all others, the default
         %i[date code info].each do |h|
-          expect(fmt.format_at[:body][h].color).to eq('none')
-          expect(fmt.format_at[:body][h].true_color).to eq('none')
-          expect(fmt.format_at[:body][h].false_color).to eq('none')
-          expect(fmt.format_at[:body][h].true_text).to eq('T')
-          expect(fmt.format_at[:body][h].false_text).to eq('F')
-          expect(fmt.format_at[:body][h].italic).to be(false)
-          expect(fmt.format_at[:body][h].alignment).to eq(:left)
-          expect(fmt.format_at[:body][h].currency).to be(false)
-          expect(fmt.format_at[:body][h].nil_text).to eq('Nothing to see here')
+          expect(fmt.format_at[:body][h][:color]).to eq('none')
+          expect(fmt.format_at[:body][h][:true_color]).to eq('none')
+          expect(fmt.format_at[:body][h][:false_color]).to eq('none')
+          expect(fmt.format_at[:body][h][:true_text]).to eq('T')
+          expect(fmt.format_at[:body][h][:false_text]).to eq('F')
+          expect(fmt.format_at[:body][h][:italic]).to be(false)
+          expect(fmt.format_at[:body][h][:alignment]).to eq(:left)
+          expect(fmt.format_at[:body][h][:currency]).to be(false)
+          expect(fmt.format_at[:body][h][:nil_text]).to eq('Nothing to see here')
         end
       end
     end
 
     describe 'cell formatting' do
       let(:fmt) { described_class.new }
-      let(:istruct) { OpenStruct.new(described_class.default_format) }
-
-      # let(:istruct) { OpenStruct.new(described_class.default_format) }
+      let(:istruct) { described_class.default_format }
 
       describe 'string formatting' do
         it 'properly uppercases a string' do
-          istruct.case = :upper
+          istruct[:case] = :upper
           expect(fmt.format_cell('hello world', istruct)).to eq('HELLO WORLD')
         end
 
         it 'properly downcases a string' do
-          istruct.case = :lower
+          istruct[:case] = :lower
           expect(fmt.format_cell('HELLO WORLD', istruct)).to eq('hello world')
         end
 
         it 'properly title cases a string' do
-          istruct.case = :title
+          istruct[:case] = :title
           expect(fmt.format_cell('HELLO TO THE WORLD', istruct))
             .to eq('Hello to the World')
         end
@@ -507,115 +473,115 @@ module FatTable
 
       describe 'numeric formatting' do
         let(:fmt) { described_class.new }
-        let(:istruct) { OpenStruct.new(described_class.default_format) }
+        let(:istruct) { described_class.default_format }
 
         it 'adds grouping commas' do
-          istruct.commas = true
+          istruct[:commas] = true
           expect(fmt.format_cell(78546.254, istruct)).to eq('78,546')
         end
 
         it 'converts to HMS' do
-          istruct.hms = true
+          istruct[:hms] = true
           expect(fmt.format_cell(78546.254, istruct)).to eq('21:49:06.25')
         end
 
         it 'handles pre-digits with zero padding' do
-          istruct.pre_digits = 8
+          istruct[:pre_digits] = 8
           expect(fmt.format_cell(78546.254, istruct)).to eq('00078546')
         end
 
         it 'rounds to the the number of post-digits' do
-          istruct.pre_digits = 8
-          istruct.post_digits = 0
+          istruct[:pre_digits] = 8
+          istruct[:post_digits] = 0
           expect(fmt.format_cell(78546.254, istruct)).to eq('00078546')
-          istruct.post_digits = 1
+          istruct[:post_digits] = 1
           expect(fmt.format_cell(78546.254, istruct)).to eq('00078546.3')
-          istruct.post_digits = 2
+          istruct[:post_digits] = 2
           expect(fmt.format_cell(78546.234654, istruct)).to eq('00078546.23')
-          istruct.post_digits = 3
+          istruct[:post_digits] = 3
           expect(fmt.format_cell(78546.234654, istruct)).to eq('00078546.235')
-          istruct.post_digits = 4
+          istruct[:post_digits] = 4
           expect(fmt.format_cell(78546.234654, istruct)).to eq('00078546.2347')
-          istruct.post_digits = 5
+          istruct[:post_digits] = 5
           expect(fmt.format_cell(78546.234654, istruct)).to eq('00078546.23465')
         end
 
         it 'handles post-digits with zero padding' do
-          istruct.commas = true
-          istruct.post_digits = 8
+          istruct[:commas] = true
+          istruct[:post_digits] = 8
           expect(fmt.format_cell(78546.254, istruct)).to eq('78,546.25400000')
         end
 
         it 'adds commas and pre-digit padding' do
-          istruct.commas = true
-          istruct.pre_digits = 8
-          istruct.post_digits = 1
+          istruct[:commas] = true
+          istruct[:pre_digits] = 8
+          istruct[:post_digits] = 1
           expect(fmt.format_cell(78546.254, istruct)).to eq('00,078,546.3')
         end
 
         it 'handles negative pre-digits' do
-          istruct.commas = false
-          istruct.pre_digits = -3
-          istruct.post_digits = 2
+          istruct[:commas] = false
+          istruct[:pre_digits] = -3
+          istruct[:post_digits] = 2
           expect(fmt.format_cell(78546.254, istruct)).to eq('78546.25')
         end
 
         it 'handles negative post-digits' do
-          istruct.commas = false
-          istruct.pre_digits = -5
-          istruct.post_digits = -2
+          istruct[:commas] = false
+          istruct[:pre_digits] = -5
+          istruct[:post_digits] = -2
           expect(fmt.format_cell(78546.254, istruct)).to eq('78500')
-          istruct.commas = true
-          istruct.pre_digits = -5
-          istruct.post_digits = -2
+          istruct[:commas] = true
+          istruct[:pre_digits] = -5
+          istruct[:post_digits] = -2
           expect(fmt.format_cell(78546.254, istruct)).to eq('78,500')
         end
 
         it 'handles currency with post-digits' do
-          istruct.currency = true
-          istruct.post_digits = 5
+          istruct[:currency] = true
+          istruct[:post_digits] = 5
           expect(fmt.format_cell(78546.254, istruct)).to eq('$78546.25400')
         end
 
         it 'formats currency with commas' do
-          istruct.currency = true
-          istruct.commas = true
+          istruct[:currency] = true
+          istruct[:commas] = true
           expect(fmt.format_cell(78546.54, istruct)).to eq('$78,547')
         end
       end
 
       describe 'boolean formatting' do
         let(:fmt) { described_class.new }
-        let(:istruct) { OpenStruct.new(described_class.default_format) }
+        let(:istruct) { described_class.default_format }
 
         it 'properly formats a boolean' do
           expect(fmt.format_cell(true, istruct)).to eq('T')
           expect(fmt.format_cell(false, istruct)).to eq('F')
-          istruct.true_text = 'Yippers'
-          istruct.false_text = 'Nappers'
+          istruct[:true_text] = 'Yippers'
+          istruct[:false_text] = 'Nappers'
           expect(fmt.format_cell(true, istruct)).to eq('Yippers')
           expect(fmt.format_cell(false, istruct)).to eq('Nappers')
         end
       end
 
       describe 'datetime formatting' do
-        let(:istruct) { OpenStruct.new(described_class.default_format) }
+        let(:istruct) { described_class.default_format }
 
         it 'properly formats a datetime with sub-day components' do
           fmt = described_class.new
           val = DateTime.parse('2017-02-23 9pm')
           expect(fmt.format_cell(val, istruct)).to eq('2017-02-23 21:00:00')
-          istruct.datetime_fmt = '%Y in %B at %l%P, which was on a %A'
+          istruct[:datetime_fmt] = '%Y in %B at %l%P, which was on a %A'
           expect(fmt.format_cell(val, istruct))
             .to eq('2017 in February at  9pm, which was on a Thursday')
         end
 
         it 'properly formats a datetime without sub-day components' do
           fmt = described_class.new
-          istruct = OpenStruct.new(described_class.default_format)
+          istruct = described_class.default_format
           val = DateTime.parse('2017-02-23')
           expect(fmt.format_cell(val, istruct)).to eq('2017-02-23')
-          istruct.date_fmt = '%Y in %B at %l%P, which was on a %A'
+          istruct[:date_fmt] = '%Y in %B at %l%P, which was on a %A'
           expect(fmt.format_cell(val, istruct))
             .to eq('2017 in February at 12am, which was on a Thursday')
         end

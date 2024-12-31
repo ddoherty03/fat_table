@@ -2,39 +2,39 @@ module FatTable
   RSpec.describe 'Formatter::LaTeXFormatter' do
     describe 'decorate string' do
       it 'obeys a bold directive' do
-        istruct = OpenStruct.new(LaTeXFormatter.default_format)
-        istruct.bold = true
+        istruct = LaTeXFormatter.default_format
+        istruct[:bold] = true
         dstr = LaTeXFormatter.new.decorate_string('Words', istruct)
         expect(dstr).to eq("\\bfseries{Words}")
       end
 
       it 'obeys an italic directive' do
-        istruct = OpenStruct.new(LaTeXFormatter.default_format)
-        istruct.italic = true
+        istruct = LaTeXFormatter.default_format
+        istruct[:italic] = true
         dstr = LaTeXFormatter.new.decorate_string('Words, words, words', istruct)
         expect(dstr).to eq("\\itshape{Words, words, words}")
       end
 
       it 'obeys a color directive' do
-        istruct = OpenStruct.new(LaTeXFormatter.default_format)
-        istruct.color = 'Turquoise'
+        istruct = LaTeXFormatter.default_format
+        istruct[:color] = 'Turquoise'
         dstr = LaTeXFormatter.new.decorate_string('Words, words, words', istruct)
         expect(dstr).to eq("{\\textcolor{Turquoise}{Words, words, words}}")
       end
 
       it 'obeys a bg_color directive' do
-        istruct = OpenStruct.new(LaTeXFormatter.default_format)
-        istruct.bgcolor = 'Pink'
+        istruct = LaTeXFormatter.default_format
+        istruct[:bgcolor] = 'Pink'
         dstr = LaTeXFormatter.new.decorate_string('Words, words, words', istruct)
         expect(dstr).to eq("{\\cellcolor{Pink}{Words, words, words}}")
       end
 
       it 'obeys an alignment directive' do
-        istruct = OpenStruct.new(LaTeXFormatter.default_format)
-        istruct.alignment = 'right'
+        istruct = LaTeXFormatter.default_format
+        istruct[:alignment] = 'right'
         dstr = LaTeXFormatter.new.decorate_string('Words, words, words', istruct)
         expect(dstr).to eq("\\multicolumn{1}{r}{Words, words, words}")
-        istruct.alignment = 'center'
+        istruct[:alignment] = 'center'
         dstr = LaTeXFormatter.new.decorate_string('Words, words, words', istruct)
         expect(dstr).to eq("\\multicolumn{1}{c}{Words, words, words}")
       end
