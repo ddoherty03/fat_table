@@ -1,5 +1,5 @@
 module FatTable
-  RSpec.describe AoaFormatter do
+  RSpec.describe 'Formatter::AoaFormatter' do
     describe 'table output' do
       let(:tab) do
         aoa = [

@@ -1,8 +1,8 @@
 module FatTable
-  RSpec.describe Formatter::OrgFormatter do
+  RSpec.describe 'Formatter::OrgFormatter' do
     describe 'table output' do
-      before do
-        @aoa = [
+      let(:tab) do
+        aoa = [
           %w[Ref Date Code Raw Shares Price Info Bool],
           [1,  '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850,  'ZMPEF1',          'T'],
           [2,  '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500, 'ZMPEF1',          'T'],
@@ -18,16 +18,16 @@ module FatTable
           [15, '2013-05-29', 'S', 15_900.00,  6685.95,   24.5802, 'ZMEAC',           'T'],
           [16, '2013-05-30', 'S', 6_679.00,   2808.52,   25.0471, 'ZMEAC',           'T']
         ]
-        @tab = Table.from_aoa(@aoa).order_by(:date)
+        Table.from_aoa(aoa).order_by(:date)
       end
 
       it 'outputs a table with default formatting' do
-        org = OrgFormatter.new(@tab).output
+        org = OrgFormatter.new(tab).output
         expect(org.class).to eq(String)
       end
 
       it 'is able to set format and output by method calls' do
-        fmt = OrgFormatter.new(@tab)
+        fmt = OrgFormatter.new(tab)
         fmt.format(
           ref: '5.0',
           code: 'C',

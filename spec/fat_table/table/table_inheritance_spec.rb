@@ -1,10 +1,14 @@
-RSpec.describe FatTable do
-  before :all do
-    class B < FatTable::Table
-      attr_accessor :extra
-      def initialize(extra = "Default extra")
-        @extra = extra
+module FatTable
+  RSpec.describe Table do
+    before do
+      b_class = Class.new(FatTable::Table) do
+        attr_accessor :extra
+
+        def initialize(*heads, **types)
+          super
+        end
       end
+      stub_const('B', b_class)
     end
 
     it 'preserves instance variables when inherited' do
@@ -13,11 +17,12 @@ RSpec.describe FatTable do
       1,5/2/2006,P,5000,5000,8.6000,2006-08-09-1-I
       2,05/03/2006,P,5000,5000,8.4200,2006-08-09-1-I
       3,5/4/2006,P,5000,5000,8.4000,2006-08-09-1-I
-    CSV
+      CSV
+      FatTable::Table.from_csv_string(str)
       btab = B.from_csv_string(str)
-      b.extra = "Special extra"
-      btab = b.select(:ref, :date, :code, :shares, :price, cost: 'shares * price')
-      expect(btab.extrs).to eq('Special extra')
+      btab.extra = "Special extra"
+      btab = btab.select(:ref, :date, :code, :shares, :price, cost: 'shares * price')
+      expect(btab.extra).to eq('Special extra')
     end
   end
 end

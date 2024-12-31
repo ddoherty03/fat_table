@@ -2,14 +2,14 @@ module FatTable
   RSpec.describe Table do
     describe 'select' do
       describe 'selecting columns' do
-        let(:tab1) {
+        let(:tab1) do
           aoh = [
             { a: '5', 'Two words' => '20', s: '5143',  c: '3123' },
             { a: '4', 'Two words' => '5',  s: 412,     c: 6412 },
             { a: '7', 'Two words' => '8',  s: '$1821', c: '$1888' },
           ]
           Table.from_aoh(aoh)
-        }
+        end
 
         it 'selects by column names' do
           tab2 = tab1.select(:s, :a, :c)
@@ -24,38 +24,38 @@ module FatTable
         it 'adds new numeric column if asked nicely' do
           tab2 = tab1.select(:s, :a, :c, d: 3.14159)
           expect(tab2.headers).to eq [:s, :a, :c, :d]
-          expect(tab2[:d].all? { |v| v == BigDecimal("3.14159")}).to be true
+          expect(tab2[:d].all?(BigDecimal("3.14159"))).to be true
         end
 
         it 'adds new numeric column via string if asked nicely' do
           tab2 = tab1.select(:s, :a, :c, d: '3.14159')
           expect(tab2.headers).to eq [:s, :a, :c, :d]
-          expect(tab2[:d].all? { |v| v == BigDecimal("3.14159")}).to be true
+          expect(tab2[:d].all?(BigDecimal("3.14159"))).to be true
         end
 
         it 'adds new fraction column via string if asked nicely' do
           tab2 = tab1.select(:s, :a, :c, d: ': 3:13')
           expect(tab2.headers).to eq [:s, :a, :c, :d]
-          expect(tab2[:d].all? { |v| v == Rational("3/13")}).to be true
+          expect(tab2[:d].all?(Rational("3/13"))).to be true
         end
 
         it 'adds new Date column if asked nicely' do
           tab2 = tab1.select(:s, :a, :c, d: Date.today)
           expect(tab2.headers).to eq [:s, :a, :c, :d]
-          expect(tab2[:d].all? { |v| v == Date.today}).to be true
+          expect(tab2[:d].all?(Date.today)).to be true
         end
 
         it 'adds new DateTime column if asked nicely' do
           now = DateTime.now
           tab2 = tab1.select(:s, :a, :c, d: now)
           expect(tab2.headers).to eq [:s, :a, :c, :d]
-          expect(tab2[:d].all? { |v| v == now}).to be true
+          expect(tab2[:d].all?(now)).to be true
         end
 
         it 'adds new boolean column if asked nicely' do
           tab2 = tab1.select(:s, :a, :c, d: true)
           expect(tab2.headers).to eq [:s, :a, :c, :d]
-          expect(tab2[:d].all? { |v| v == true}).to be true
+          expect(tab2[:d].all?(true)).to be true
         end
 
         it 'adds new boolean column via string if asked nicely' do
@@ -64,25 +64,25 @@ module FatTable
           expect(tab2[:d].all? { |v| v }).to be true
           tab2 = tab1.select(:s, :a, :c, d: ': F')
           expect(tab2.headers).to eq [:s, :a, :c, :d]
-          expect(tab2[:d].all? { |v| !v }).to be true
+          expect(tab2[:d].all?(&:!)).to be true
         end
 
         it 'adds new string column if asked nicely' do
           tab2 = tab1.select(:s, :a, :c, d: ':Hello')
           expect(tab2.headers).to eq [:s, :a, :c, :d]
-          expect(tab2[:d].all? { |v| v == 'Hello'}).to be true
+          expect(tab2[:d].all?('Hello')).to be true
         end
 
         it 'keeps white space after colon in string literal' do
           tab2 = tab1.select(:s, :a, :c, d: '   :    Hello')
           expect(tab2.headers).to eq [:s, :a, :c, :d]
-          expect(tab2[:d].all? { |v| v == '    Hello'}).to be true
+          expect(tab2[:d].all?('    Hello')).to be true
         end
 
         it 'adds new nil column if handed a blank string' do
           tab2 = tab1.select(:s, :a, :c, d: ':   ')
           expect(tab2.headers).to eq [:s, :a, :c, :d]
-          expect(tab2[:d].all? { |v| v.nil? }).to be true
+          expect(tab2[:d].all?(&:nil?)).to be true
         end
 
         it 'selects by :omni special column' do
@@ -106,7 +106,7 @@ module FatTable
       end
 
       describe 'evaluation' do
-        let(:tab) {
+        let(:tab) do
           aoh = [
             { a: '5', 'Two words' => '20', s: '5_143', c: '3123' },
             { a: '4', 'Two words' => '5',  s: 412,     c: 6412 },
@@ -119,11 +119,15 @@ module FatTable
             { a: '7', 'Two words' => '8',  s: '$1521', c: '$3_888' },
           ]
           Table.from_aoh(aoh)
-        }
+        end
 
         it 'selects new columns computed from prior' do
-          tab2 = tab.select(:two_words, row: '@row', s_squared: 's * s',
-                             arb: 's_squared / (a + c).to_d')
+          tab2 = tab.select(
+            :two_words,
+            row: '@row',
+            s_squared: 's * s',
+                                         arb: 's_squared / (a + c).to_d',
+          )
           expect(tab2.headers).to eq [:two_words, :row, :s_squared, :arb]
         end
 
@@ -143,11 +147,15 @@ module FatTable
 
         it 'sets ivars and before and after hooks' do
           tab2 = tab.select(
-            :a, :two_words, number: '@row', group: '@group',
-            ivars: { cum_a: 0, '@avg_a': 0 },
-            sum_of_a: '@cum_a', average_a: '@avg_a',
-            before_hook: '@cum_a += a',
-            after_hook: '@avg_a = (@cum_a.to_f / @row.to_f).round(3)'
+            :a,
+            :two_words,
+            number: '@row',
+            group: '@group',
+                        ivars: { cum_a: 0, '@avg_a': 0 },
+                        sum_of_a: '@cum_a',
+            average_a: '@avg_a',
+                        before_hook: '@cum_a += a',
+                        after_hook: '@avg_a = (@cum_a.to_f / @row.to_f).round(3)',
           )
           expect(tab2.headers).to eq [:a, :two_words, :number, :group, :sum_of_a, :average_a]
           expect(tab2[:sum_of_a]).to eq([5, 9, 16, 21, 25, 32, 37, 41, 48])
@@ -169,10 +177,14 @@ module FatTable
         it 'sets ivars and before hook' do
           hook = '@cum_a += a; @avg_a = (@cum_a.to_f / @row.to_f).round(3)'
           tab2 = tab.select(
-            :a, :two_words, number: '@row', group: '@group',
-            ivars: { cum_a: 0, '@avg_a': 0 },
-            sum_of_a: '@cum_a', average_a: '@avg_a',
-            before_hook: hook
+            :a,
+            :two_words,
+            number: '@row',
+            group: '@group',
+                        ivars: { cum_a: 0, '@avg_a': 0 },
+                        sum_of_a: '@cum_a',
+            average_a: '@avg_a',
+                        before_hook: hook,
           )
           expect(tab2.headers).to eq [:a, :two_words, :number, :group, :sum_of_a, :average_a]
           expect(tab2[:sum_of_a]).to eq([5, 9, 16, 21, 25, 32, 37, 41, 48])

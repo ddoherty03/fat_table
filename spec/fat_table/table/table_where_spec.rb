@@ -1,7 +1,7 @@
 module FatTable
   RSpec.describe Table do
     describe 'where' do
-      before :all do
+      let(:tab) do
         aoa = [
           %w[Ref Date Code Raw Shares Price Info Bool],
           [1,  '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850,  'ZMPEF1', 'T'],
@@ -17,37 +17,37 @@ module FatTable
           [15, '2013-05-29', 'S', 15_900.00,  6685.95,   24.5802, 'ZMEAC',  'T'],
           [16, '2013-05-30', 'S', 6_679.00,   2808.52,   25.0471, 'ZMEAC',  'T'],
         ]
-        @tab = Table.from_aoa(aoa)
+        Table.from_aoa(aoa)
       end
 
-      it 'should be able to filter rows by expression' do
-        tab2 = @tab.where("date <= Date.parse('2013-05-20')")
+      it 'is able to filter rows by expression' do
+        tab2 = tab.where("date <= Date.parse('2013-05-20')")
         expect(tab2[:date].count).to eq(5)
       end
 
-      it 'should where by boolean columns' do
-        tab2 = @tab.where('!bool || code == "P"')
+      it 'wheres by boolean columns' do
+        tab2 = tab.where('!bool || code == "P"')
         expect(tab2.columns.size).to eq(8)
         expect(tab2.rows.size).to eq(5)
-        tab2 = @tab.where('code == "S" && raw < 10_000')
+        tab2 = tab.where('code == "S" && raw < 10_000')
         expect(tab2.columns.size).to eq(8)
         expect(tab2.rows.size).to eq(2)
-        tab2 = @tab.where('@row > 10')
+        tab2 = tab.where('@row > 10')
         expect(tab2.columns.size).to eq(8)
         expect(tab2.rows.size).to eq(2)
-        tab2 = @tab.where('info =~ /zmeac/i')
+        tab2 = tab.where('info =~ /zmeac/i')
         expect(tab2.columns.size).to eq(8)
         expect(tab2.rows.size).to eq(10)
-        tab2 = @tab.where('info =~ /xxxx/')
+        tab2 = tab.where('info =~ /xxxx/')
         expect(tab2.columns.size).to eq(8)
         expect(tab2.rows.size).to eq(0)
       end
 
       it 'where clause with row and group' do
-        tab = @tab.order_by(:date, :code)
-        tab2 = tab.where('@row > 10')
+        tab1 = tab.order_by(:date, :code)
+        tab2 = tab1.where('@row > 10')
         expect(tab2.rows.size).to eq(2)
-        tab2 = tab.where('@group == 3')
+        tab2 = tab1.where('@group == 3')
         expect(tab2.rows.size).to eq(3)
       end
     end

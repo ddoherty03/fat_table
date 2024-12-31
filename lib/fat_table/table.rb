@@ -106,7 +106,7 @@ module FatTable
       if types.keys.map(&:to_s).include?('omni')
         # All columns not otherwise included in types should have the type and
         # tolerance of omni.
-        omni_val = (types['omni'] || types[:omni])
+        omni_val = types['omni'] || types[:omni]
         @omni_type, @omni_tol = Table.typ_tol(omni_val)
         # Remove omni from types.
         types.delete(:omni)
@@ -121,8 +121,7 @@ module FatTable
           tol = @omni_tol
         end
         @tolerant_cols << h.to_s.as_sym if tol
-        @columns << Column.new(header: h.to_s.sub(/~\s*\z/, ''), type: typ,
-                               tolerant: tol)
+        @columns << Column.new(header: h.to_s.sub(/~\s*\z/, ''), type: typ, tolerant: tol)
       end
       @explicit_boundaries = []
     end
@@ -136,7 +135,7 @@ module FatTable
     # might have been set by a subclass instance.
     def empty_dup(result_cols = nil)
       result_cols ||= heads
-      result_types = types.select { |k,_v| result_cols.include?(k) }
+      result_types = types.select { |k, _v| result_cols.include?(k) }
       result = self.class.new(result_cols, **result_types)
       tolerant_cols.each do |h|
         result.tolerant_cols << h
@@ -164,8 +163,8 @@ module FatTable
 
     # Construct a Table from a CSV string +str+, treated in the same manner as
     # the input from a CSV file in ::from_org_file.
-    def self.from_csv_string(str, has_headers: true, **)
-      from_csv_io(StringIO.new(str), has_headers:, **)
+    def self.from_csv_string(str, has_headers: true, **types)
+      from_csv_io(str, has_headers:, **types)
     rescue NoTable
       raise NoTable, "no table found in string '#{str[0..20]}...'"
     end
@@ -283,9 +282,9 @@ module FatTable
       # Construct table from an array of hashes or an array of any object that
       # can respond to #to_h. If an array element is a nil, mark it as a group
       # boundary in the Table.
-      def from_array_of_hashes(hashes, hlines: false, **)
+      def from_array_of_hashes(hashes, hlines: false, **types)
         heads = hashes.first.keys
-        result = new(*heads, **)
+        result = new(*heads, **types)
         hashes.each do |hsh|
           if hsh.nil?
             unless hlines
@@ -313,18 +312,18 @@ module FatTable
       # hlines are stripped from the table, otherwise (:hlines yes) they are
       # indicated with nil elements in the outer array as expected by this
       # method when hlines is set true.
-      def from_array_of_arrays(rows, hlines: false, **)
+      def from_array_of_arrays(rows, hlines: false, **types)
         headers = []
         if !hlines
           # Take the first row as headers
           # Second row et seq as data
-          headers = rows[0].map(&:to_s).map(&:as_sym)
+          headers = rows[0].map { |r| r.to_s.as_sym }
           first_data_row = 1
         elsif rows[1].nil?
           # Use first row 0 as headers
           # Row 1 is an hline
           # Row 2 et seq are data
-          headers = rows[0].map(&:to_s).map(&:as_sym)
+          headers = rows[0].map { |r| r.to_s.as_sym }
           first_data_row = 2
         else
           # Synthesize headers
@@ -332,7 +331,7 @@ module FatTable
           headers = (1..rows[0].size).to_a.map { |k| "col_#{k}".as_sym }
           first_data_row = 0
         end
-        result = new(*headers, **)
+        result = new(*headers, **types)
         rows[first_data_row..-1].each do |row|
           if row.nil?
             unless hlines
@@ -350,31 +349,40 @@ module FatTable
         result
       end
 
-      def from_csv_io(io, has_headers: true, **)
-        result = new(**)
+      def from_csv_io(io_or_str, has_headers: true, **types)
+        result = new(**types)
         if has_headers
-          ::CSV.new(io, headers: has_headers, header_converters: :symbol, skip_blanks: true).each do |row|
-            result << row.to_h
-          end
+          csv_tab = CSV.new(io_or_str, headers: has_headers, header_converters: :symbol, skip_blanks: true)
         else
-          nfields = io.readline.split(',').size
-          io.seek(0, IO::SEEK_SET)
-          heads = (1..nfields).map {|n| "col_#{n}"}
-          ::CSV.new(io, headers: heads, skip_blanks: true).each do |row|
-            result << row.to_h
-          end
+          nfields =
+            case io_or_str
+            when StringIO, IO
+              io_or_str.readline.split(',').size
+              io_or_str.seek(0, IO::SEEK_SET)
+            when String
+              io_or_str.split("\n").first.split(',').size
+            else
+              raise LogicError, "from_csc_io input from #{io_or_str.class} must be String or IO"
+            end
+          heads = (1..nfields).map { |n| "col_#{n}" }
+          csv_tab = CSV.new(io_or_str, headers: heads, skip_blanks: true)
+        end
+        csv_tab.each do |row|
+          result << row.to_h
         end
         result.normalize_boundaries
         result
-      rescue StandardError
-        raise NoTable
+      rescue ::CSV::MalformedCSVError => ex
+        raise NoTable, "malformed CSV at line #{ex.line_number}"
+      rescue StandardError => ex
+        raise LogicError, ex
       end
 
       # Form rows of table by reading the first table found in the org file. The
       # header row must be marked with an hline (i.e, a row that looks like
       # '|---+--...--|') and groups of rows may be marked with hlines to
       # indicate group boundaries.
-      def from_org_io(io, **)
+      def from_org_io(io, **types)
         table_re = /\A\s*\|/
         hrule_re = /\A\s*\|[-+]+/
         rows = []
@@ -417,7 +425,8 @@ module FatTable
           end
         end
         raise NoTable unless table_found
-        from_array_of_arrays(rows, hlines: true, **)
+
+        from_array_of_arrays(rows, hlines: true, **types)
       end
     end
 
@@ -525,7 +534,7 @@ module FatTable
     # tolerant.  We can't just look up the Column because it may not be build
     # yet, as when we do a row-by-row add.
     def tolerant_col?(h)
-      tolerant_cols.include?(h.to_s.as_sym) || self.omni_tol
+      tolerant_cols.include?(h.to_s.as_sym) || omni_tol
     end
 
     # :category: Attributes
@@ -578,7 +587,7 @@ module FatTable
     # large table, that would require that we construct all the rows for a range
     # of any size.
     def rows_range(first = 0, last = nil) # :nodoc:
-      raise UserError, 'first must be <= last' unless first <= last
+      raise UserError, 'first must be <= last' if first > last
 
       rows = []
       unless columns.empty?
@@ -604,12 +613,9 @@ module FatTable
     # :category: Attributes
 
     # Yield each row of the table as a Hash with the column symbols as keys.
-    def each
-      if block_given?
-        rows.each do |row|
-          yield row
-        end
-        self
+    def each(&block)
+      if block
+        rows.each(&block)
       else
         to_enum(:each)
       end
@@ -656,11 +662,7 @@ module FatTable
     # Return an array of an Array of row Hashes for the groups in this Table.
     def groups
       normalize_boundaries
-      groups = []
-      (0..boundaries.size - 1).each do |k|
-        groups << group_rows(k)
-      end
-      groups
+      (0..boundaries.size - 1).map { |k| group_rows(k) }
     end
 
     # Return the number of groups in the table.
@@ -694,8 +696,12 @@ module FatTable
         range = group_row_range(k)
         tab_col = column(col)
         gitems = tab_col.items[range]
-        cols << Column.new(header: col, items: gitems,
-                           type: tab_col.type, tolerant: tab_col.tolerant?)
+        cols << Column.new(
+          header: col,
+          items: gitems,
+          type: tab_col.type,
+          tolerant: tab_col.tolerant?,
+        )
       end
       cols
     end
@@ -721,12 +727,9 @@ module FatTable
       return self if empty?
 
       if row_num
-        unless row_num < size
-          raise ArgumentError, "can't mark boundary at row #{row_num}, last row is #{size - 1}"
-        end
-        unless row_num >= 0
-          raise ArgumentError, "can't mark boundary at non-positive row #{row_num}"
-        end
+        raise ArgumentError, "can't mark boundary at row #{row_num}, last row is #{size - 1}" if row_num >= size
+        raise ArgumentError, "can't mark boundary at non-positive row #{row_num}" if row_num < 0
+
         explicit_boundaries.push(row_num)
       elsif size > 0
         explicit_boundaries.push(size - 1)
@@ -797,7 +800,7 @@ module FatTable
     # Return the rows for group number +grp_num+.
     def group_rows(grp_num) # :nodoc:
       normalize_boundaries
-      return [] unless grp_num < boundaries.size
+      return [] if grp_num >= boundaries.size
 
       first = first_row_num_in_group(grp_num)
       last = last_row_num_in_group(grp_num)
@@ -884,7 +887,7 @@ module FatTable
     # each row where the sort key changes.
     def order_with(expr)
       unless expr.is_a?(String)
-        raise "must call FatTable::Table\#order_with with a single string expression"
+        raise "must call FatTable::Table#order_with with a single string expression"
       end
 
       rev = false
@@ -995,9 +998,11 @@ module FatTable
         after_hook = new_cols[:after_hook].to_s
         new_cols.delete(:after_hook)
       end
-      ev = Evaluator.new(ivars: ivars,
-                         before: before_hook,
-                         after: after_hook)
+      ev = Evaluator.new(
+        ivars: ivars,
+        before: before_hook,
+        after: after_hook,
+      )
       # Compute the new Table from this Table
       result_cols =
         if cols.include?(:omni)
@@ -1041,13 +1046,14 @@ module FatTable
 
             new_row[key] = vars[expr]
           when String
-            if expr.match?(/\A\s*:/)
-              # Leading colon signal a literal string
-              new_row[key] = expr.sub(/\A\s*:/, '')
-            else
-              # Otherwise, evaluate the string.
-              new_row[key] = ev.evaluate(expr, locals: vars)
-            end
+            new_row[key] =
+              if expr.match?(/\A\s*:/)
+                # Leading colon signal a literal string
+                expr.sub(/\A\s*:/, '')
+              else
+                # Otherwise, evaluate the string.
+                ev.evaluate(expr, locals: vars)
+              end
           when Numeric, DateTime, Date, TrueClass, FalseClass
             new_row[key] = expr
           else
@@ -1119,9 +1125,7 @@ module FatTable
     # eliminated from the result. Any groups present in either Table are
     # eliminated in the output Table.
     def union(other)
-      set_operation(other, :+,
-                    distinct: true,
-                    add_boundaries: true)
+      set_operation(other, :+, distinct: true, add_boundaries: true)
     end
 
     # :category: Operators
@@ -1134,13 +1138,7 @@ module FatTable
     # boundaries of the constituent tables. Preserves and adjusts the group
     # boundaries of the constituent table.
     def union_all(other)
-      set_operation(
-        other,
-        :+,
-        distinct: false,
-        add_boundaries: true,
-        inherit_boundaries: true
-      )
+      set_operation(other, :+, distinct: false, add_boundaries: true, inherit_boundaries: true)
     end
 
     # :category: Operators
@@ -1297,25 +1295,20 @@ module FatTable
           next unless matches
 
           self_row_matched = other_row_matches[k] = true
-          out_row = build_out_row(row_a: self_row, row_b: other_row,
-                                  common_heads: other_common_heads,
-                                  type: join_type)
+          out_row = build_out_row(row_a: self_row, row_b: other_row, common_heads: other_common_heads, type: join_type)
           result << out_row
         end
-        next unless [:left, :full].include?(join_type)
+        # next unless [:left, :full].include?(join_type)
+        next unless join_type == :left || join_type == :full
         next if self_row_matched
 
-        result << build_out_row(row_a: self_row,
-                                row_b: other_row_nils,
-                                type: join_type)
+        result << build_out_row(row_a: self_row, row_b: other_row_nils, type: join_type)
       end
-      if [:right, :full].include?(join_type)
+      if join_type == :right || join_type == :full
         other_rows.each_with_index do |other_row, k|
           next if other_row_matches[k]
 
-          result << build_out_row(row_a: self_row_nils,
-                                  row_b: other_row,
-                                  type: join_type)
+          result << build_out_row(row_a: self_row_nils, row_b: other_row, type: join_type)
         end
       end
       result.normalize_boundaries
@@ -1430,15 +1423,13 @@ module FatTable
 
               if partial_result
                 # Second of a pair
-                ensure_common_types!(self_h: a_head,
-                                     other_h: last_sym,
-                                     other: other)
+                ensure_common_types!(self_h: a_head, other_h: last_sym, other: other)
                 partial_result << "#{a_head}_a)"
                 and_conds << partial_result
                 partial_result = nil
               else
                 # First of a pair of _a or _b
-                partial_result = +"(#{a_head}_a == "
+                partial_result = "(#{a_head}_a == "
               end
               last_sym = a_head
             when /\A(?<sy>.*)_b\z/
@@ -1449,15 +1440,13 @@ module FatTable
 
               if partial_result
                 # Second of a pair
-                ensure_common_types!(self_h: last_sym,
-                                     other_h: b_head,
-                                     other: other)
+                ensure_common_types!(self_h: last_sym, other_h: b_head, other: other)
                 partial_result << "#{b_head}_b)"
                 and_conds << partial_result
                 partial_result = nil
               else
                 # First of a pair of _a or _b
-                partial_result = +"(#{b_head}_b == "
+                partial_result = "(#{b_head}_b == "
               end
               b_common_heads << b_head
               last_sym = b_head
@@ -1554,8 +1543,7 @@ module FatTable
       agg_cols.each_pair do |h, agg_func|
         items = rows.map { |r| r[h] }
         new_h = "#{agg_func}_#{h}".as_sym
-        new_row[new_h] = Column.new(header: h,
-                                    items: items).send(agg_func)
+        new_row[new_h] = Column.new(header: h, items: items).send(agg_func)
       end
       new_row
     end

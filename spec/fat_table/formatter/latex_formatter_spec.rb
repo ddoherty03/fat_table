@@ -1,5 +1,5 @@
 module FatTable
-  RSpec.describe Formatter::LaTeXFormatter do
+  RSpec.describe 'Formatter::LaTeXFormatter' do
     describe 'decorate string' do
       it 'obeys a bold directive' do
         istruct = OpenStruct.new(LaTeXFormatter.default_format)
@@ -41,19 +41,8 @@ module FatTable
     end
 
     describe 'table output' do
-      before :all do
-        tmp_dir = "#{__dir__}/../../tmp"
-        FileUtils.mkdir_p(tmp_dir)
-        xmpl_name = "#{__dir__}/../../example_files/example1.tex"
-        tmp_name = "#{__dir__}/../../tmp/example1.tex"
-        FileUtils.cp(xmpl_name, tmp_name)
-        xmpl_name = "#{__dir__}/../../example_files/example2.tex"
-        tmp_name = "#{__dir__}/../../tmp/example2.tex"
-        FileUtils.cp(xmpl_name, tmp_name)
-      end
-
-      before do
-        @aoa = [
+      let(:tab) do
+        aoa = [
           %w[Ref Date Code Raw Shares Price Info Bool],
           [1,  '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850,  'ZMPEF1 $100',     'T'],
           [2,  '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500, 'ZMPEF1',          'T'],
@@ -69,13 +58,24 @@ module FatTable
           [15, '2013-05-29', 'S', 15_900.00,  6685.95,   24.5802, 'ZMEAC',           'T'],
           [16, '2013-05-30', 'S', 6_679.00,   2808.52,   25.0471, 'ZMEAC',           'T']
         ]
-        @tab = Table.from_aoa(@aoa).order_by(:date)
-        @ltxcmd = 'pdflatex -interaction nonstopmode'
+        Table.from_aoa(aoa).order_by(:date)
+      end
+      let(:ltxcmd) { 'pdflatex -interaction nonstopmode' }
+
+      before do
+        tmp_dir = "#{__dir__}/../../tmp"
+        FileUtils.mkdir_p(tmp_dir)
+        xmpl_name = "#{__dir__}/../../example_files/example1.tex"
+        tmp_name = "#{__dir__}/../../tmp/example1.tex"
+        FileUtils.cp(xmpl_name, tmp_name)
+        xmpl_name = "#{__dir__}/../../example_files/example2.tex"
+        tmp_name = "#{__dir__}/../../tmp/example2.tex"
+        FileUtils.cp(xmpl_name, tmp_name)
       end
 
       it 'raises an error for an invalid color' do
         expect {
-          LaTeXFormatter.new(@tab) do |f|
+          LaTeXFormatter.new(tab) do |f|
             f.format_for(:body, date: 'c[Yeller]')
           end
         }.to raise_error(/invalid color 'Yeller'/)
@@ -83,20 +83,20 @@ module FatTable
 
       it 'outputs valid LaTeX with default formatting' do
         tmp = File.open("#{__dir__}/../../tmp/example1.tex", 'w')
-        ltx = LaTeXFormatter.new(@tab, document: true).output
+        ltx = LaTeXFormatter.new(tab, document: true).output
         result = false
         Dir.chdir(File.dirname(tmp.path)) do
           tmp << ltx
           tmp.flush
-          result = system("#{@ltxcmd} #{tmp.path} >latex.err 2>&1")
-          result &&= system("#{@ltxcmd} #{tmp.path} >>latex.err 2>&1")
+          result = system("#{ltxcmd} #{tmp.path} >latex.err 2>&1")
+          result &&= system("#{ltxcmd} #{tmp.path} >>latex.err 2>&1")
         end
         expect(ltx.class).to eq(String)
         expect(result).to be true
       end
 
       it 'is able to set format and output LaTeX with block' do
-        fmt = LaTeXFormatter.new(@tab, document: true) do |f|
+        fmt = LaTeXFormatter.new(tab, document: true) do |f|
           f.format(
             ref: '5.0',
             code: 'C',
@@ -137,8 +137,8 @@ module FatTable
         Dir.chdir(File.dirname(tmp.path)) do
           tmp << ltx
           tmp.flush
-          result = system("#{@ltxcmd} #{tmp.path} >/dev/null 2>&1")
-          result &&= system("#{@ltxcmd} #{tmp.path} >/dev/null 2>&1")
+          result = system("#{ltxcmd} #{tmp.path} >/dev/null 2>&1")
+          result &&= system("#{ltxcmd} #{tmp.path} >/dev/null 2>&1")
         end
         expect(result).to be true
       end

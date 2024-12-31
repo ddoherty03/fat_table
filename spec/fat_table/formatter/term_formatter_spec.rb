@@ -1,23 +1,8 @@
 module FatTable
-  RSpec.describe Formatter::TermFormatter do
+  RSpec.describe 'Formatter::TermFormatter' do
     describe 'table output' do
-      before :all do
-        UPPER_LEFT = "\u2552".freeze
-        UPPER_RIGHT = "\u2555".freeze
-        DOUBLE_RULE = "\u2550".freeze
-        UPPER_TEE = "\u2564".freeze
-        VERTICAL_RULE = "\u2502".freeze
-        LEFT_TEE = "\u251C".freeze
-        HORIZONTAL_RULE = "\u2500".freeze
-        SINGLE_CROSS = "\u253C".freeze
-        RIGHT_TEE = "\u2524".freeze
-        LOWER_LEFT = "\u2558".freeze
-        LOWER_RIGHT = "\u255B".freeze
-        LOWER_TEE = "\u2567".freeze
-      end
-
-      before do
-        @aoa = [
+      let(:tab) do
+        aoa = [
           %w[Ref Date Code Raw Shares Price Info Bool],
           [1,  '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850,  'ZMPEF1',          'T'],
           [2,  '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500, 'ZMPEF1',          'T'],
@@ -33,24 +18,39 @@ module FatTable
           [15, '2013-05-29', 'S', 15_900.00,  6685.95,   24.5802, 'ZMEAC',           'T'],
           [16, '2013-05-30', 'S', 6_679.00,   2808.52,   25.0471, 'ZMEAC',           'T']
         ]
-        @tab = Table.from_aoa(@aoa).order_by(:date)
+        Table.from_aoa(aoa).order_by(:date)
+      end
+
+      before do
+        stub_const("UPPER_LEFT", "\u2552".freeze)
+        stub_const("UPPER_RIGHT", "\u2555".freeze)
+        stub_const("DOUBLE_RULE", "\u2550".freeze)
+        stub_const("UPPER_TEE", "\u2564".freeze)
+        stub_const("VERTICAL_RULE", "\u2502".freeze)
+        stub_const("LEFT_TEE", "\u251C".freeze)
+        stub_const("HORIZONTAL_RULE", "\u2500".freeze)
+        stub_const("SINGLE_CROSS", "\u253C".freeze)
+        stub_const("RIGHT_TEE", "\u2524".freeze)
+        stub_const("LOWER_LEFT", "\u2558".freeze)
+        stub_const("LOWER_RIGHT", "\u255B".freeze)
+        stub_const("LOWER_TEE", "\u2567".freeze)
       end
 
       it 'raises an error for an invalid color' do
         expect {
-          TermFormatter.new(@tab) do |f|
+          TermFormatter.new(tab) do |f|
             f.format_for(:body, date: 'c[Yeller]')
           end
         }.to raise_error(/invalid color 'Yeller'/)
       end
 
       it 'outputs unicode with default formatting' do
-        trm = TermFormatter.new(@tab).output
+        trm = TermFormatter.new(tab).output
         expect(trm.class).to eq(String)
       end
 
       it 'is able to set format and output unicode with block' do
-        fmt = TermFormatter.new(@tab)
+        fmt = TermFormatter.new(tab)
         fmt.format(
           ref: '5.0',
           code: 'C',
@@ -87,12 +87,12 @@ module FatTable
       end
 
       it 'outputs non-unicode with default formatting' do
-        trm = TermFormatter.new(@tab, unicode: false).output
+        trm = TermFormatter.new(tab, unicode: false).output
         expect(trm.class).to eq(String)
       end
 
       it 'is able to set format and output without unicode' do
-        fmt = TermFormatter.new(@tab, unicode: false)
+        fmt = TermFormatter.new(tab, unicode: false)
         fmt.format(
           ref: '5.0',
           code: 'C',
@@ -129,7 +129,7 @@ module FatTable
       end
 
       it 'is able to display colors and decorations' do
-        fmt = TermFormatter.new(@tab, framecolor: 'black.yellow') do |t|
+        fmt = TermFormatter.new(tab, framecolor: 'black.yellow') do |t|
           t.format_for(:header, string: 'BCc[tomato.white]')
           t.format_for(
             :body,

@@ -1,5 +1,5 @@
 module FatTable
-  RSpec.describe Formatter::TextFormatter do
+  RSpec.describe 'Formatter::TextFormatter' do
     describe 'intolerant table output' do
       let(:tab) do
         aoa = [

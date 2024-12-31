@@ -174,9 +174,9 @@ module FatTable
     # Yield each item in the Column in the order in which they appear in the
     # Column. This makes Columns Enumerable, so all the Enumerable methods are
     # available on a Column.
-    def each
-      if block_given?
-        items.each { |itm| yield itm }
+    def each(&block)
+      if block
+        items.each(&block)
         self
       else
         to_enum(:each)
@@ -201,7 +201,7 @@ module FatTable
     # Return the first non-nil item in the Column, or nil if all items are
     # nil.  Works with any Column type.
     def first
-      return nil if items.all?(&:nil?)
+      return if items.all?(&:nil?)
 
       if type == 'String'
         items.reject(&:blank?).first
@@ -214,7 +214,7 @@ module FatTable
 
     # Return the last non-nil item in the Column.  Works with any Column type.
     def last
-      return nil if items.all?(&:nil?)
+      return if items.all?(&:nil?)
 
       if type == 'String'
         items.reject(&:blank?).last
@@ -231,7 +231,7 @@ module FatTable
       return items.size if items.all?(&:nil?)
 
       if type == 'String'
-        items.reject(&:blank?).count.to_d
+        items.count { |i| !i.blank? }
       else
         items.filter_to_type(type).count.to_d
       end
@@ -270,7 +270,7 @@ module FatTable
     # Columns.
     def range
       only_with('range', 'NilClass', 'Numeric', 'String', 'DateTime')
-      return nil if items.all?(&:nil?)
+      return if items.all?(&:nil?)
 
       Range.new(min, max)
     end
@@ -304,7 +304,7 @@ module FatTable
       itms = items.filter_to_type(type)
       size = itms.size.to_d
       if type == 'DateTime'
-        avg_jd = itms.map(&:jd).sum / size
+        avg_jd = itms.sum(&:jd) / size
         DateTime.jd(avg_jd)
       else
         itms.sum / size
@@ -331,6 +331,7 @@ module FatTable
         end
       n = count
       return BigDecimal('0.0') if n <= 1
+
       mu = Column.new(header: :mu, items: all_items).avg
       sq_dev = BigDecimal('0.0')
       all_items.each do |itm|
@@ -353,6 +354,7 @@ module FatTable
       only_with('var', 'DateTime', 'Numeric')
       n = items.filter_to_type(type).size.to_d
       return BigDecimal('0.0') if n <= 1
+
       var * ((n - 1) / n)
     end
 
@@ -471,6 +473,7 @@ module FatTable
     def +(other)
       msg = 'cannot combine columns with different types'
       raise UserError, msg unless type == other.type
+
       Column.new(header: header, items: items + other.items)
     end
 

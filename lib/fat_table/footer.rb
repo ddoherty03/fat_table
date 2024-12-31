@@ -13,18 +13,20 @@ module FatTable
     # Initialize a labeled footer, optionally specifying a column for the
     # label and whether the footer is to be a group footer. One or more values
     # for the footer are added later with the #add_value method.
-    def initialize(label = 'Total', table, label_col: nil, group: false)
+    def initialize(table, label: 'Total', label_col: nil, group: false)
       @label = label
 
       unless table.is_a?(Table)
         raise ArgumentError, 'Footer.new needs a table argument'
       end
+
       if label_col.nil?
         @label_col = table.headers.first
       else
         unless table.headers.include?(label_col.as_sym)
           raise ArgumentError, "Footer.new label column '#{label_col}' not a header of table."
         end
+
         @label_col = label_col.as_sym
       end
       @table = table
@@ -77,7 +79,7 @@ module FatTable
     # header.
     def [](key)
       key = key.as_sym
-      if values.keys.include?(key)
+      if values.key?(key)
         if group
           values[key]
         else
@@ -140,8 +142,6 @@ module FatTable
           hsh[h] =
             if values[h]
               values[h].first
-            else
-              nil
             end
         end
       end
@@ -243,9 +243,12 @@ module FatTable
           end
         else
           if k
-            raise ArgumentError, "group footer label proc may only have 0, 1, or 2 arguments for group number k and containing footer f"
+            m = "group footer label proc may only have 0, 1, or 2 arguments for group number k and containing footer f"
+            raise ArgumentError, m
+
           else
-            raise ArgumentError, "a non-group footer label proc may only have 0 or 1 arguments for the containing footer f"
+            raise ArgumentError,
+                  "a non-group footer label proc may only have 0 or 1 arguments for the containing footer f"
           end
         end
       else

@@ -1,68 +1,192 @@
 module FatTable
   RSpec.describe Table do
     describe 'group boundaries' do
-      before :all do
-        @tab_a = Table.from_aoh(
+      let(:tab_a) do
+        Table.from_aoh(
           [
-            { id: 1, name: 'Paul', age: 32, address: 'California',
-              salary: 20000, join_date: '2001-07-13', },
-            { id: 3, name: 'Teddy', age: 23, address: 'Norway',
-              salary: 20000, },
-            { id: 4, name: 'Mark', age: 25, address: 'Rich-Mond',
-              salary: 65000, join_date: '2007-12-13', },
-            { id: 5, name: 'David', age: 27, address: 'Texas',
-              salary: 85000, join_date: '2007-12-13', },
-            { id: 2, name: 'Allen', age: 25, address: 'Texas',
-              salary: nil, join_date: '2007-12-13', },
-            { id: 8, name: 'Paul', age: 24, address: 'Houston',
-              salary: 20000, join_date: '2005-07-13', },
-            { id: 9, name: 'James', age: 44, address: 'Norway',
-              salary: 5000, join_date: '2005-07-13', },
-            { id: 10, name: 'James', age: 45, address: 'Texas',
-              salary: 5000, join_date: '2005-07-13', },
-          ]
+            {
+              id: 1,
+              name: 'Paul',
+              age: 32,
+              address: 'California',
+              salary: 20000,
+              join_date: '2001-07-13',
+            },
+            {
+              id: 3,
+              name: 'Teddy',
+              age: 23,
+              address: 'Norway',
+              salary: 20000,
+            },
+            {
+              id: 4,
+              name: 'Mark',
+              age: 25,
+              address: 'Rich-Mond',
+              salary: 65000,
+              join_date: '2007-12-13',
+            },
+            {
+              id: 5,
+              name: 'David',
+              age: 27,
+              address: 'Texas',
+              salary: 85000,
+              join_date: '2007-12-13',
+            },
+            {
+              id: 2,
+              name: 'Allen',
+              age: 25,
+              address: 'Texas',
+              salary: nil,
+              join_date: '2007-12-13',
+            },
+            {
+              id: 8,
+              name: 'Paul',
+              age: 24,
+              address: 'Houston',
+              salary: 20000,
+              join_date: '2005-07-13',
+            },
+            {
+              id: 9,
+              name: 'James',
+              age: 44,
+              address: 'Norway',
+              salary: 5000,
+              join_date: '2005-07-13',
+            },
+            {
+              id: 10,
+              name: 'James',
+              age: 45,
+              address: 'Texas',
+              salary: 5000,
+              join_date: '2005-07-13',
+            },
+          ],
         )
+      end
+      let(:tab_a1) do
         # Union compatible with tab_a
-        @tab_a1 = Table.from_aoh(
+        Table.from_aoh(
           [
-            { id: 21, name: 'Paula', age: 23, address: 'Kansas',
-              salary: 20000, join_date: '2001-07-13', },
-            { id: 23, name: 'Jenny', age: 32, address: 'Missouri',
-              salary: 20000, },
-            { id: 24, name: 'Forrest', age: 52, address: 'Richmond',
-              salary: 65000, join_date: '2007-12-13', },
-            { id: 25, name: 'Syrano', age: 72, address: 'Nebraska',
-              salary: 85000, join_date: '2007-12-13', },
-            # Next four are the same as row as in @tab_a
-            { id: 2, name: 'Allen', age: 25, address: 'Texas',
-              salary: nil, join_date: '2007-12-13', },
-            { id: 8, name: 'Paul', age: 24, address: 'Houston',
-              salary: 20000, join_date: '2005-07-13', },
-            { id: 9, name: 'James', age: 44, address: 'Norway',
-              salary: 5000, join_date: '2005-07-13', },
-            { id: 10, name: 'James', age: 45, address: 'Texas',
-              salary: 5000, join_date: '2005-07-13', },
-            { id: 22, name: 'Paula', age: 52, address: 'Iowa',
-              salary: nil, join_date: '2007-12-13', },
-            { id: 28, name: 'Paula', age: 42, address: 'Oklahoma',
-              salary: 20000, join_date: '2005-07-13', },
-            { id: 29, name: 'Patrick', age: 44, address: 'Lindsbourg',
-              salary: 5000, join_date: '2005-07-13', },
-            { id: 30, name: 'James', age: 54, address: 'Ottawa',
-              salary: 5000, join_date: '2005-07-13', },
-          ]
+            {
+              id: 21,
+              name: 'Paula',
+              age: 23,
+              address: 'Kansas',
+              salary: 20000,
+              join_date: '2001-07-13',
+            },
+            {
+              id: 23,
+              name: 'Jenny',
+              age: 32,
+              address: 'Missouri',
+              salary: 20000,
+            },
+            {
+              id: 24,
+              name: 'Forrest',
+              age: 52,
+              address: 'Richmond',
+              salary: 65000,
+              join_date: '2007-12-13',
+            },
+            {
+              id: 25,
+              name: 'Syrano',
+              age: 72,
+              address: 'Nebraska',
+              salary: 85000,
+              join_date: '2007-12-13',
+            },
+            # Next four are the same as row as in tab_a
+            {
+              id: 2,
+              name: 'Allen',
+              age: 25,
+              address: 'Texas',
+              salary: nil,
+              join_date: '2007-12-13',
+            },
+            {
+              id: 8,
+              name: 'Paul',
+              age: 24,
+              address: 'Houston',
+              salary: 20000,
+              join_date: '2005-07-13',
+            },
+            {
+              id: 9,
+              name: 'James',
+              age: 44,
+              address: 'Norway',
+              salary: 5000,
+              join_date: '2005-07-13',
+            },
+            {
+              id: 10,
+              name: 'James',
+              age: 45,
+              address: 'Texas',
+              salary: 5000,
+              join_date: '2005-07-13',
+            },
+            {
+              id: 22,
+              name: 'Paula',
+              age: 52,
+              address: 'Iowa',
+              salary: nil,
+              join_date: '2007-12-13',
+            },
+            {
+              id: 28,
+              name: 'Paula',
+              age: 42,
+              address: 'Oklahoma',
+              salary: 20000,
+              join_date: '2005-07-13',
+            },
+            {
+              id: 29,
+              name: 'Patrick',
+              age: 44,
+              address: 'Lindsbourg',
+              salary: 5000,
+              join_date: '2005-07-13',
+            },
+            {
+              id: 30,
+              name: 'James',
+              age: 54,
+              address: 'Ottawa',
+              salary: 5000,
+              join_date: '2005-07-13',
+            },
+          ],
         )
-        @tab_b = Table.from_aoh(
+      end
+      let(:tab_b) do
+        Table.from_aoh(
           [
             { id: 1, dept: 'IT Billing', emp_id: 1 },
             { id: 2, dept: 'Engineering', emp_id: 2 },
             { id: 3, dept: 'Finance', emp_id: 7 },
-          ]
+          ],
         )
-        @aoa = [
+      end
+      let(:aoa) do
+        [
           %w[Ref Date Code Raw Shares Price Info Bool],
           nil,
-          [1,  '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850,  'ZMPEF1', 'T'],
+          [1, '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850, 'ZMPEF1', 'T'],
           nil,
           [2,  '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500, 'ZMPEF1', 'T'],
           [7,  '2013-05-20', 'S', 12_000.00,  5046.00,   28.2804, 'ZMEAC',  'F'],
@@ -76,39 +200,69 @@ module FatTable
           [14, '2013-05-29', 'S', 15_700.00,  6601.85,   24.7790, 'ZMEAC',  'F'],
           [15, '2013-05-29', 'S', 15_900.00,  6685.95,   24.5802, 'ZMEAC',  'T'],
           nil,
-          [16, '2013-05-30', 'S', 6_679.00,   2808.52,   25.0471, 'ZMEAC',  'T'],
+          [16, '2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'ZMEAC', 'T'],
         ]
-        @aoh = [
+      end
+      let(:aoh) do
+        [
           {
-            id: 1, name: 'Paul', age: 32, address: 'California', salary: 20000,
+            id: 1,
+            name: 'Paul',
+            age: 32,
+            address: 'California',
+            salary: 20000,
             join_date: '2001-07-13',
           },
           nil,
           { id: 3, name: 'Teddy', age: 23, address: 'Norway', salary: 20000 },
           {
-            id: 4, name: 'Mark', age: 25, address: 'Rich-Mond', salary: 65000,
+            id: 4,
+            name: 'Mark',
+            age: 25,
+            address: 'Rich-Mond',
+            salary: 65000,
             join_date: '2007-12-13',
           },
           {
-            id: 5, name: 'David', age: 27, address: 'Texas', salary: 85000,
+            id: 5,
+            name: 'David',
+            age: 27,
+            address: 'Texas',
+            salary: 85000,
             join_date: '2007-12-13',
           },
           nil,
           {
-            id: 2, name: 'Allen', age: 25, address: 'Texas', salary: nil,
+            id: 2,
+            name: 'Allen',
+            age: 25,
+            address: 'Texas',
+            salary: nil,
             join_date: '2007-12-13',
           },
           {
-            id: 8, name: 'Paul', age: 24, address: 'Houston', salary: 20000,
+            id: 8,
+            name: 'Paul',
+            age: 24,
+            address: 'Houston',
+            salary: 20000,
             join_date: '2005-07-13',
           },
           {
-            id: 9, name: 'James', age: 44, address: 'Norway', salary: 5000,
+            id: 9,
+            name: 'James',
+            age: 44,
+            address: 'Norway',
+            salary: 5000,
             join_date: '2005-07-13',
           },
           nil,
           {
-            id: 10, name: 'James', age: 45, address: 'Texas', salary: 5000,
+            id: 10,
+            name: 'James',
+            age: 45,
+            address: 'Texas',
+            salary: 5000,
             join_date: '2005-07-13',
           },
         ]
@@ -119,11 +273,11 @@ module FatTable
       end
 
       it 'default group boundaries of whole table' do
-        expect(@tab_a.groups.size).to eq(1)
+        expect(tab_a.groups.size).to eq(1)
       end
 
       it 'add group boundaries on reading from aoa' do
-        tab = Table.from_aoa(@aoa, hlines: true)
+        tab = Table.from_aoa(aoa, hlines: true)
         expect(tab.groups.size).to eq(4)
         expect(tab.groups[0].size).to eq(1)
         expect(tab.groups[1].size).to eq(3)
@@ -133,7 +287,7 @@ module FatTable
 
       it 'add group boundaries explicity' do
         # As in prior example
-        tab = Table.from_aoa(@aoa, hlines: true)
+        tab = Table.from_aoa(aoa, hlines: true)
         expect(tab.groups.size).to eq(4)
         expect(tab.groups[0].size).to eq(1)
         expect(tab.groups[1].size).to eq(3)
@@ -150,7 +304,7 @@ module FatTable
       end
 
       it 'add group boundaries on reading from aoh' do
-        tab = Table.from_aoh(@aoh, hlines: true)
+        tab = Table.from_aoh(aoh, hlines: true)
         expect(tab.groups.size).to eq(4)
         expect(tab.groups[0].size).to eq(1)
         expect(tab.groups[1].size).to eq(3)
@@ -159,7 +313,7 @@ module FatTable
       end
 
       it 'add group boundaries on order_by' do
-        tab = @tab_a.order_by(:name)
+        tab = tab_a.order_by(:name)
         # Now the table is ordered by name, and the names are: Allen, David,
         # James, James, Mark, Paul, Paul, Teddy. So there are groups of size 1,
         # 1, 2, 1, 2, and 1.  Six groups in all.
@@ -179,7 +333,7 @@ module FatTable
       end
 
       it 'adds group boundaries on union_all' do
-        tab = @tab_a.union_all(@tab_a1)
+        tab = tab_a.union_all(tab_a1)
         expect(tab.size).to eq(20)
         expect(tab.groups.size).to eq(2)
         expect(tab.groups[0].size).to eq(8)
@@ -187,8 +341,8 @@ module FatTable
       end
 
       it 'inherit group boundaries on union_all' do
-        tab1 = @tab_a.order_by(:name)
-        tab2 = @tab_a1.order_by(:name)
+        tab1 = tab_a.order_by(:name)
+        tab2 = tab_a1.order_by(:name)
         tab = tab1.union_all(tab2)
         expect(tab.size).to eq(20)
         expect(tab.groups.size).to eq(tab1.groups.size + tab2.groups.size)
@@ -199,7 +353,7 @@ module FatTable
       end
 
       it 'inherit group boundaries on select' do
-        tab = @tab_a.order_by(:name).select(:name, :age, :join_date)
+        tab = tab_a.order_by(:name).select(:name, :age, :join_date)
         # Now the table is ordered by name, and the names are: Allen, David,
         # James, James, Mark, Paul, Paul, Teddy. So there are groups of size 1,
         # 1, 2, 1, 2, and 1.  Six groups in all.

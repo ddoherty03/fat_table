@@ -38,6 +38,7 @@ module FatTable
           if new_val.nil?
             raise IncompatibleTypeError
           end
+
           new_val
         end
       when 'DateTime'
@@ -48,6 +49,7 @@ module FatTable
           if new_val.nil?
             raise IncompatibleTypeError
           end
+
           new_val
         end
       when 'Numeric'
@@ -58,6 +60,7 @@ module FatTable
           if new_val.nil?
             raise IncompatibleTypeError
           end
+
           new_val
         end
       when 'String'
@@ -68,6 +71,7 @@ module FatTable
           if new_val.nil?
             raise IncompatibleTypeError
           end
+
           new_val
         end
       else
@@ -80,8 +84,10 @@ module FatTable
     # of case is assumed to be a boolean.
     def self.convert_to_boolean(val)
       return val if val.is_a?(TrueClass) || val.is_a?(FalseClass)
+
       val = val.to_s.clean
-      return nil if val.blank?
+      return if val.blank?
+
       if val.match?(/\A(false|f|n|no)\z/i)
         false
       elsif val.match?(/\A(true|t|y|yes)\z/i)
@@ -94,7 +100,7 @@ module FatTable
                 (?<dy>\d\d?)\s*
                 (T?\s*\d\d:\d\d(:\d\d)?\s*
                 ([-+](\d\d?)(:\d\d?))?)?\s*
-                ((mon|tue|wed|thu|fri|sat|sun)[a-zA-z]*)?\s*
+                ((mon|tue|wed|thu|fri|sat|sun)[a-zA-Z]*)?\s*
                 \z}xi
 
     AMR_DATE_RE = %r{\A(?<dy>\d\d?)[-/](?<mo>\d\d?)[-/](?<yr>\d\d\d\d)\s*
@@ -103,7 +109,7 @@ module FatTable
     # A Date like 'Tue, 01 Nov 2016' or 'Tue 01 Nov 2016' or '01 Nov 2016'.
     # These are emitted by Postgresql, so it makes from_sql constructor
     # possible without special formatting of the dates.
-    INV_DATE_RE = %r{\A((mon|tue|wed|thu|fri|sat|sun)[a-zA-z]*,?)?\s+  # looks like dow
+    INV_DATE_RE = %r{\A((mon|tue|wed|thu|fri|sat|sun)[a-zA-Za-z]*,?)?\s+  # looks like dow
     (?<dy>\d\d?)\s+  # one or two-digit day
     (?<mo_name>[jfmasondJFMASOND][A-Za-z]{2,})\s+  # looks like a month name
     (?<yr>\d\d\d\d) # and a 4-digit year
@@ -122,20 +128,25 @@ module FatTable
 
       begin
         str = val.to_s.clean.sub(/\A[\[\(\{\<]\s*/, '').sub(/[\]\)\}\>]\s*\z/, '')
-        return nil if str.blank?
+        return if str.blank?
 
         if str.match(ISO_DATE_RE)
           date = DateTime.parse(val)
         elsif str =~ AMR_DATE_RE
-          date = DateTime.new(Regexp.last_match[:yr].to_i,
-                              Regexp.last_match[:mo].to_i,
-                              Regexp.last_match[:dy].to_i)
+          date = DateTime.new(
+            Regexp.last_match[:yr].to_i,
+            Regexp.last_match[:mo].to_i,
+            Regexp.last_match[:dy].to_i,
+          )
         elsif str =~ INV_DATE_RE
           mo = Date.mo_name_to_num(last_match[:mo_name])
-          date = DateTime.new(Regexp.last_match[:yr].to_i, mo,
-                              Regexp.last_match[:dy].to_i)
+          date = DateTime.new(
+            Regexp.last_match[:yr].to_i,
+            mo,
+            Regexp.last_match[:dy].to_i,
+          )
         else
-          return nil
+          return
         end
         # val = val.to_date if
         date.seconds_since_midnight.zero? ? date.to_date : date
@@ -155,7 +166,7 @@ module FatTable
       cursym = Regexp.quote(FatTable.currency_symbol)
       clean_re = /[,_#{cursym}]/
       val = val.to_s.clean.gsub(clean_re, '')
-      return nil if val.blank?
+      return if val.blank?
 
       case val
       when /\A[-+]?\d+\.\z/

@@ -18,11 +18,11 @@ class Array
       compact.select { |i| i.is_a?(TrueClass) || i.is_a?(FalseClass) }
     elsif typ == 'DateTime'
       compact.select { |i| i.is_a?(Date) || i.is_a?(DateTime) || i.is_a?(Time) }
-        .map { |i| i.to_datetime }
+        .map(&:to_datetime)
     elsif typ == 'Numeric'
       compact.select { |i| i.is_a?(Numeric) }
     elsif typ == 'String'
-      map { |i| i.to_s }
+      map(&:to_s)
     elsif typ == 'NilClass'
       self
     else

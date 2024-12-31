@@ -2,9 +2,11 @@ module FatTable
   RSpec.describe Evaluator, :aggregate_failures do
     describe 'instance variables' do
       let(:ev) do
-        described_class.new(ivars: { group: 0, row: 1, junk: Date.parse('2017-09-22') },
-                            before: '@group += 1; @row += 2',
-                            after:  '@group *= 2; @row *= 3')
+        described_class.new(
+          ivars: { group: 0, row: 1, junk: Date.parse('2017-09-22') },
+          before: '@group += 1; @row += 2',
+          after:  '@group *= 2; @row *= 3',
+        )
       end
 
       it 'gets instance variables' do
@@ -27,8 +29,10 @@ module FatTable
 
     describe 'before hook' do
       let(:ev) do
-        described_class.new(ivars: { group: 0, row: 1, junk: Date.parse('2017-09-22') },
-                            before: '@group += 1; @row += 2')
+        described_class.new(
+          ivars: { group: 0, row: 1, junk: Date.parse('2017-09-22') },
+          before: '@group += 1; @row += 2',
+        )
       end
 
       let(:locs) { { a: 1, b: 3, c: 5 } }
@@ -47,8 +51,10 @@ module FatTable
 
     describe 'after hook' do
       let(:ev) do
-        described_class.new(ivars: { group: 1, row: 1, junk: Date.parse('2017-09-22') },
-                            after:  '@group *= 2; @row *= 3; @junk = @junk + 1.year')
+        described_class.new(
+          ivars: { group: 1, row: 1, junk: Date.parse('2017-09-22') },
+          after:  '@group *= 2; @row *= 3; @junk = @junk + 1.year',
+        )
       end
 
       let(:locs) { { a: 1, b: 3, c: 5 } }

@@ -40,7 +40,7 @@ module FatTable
     # eval'ed, we need to escape any single-quotes (') that appear in the
     # string.
     def quote_cell(val)
-      if val.match?(/'/)
+      if val.include?("'")
         # Use a negative look-behind to only quote single-quotes that are not
         # already preceded by a backslash
         val.gsub(/(?<!\\)'/, "'" => "\\'")

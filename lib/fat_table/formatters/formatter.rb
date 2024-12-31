@@ -172,7 +172,7 @@ module FatTable
     # price.
     #   fmtr.footer.('Summary', :shares, date: :avg, price: :avg)
     def footer(label, label_col = nil, *sum_cols, **agg_cols)
-      foot = Footer.new(label, table, label_col: label_col)
+      foot = Footer.new(table, label: label, label_col: label_col)
       sum_cols.each do |h|
         foot.add_value(h, :sum)
       end
@@ -252,7 +252,7 @@ module FatTable
     # to the lamda's column.
     #
     def foot(label: 'Total', label_col: nil, **agg_cols)
-      foot = Footer.new(label, table, label_col: label_col)
+      foot = Footer.new(table, label: label, label_col: label_col)
       agg_cols.each_pair do |h, agg|
         foot.add_value(h, agg)
       end
@@ -280,7 +280,7 @@ module FatTable
     # Do some sums and some other aggregates: sum shares, average date and
     # price. fmtr.gfooter.('Summary', :shares, date: :avg, price: :avg)
     def gfooter(label, label_col = nil, *sum_cols, **agg_cols)
-      foot = Footer.new(label, table, label_col: label_col, group: true)
+      foot = Footer.new(table, label: label, label_col: label_col, group: true)
       sum_cols.each do |h|
         foot.add_value(h, :sum)
       end
@@ -377,7 +377,7 @@ module FatTable
     # values (using f[:other_col]) as well as the Column object corresponding
     # to the lamda's column.
     def gfoot(label: 'Group Total', label_col: nil, **agg_cols)
-      foot = Footer.new(label, table, label_col: label_col, group: true)
+      foot = Footer.new(table, label: label, label_col: label_col, group: true)
       agg_cols.each_pair do |h, agg|
         foot.add_value(h, agg)
       end
@@ -683,8 +683,11 @@ module FatTable
         parse_typ_method_name = 'parse_' + typ.to_s + '_fmt'
         if fmts[h]
           # Merge in column formatting
-          col_fmt = send(parse_typ_method_name, fmts[h],
-                         strict: location != :header).first
+          col_fmt = send(
+            parse_typ_method_name,
+            fmts[h],
+            strict: location != :header,
+          ).first
           format_h = format_h.merge(col_fmt)
         elsif fmts.key?(typ)
           # Merge in type-based formatting
@@ -698,17 +701,17 @@ module FatTable
         if location == :body
           format_h.each_pair do |k, v|
             if format_at[:bfirst][h].send(k) == self.class.default_format[k]
-              format_at[:bfirst][h].send("#{k}=", v)
+              format_at[:bfirst][h].send(:"#{k}=", v)
             end
             if format_at[:gfirst][h].send(k) == self.class.default_format[k]
-              format_at[:gfirst][h].send("#{k}=", v)
+              format_at[:gfirst][h].send(:"#{k}=", v)
             end
           end
         elsif location == :gfirst
           # Copy :gfirst formatting to :bfirst if it is still the default
           format_h.each_pair do |k, v|
             if format_at[:bfirst][h].send(k) == self.class.default_format[k]
-              format_at[:bfirst][h].send("#{k}=", v)
+              format_at[:bfirst][h].send(:"#{k}=", v)
             end
           end
         end
@@ -729,7 +732,7 @@ module FatTable
     private
 
     # Re to match a color name
-    CLR_RE = /(?:[-_a-zA-Z0-9 ]*)/.freeze
+    CLR_RE = /(?:[-_a-zA-Z0-9 ]*)/
 
     # Return a hash that reflects the formatting instructions given in the
     # string fmt. Raise an error if it contains invalid formatting instructions.
@@ -753,27 +756,28 @@ module FatTable
       # parse, we remove the matched construct from fmt.  At the end, any
       # remaining characters in fmt should be invalid.
       fmt_hash = {}
-      if fmt =~ /c\[(?<co>#{CLR_RE})(\.(?<bg>#{CLR_RE}))?\]/
+      if fmt =~ /c\[(?<co>#{CLR_RE})(\.(?<bg>#{CLR_RE}))?\]/o
         fmt_hash[:color] = Regexp.last_match[:co] unless Regexp.last_match[:co].blank?
         fmt_hash[:bgcolor] = Regexp.last_match[:bg] unless Regexp.last_match[:bg].blank?
         validate_color(fmt_hash[:color])
         validate_color(fmt_hash[:bgcolor])
         fmt = fmt.sub($&, '')
       end
+      # binding.break
       # Nil formatting can apply to strings as well
       nil_hash, fmt = parse_nilclass_fmt(fmt)
       fmt_hash = fmt_hash.merge(nil_hash)
-      if fmt =~ /u/
+      if fmt.include?('u')
         fmt_hash[:case] = :lower
-        fmt = fmt.sub($&, '')
+        fmt = fmt.delete('u')
       end
-      if fmt =~ /U/
+      if fmt.include?('U')
         fmt_hash[:case] = :upper
-        fmt = fmt.sub($&, '')
+        fmt = fmt.delete('U')
       end
-      if fmt =~ /t/
+      if fmt.include?('t')
         fmt_hash[:case] = :title
-        fmt = fmt.sub($&, '')
+        fmt = fmt.delete('t')
       end
       if fmt =~ /(?<neg>~\s*)?B/
         fmt_hash[:bold] = !Regexp.last_match[:neg]
@@ -783,17 +787,17 @@ module FatTable
         fmt_hash[:italic] = !Regexp.last_match[:neg]
         fmt = fmt.sub($&, '')
       end
-      if fmt =~ /R/
+      if fmt.include?('R')
         fmt_hash[:alignment] = :right
-        fmt = fmt.sub($&, '')
+        fmt = fmt.delete('R')
       end
-      if fmt =~ /C/
+      if fmt.include?('C')
         fmt_hash[:alignment] = :center
-        fmt = fmt.sub($&, '')
+        fmt = fmt.delete('C')
       end
-      if fmt =~ /L/
+      if fmt.include?('L')
         fmt_hash[:alignment] = :left
-        fmt = fmt.sub($&, '')
+        fmt = fmt.delete('L')
       end
       if fmt =~ /(?<neg>~\s*)?_/
         fmt_hash[:underline] = !Regexp.last_match[:neg]
@@ -895,8 +899,8 @@ module FatTable
       end
       # Since true_text, false_text and nil_text may want to have internal
       # spaces, defer removing extraneous spaces until after they are parsed.
-      if fmt =~ /c\[(#{CLR_RE})(\.(#{CLR_RE}))?,
-                 \s*(#{CLR_RE})(\.(#{CLR_RE}))?\]/x
+      if fmt =~ %r{c\[(#{CLR_RE})(\.(#{CLR_RE}))?,
+                 \s*(#{CLR_RE})(\.(#{CLR_RE}))?\]}xo
         tco, _, tbg, fco, _, fbg = Regexp.last_match.captures
         fmt_hash[:true_color] = tco unless tco.blank?
         fmt_hash[:true_bgcolor] = tbg unless tbg.blank?
@@ -906,20 +910,20 @@ module FatTable
       end
       str_fmt_hash, fmt = parse_string_fmt(fmt)
       fmt_hash = fmt_hash.merge(str_fmt_hash)
-      if fmt =~ /Y/
+      if fmt.include?('Y')
         fmt_hash[:true_text] = 'Y'
         fmt_hash[:false_text] = 'N'
-        fmt = fmt.sub(Regexp.last_match[0], '')
+        fmt = fmt.delete('Y')
       end
-      if fmt =~ /T/
+      if fmt.include?('T')
         fmt_hash[:true_text] = 'T'
         fmt_hash[:false_text] = 'F'
-        fmt = fmt.sub(Regexp.last_match[0], '')
+        fmt = fmt.delete('T')
       end
-      if fmt =~ /X/
+      if fmt.include?('X')
         fmt_hash[:true_text] = 'X'
         fmt_hash[:false_text] = ''
-        fmt = fmt.sub(Regexp.last_match[0], '')
+        fmt = fmt.delete('X')
       end
       unless fmt.blank? || !strict
         raise UserError, "unrecognized boolean formatting instructions '#{fmt}'"
@@ -1032,11 +1036,11 @@ module FatTable
       else
         result = val.round(istruct.post_digits).to_s
         match = result.match(/\.(\d+)\z/)
-        if match && match[1]&.size < istruct.post_digits
+        if match && (match[1]&.size&.< istruct.post_digits)
           # Add trailing zeros to pad out post_digits
           n_zeros = [istruct.post_digits - match[1].size, 0].max
           zeros = '0' * n_zeros
-          result = result + zeros
+          result += zeros
         end
         result
       end
@@ -1045,7 +1049,7 @@ module FatTable
         match = result.match(/\A([\d,]+)(\.\d+)?\z/)
         whole_part = match[1]
         frac_part = match[2]
-        n_zeros = [istruct.pre_digits - whole_part.gsub(',', '').size, 0].max
+        n_zeros = [istruct.pre_digits - whole_part.delete(',').size, 0].max
         result =
           if n_zeros.positive?
             if istruct.commas
@@ -1091,7 +1095,7 @@ module FatTable
         when :upper
           val.upcase
         when :title
-          # Note: fat_core entitle keeps all uppercase words as upper case,
+          # NOTE: fat_core entitle keeps all uppercase words as upper case,
           val.downcase.entitle
         when :none
           val
@@ -1229,7 +1233,10 @@ module FatTable
 
       # If this Formatter targets a ruby data structure (e.g., AoaFormatter), we
       # eval the string to get the object.
+      #
+      # rubocop:disable Security/Eval
       evaluate? ? eval(result) : result
+      # rubocop:enable Security/Eval
     end
 
     private
@@ -1277,7 +1284,7 @@ module FatTable
             end
 
           out_row = {}
-          row.each_pair do |h, v|
+          row.each_pair do |h, _v|
             istruct = format_at[location][h]
             out_row[h] = [row[h], format_cell(row[h], istruct, decorate: decorate)]
           end
@@ -1285,7 +1292,7 @@ module FatTable
           tbl_row_k += 1
         end
         # Format group footers
-        gfooters.each_pair do |label, gfooter|
+        gfooters.each_pair do |_label, gfooter|
           out_rows << nil
           gfoot_row = Hash.new([nil, ''])
           gfooter.to_h(grp_k).each_pair do |h, v|
@@ -1304,7 +1311,7 @@ module FatTable
       decorate = !aligned?
       out_rows = []
 
-      footers.each_pair do |label, foot|
+      footers.each_pair do |_label, foot|
         out_rows << nil
         foot_row = Hash.new([nil, ''])
         foot.to_h.each_pair do |h, v|

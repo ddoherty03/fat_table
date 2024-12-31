@@ -1,7 +1,7 @@
 module FatTable
   RSpec.describe Table do
     describe 'group_by' do
-      before :all do
+      let(:tab) do
         aoa = [
           %w[Ref Date Code Raw Shares Price Info Bool],
           [1,  '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850,  'ZMPEF1', 'T'],
@@ -17,14 +17,26 @@ module FatTable
           [15, '2013-05-29', 'S', 15_900.00,  6685.95,   24.5802, 'ZMEAC',  'T'],
           [16, '2013-05-30', 'S', 6_679.00,   2808.52,   25.0471, 'ZMEAC',  'T'],
         ]
-        @tab = Table.from_aoa(aoa)
+        Table.from_aoa(aoa)
       end
 
-      it 'should be able to group by equal columns' do
-        tab2 = @tab.group_by(:date, :code, shares: :sum, price: :avg, ref: :range,
-                             bool: :all?)
-        expect(tab2.headers).to eq([:date, :code, :sum_shares, :avg_price,
-                                    :range_ref, :all_bool,])
+      it 'is able to group by equal columns' do
+        tab2 = tab.group_by(
+          :date,
+          :code,
+          shares: :sum,
+          price: :avg,
+          ref: :range,
+                                       bool: :all?,
+        )
+        expect(tab2.headers).to eq([
+          :date,
+          :code,
+          :sum_shares,
+          :avg_price,
+          :range_ref,
+          :all_bool,
+        ])
         expect(tab2[0][:sum_shares]).to eq(913732.6)
         expect(tab2[1][:sum_shares]).to eq(54791.99)
         expect(tab2[0][:avg_price]).to eq(6.5175)

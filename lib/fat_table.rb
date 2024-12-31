@@ -162,6 +162,7 @@ module FatTable
   def self.to_any(fmt, table, options = {})
     fmt = fmt.as_sym
     raise UserError, "unknown format '#{fmt}'" unless FORMATS.include?(fmt)
+
     method = "to_#{fmt}"
     if block_given?
       send(method, table, options, &Proc.new)

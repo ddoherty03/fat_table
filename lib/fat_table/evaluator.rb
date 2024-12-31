@@ -50,11 +50,14 @@ module FatTable
     # errors simply return nil as the result.  This can happen, for example,
     # when a string gets into an otherwise numeric column because the column
     # is set to tolerant.
+    #
+    # rubocop:disable  Security/Eval
     def evaluate(expr = '', locals: {})
       eval(expr, local_vars(binding, locals))
-    rescue NoMethodError, TypeError => ex
+    rescue NoMethodError, TypeError
       nil
     end
+    # rubocop:enable  Security/Eval
 
     private
 
