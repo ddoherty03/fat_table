@@ -1,5 +1,6 @@
 module FatTable
   RSpec.describe Table do
+    # rubocop:disable RSpec/IndexedLet
     let(:tab1) do
       aoh = [
         { a: '5', 'Two words' => '20', c: '3,123', d: 'apple' },
@@ -40,6 +41,7 @@ module FatTable
         { t: '13', 'Two worlds' => '11', s: '[2015-05-21]', u: 'grape' },
       ]
       Table.from_aoh(aoh4)
+      # rubocop:enable RSpec/IndexedLet
     end
 
     describe 'union' do

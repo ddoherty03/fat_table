@@ -135,7 +135,7 @@ module FatTable
     # might have been set by a subclass instance.
     def empty_dup(result_cols = nil)
       result_cols ||= heads
-      result_types = types.select { |k, _v| result_cols.include?(k) }
+      result_types = types.slice(*result_cols)
       result = self.class.new(result_cols, **result_types)
       tolerant_cols.each do |h|
         result.tolerant_cols << h
@@ -1521,7 +1521,7 @@ module FatTable
       groups = sorted_tab.rows.group_by do |r|
         group_cols.map { |k| r[k] }
       end
-      grp_types = types.select { |k, _v| group_cols.include?(k) }
+      grp_types = types.slice(*group_cols)
       result = Table.new(*group_cols, **grp_types)
       groups.each_pair do |_vals, grp_rows|
         result << row_from_group(grp_rows, group_cols, agg_cols)

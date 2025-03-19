@@ -49,6 +49,24 @@ module FatTable
       result
     end
 
+    # :stopdoc:
+    # Unicode line-drawing characters. We use double lines before and after the
+    # table and single lines for the sides and hlines between groups and
+    # footers.
+    UPPER_LEFT = "\u2552"
+    UPPER_RIGHT = "\u2555"
+    DOUBLE_RULE = "\u2550"
+    UPPER_TEE = "\u2564"
+    VERTICAL_RULE = "\u2502"
+    LEFT_TEE = "\u251C"
+    HORIZONTAL_RULE = "\u2500"
+    SINGLE_CROSS = "\u253C"
+    RIGHT_TEE = "\u2524"
+    LOWER_LEFT = "\u2558"
+    LOWER_RIGHT = "\u255B"
+    LOWER_TEE = "\u2567"
+    # :startdoc:
+
     private
 
     def color_valid?(clr)
@@ -98,24 +116,6 @@ module FatTable
     def frame_colorize(str)
       colorize(str, @options[:frame_fg], @options[:frame_bg])
     end
-
-    # :stopdoc:
-    # Unicode line-drawing characters. We use double lines before and after the
-    # table and single lines for the sides and hlines between groups and
-    # footers.
-    UPPER_LEFT = "\u2552"
-    UPPER_RIGHT = "\u2555"
-    DOUBLE_RULE = "\u2550"
-    UPPER_TEE = "\u2564"
-    VERTICAL_RULE = "\u2502"
-    LEFT_TEE = "\u251C"
-    HORIZONTAL_RULE = "\u2500"
-    SINGLE_CROSS = "\u253C"
-    RIGHT_TEE = "\u2524"
-    LOWER_LEFT = "\u2558"
-    LOWER_RIGHT = "\u255B"
-    LOWER_TEE = "\u2567"
-    # :startdoc:
 
     def upper_left
       if options[:unicode]

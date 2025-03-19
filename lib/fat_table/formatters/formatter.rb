@@ -729,10 +729,10 @@ module FatTable
     # Parsing and validation routines
     ############################################################################
 
-    private
-
     # Re to match a color name
     CLR_RE = /(?:[-_a-zA-Z0-9 ]*)/
+
+    private
 
     # Return a hash that reflects the formatting instructions given in the
     # string fmt. Raise an error if it contains invalid formatting instructions.
@@ -1251,7 +1251,7 @@ module FatTable
       map = {}
       table.headers.each do |h|
         istruct = format_at[:header][h]
-        map[h] = [h, format_cell(h.as_string, istruct, decorate: decorate)]
+        map[h] = [h, format_cell(h.entitle, istruct, decorate: decorate)]
       end
       map
     end
@@ -1294,7 +1294,7 @@ module FatTable
         # Format group footers
         gfooters.each_pair do |_label, gfooter|
           out_rows << nil
-          gfoot_row = Hash.new([nil, ''])
+          gfoot_row = Hash.new([nil, ''].freeze)
           gfooter.to_h(grp_k).each_pair do |h, v|
             istruct = format_at[:gfooter][h]
             gfoot_row[h] = [v, format_cell(v, istruct, decorate: decorate)]
@@ -1313,7 +1313,7 @@ module FatTable
 
       footers.each_pair do |_label, foot|
         out_rows << nil
-        foot_row = Hash.new([nil, ''])
+        foot_row = Hash.new([nil, ''].freeze)
         foot.to_h.each_pair do |h, v|
           istruct = format_at[:gfooter][h]
           foot_row[h] = [v, format_cell(v, istruct, decorate: decorate)]
