@@ -31,6 +31,16 @@ RSpec.describe FatTable do
       .to eq(FatTable::Table)
   end
 
+  it 'errors on bad file in from_org_file' do
+    fname = "#{__dir__}/example_files/dontexist.org"
+    expect { FatTable.from_org_file(fname) }.to raise_error /no such file/i
+  end
+
+  it 'errors on empty file in from_org_file' do
+    fname = "#{__dir__}/example_files/empty.org"
+    expect { FatTable.from_org_file(fname) }.to raise_error FatTable::NoTable
+  end
+
   it 'constructs from_org_string' do
     str = <<-TABLE.strip_heredoc
       #+CAPTION: Goldberg

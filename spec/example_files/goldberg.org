@@ -1,4 +1,6 @@
 
+
+
 #+CAPTION: Goldberg
 #+ATTR_LATEX: :font \footnotesize
 #+NAME: goldberg
