@@ -1150,7 +1150,7 @@ module FatTable
     # exception will be thrown. Duplicates are eliminated from the result. Any
     # groups present in either Table are eliminated in the output Table.
     def intersect(other)
-      set_operation(other, :intersect, distinct: true)
+      set_operation(other, :&, distinct: true)
     end
 
     # :category: Operators
@@ -1163,7 +1163,7 @@ module FatTable
     # will be thrown. Duplicates are not eliminated from the result. Resets
     # groups.
     def intersect_all(other)
-      set_operation(other, :intersect, distinct: false)
+      set_operation(other, :&, distinct: false)
     end
 
     # :category: Operators
@@ -1176,7 +1176,7 @@ module FatTable
     # are eliminated from the result. Any groups present in either Table are
     # eliminated in the output Table.
     def except(other)
-      set_operation(other, :difference, distinct: true)
+      set_operation(other, :-, distinct: true)
     end
 
     # :category: Operators
@@ -1189,7 +1189,7 @@ module FatTable
     # are /not/ eliminated from the result. Any groups present in either Table
     # are eliminated in the output Table.
     def except_all(other)
-      set_operation(other, :difference, distinct: false)
+      set_operation(other, :-, distinct: false)
     end
 
     # An Array of symbols for the valid join types.
