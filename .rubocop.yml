@@ -11,6 +11,7 @@ AllCops:
     - 'spec/tmp/**/*'
     - 'spec/example_files/**/*'
     - 'vendor/bundle/**/*'
+    - 'lib/fat_table/formatters/xcolors.txt'
 
 Style/MethodCallWithArgsParentheses:
   Exclude:
