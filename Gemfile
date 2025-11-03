@@ -14,8 +14,6 @@ gem 'redcarpet'
 gem 'pg'
 gem 'sqlite3'
 gem 'rspec', '~> 3.0'
-gem 'rubocop'
-gem 'rubocop-rspec'
-gem 'rubocop-rake'
-gem 'rubocop-performance'
+gem 'rubocop', require: false
+gem 'rubocop-ddoherty', git: 'https://github.com/ddoherty03/rubocop-ddoherty.git', branch: 'master', require: false
 gem 'simplecov'
