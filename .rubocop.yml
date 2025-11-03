@@ -8,6 +8,8 @@ AllCops:
     - 'spec/**/*'
   Exclude:
     - 'test/tmp/**/*'
+    - 'spec/tmp/**/*'
+    - 'spec/example_files/**/*'
     - 'vendor/bundle/**/*'
 
 Style/MethodCallWithArgsParentheses:
@@ -23,4 +25,7 @@ Naming/VariableName:
   Enabled: false
 
 RSpec/VariableName:
+  Enabled: false
+
+RSpec/IndexedLet:
   Enabled: false
