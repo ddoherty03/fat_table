@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FatTable
   RSpec.describe 'Formatter::TextFormatter' do
     describe 'intolerant table output' do

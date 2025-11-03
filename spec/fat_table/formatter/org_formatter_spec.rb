@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FatTable
   RSpec.describe 'Formatter::OrgFormatter' do
     describe 'table output' do

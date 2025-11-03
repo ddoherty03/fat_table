@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FatTable
   RSpec.describe 'Footer' do
     context 'with non-group footers' do
@@ -61,7 +63,7 @@ module FatTable
           expect(f[:a]).to eq(7)
           expect(f[:b]).to be(false)
           expect(f['Somenum']).to eq(11)
-          expect(f['c']).to eq((1888..6412))
+          expect(f['c']).to eq(1888..6412)
           expect(f[:d]).to eq(Date.parse('1957-09-22'))
         end
       end

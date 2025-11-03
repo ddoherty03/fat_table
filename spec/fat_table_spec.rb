@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe FatTable do
   it 'has a version number' do
     expect(FatTable::VERSION).not_to be_nil
@@ -33,7 +35,7 @@ RSpec.describe FatTable do
 
   it 'errors on bad file in from_org_file' do
     fname = "#{__dir__}/example_files/dontexist.org"
-    expect { FatTable.from_org_file(fname) }.to raise_error /no such file/i
+    expect { FatTable.from_org_file(fname) }.to raise_error(/no such file/i)
   end
 
   it 'errors on empty file in from_org_file' do

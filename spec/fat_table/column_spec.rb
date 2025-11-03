@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FatTable
   RSpec.describe 'Column' do
     describe 'initialization of boolean' do
@@ -586,7 +588,7 @@ module FatTable
       end
 
       it 'applies the `range` aggregate' do
-        expect(nums.range).to eq((Rational(2, 3)..64646464646))
+        expect(nums.range).to eq(Rational(2, 3)..64646464646)
         expect { bools.range }.to raise_error(/cannot/)
         expect(dates.range).to eq(Date.parse('1957-09-22')..Date.parse('2017-01-22'))
         expect(strs.range).to eq('ago'..'years')

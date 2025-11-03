@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Array
   # Map booleans true to 1 and false to 0 so they can be compared in a sort
   # with the <=> operator.

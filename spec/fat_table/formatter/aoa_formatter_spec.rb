@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FatTable
   RSpec.describe 'Formatter::AoaFormatter' do
     describe 'table output' do

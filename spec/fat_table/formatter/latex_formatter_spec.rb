@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FatTable
   RSpec.describe 'Formatter::LaTeXFormatter' do
     describe 'decorate string' do

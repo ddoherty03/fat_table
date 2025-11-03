@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FatTable
   RSpec.describe Evaluator, :aggregate_failures do
     describe 'instance variables' do

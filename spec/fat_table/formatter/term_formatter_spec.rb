@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FatTable
   RSpec.describe 'Formatter::TermFormatter' do
     describe 'table output' do
@@ -22,18 +24,18 @@ module FatTable
       end
 
       before do
-        stub_const("UPPER_LEFT", "\u2552".freeze)
-        stub_const("UPPER_RIGHT", "\u2555".freeze)
-        stub_const("DOUBLE_RULE", "\u2550".freeze)
-        stub_const("UPPER_TEE", "\u2564".freeze)
-        stub_const("VERTICAL_RULE", "\u2502".freeze)
-        stub_const("LEFT_TEE", "\u251C".freeze)
-        stub_const("HORIZONTAL_RULE", "\u2500".freeze)
-        stub_const("SINGLE_CROSS", "\u253C".freeze)
-        stub_const("RIGHT_TEE", "\u2524".freeze)
-        stub_const("LOWER_LEFT", "\u2558".freeze)
-        stub_const("LOWER_RIGHT", "\u255B".freeze)
-        stub_const("LOWER_TEE", "\u2567".freeze)
+        stub_const("UPPER_LEFT", "\u2552")
+        stub_const("UPPER_RIGHT", "\u2555")
+        stub_const("DOUBLE_RULE", "\u2550")
+        stub_const("UPPER_TEE", "\u2564")
+        stub_const("VERTICAL_RULE", "\u2502")
+        stub_const("LEFT_TEE", "\u251C")
+        stub_const("HORIZONTAL_RULE", "\u2500")
+        stub_const("SINGLE_CROSS", "\u253C")
+        stub_const("RIGHT_TEE", "\u2524")
+        stub_const("LOWER_LEFT", "\u2558")
+        stub_const("LOWER_RIGHT", "\u255B")
+        stub_const("LOWER_TEE", "\u2567")
       end
 
       it 'raises an error for an invalid color' do

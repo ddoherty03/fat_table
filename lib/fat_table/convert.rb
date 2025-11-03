@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FatTable
   module Convert
     # Convert val to the type of key, a ruby class constant, such as Date,
