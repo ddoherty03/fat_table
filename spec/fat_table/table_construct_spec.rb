@@ -364,7 +364,7 @@ module FatTable
       end
 
       it 'raises error on a bad Org file' do
-        fname = File.expand_path(File.join(__dir__, '../../example_files/not_a_table.org'))
+        fname = File.expand_path(File.join(__dir__, '../example_files/not_a_table.org'))
         expect { Table.from_org_file(fname) }.to raise_exception(NoTable)
       end
 
@@ -379,7 +379,7 @@ module FatTable
 
       it 'sets T F columns to Boolean' do
         cwd = File.dirname(__FILE__)
-        dwtab = Table.from_org_file(cwd + '/../../example_files/datawatch.org')
+        dwtab = Table.from_org_file(cwd + '/../example_files/datawatch.org')
         expect(dwtab.column(:g10).type).to eq('Boolean')
         expect(dwtab.column(:qp10).type).to eq('Boolean')
         dwo = dwtab.where('qp10 || g10')
@@ -899,7 +899,7 @@ module FatTable
       end
 
       context 'with postgres' do
-        let(:out_file) { Pathname("#{__dir__}/../../tmp/psql.out").cleanpath }
+        let(:out_file) { Pathname("#{__dir__}/../tmp/psql.out").cleanpath }
 
         before do
           # Make sure there is no old db from a failed prior run
@@ -907,7 +907,7 @@ module FatTable
           # Create the db
           system "createdb -e fat_table_spec >#{out_file} 2>&1"
           # Populate the db
-          sql_file = Pathname("#{__dir__}/../../example_files/trades.sql").cleanpath
+          sql_file = Pathname("#{__dir__}/../example_files/trades.sql").cleanpath
           system "psql -a -d fat_table_spec -f #{sql_file} >>#{out_file} 2>&1"
         end
 
@@ -938,7 +938,7 @@ module FatTable
 
       context 'with sqlite' do
         it 'creates from a sqlite SQL query', :db do
-          db_file = File.expand_path(File.join(__dir__, '../../../examples/trades.db'))
+          db_file = File.expand_path(File.join(__dir__, '../example_files/trades2.db'))
           # FatTable.db = Sequel.postgres(database: 'fat_table_spec')
           FatTable.connect(adapter: 'sqlite', database: db_file)
           query = <<-SQL.strip_heredoc
