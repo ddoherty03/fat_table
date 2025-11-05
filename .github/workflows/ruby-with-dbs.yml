@@ -1,0 +1,127 @@
+# GitHub Actions: Ruby matrix with sqlite and postgres test variants
+# - matrix: ruby x db (sqlite, postgres)
+# - postgres is provided as a service container
+# - sqlite requires libsqlite3-dev installed so the sqlite3 gem can build native ext
+# Adjust the DB setup commands (rake/rails tasks) to match your project's test bootstrap.
+name: Ruby CI (with sqlite & postgres)
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: [3.2.2, 3.3.0, 3.4.0]   # change or narrow as desired
+        db: [sqlite, postgres]
+
+    services:
+      postgres:
+        # Only used when matrix.db == postgres; running as a service is harmless for sqlite jobs.
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Install system packages
+        # Needed for compiling Ruby gems and SQLite/Postgres native extensions
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential autoconf bison libssl-dev libreadline-dev \
+            zlib1g-dev libyaml-dev libffi-dev libgdbm-dev libncurses5-dev \
+            libgmp-dev pkg-config libsqlite3-dev libpq-dev
+        shell: bash
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+
+      - name: Install gems
+        run: |
+          gem install bundler --conservative
+          bundle install --jobs 4 --retry 3
+        shell: bash
+
+      - name: Configure DB environment
+        run: |
+          if [ "${{ matrix.db }}" = "postgres" ]; then
+            echo "DB_ADAPTER=postgres" >> $GITHUB_ENV
+            # DATABASE_URL commonly used by many ORMs/test setups
+            echo "DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/test" >> $GITHUB_ENV
+            echo "PGHOST=127.0.0.1" >> $GITHUB_ENV
+            echo "PGUSER=postgres" >> $GITHUB_ENV
+            echo "PGPASSWORD=postgres" >> $GITHUB_ENV
+          else
+            echo "DB_ADAPTER=sqlite" >> $GITHUB_ENV
+            # Use a file-based sqlite DB path; your tests may override with config
+            echo "DATABASE_URL=sqlite3:db/test.sqlite3" >> $GITHUB_ENV
+          fi
+        shell: bash
+
+      - name: Wait for Postgres (only postgres jobs)
+        if: matrix.db == 'postgres'
+        run: |
+          # Use Ruby to probe TCP port so we don't rely on pg_isready being present
+          ruby -e "require 'socket'; loop do
+            begin
+              TCPSocket.new('127.0.0.1', 5432).close
+              puts 'Postgres is listening'
+              break
+            rescue => _
+              warn 'Waiting for Postgres...'
+              sleep 1
+            end
+          end"
+        shell: bash
+
+      - name: Prepare database (adjust to your project's tasks)
+        # If you have Rails: `bundle exec rails db:create db:schema:load db:migrate`
+        # If you use rake tasks: `bundle exec rake db:create db:migrate`
+        # If your tests build the schema differently, replace with the appropriate commands.
+        run: |
+          if [ "${{ matrix.db }}" = "postgres" ]; then
+            # Try common rake/rails targets. Replace with your project's commands if different.
+            if bundle exec rake -T | grep -q db:create; then
+              bundle exec rake db:create db:migrate
+            elif bundle exec rails -T | grep -q db:create; then
+              bundle exec rails db:create db:migrate
+            else
+              echo "No standard db:create task found; skipping explicit DB creation."
+            fi
+          else
+            # For sqlite we usually just ensure directory exists; migrations will create the file
+            mkdir -p db
+            if bundle exec rake -T | grep -q db:migrate; then
+              bundle exec rake db:migrate
+            elif bundle exec rails -T | grep -q db:migrate; then
+              bundle exec rails db:migrate
+            else
+              echo "No db:migrate task found; skipping."
+            fi
+          fi
+        shell: bash
+
+      - name: Run tests
+        run: |
+          # Run your test suite. Replace with `rspec` or other test runner if you use that.
+          bundle exec rake
+        shell: bash
