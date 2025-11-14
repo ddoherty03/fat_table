@@ -47,7 +47,6 @@ jobs:
             build-essential autoconf bison libssl-dev libreadline-dev \
             zlib1g-dev libyaml-dev libffi-dev libgdbm-dev libncurses5-dev \
             libgmp-dev pkg-config libsqlite3-dev libpq-dev \
-            # LaTeX basics useful for building PDFs in tests:
             latexmk texlive-latex-recommended texlive-latex-extra \
             texlive-fonts-recommended texlive-fonts-extra texlive-xetex \
             texlive-luatex dvipng
