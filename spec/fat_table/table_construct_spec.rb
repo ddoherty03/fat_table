@@ -906,6 +906,11 @@ module FatTable
           system "psql -a -d fat_table_spec -f #{sql_file} >>#{out_file} 2>&1"
         end
 
+        before do
+          require 'fileutils'
+          FileUtils.mkdir_p(out_file.dirname)
+        end
+
         after do
           # Drop the db
           if FatTable.db
