@@ -110,7 +110,7 @@ jobs:
         run: |
             if [ "${{ matrix.db }}" = "postgres" ]; then
               echo "Running full test suite against Postgres"
-              bundle exec rspec
+              bundle exec rspec --tag postgres
               bundle exec rubocop
             else
               echo "Running test suite excluding Postgres-only specs"
