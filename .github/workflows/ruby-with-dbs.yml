@@ -46,8 +46,13 @@ jobs:
           sudo apt-get install -y --no-install-recommends \
             build-essential autoconf bison libssl-dev libreadline-dev \
             zlib1g-dev libyaml-dev libffi-dev libgdbm-dev libncurses5-dev \
-            libgmp-dev pkg-config libsqlite3-dev libpq-dev
+            libgmp-dev pkg-config libsqlite3-dev libpq-dev \
+            # LaTeX basics useful for building PDFs in tests:
+            latexmk texlive-latex-recommended texlive-latex-extra \
+            texlive-fonts-recommended texlive-fonts-extra texlive-xetex \
+            texlive-luatex dvipng
         shell: bash
+
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -93,6 +98,13 @@ jobs:
           end"
         shell: bash
 
+      - name: Verify LaTeX is available
+        # This step is lightweight and helps debugging: prints pdflatex/latexmk versions.
+        run: |
+          pdflatex --version || true
+          latexmk --version || true
+        shell: bash
+
       - name: Prepare database (adjust to your project's tasks)
         # If you have Rails: `bundle exec rails db:create db:schema:load db:migrate`
         # If you use rake tasks: `bundle exec rake db:create db:migrate`
@@ -120,8 +132,15 @@ jobs:
           fi
         shell: bash
 
+      # Snippet: Run tests step (place inside your job that already sets matrix.db)
+      # This runs all tests on postgres jobs, and excludes postgres-tagged tests on sqlite jobs.
       - name: Run tests
         run: |
-          # Run your test suite. Replace with `rspec` or other test runner if you use that.
-          bundle exec rake
+            if [ "${{ matrix.db }}" = "postgres" ]; then
+              echo "Running full test suite against Postgres"
+              bundle exec rspec
+            else
+              echo "Running test suite excluding Postgres-only specs"
+              bundle exec rspec --tag ~postgres
+            fi
         shell: bash
