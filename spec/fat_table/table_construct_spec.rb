@@ -900,14 +900,9 @@ module FatTable
 
       context 'with postgres', :postgres do
         let(:out_file) { Pathname("#{__dir__}/../tmp/psql.out").cleanpath }
-
-        before do
-          # Make sure there is no old db from a failed prior run
-          system "dropdb -e fat_table_spec >>#{out_file} 2>&1"
-          # Create the db
+        let(:sql_file) { Pathname("#{__dir__}/../example_files/trades.sql").cleanpath }
+        let!(:db_success) do
           system "createdb -e fat_table_spec >#{out_file} 2>&1"
-          # Populate the db
-          sql_file = Pathname("#{__dir__}/../example_files/trades.sql").cleanpath
           system "psql -a -d fat_table_spec -f #{sql_file} >>#{out_file} 2>&1"
         end
 
@@ -920,6 +915,7 @@ module FatTable
         end
 
         it 'creates from a postgres SQL query', :db, :postgres do
+          expect(db_success).to be true
           # FatTable.db = Sequel.postgres(database: 'fat_table_spec')
           FatTable.connect(adapter: 'postgres', database: 'fat_table_spec')
           system("echo URI: #{FatTable.db.uri} >>#{out_file}")
