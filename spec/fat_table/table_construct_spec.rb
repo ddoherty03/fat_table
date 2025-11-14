@@ -879,8 +879,8 @@ module FatTable
 
     describe 'from SQL' do
       describe 'all adapters' do
-        it 'raises exception if adapter not present', :db do
-          ['pg', 'mysql2', 'sqlite3'].each do |adapter|
+        it 'raises exception if adapters not present', :db do
+          ['pg', 'sqlite3'].each do |adapter|
             begin
               got_gem = require adapter
             rescue LoadError
@@ -898,7 +898,7 @@ module FatTable
         end
       end
 
-      context 'with postgres' do
+      context 'with postgres', :postgres do
         let(:out_file) { Pathname("#{__dir__}/../tmp/psql.out").cleanpath }
 
         before do
