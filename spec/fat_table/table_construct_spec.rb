@@ -919,7 +919,7 @@ module FatTable
           end
         end
 
-        it 'creates from a postgres SQL query', :db do
+        it 'creates from a postgres SQL query', :db, :postgres do
           # FatTable.db = Sequel.postgres(database: 'fat_table_spec')
           FatTable.connect(adapter: 'postgres', database: 'fat_table_spec')
           system("echo URI: #{FatTable.db.uri} >>#{out_file}")
