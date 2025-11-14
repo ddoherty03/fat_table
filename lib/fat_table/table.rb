@@ -774,7 +774,7 @@ module FatTable
     # user's point of view are indexed starting at 0.
     def row_index_to_group_index(row_num)
       boundaries.each_with_index do |b_last, g_num|
-        return (g_num + 1) if row_num <= b_last
+        return g_num + 1 if row_num <= b_last
       end
       0
     end
