@@ -62,8 +62,25 @@ jobs:
       - name: Install gems
         run: |
           gem install bundler --conservative
+          bundle config path vendor/bundle
           bundle install --jobs 4 --retry 3
         shell: bash
+
+      - name: List installed gems and verify pg
+        run: |
+          echo "=== bundle list ==="
+          bundle list
+          echo
+          echo "=== gem list (system) ==="
+          gem list
+          echo
+          echo "=== gem env ==="
+          gem env
+          echo
+          echo "=== pg gem info ==="
+          bundle show pg || gem which pg || true
+          bundle exec ruby -e "begin; require 'pg'; puts 'pg loaded: ' + (defined?(PG) && (PG.const_defined?(:VERSION) ? PG::VERSION : (PG.const_defined?(:PG_VERSION) ? PG::PG_VERSION : 'unknown'))); rescue => e; puts 'pg require failed: ' + e.class.to_s + ': ' + e.message; puts e.backtrace[0..5]; exit 1; end"
+          shell: bash
 
       - name: Configure DB environment
         run: |
