@@ -57,7 +57,19 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
-          bundler-cache: true
+
+      # Keep cache keyed by Ruby version and Gemfile.lock to avoid ABI mismatches.
+      # Native gems (pg, sqlite3, etc.) produce compiled extensions tied to a Ruby ABI.
+      # If we reuse a vendor/bundle compiled for a different Ruby, extensions can fail to load
+      # (e.g. "undefined symbol: ruby_abi_version"). Making the cache key permanent
+      # ensures each Ruby version gets its own cache and reduces flaky failures.
+      - name: Cache Ruby gems
+        uses: actions/cache@v4
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-${{ matrix.ruby }}-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-${{ matrix.ruby }}-
 
       # Ensure libpq and build tools exist for compiling native gems like pg
       - name: Install system dependencies for pg
