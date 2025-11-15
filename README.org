@@ -19,12 +19,13 @@ the code blocks.  rbenv-use-corresponding helps here.
 #+BEGIN_COMMENT
 This is for markdown output:
 
-[![Build Status](https://travis-ci.org/ddoherty03/fat_table.svg?branch=master)](https://travis-ci.org/ddoherty03/fat_table)
+[![Build Status](https://github.com/ddoherty03/fat_table/actions/workflows/ruby-with-dbs.yml/badge.svg?branch=master)
 
 The following is for org.
 #+END_COMMENT
 
-[[https://travis-ci.org/ddoherty03/fat_table.svg?branch=master]]
+[[https://github.com/ddoherty03/fat_table/actions/workflows/ruby-with-dbs.yml][https://github.com/ddoherty03/fat_table/actions/workflows/ruby-with-dbs.yml/badge.svg?branch=master]]
+
 
 * Version
 #+begin_src ruby :wrap EXAMPLE
