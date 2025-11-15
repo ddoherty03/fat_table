@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'fileutils'
+
 # Specs to test the building of Table from various inputs.
 module FatTable
   RSpec.describe Table do
@@ -899,16 +901,14 @@ module FatTable
       end
 
       context 'with postgres', :postgres do
-        let(:out_file) { Pathname("#{__dir__}/../tmp/psql.out").cleanpath }
+        let(:out_file) do
+          FileUtils.mkdir_p("#{__dir__}/../tmp/")
+          Pathname("#{__dir__}/../tmp/psql.out").cleanpath
+        end
         let(:sql_file) { Pathname("#{__dir__}/../example_files/trades.sql").cleanpath }
         let!(:db_success) do
           system "createdb -e fat_table_spec >#{out_file} 2>&1"
           system "psql -a -d fat_table_spec -f #{sql_file} >>#{out_file} 2>&1"
-        end
-
-        before do
-          require 'fileutils'
-          FileUtils.mkdir_p(out_file.dirname)
         end
 
         after do
