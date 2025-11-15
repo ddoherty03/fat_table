@@ -59,12 +59,39 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
 
+      # Ensure libpq and build tools exist for compiling native gems like pg
+      - name: Install system dependencies for pg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpq-dev build-essential
+
+      # Cache keyed to the Ruby version to avoid reusing compiled gems across Rubies
+      - name: Cache Ruby gems
+        uses: actions/cache@v4
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gems-${{ matrix.ruby-version }}-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-${{ matrix.ruby-version }}-
+
       - name: Install gems
         run: |
-          gem install bundler --conservative
-          bundle config path vendor/bundle
+          # Install into vendor/bundle for deterministic paths
+          bundle config set --local path 'vendor/bundle'
+
+          # Force building gems for the current Ruby platform instead of using prebuilt binary gems
+          bundle config set --local force_ruby_platform true
+
+          # If needed, point pg build to system pg_config
+          bundle config set --local build.pg --with-pg-config=/usr/bin/pg_config || true
+
+          # Avoid stale compiled extensions from previous runs with different Ruby versions
+          if [ -d vendor/bundle ]; then
+            echo "Removing vendor/bundle to avoid ABI mismatch"
+            rm -rf vendor/bundle
+          fi
+
           bundle install --jobs 4 --retry 3
-        shell: bash
 
       - name: List installed gems
         run: |
@@ -78,13 +105,12 @@ jobs:
           gem env
 
       - name: Verify pg
+        if: matrix.db == 'postgres'
         run: |
-          if [ "${{ matrix.db }}" = "postgres" ]; then
-            echo
-            echo "=== pg gem info ==="
-            bundle show pg || gem which pg || true
-            bundle exec ruby -e "begin; require 'pg'; puts 'pg loaded: ' + (defined?(PG) && (PG.const_defined?(:VERSION) ? PG::VERSION : (PG.const_defined?(:PG_VERSION) ? PG::PG_VERSION : 'unknown'))); rescue => e; puts 'pg require failed: ' + e.class.to_s + ': ' + e.message; puts e.backtrace[0..5]; exit 1; end"
-          fi
+          echo
+          echo "=== pg gem info ==="
+          bundle show pg || gem which pg || true
+          bundle exec ruby -e "begin; require 'pg'; puts 'pg loaded: ' + (defined?(PG) && (PG.const_defined?(:VERSION) ? PG::VERSION : (PG.const_defined?(:PG_VERSION) ? PG::PG_VERSION : 'unknown'))); rescue => e; puts 'pg require failed: ' + e.class.to_s + ': ' + e.message; puts e.backtrace[0..5]; exit 1; end"
         shell: bash
 
       - name: Configure DB environment
