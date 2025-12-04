@@ -2,7 +2,7 @@
 #+OPTIONS: toc:4
 #+LATEX_HEADER: \usepackage[margin=0.75in]{geometry}
 #+LATEX_HEADER: \usepackage[utf8]{inputenc}
-#+PROPERTY: header-args:ruby :colnames no :session readme :hlines yes :exports both
+#+PROPERTY: header-args:ruby :colnames no :session readme :hlines yes :exports both :wrap example
 #+PROPERTY: header-args:sh :exports code
 #+STARTUP: inlineimages
 
@@ -26,6 +26,79 @@ The following is for org.
 
 [[https://github.com/ddoherty03/fat_table/actions/workflows/ruby-with-dbs.yml][https://github.com/ddoherty03/fat_table/actions/workflows/ruby-with-dbs.yml/badge.svg?branch=master]]
 
+* README Setup Do First for Code Blocks                            :noexport:
+Run this block before all others to ensure that we are reading the libraries
+from the source directory.
+
+#+begin_src ruby :results output
+  puts "Current directory: #{Dir.pwd}"
+  puts "Ruby LOADPATH:"
+  $:.unshift("./lib") unless $:[0] == './lib'
+  $:[0..10].each { |d| puts d }
+  puts "..."
+  require_relative 'lib/fat_table'  # => true
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Current directory: /home/ded/src/fat_table
+=> nil
+Ruby LOADPATH:
+=> nil
+=> ["./lib",
+ "/home/ded/.rbenv/rbenv.d/exec/gem-rehash",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/coderay-1.1.3/lib",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/pry-0.15.2/lib",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/set-1.1.2/lib",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/method_source-1.1.0/lib",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/forwardable-1.3.3/lib",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/etc-1.4.6/lib",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/extensions/x86_64-linux/3.4.0/etc-1.4.6",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/prettyprint-0.2.0/lib",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/pp-0.6.3/lib",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/stringio-3.1.8/lib",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/extensions/x86_64-linux/3.4.0/stringio-3.1.8",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/strscan-3.1.5/lib",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/extensions/x86_64-linux/3.4.0/strscan-3.1.5",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/prism-1.6.0/lib",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/extensions/x86_64-linux/3.4.0/prism-1.6.0",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/io-console-0.8.1/lib",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/extensions/x86_64-linux/3.4.0/io-console-0.8.1",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/site_ruby/3.4.0",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/site_ruby/3.4.0/x86_64-linux",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/site_ruby",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/vendor_ruby/3.4.0",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/vendor_ruby/3.4.0/x86_64-linux",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/vendor_ruby",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/3.4.0",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/3.4.0/x86_64-linux"]
+./lib
+/home/ded/.rbenv/rbenv.d/exec/gem-rehash
+/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/coderay-1.1.3/lib
+/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/pry-0.15.2/lib
+/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/set-1.1.2/lib
+/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/method_source-1.1.0/lib
+/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/forwardable-1.3.3/lib
+/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/etc-1.4.6/lib
+/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/extensions/x86_64-linux/3.4.0/etc-1.4.6
+/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/prettyprint-0.2.0/lib
+/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/pp-0.6.3/lib
+=> ["./lib",
+ "/home/ded/.rbenv/rbenv.d/exec/gem-rehash",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/coderay-1.1.3/lib",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/pry-0.15.2/lib",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/set-1.1.2/lib",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/method_source-1.1.0/lib",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/forwardable-1.3.3/lib",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/etc-1.4.6/lib",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/extensions/x86_64-linux/3.4.0/etc-1.4.6",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/prettyprint-0.2.0/lib",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/pp-0.6.3/lib"]
+...
+=> nil
+=> true
+:org_babel_ruby_eoe
+#+end_example
 
 * Version
 #+begin_src ruby :wrap EXAMPLE
@@ -107,7 +180,7 @@ org-mode buffer as an org-table, ready for processing by other code blocks.
     - [[#select][Select]]
       - [[#selecting-existing-columns-also-of-omni][Selecting Existing Columns (Also of :omni)]]
       - [[#copying-and-renaming-existing-columns][Copying and Renaming Existing Columns.]]
-      - [[#adding-new-columns][Adding New Columns]]
+      - [[#adding-new-computed-columns][Adding New Computed Columns]]
       - [[#adding-constant-strings-and-other-types-in-select][Adding Constant Strings and Other Types in select]]
       - [[#custom-instance-variables-and-hooks][Custom Instance Variables and Hooks]]
       - [[#argument-order-and-boundaries][Argument Order and Boundaries]]
@@ -770,22 +843,22 @@ ending it with a '~'.
   aoa = [
     ['Ref', 'Date', 'Code', 'Raw', 'Shares', 'Price', 'Info', 'Bool'],
     [1, '2013-05-02', 'P', 795_546.20, 795_546.2, 1.1850, 'ENTITY1', 'T'],
-    [2, '2013-05-02', 'P', 118_186.40, 118_186.4, 11.8500, 'ENTITY1', 'T'],
+    [2, '2013-05-02', 'P', '118_186.40', 118_186.4, 11.8500, 'ENTITY1', 'T'],
     [7, '2013-05-20', 'S', 12_000.00, 5046.00, 28.2804, 'ENTITY3', 'F'],
     [8, '2013-05-20', 'S', 85_000.00, 35_742.50, 28.3224, 'ENTITY3', 'T'],
     [9, '2013-05-20', 'S', 33_302.00, 14_003.49, 28.6383, 'ENTITY3', 'T'],
-    [10, '2013-05-23', 'S', 8000.00, 3364.00, 27.1083, 'ENTITY3', 'T'],
+    [10, Date.parse('2013-05-23'), 'S', 8000.00, 3364.00, 27.1083, 'ENTITY3', true],
     [11, '2013-05-23', 'S', 23_054.00, 9694.21, 26.8015, 'ENTITY3', 'F'],
-    [12, '2013-05-23', 'S', 39_906.00, 16_780.47, 25.1749, 'ENTITY3', 'T'],
+    ['12', '2013-05-23', 'S', 39_906.00, 16_780.47, 25.1749, 'ENTITY3', 'T'],
     [13, '2013-05-29', 'S', 13_459.00, 5659.51, 24.7464, 'ENTITY3', 'T'],
-    [14, '2013-05-29', 'S', 15_700.00, 6601.85, 24.7790, 'ENTITY3', 'F'],
+    [14, '2013-05-29', 'S', 15_700.00, 6601.85, 24.7790, 'ENTITY3', false],
     [15, '2013-05-29', 'S', 15_900.00, 6685.95, 24.5802, 'ENTITY3', 'T'],
     [16, '2013-05-30', 'S', 6_679.00, 2808.52, 25.0471, 'ENTITY3', 'T'] ]
 
   tab = FatTable.from_aoa(aoa).to_aoa
 #+END_SRC
 
-#+RESULTS:
+#+begin_example
 | Ref | Date       | Code |    Raw | Shares | Price | Info    | Bool |
 |-----+------------+------+--------+--------+-------+---------+------|
 |   1 | 2013-05-02 | P    | 795546 | 795546 |     1 | ENTITY1 | T    |
@@ -800,6 +873,7 @@ ending it with a '~'.
 |  14 | 2013-05-29 | S    |  15700 |   6602 |    25 | ENTITY3 | F    |
 |  15 | 2013-05-29 | S    |  15900 |   6686 |    25 | ENTITY3 | T    |
 |  16 | 2013-05-30 | S    |   6679 |   2809 |    25 | ENTITY3 | T    |
+#+end_example
 
 Notice that the values can either be ruby objects, such as the Integer ~85_000~,
 or strings that can be parsed into one of the permissible column types.
@@ -885,7 +959,7 @@ to a Hash with the ~#to_h~ method, so you can use an array of your own objects
 to initialize a table, provided that you define a suitable ~#to_h~ method for
 the objects' class.
 
-#+BEGIN_SRC ruby :results silent
+#+BEGIN_SRC ruby
 aoh = [
   { ref: 'T001', date: '2016-11-01', code: 'P', price: '7.7000',  shares: 100 },
   { ref: 'T002', date: '2016-11-01', code: 'P', price: 7.7500,  shares: 200 },
@@ -904,8 +978,29 @@ aoh = [
   { ref: 'T015', date: '2016-11-02', code: 'P', price: 7.7500,  shares: 500 },
   { ref: 'T016', date: '2016-11-02', code: 'P', price: 8.2500,  shares: 100 }
 ]
-tab = FatTable.from_aoh(aoh)
+tab = FatTable.from_aoh(aoh).to_aoa
 #+END_SRC
+
+#+begin_example
+| Ref  | Date       | Code | Price | Shares |
+|------+------------+------+-------+--------|
+| T001 | 2016-11-01 | P    | 8     |    100 |
+| T002 | 2016-11-01 | P    | 8     |    200 |
+| T003 | 2016-11-01 | P    | 8     |    800 |
+| T004 | 2016-11-01 | S    | 8     |   6811 |
+| T005 | 2025-12-04 | S    | 8     |   4000 |
+| T006 | 2016-11-01 | S    | 8     |   1000 |
+| T007 | 2016-11-01 | S    | 8     |    200 |
+| T008 | 2016-11-01 | P    | 8     |   2771 |
+| T009 | 2016-11-01 | P    | 8     |   9550 |
+| T010 | 2016-11-01 | P    | 8     |   3175 |
+| T011 | 2016-11-02 | P    | 7     |    100 |
+| T012 | 2016-11-02 | P    | 8     |   4700 |
+| T013 | 2016-11-02 | P    | 7     |  53100 |
+| T014 | 2016-11-02 | P    | 7     |   5847 |
+| T015 | 2016-11-02 | P    | 8     |    500 |
+| T016 | 2016-11-02 | P    | 8     |    100 |
+#+end_example
 
 Notice, again, that the values can either be ruby objects, such as ~Date.today~,
 or strings that can be parsed into one of the permissible column types.
@@ -921,39 +1016,56 @@ you are accessing a Postgres database, you must install the ~pg~ gem with
 $ gem install pg
 #+end_src
 
-You must first set the database parameters to be used for the queries.
-
-#+BEGIN_SRC ruby
-  # This automatically requires sequel.
-  FatTable.connect(adapter: 'sqlite',
-                   database: 'examples/trades.db')
-  tab = FatTable.from_sql('select * from trans;').to_text
-#+END_SRC
-
-#+begin_example
-+============+======+==========+==========+=========+=========+====+
-| Date       | Code | Raw      | Shares   | Price   | Info    | Ok |
-+------------+------+----------+----------+---------+---------+----+
-| 2013-05-29 | S    | 15700.0  | 6601.85  | 24.779  | ENTITY3 | F  |
-| 2013-05-02 | P    | 118186.4 | 118186.4 | 11.85   | ENTITY1 | T  |
-| 2013-05-20 | S    | 12000.0  | 5046.0   | 28.2804 | ENTITY3 | F  |
-| 2013-05-23 | S    | 8000.0   | 3364.0   | 27.1083 | ENTITY3 | T  |
-| 2013-05-23 | S    | 39906.0  | 16780.47 | 25.1749 | ENTITY3 | T  |
-| 2013-05-20 | S    | 85000.0  | 35742.5  | 28.3224 | ENTITY3 | T  |
-| 2013-05-02 | P    | 795546.2 | 795546.2 | 1.185   | ENTITY1 | T  |
-| 2013-05-29 | S    | 13459.0  | 5659.51  | 24.7464 | ENTITY3 | T  |
-| 2013-05-20 | S    | 33302.0  | 14003.49 | 28.6383 | ENTITY3 | T  |
-| 2013-05-29 | S    | 15900.0  | 6685.95  | 24.5802 | ENTITY3 | T  |
-| 2013-05-30 | S    | 6679.0   | 2808.52  | 25.0471 | ENTITY3 | T  |
-| 2013-05-23 | S    | 23054.0  | 9694.21  | 26.8015 | ENTITY3 | F  |
-+============+======+==========+==========+=========+=========+====+
-#+end_example
+You must first call ~FatTable.connect~ to set the database parameters to be
+used for the queries.
 
 The arguments to ~connect~ are simply passed on to ~sequel~'s connect method, so
 any set of arguments that work for it should work for ~connect~. Alternatively,
 you can build the ~Sequel~ connection directly with ~Sequel.connect~ or with
 adapter-specific ~Sequel~ connection methods and let ~FatTable~ know to use that
 connection:
+
+#+BEGIN_SRC ruby
+  # This automatically requires sequel.
+  FatTable.connect(adapter: 'sqlite',
+                   database: 'spec/example_files/trades2.db')
+  tab = FatTable.from_sql('select * from trans;').to_text
+#+END_SRC
+
+#+begin_example
++============+======+========+========+=======+=========+====+
+| Date       | Code | Raw    | Shares | Price | Info    | Ok |
++------------+------+--------+--------+-------+---------+----+
+| 2013-05-29 | S    | 15700  | 6602   | 25    | ENTITY3 | F  |
+| 2013-05-02 | P    | 118186 | 118186 | 12    | ENTITY1 | T  |
+| 2013-05-20 | S    | 12000  | 5046   | 28    | ENTITY3 | F  |
+| 2013-05-23 | S    | 8000   | 3364   | 27    | ENTITY3 | T  |
+| 2013-05-23 | S    | 39906  | 16780  | 25    | ENTITY3 | T  |
+| 2013-05-20 | S    | 85000  | 35743  | 28    | ENTITY3 | T  |
+| 2013-05-02 | P    | 795546 | 795546 | 1     | ENTITY1 | T  |
+| 2013-05-29 | S    | 13459  | 5660   | 25    | ENTITY3 | T  |
+| 2013-05-20 | S    | 33302  | 14003  | 29    | ENTITY3 | T  |
+| 2013-05-29 | S    | 15900  | 6686   | 25    | ENTITY3 | T  |
+| 2013-05-30 | S    | 6679   | 2809   | 25    | ENTITY3 | T  |
+| 2013-05-23 | S    | 23054  | 9694   | 27    | ENTITY3 | F  |
++============+======+========+========+=======+=========+====+
+#+end_example
+
+The same connection can be queries multiple times:
+
+#+BEGIN_SRC ruby
+  tab = FatTable.from_sql('select * from trans where info = "ENTITY1";').to_text
+#+END_SRC
+
+#+begin_example
++============+======+========+========+=======+=========+====+
+| Date       | Code | Raw    | Shares | Price | Info    | Ok |
++------------+------+--------+--------+-------+---------+----+
+| 2013-05-02 | P    | 118186 | 118186 | 12    | ENTITY1 | T  |
+| 2013-05-02 | P    | 795546 | 795546 | 1     | ENTITY1 | T  |
++============+======+========+========+=======+=========+====+
+#+end_example
+
 
 #+BEGIN_SRC ruby
   FatTable.db = Sequel.connect('postgres://user:password@localhost/dbname')
@@ -999,7 +1111,6 @@ beginning with something like ~|---~. The ~.from_org_...~ functions always
 recognizes hlines in the input, so it takes no ~hlines:~ keyword parameter.
 
 ** Accessing Parts of Tables
-
 *** Rows
 A ~FatTable~ table is an Enumerable, yielding each row of the table as a Hash
 keyed on the header symbols. The method ~Table#rows~ returns an Array of the
@@ -1043,7 +1154,7 @@ Here is a quick rundown of other table attributes that you can access:
 
 You should note that what the ~.types~ and ~.type(head)~ methods return is a
 string naming the "type" assigned by ~FatTable~.  All of them are also the
-names of Ruby classes except to 'Boolean' a class that doesn't exist in Ruby.
+names of Ruby classes except for 'Boolean' a class that doesn't exist in Ruby.
 The value ~true~ is a member of the ~TrueClass~ and ~false~ a member of the
 ~FalseClass~.  So for ~FatTable~ to provide a column of type 'Boolean'
 requires it to synthesize the type from these Ruby classes.
@@ -1165,7 +1276,6 @@ table, rearrange their order, and create new columns that are a function of
 other columns.
 
 **** Selecting Existing Columns (Also of :omni)
-
 Here we select three existing columns by simply passing header symbols in the
 order we want them to appear in the output. Thus, one use of =select= is to
 filter and permute the order of existing columns. The =select= method preserves
@@ -1243,7 +1353,6 @@ you cannot add additional column names:
 #+end_EXAMPLE
 
 **** Copying and Renaming Existing Columns.
-
 After the list of selected column names in the call to ~select~, you can add
 any number of hash-like arguments.  You can use these to add a copy of an
 existing column.  By calling select again, you can include only the copied
@@ -1282,8 +1391,7 @@ changed to ~:id~, just add an argument to define the new ~:id~ column:
 | T016 | 2016-11-02 | P    |  8.25 |    100 |
 #+end_EXAMPLE
 
-**** Adding New Columns
-
+**** Adding New Computed Columns
 More interesting is that ~select~ can take hash-like keyword arguments after
 the symbol arguments to create new columns in the output as functions of other
 columns. For each hash-like parameter, the keyword given must be a symbol,
@@ -1336,8 +1444,8 @@ new column to compute the cost of shares, we could do the following:
 
 The parameter ~traded_on: :date~ caused the ~:date~ column of the input table
 to be renamed ~:traded_on~, and the parameter ~cost: 'price * shares'~ created
-a new column, ~:cost~, as the product of values in the ~:price~ and ~:shares~
-columns.
+a new computed column, ~:cost~, as the product of values in the ~:price~ and
+~:shares~ columns.
 
 The order of the columns in the result tables is the same as the order of the
 parameters to the ~select~ method. So, you can re-order the columns with a
@@ -1376,17 +1484,43 @@ second, chained call to ~select~:
 #+end_EXAMPLE
 
 **** Adding Constant Strings and Other Types in select
-
 Because ~select~'s hash-like parameters evaluate a string as a ruby
 expression, as just described, it must provide a way to set a new column to a
 string literal.  To indicate that a string should be inserted literally, add a
 ~:~ as the first non-blank character in the string.  This will supress
 evaluation and insert the remainder of the string in the named column.
 
-#+BEGIN_SRC ruby :wrap EXAMPLE
+#+BEGIN_SRC ruby
   tab1.select(:ref, :price, :shares, traded_on: :date, cost: ':the price of freedom').
     select(:ref, :traded_on, :price, :shares, :cost).to_aoa
 #+END_SRC
+
+#+begin_example
+| Ref  | Traded On  | Price | Shares | Cost                 |
+|------+------------+-------+--------+----------------------|
+| T001 | 2016-11-01 | 8     |    100 | the price of freedom |
+| T002 | 2016-11-01 | 8     |    200 | the price of freedom |
+| T003 | 2016-11-01 | 8     |    800 | the price of freedom |
+| T003 | 2016-11-01 | 8     |    800 | the price of freedom |
+|------+------------+-------+--------+----------------------|
+| T004 | 2016-11-01 | 8     |   6811 | the price of freedom |
+| T005 | 2016-11-01 | 8     |   4000 | the price of freedom |
+| T006 | 2016-11-01 | 8     |   1000 | the price of freedom |
+| T006 | 2016-11-01 | 8     |   1000 | the price of freedom |
+| T007 | 2016-11-01 | 8     |    200 | the price of freedom |
+| T008 | 2016-11-01 | 8     |   2771 | the price of freedom |
+| T009 | 2016-11-01 | 8     |   9550 | the price of freedom |
+|------+------------+-------+--------+----------------------|
+| T010 | 2016-11-01 | 8     |   3175 | the price of freedom |
+| T011 | 2016-11-02 | 7     |    100 | the price of freedom |
+| T012 | 2016-11-02 | 8     |   4700 | the price of freedom |
+| T012 | 2016-11-02 | 8     |   4700 | the price of freedom |
+| T013 | 2016-11-02 | 7     |  53100 | the price of freedom |
+|------+------------+-------+--------+----------------------|
+| T014 | 2016-11-02 | 7     |   5847 | the price of freedom |
+| T015 | 2016-11-02 | 8     |    500 | the price of freedom |
+| T016 | 2016-11-02 | 8     |    100 | the price of freedom |
+#+end_example
 
 This sets the ~:cost~ column to the string constant 'the price of freedom' for
 the whole table.
@@ -1394,13 +1528,39 @@ the whole table.
 You can set a column to a constant of any of the acceptable types, ~Numeric~,
 ~Date~, ~DateTime~, true, false, or nil.
 
-#+BEGIN_SRC ruby :wrap EXAMPLE
+#+BEGIN_SRC ruby
   tab1.select(:ref, :price, :shares, traded_on: :date, cost: Math::PI, today: Date.today).
     select(:ref, :traded_on, :price, :shares, :cost, :today).to_aoa
 #+END_SRC
 
-**** Custom Instance Variables and Hooks
+#+begin_example
+| Ref  | Traded On  | Price | Shares | Cost | Today      |
+|------+------------+-------+--------+------+------------|
+| T001 | 2016-11-01 | 8     |    100 | 3    | 2025-12-04 |
+| T002 | 2016-11-01 | 8     |    200 | 3    | 2025-12-04 |
+| T003 | 2016-11-01 | 8     |    800 | 3    | 2025-12-04 |
+| T003 | 2016-11-01 | 8     |    800 | 3    | 2025-12-04 |
+|------+------------+-------+--------+------+------------|
+| T004 | 2016-11-01 | 8     |   6811 | 3    | 2025-12-04 |
+| T005 | 2016-11-01 | 8     |   4000 | 3    | 2025-12-04 |
+| T006 | 2016-11-01 | 8     |   1000 | 3    | 2025-12-04 |
+| T006 | 2016-11-01 | 8     |   1000 | 3    | 2025-12-04 |
+| T007 | 2016-11-01 | 8     |    200 | 3    | 2025-12-04 |
+| T008 | 2016-11-01 | 8     |   2771 | 3    | 2025-12-04 |
+| T009 | 2016-11-01 | 8     |   9550 | 3    | 2025-12-04 |
+|------+------------+-------+--------+------+------------|
+| T010 | 2016-11-01 | 8     |   3175 | 3    | 2025-12-04 |
+| T011 | 2016-11-02 | 7     |    100 | 3    | 2025-12-04 |
+| T012 | 2016-11-02 | 8     |   4700 | 3    | 2025-12-04 |
+| T012 | 2016-11-02 | 8     |   4700 | 3    | 2025-12-04 |
+| T013 | 2016-11-02 | 7     |  53100 | 3    | 2025-12-04 |
+|------+------------+-------+--------+------+------------|
+| T014 | 2016-11-02 | 7     |   5847 | 3    | 2025-12-04 |
+| T015 | 2016-11-02 | 8     |    500 | 3    | 2025-12-04 |
+| T016 | 2016-11-02 | 8     |    100 | 3    | 2025-12-04 |
+#+end_example
 
+**** Custom Instance Variables and Hooks
 As the above examples demonstrate, the instance variables ~@row~ and ~@group~
 are available when evaluating expressions that add new columns. You can also set
 up your own instance variables as well for keeping track of things that cross
@@ -1459,7 +1619,6 @@ of the running cost of shares, then formats the table.
 #+END_EXAMPLE
 
 **** Argument Order and Boundaries
-
 Notice that ~select~ can take any number of arguments but all the symbol
 arguments must come first followed by all the hash-like keyword arguments,
 including the special arguments for instance variables and hooks.
@@ -1482,20 +1641,19 @@ table has only a single group.
 Here we select only those even-numbered rows where either of the two boolean
 fields is true:
 
-#+BEGIN_SRC ruby :wrap EXAMPLE
-    tab1.where('@row.even? && (g10 || qp10)') \
-      .to_aoa
+#+BEGIN_SRC ruby
+    tab1.where('@row.even? && (g10 || qp10)').to_aoa
 #+END_SRC
 
-#+BEGIN_EXAMPLE
-| Ref  |       Date | Code | Price | G10 | QP10 | Shares |   Lp |    Qp |   Iplp |   Ipqp |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
-| T002 | 2016-11-01 | P    |  7.75 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 |
-| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 |
-| T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 |
-| T010 | 2016-11-01 | P    |  7.55 | F   | T    |   3175 |  451 |  2724 | 0.2453 | 0.1924 |
-| T013 | 2016-11-02 | P    |  7.35 | T   | T    |  53100 | 7656 | 45444 | 0.2453 | 0.1924 |
-#+END_EXAMPLE
+#+begin_example
+| Ref  | Date       | Code | Price | G10 | QP10 | Shares |   Lp |    Qp | Iplp | Ipqp |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------|
+| T002 | 2016-11-01 | P    | 8     | T   | F    |    200 |   28 |   172 | 0    | 0    |
+| T003 | 2016-11-01 | P    | 8     | F   | T    |    800 |  112 |   688 | 0    | 0    |
+| T006 | 2016-11-01 | S    | 8     | F   | T    |   1000 |  143 |   857 | 0    | 0    |
+| T010 | 2016-11-01 | P    | 8     | F   | T    |   3175 |  451 |  2724 | 0    | 0    |
+| T013 | 2016-11-02 | P    | 7     | T   | T    |  53100 | 7656 | 45444 | 0    | 0    |
+#+end_example
 
 *** Order_by
 You can sort a table on any number of columns with ~order_by~. The ~order_by~
@@ -1508,36 +1666,35 @@ All columns of the input table are included in the output.
 
 Let's sort our table first by ~:code~, then in reverse order of ~:date~.
 
-#+BEGIN_SRC ruby :wrap EXAMPLE
-  tab1.order_by(:code, :date!) \
-    .to_aoa
+#+BEGIN_SRC ruby
+  tab1.order_by(:code, :date!).to_aoa
 #+END_SRC
 
-#+begin_EXAMPLE
-| Ref  |       Date | Code | Price | G10 | QP10 | Shares |   Lp |    Qp |   Iplp |   Ipqp |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
-| T011 | 2016-11-02 | P    | 7.425 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 |
-| T012 | 2016-11-02 | P    |  7.55 | F   | F    |   4700 |  677 |  4023 | 0.2453 | 0.1924 |
-| T012 | 2016-11-02 | P    |  7.55 | F   | F    |   4700 |  677 |  4023 | 0.2453 | 0.1924 |
-| T013 | 2016-11-02 | P    |  7.35 | T   | T    |  53100 | 7656 | 45444 | 0.2453 | 0.1924 |
-| T014 | 2016-11-02 | P    |  7.45 | F   | T    |   5847 |  835 |  5012 | 0.2453 | 0.1924 |
-| T015 | 2016-11-02 | P    |  7.75 | F   | F    |    500 |   72 |   428 | 0.2453 | 0.1924 |
-| T016 | 2016-11-02 | P    |  8.25 | T   | T    |    100 |   14 |    86 | 0.2453 | 0.1924 |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
-| T001 | 2016-11-01 | P    |   7.7 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 |
-| T002 | 2016-11-01 | P    |  7.75 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 |
-| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 |
-| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 |
-| T008 | 2016-11-01 | P    |  7.65 | F   | F    |   2771 |  393 |  2378 | 0.2453 | 0.1924 |
-| T009 | 2016-11-01 | P    |   7.6 | F   | F    |   9550 | 1363 |  8187 | 0.2453 | 0.1924 |
-| T010 | 2016-11-01 | P    |  7.55 | F   | T    |   3175 |  451 |  2724 | 0.2453 | 0.1924 |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
-| T004 | 2016-11-01 | S    |  7.55 | T   | F    |   6811 |  966 |  5845 | 0.2453 | 0.1924 |
-| T005 | 2016-11-01 | S    |   7.5 | F   | F    |   4000 |  572 |  3428 | 0.2453 | 0.1924 |
-| T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 |
-| T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 |
-| T007 | 2016-11-01 | S    |  7.65 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 |
-#+end_EXAMPLE
+#+begin_example
+| Ref  | Date       | Code | Price | G10 | QP10 | Shares |   Lp |    Qp | Iplp | Ipqp |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------|
+| T011 | 2016-11-02 | P    | 7     | T   | F    |    100 |   14 |    86 | 0    | 0    |
+| T012 | 2016-11-02 | P    | 8     | F   | F    |   4700 |  677 |  4023 | 0    | 0    |
+| T012 | 2016-11-02 | P    | 8     | F   | F    |   4700 |  677 |  4023 | 0    | 0    |
+| T013 | 2016-11-02 | P    | 7     | T   | T    |  53100 | 7656 | 45444 | 0    | 0    |
+| T014 | 2016-11-02 | P    | 7     | F   | T    |   5847 |  835 |  5012 | 0    | 0    |
+| T015 | 2016-11-02 | P    | 8     | F   | F    |    500 |   72 |   428 | 0    | 0    |
+| T016 | 2016-11-02 | P    | 8     | T   | T    |    100 |   14 |    86 | 0    | 0    |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------|
+| T001 | 2016-11-01 | P    | 8     | T   | F    |    100 |   14 |    86 | 0    | 0    |
+| T002 | 2016-11-01 | P    | 8     | T   | F    |    200 |   28 |   172 | 0    | 0    |
+| T003 | 2016-11-01 | P    | 8     | F   | T    |    800 |  112 |   688 | 0    | 0    |
+| T003 | 2016-11-01 | P    | 8     | F   | T    |    800 |  112 |   688 | 0    | 0    |
+| T008 | 2016-11-01 | P    | 8     | F   | F    |   2771 |  393 |  2378 | 0    | 0    |
+| T009 | 2016-11-01 | P    | 8     | F   | F    |   9550 | 1363 |  8187 | 0    | 0    |
+| T010 | 2016-11-01 | P    | 8     | F   | T    |   3175 |  451 |  2724 | 0    | 0    |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------|
+| T004 | 2016-11-01 | S    | 8     | T   | F    |   6811 |  966 |  5845 | 0    | 0    |
+| T005 | 2016-11-01 | S    | 8     | F   | F    |   4000 |  572 |  3428 | 0    | 0    |
+| T006 | 2016-11-01 | S    | 8     | F   | T    |   1000 |  143 |   857 | 0    | 0    |
+| T006 | 2016-11-01 | S    | 8     | F   | T    |   1000 |  143 |   857 | 0    | 0    |
+| T007 | 2016-11-01 | S    | 8     | T   | F    |    200 |   28 |   172 | 0    | 0    |
+#+end_example
 
 The interesting thing about ~order_by~ is that, while it ignores groups in its
 input, it adds group boundaries in the output table at those rows where the sort
@@ -1552,48 +1709,48 @@ optional trailing ~!~ to indicate reverse sort.  The resulting table has an
 additional column called ~:sort_key~ with the expression evaluated for each
 row, and the table is sorted as with ~order_by~ on that column.
 
-#+BEGIN_SRC ruby :wrap EXAMPLE
+#+BEGIN_SRC ruby
   tab1.order_with('price * shares').to_aoa
 #+END_SRC
 
-#+begin_EXAMPLE
-| Ref  |       Date | Code | Price | G10 | QP10 | Shares |   Lp |    Qp |   Iplp |   Ipqp | Sort Key |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
-| T011 | 2016-11-02 | P    | 7.425 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 |    742.5 |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
-| T001 | 2016-11-01 | P    |   7.7 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 |    770.0 |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
-| T016 | 2016-11-02 | P    |  8.25 | T   | T    |    100 |   14 |    86 | 0.2453 | 0.1924 |    825.0 |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
-| T007 | 2016-11-01 | S    |  7.65 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 |   1530.0 |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
-| T002 | 2016-11-01 | P    |  7.75 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 |   1550.0 |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
-| T015 | 2016-11-02 | P    |  7.75 | F   | F    |    500 |   72 |   428 | 0.2453 | 0.1924 |   3875.0 |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
-| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 |   6000.0 |
-| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 |   6000.0 |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
-| T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 |   7600.0 |
-| T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 |   7600.0 |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
-| T008 | 2016-11-01 | P    |  7.65 | F   | F    |   2771 |  393 |  2378 | 0.2453 | 0.1924 | 21198.15 |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
-| T010 | 2016-11-01 | P    |  7.55 | F   | T    |   3175 |  451 |  2724 | 0.2453 | 0.1924 | 23971.25 |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
-| T005 | 2016-11-01 | S    |   7.5 | F   | F    |   4000 |  572 |  3428 | 0.2453 | 0.1924 |  30000.0 |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
-| T012 | 2016-11-02 | P    |  7.55 | F   | F    |   4700 |  677 |  4023 | 0.2453 | 0.1924 |  35485.0 |
-| T012 | 2016-11-02 | P    |  7.55 | F   | F    |   4700 |  677 |  4023 | 0.2453 | 0.1924 |  35485.0 |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
-| T014 | 2016-11-02 | P    |  7.45 | F   | T    |   5847 |  835 |  5012 | 0.2453 | 0.1924 | 43560.15 |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
-| T004 | 2016-11-01 | S    |  7.55 | T   | F    |   6811 |  966 |  5845 | 0.2453 | 0.1924 | 51423.05 |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
-| T009 | 2016-11-01 | P    |   7.6 | F   | F    |   9550 | 1363 |  8187 | 0.2453 | 0.1924 |  72580.0 |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
-| T013 | 2016-11-02 | P    |  7.35 | T   | T    |  53100 | 7656 | 45444 | 0.2453 | 0.1924 | 390285.0 |
-#+end_EXAMPLE
+#+begin_example
+| Ref  | Date       | Code | Price | G10 | QP10 | Shares |   Lp |    Qp | Iplp | Ipqp | Sort Key |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T011 | 2016-11-02 | P    | 7     | T   | F    |    100 |   14 |    86 | 0    | 0    |      743 |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T001 | 2016-11-01 | P    | 8     | T   | F    |    100 |   14 |    86 | 0    | 0    |      770 |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T016 | 2016-11-02 | P    | 8     | T   | T    |    100 |   14 |    86 | 0    | 0    |      825 |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T007 | 2016-11-01 | S    | 8     | T   | F    |    200 |   28 |   172 | 0    | 0    |     1530 |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T002 | 2016-11-01 | P    | 8     | T   | F    |    200 |   28 |   172 | 0    | 0    |     1550 |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T015 | 2016-11-02 | P    | 8     | F   | F    |    500 |   72 |   428 | 0    | 0    |     3875 |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T003 | 2016-11-01 | P    | 8     | F   | T    |    800 |  112 |   688 | 0    | 0    |     6000 |
+| T003 | 2016-11-01 | P    | 8     | F   | T    |    800 |  112 |   688 | 0    | 0    |     6000 |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T006 | 2016-11-01 | S    | 8     | F   | T    |   1000 |  143 |   857 | 0    | 0    |     7600 |
+| T006 | 2016-11-01 | S    | 8     | F   | T    |   1000 |  143 |   857 | 0    | 0    |     7600 |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T008 | 2016-11-01 | P    | 8     | F   | F    |   2771 |  393 |  2378 | 0    | 0    |    21198 |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T010 | 2016-11-01 | P    | 8     | F   | T    |   3175 |  451 |  2724 | 0    | 0    |    23971 |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T005 | 2016-11-01 | S    | 8     | F   | F    |   4000 |  572 |  3428 | 0    | 0    |    30000 |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T012 | 2016-11-02 | P    | 8     | F   | F    |   4700 |  677 |  4023 | 0    | 0    |    35485 |
+| T012 | 2016-11-02 | P    | 8     | F   | F    |   4700 |  677 |  4023 | 0    | 0    |    35485 |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T014 | 2016-11-02 | P    | 7     | F   | T    |   5847 |  835 |  5012 | 0    | 0    |    43560 |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T004 | 2016-11-01 | S    | 8     | T   | F    |   6811 |  966 |  5845 | 0    | 0    |    51423 |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T009 | 2016-11-01 | P    | 8     | F   | F    |   9550 | 1363 |  8187 | 0    | 0    |    72580 |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T013 | 2016-11-02 | P    | 7     | T   | T    |  53100 | 7656 | 45444 | 0    | 0    |   390285 |
+#+end_example
 
 *** Group_by
 Like ~order_by~, ~group_by~ takes a set of parameters of column header symbols,
@@ -1625,13 +1782,13 @@ group:
 #+END_EXAMPLE
 
 After the grouping column parameters, ~:code~ and ~:date~, there are several
-hash-like "aggregating" parameters where the key is the column to aggregate and
-the value is a symbol for one of several aggregating methods that
-~FatTable::Column~ objects understand. For example, the ~:avg~ method is applied
-to the :price column so that the output shows the average price in each group.
-The ~:shares~, ~:lp~, and ~:qp~ columns are summed, and the ~:all?~ aggregate is
-applied to one of the boolean fields, that is, it is ~true~ if any of the values
-in that column are ~true~.
+hash-like "aggregating" parameters where the key is the column to aggregate
+and the value is a symbol for one of several aggregating methods that
+~FatTable::Column~ objects understand. For example, the ~:avg~ method is
+applied to the :price column so that the output shows the average price in
+each group.  The ~:shares~, ~:lp~, and ~:qp~ columns are summed, and the
+~:all?~ aggregate is applied to one of the boolean fields, that is, it is
+~true~ if all of the values in that column are ~true~.
 
 Note that the column names in the output of the aggregated columns have the
 name of the aggregating method pre-pended to the column name.
@@ -1682,7 +1839,6 @@ implicit ~order_by~ on the grouping columns is collapsed into a single row.
 
 *** Join
 **** Join Types
-
 So far, all the operations have operated on a single table. ~FatTable~ provides
 several ~join~ methods for combining two tables, each of which takes as
 parameters (1) a second table and (2) except in the case of ~cross_join~, zero
@@ -1719,7 +1875,6 @@ for inclusion in the joined output table.
      M~ rows.
 
 **** Join Expressions
-
 For each of the join types, if no join expressions are given, the tables will be
 joined on columns having the same column header in both tables, and the join
 condition is satisfied when all the values in those columns are equal. If the
@@ -1747,12 +1902,11 @@ local variables within the expression, but the instance variables ~@row~ and
 ~@group~ are not.
 
 **** Join Examples
-
 The following examples are taken from the [[https://www.tutorialspoint.com/postgresql/postgresql_using_joins.htm][Postgresql tutorial]], with some slight
 modifications. The examples will use the following two tables, which are also
 available in ~ft_console~ as ~@tab_a~ and ~@tab_b~:
 
-#+BEGIN_SRC ruby :wrap EXAMPLE :results silent
+#+BEGIN_SRC ruby :results silent
   tab_a_str = <<-EOS
     | Id | Name  | Age | Address    | Salary |  Join Date |
     |----+-------+-----+------------+--------+------------|
@@ -1776,37 +1930,37 @@ available in ~ft_console~ as ~@tab_a~ and ~@tab_b~:
 #+END_SRC
 
 Here is ~tab_a~:
-#+begin_src ruby :wrap EXAMPLE
+#+begin_src ruby
   tab_a = FatTable.from_org_string(tab_a_str)
   tab_a.to_aoa
 #+end_src
 
-#+begin_EXAMPLE
-| Id | Name  | Age | Address    | Salary |  Join Date |
+#+begin_example
+| Id | Name  | Age | Address    | Salary | Join Date  |
 |----+-------+-----+------------+--------+------------|
-|  1 | Paul  |  32 | California |  20000 | 2001-07-13 |
-|  3 | Teddy |  23 | Norway     |  20000 | 2007-12-13 |
-|  4 | Mark  |  25 | Rich-Mond  |  65000 | 2007-12-13 |
-|  5 | David |  27 | Texas      |  85000 | 2007-12-13 |
-|  2 | Allen |  25 | Texas      |        | 2005-07-13 |
-|  8 | Paul  |  24 | Houston    |  20000 | 2005-07-13 |
-|  9 | James |  44 | Norway     |   5000 | 2005-07-13 |
+| 1  | Paul  |  32 | California |  20000 | 2001-07-13 |
+| 3  | Teddy |  23 | Norway     |  20000 | 2007-12-13 |
+| 4  | Mark  |  25 | Rich-Mond  |  65000 | 2007-12-13 |
+| 5  | David |  27 | Texas      |  85000 | 2007-12-13 |
+| 2  | Allen |  25 | Texas      |        | 2005-07-13 |
+| 8  | Paul  |  24 | Houston    |  20000 | 2005-07-13 |
+| 9  | James |  44 | Norway     |   5000 | 2005-07-13 |
 | 10 | James |  45 | Texas      |   5000 |            |
-#+end_EXAMPLE
+#+end_example
 
 And ~tab_b~:
-#+begin_src ruby :wrap EXAMPLE
+#+begin_src ruby
   tab_b = FatTable.from_org_string(tab_b_str)
   tab_b.to_aoa
 #+end_src
 
-#+begin_EXAMPLE
+#+begin_example
 | Id | Dept        | Emp Id |
 |----+-------------+--------|
-|  1 | IT Billing  |      1 |
-|  2 | Engineering |      2 |
-|  3 | Finance     |      7 |
-#+end_EXAMPLE
+| 1  | IT Billing  | 1      |
+| 2  | Engineering | 2      |
+| 3  | Finance     | 7      |
+#+end_example
 
 ***** Inner Joins
 With no join expression arguments, the tables are joined when their sole common
@@ -2024,7 +2178,6 @@ set operations on duplicates and groups.
 #+END_EXAMPLE
 
 **** Unions
-
 Two tables that are set-compatible can be combined with the ~union~ or
 ~union_all~ methods so that the rows of both tables appear in the output. In the
 output table, the headers of the receiver table are used. You can use ~select~
@@ -2116,7 +2269,6 @@ group boundary between the rows of the two input tables.
 #+END_EXAMPLE
 
 **** Intersections
-
 The ~intersect~ method returns a table having only rows common to both tables,
 eliminating any duplicate rows in the result.
 
@@ -2178,7 +2330,6 @@ operation matters.
 #+END_EXAMPLE
 
 **** Set Differences with Except
-
 You can use the ~except~ method to delete from a table any rows that occur in
 another table, that is, compute the set difference between the tables.
 
@@ -2388,7 +2539,6 @@ forth are ignored.
 #+END_EXAMPLE
 
 ***** To Org
-
 This formatter is designed to format tables in a manner consistent with the
 way tables are drawn within Emacs Org Mode.  It also uses nothing by ASCII
 characters to draw the table, but, the intersections of lines are represented
@@ -2417,7 +2567,6 @@ it may be better to use the =to_aoa= formatter shown below.
 #+end_EXAMPLE
 
 ***** To Term
-
 When outputting to a terminal or other device that can interpret ANSI
 characters and escape codes, you can use this formatter to get a prettier
 table.  It also allows embelishments such as color and text styles to the
@@ -2443,7 +2592,6 @@ extent the device supports it.
 #+end_EXAMPLE
 
 ***** To LaTeX
-
 This formatter outputs a table in the form suitable for inclusion in a LaTeX
 document using the ~logtable~ package.  Natualy it allows embelishments such
 as color and text styles to the full extent of LaTeX's formatting prowess.
@@ -2471,7 +2619,6 @@ Finance&
 #+end_EXAMPLE
 
 ***** To AoA (Array of Arrays)
-
 #+begin_SRC ruby :wrap EXAMPLE
   tab_b.to_aoa
 #+end_SRC
@@ -2482,7 +2629,6 @@ Finance&
 #+end_EXAMPLE
 
 ***** To AoH (Array of Hashes)
-
 #+begin_SRC ruby :wrap EXAMPLE
   tab_b.to_aoh
 #+end_SRC
@@ -2503,7 +2649,6 @@ order, so '$R,' and ',$R' are equivalent.
 Here is a list of all the formatting directives that apply to each cell type:
 
 **** All Types as Strings
-
 For a string element, or any an element of any type (since these are applied
 after the element has been converted to a String), the following instructions
 are valid.
@@ -2532,7 +2677,6 @@ columns of a given type, it can be countermanded in formatting directives for
 particular columns.
 
 **** Numeric
-
 For a numeric element, all the instructions valid for string are available, in
 addition to the following:
 
@@ -2556,17 +2700,16 @@ For example, the directive 'R5.0c[blue]' would right-align the numeric
 element, pad it on the left with zeros, and color it blue.
 
 **** DateTime
-
 For a ~DateTime~, all the instructions valid for string are available, in
 addition to the following:
 
-- d[fmt] :: apply the format to a ~Date~ or a  ~DateTime~ that is a whole day,
-     that is that has no or zero hour, minute, and second components, where fmt
-     is a valid format string for ~Date#strftime~, otherwise, the datetime will
-     be formatted as an ISO 8601 string, YYYY-MM-DD.
+- d[fmt] :: apply the format to a ~Date~ or a ~DateTime~ that is a whole day,
+  that is that has no or zero hour, minute, and second components, where fmt
+  is a valid format string for ~Date#strftime~, otherwise, the datetime will
+  be formatted as an ISO 8601 string, YYYY-MM-DD.
 - D[fmt] :: apply the format to a datetime that has at least a non-zero hour
-     component where fmt is a valid format string for Date#strftime, otherwise,
-     the datetime will be formatted as an ISO 8601 string, YYYY-MM-DD.
+  component where fmt is a valid format string for Date#strftime, otherwise,
+  the datetime will be formatted as an ISO 8601 string, YYYY-MM-DD HH:MM:SS.
 
 For example, 'c[pink]d[%b %-d, %Y]C', would format a date element like 'Sep
 22, 1957', center it, and color it pink.
@@ -2590,7 +2733,6 @@ render a true boolean as ~Yeppers~ colored green on pink and render a false
 boolean as ~Nope~ colored red on pink. See [[https://www.youtube.com/watch?v=oLdFFD8II8U][Yeppers]] for additional information.
 
 **** NilClass
-
 By default, ~nil~ elements are rendered as blank cells, but you can make them
 visible with the following, and in that case, all the formatting instructions
 valid for strings are also available:
@@ -2601,7 +2743,6 @@ For example, you might want to use 'n[-]Cc[purple]' to make nils visible as a
 centered purple hyphen.
 
 *** The ~format~ and ~format_for~ methods
-
 Formatters take only two kinds of methods, those that attach footers to a
 table, which are discussed in the next section, and those that specify
 formatting for table cells, which are the subject of this section.
@@ -2625,7 +2766,7 @@ formatting for numerics in general and calls for the ~:id~ column to be padded
 to three digits with zeros on the left (the '3.0' part) and to be centered
 (the 'C' part).
 
-#+BEGIN_SRC ruby :wrap EXAMPLE
+#+BEGIN_SRC ruby
   tab_a.to_text do |f|
     # Note: blat: is silently ignored
     f.format(numeric: '0.0,R', id: '3.0C', blat: 'B')
@@ -2634,7 +2775,7 @@ to three digits with zeros on the left (the '3.0' part) and to be centered
   end
 #+END_SRC
 
-#+begin_EXAMPLE
+#+begin_example
 +=====+=======+=====+============+========+============+
 |  Id |  Name | Age |   Address  | Salary |  Join Date |
 +-----+-------+-----+------------+--------+------------+
@@ -2647,7 +2788,7 @@ to three digits with zeros on the left (the '3.0' part) and to be centered
 | 009 | James |  44 |     Norway |  5,000 | 2005-07-13 |
 | 010 | James |  45 |      Texas |  5,000 |            |
 +=====+=======+=====+============+========+============+
-#+end_EXAMPLE
+#+end_example
 
 In the example, the ~format~ method affects the whole table.  Its ~numeric:~
 directive affected the ~:age~ and ~:salary~ columns because their types are
@@ -2746,7 +2887,6 @@ but not for other nils, such as in the last row of the ~:join_date~ column.
 
 *** Footers
 **** Adding Footers
-
 You can call the ~foot~, ~gfoot~, ~footer,~ or ~gfooter~, methods on
 ~Formatter~ objects to add footers and group footers. Note that all of these
 methods return a ~Footer~ object that can be accessed to extract the computed
@@ -2804,7 +2944,6 @@ There are also a number of convenience methods for adding common footers:
      columns with the label 'Group Maximum'.
 
 **** Dynamic Labels
-
 Most of the time, you will want a fixed string as the label.  However,
 especially in the case of a group footer, you might want a dynamically
 contructed label.  You can use a proc or lambda for a label, and it will be
@@ -2818,12 +2957,13 @@ include the most recent year from the date column:
   temp: :avg)
 #+end_src
 
-In the case of a group footer, the lambda or proc may take either one or qtwo parameters.
+In the case of a group footer, the lambda or proc may take either one or two parameters.
 If it takes one, the parameter is simply the 0-based number of the group:
 
 #+begin_src ruby
   fmtr.gfoot(label: -> (k) { "Group #{(k+1).to_roman} Average" }, temp: :avg)
 #+end_src
+
 This would format the label with a roman numeral (assuming you defined a
 method to do so) for the group number.
 
@@ -2834,11 +2974,11 @@ non-group footers:
     fmtr.gfoot(label: -> (k, f) { "Year #{f.column(:date, k).max.year} Group #{(k+1).to_roman} Average" },
                temp: :avg)
 #+end_src
+
 This would add the group's year to label, assuming the :date column of the
 footer's table had the same year for each item in the group.
 
 **** Aggregators
-
 When adding a footer with the above methods, you can specify an aggregator for
 each column named in the ~agg_cols~ parameter.  There are several candidates
 for what you can use for an aggregator:
@@ -2854,7 +2994,7 @@ for what you can use for an aggregator:
     In the case of datetime columns, these aggrgators convert the dates to
     julian date numbers, perform the calculation, then convert the result back
     to a datetime object.
-    Apart from the built-in aggrgators, you could define your own by opening the
+    Apart from the built-in aggregators, you could define your own by opening the
     FatTable::Column class and adding a suitable instance method.  In that
     case, the symbol could also refer to the method you defined.
 - String :: using a string as an aggrgegator can result in:
@@ -2883,7 +3023,6 @@ for what you can use for an aggregator:
     itself.
 
 **** Footer objects
-
 Each of the methods for adding a footer to a ~Formatter~ returns a ~Footer~ object
 that you can query for attributes of the generated footer, including accessing
 their computed values.  Here are the accessors available on a
@@ -2906,7 +3045,6 @@ their computed values.  Here are the accessors available on a
   ~k~ to specify which group to access in the case of a group footer.
 
 **** Footer Examples
-
 As a reminder, here is the table, ~tab_a~ defined earlier:
 
 #+BEGIN_SRC ruby :wrap EXAMPLE
@@ -2931,7 +3069,8 @@ You can add a footer compute the average of the given columns.  You may be
 surprised that you can average a set of dates, but ~:avg~ simply converts the
 dates to Julian numbers, averages that, then converts the result back to a
 date.
-#+BEGIN_SRC ruby :wrap EXAMPLE
+
+#+BEGIN_SRC ruby
   tab_a.to_text do |f|
     f.format(numeric: '0.0R,', datetime: 'd[%v]D[%v]')
     f.footer('Average', age: :avg, salary: :avg, join_date: :avg)
@@ -2963,7 +3102,8 @@ If the string is convertible into its columns's type, it will be converted to
 that type; otherwise, it will be placed in the footer literally.  This example
 also shows how the values from one footer might be used in composing another
 footer.
-#+BEGIN_SRC ruby :wrap EXAMPLE
+
+#+BEGIN_SRC ruby
   tab_a.to_text do |f|
     f.format(numeric: '0.0R,', datetime: 'd[%v]D[%v]')
     avg_ft = f.footer('Average', age: :avg, salary: :avg, join_date: :avg)
@@ -2979,7 +3119,7 @@ footer.
   end
 #+END_SRC
 
-#+begin_EXAMPLE
+#+begin_example
 +=============+=======+=====+============+========+====================+
 | Id          | Name  | Age | Address    | Salary | Join Date          |
 +-------------+-------+-----+------------+--------+--------------------+
@@ -3002,7 +3142,7 @@ footer.
 +-------------+-------+-----+------------+--------+--------------------+
 |     Comment |       |     |            |        | We're overspending |
 +=============+=======+=====+============+========+====================+
-#+end_EXAMPLE
+#+end_example
 
 ***** Ruby Objects
 You can make the aggregator an normal ruby object, in which case it is just
@@ -3161,7 +3301,6 @@ call one of the ~to_xxx~ methods directly on a table, which will yield a
 convenient way to do it.  But there are a few other ways.
 
 **** By Instantiating a Formatter
-
 You can instantiate a ~XXXFormatter~ object and feed it a table as a
 parameter.  There is a Formatter subclass for each target output medium, for
 example, ~AoaFormatter~ will produce a ruby array of arrays. You can then call
@@ -3207,7 +3346,6 @@ you can call methods on it to affect the formatting of the output:
 #+END_EXAMPLE
 
 **** By Using ~FatTable~ module-level method calls
-
 The ~FatTable~ module provides a set of methods of the form ~to_aoa~, ~to_text~,
 etc., to access a ~Formatter~ without having to create an instance yourself.
 Without a block, they apply the default formatting to the table and call the
@@ -3254,7 +3392,6 @@ automatically after the block:
 #+END_EXAMPLE
 
 **** By Calling Methods on Table Objects
-
 Finally, as in many of the examples, you can call methods such as ~to_aoa~,
 ~to_text~, etc., directly on a Table:
 
@@ -3275,29 +3412,30 @@ Finally, as in many of the examples, you can call methods such as ~to_aoa~,
 | 10 | James |  45 | Texas      |   5000 |            |
 #+END_EXAMPLE
 
-And you can supply a block to them as well to specify formatting or footers:
+And you can supply a block to them to specify formatting or footers:
 
-#+BEGIN_SRC ruby :wrap EXAMPLE
+#+BEGIN_SRC ruby
   tab_a.to_aoa do |f|
-    f.format(numeric: '0.0,R', id: '3.0C')
+    f.format(numeric: '$0.0,R', id: '3.0C')
     f.sum_footer(:salary, :age)
   end
 #+END_SRC
 
-#+BEGIN_EXAMPLE
-|    Id | Name  | Age | Address    |  Salary |  Join Date |
-|-------+-------+-----+------------+---------+------------|
-|   001 | Paul  |  32 | California |  20,000 | 2001-07-13 |
-|   003 | Teddy |  23 | Norway     |  20,000 | 2007-12-13 |
-|   004 | Mark  |  25 | Rich-Mond  |  65,000 | 2007-12-13 |
-|   005 | David |  27 | Texas      |  85,000 | 2007-12-13 |
-|   002 | Allen |  25 | Texas      |         | 2005-07-13 |
-|   008 | Paul  |  24 | Houston    |  20,000 | 2005-07-13 |
-|   009 | James |  44 | Norway     |   5,000 | 2005-07-13 |
-|   010 | James |  45 | Texas      |   5,000 |            |
-|-------+-------+-----+------------+---------+------------|
-| Total |       | 245 |            | 220,000 |            |
-#+END_EXAMPLE
+#+RESULTS:
+#+begin_example
+|    Id | Name  |  Age | Address    |   Salary | Join Date  |
+|-------+-------+------+------------+----------+------------|
+|   001 | Paul  |  $32 | California |  $20,000 | 2001-07-13 |
+|   003 | Teddy |  $23 | Norway     |  $20,000 | 2007-12-13 |
+|   004 | Mark  |  $25 | Rich-Mond  |  $65,000 | 2007-12-13 |
+|   005 | David |  $27 | Texas      |  $85,000 | 2007-12-13 |
+|   002 | Allen |  $25 | Texas      |          | 2005-07-13 |
+|   008 | Paul  |  $24 | Houston    |  $20,000 | 2005-07-13 |
+|   009 | James |  $44 | Norway     |   $5,000 | 2005-07-13 |
+|   010 | James |  $45 | Texas      |   $5,000 |            |
+|-------+-------+------+------------+----------+------------|
+| Total |       | $245 |            | $220,000 |            |
+#+end_example
 
 * Development
 After checking out the repo, run `bin/setup` to install dependencies. Then, run
