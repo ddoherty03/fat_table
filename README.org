@@ -326,7 +326,7 @@ LaTeX, bold is doable.  The output of the following code block is being
 written to a file =examples/quicktable.tex= which is then =\included=-ed in a
 simple wrapper file, =examples/quick.tex= so it can be compiled by LaTeX.
 
-#+BEGIN_SRC ruby :results file :file "examples/quicktable.tex"
+#+BEGIN_SRC ruby :results file :file "spec/example_files/quicktable.tex"
   table.to_latex do |fmt|
     fmt.gfooter('Avg', shares: :avg, price: :avg)
     fmt.avg_footer(:price, :shares)
@@ -341,7 +341,7 @@ simple wrapper file, =examples/quick.tex= so it can be compiled by LaTeX.
 #+END_SRC
 
 #+begin_EXAMPLE
-[[file:examples/quicktable.tex]]
+[[file:spec/example_files/quicktable.tex]]
 #+end_EXAMPLE
 
 These commands run pdflatex on the result twice to get the table aligned
@@ -354,12 +354,12 @@ properly.
 
 And we convert the =PDF= into a smaller image for display:
 #+begin_src sh :results verbatim
-  cd examples
+  cd spec/example_files
   pdftoppm -png quick.pdf >quick.png
   convert quick.png -resize 600x800 quick_small.png
 #+end_src
 
-[[file:examples/quick_small.png]]
+[[file:spec/example_files/quick_small.png]]
 
 ** A Word About the Examples
 When you install the ~fat_table~ gem, you have access to a program ~ft_console~,
