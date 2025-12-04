@@ -323,8 +323,9 @@ We can format the table constructed above.
 For the text format above, we were wasting our breath specifying bold styling
 since there is no way to make that happen in plain ASCII text.  But with
 LaTeX, bold is doable.  The output of the following code block is being
-written to a file =examples/quicktable.tex= which is then =\included=-ed in a
-simple wrapper file, =examples/quick.tex= so it can be compiled by LaTeX.
+written to a file =spec/example_files/quicktable.tex= which is then
+=\included=-ed in a simple wrapper file, =spec/example_files/quick.tex=
+so it can be compiled by LaTeX.
 
 #+BEGIN_SRC ruby :results file :file "spec/example_files/quicktable.tex"
   table.to_latex do |fmt|
@@ -340,9 +341,7 @@ simple wrapper file, =examples/quick.tex= so it can be compiled by LaTeX.
   end
 #+END_SRC
 
-#+begin_EXAMPLE
 [[file:spec/example_files/quicktable.tex]]
-#+end_EXAMPLE
 
 These commands run pdflatex on the result twice to get the table aligned
 properly.
