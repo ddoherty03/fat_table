@@ -102,12 +102,12 @@ Ruby LOADPATH:
 
 * Version
 #+begin_src ruby :wrap EXAMPLE
-  require 'fat_table'
+  require_relative 'lib/fat_table'
   "Current version is: #{FatTable::VERSION}"
 #+end_src
 
 #+begin_EXAMPLE
-Current version is: 0.9.9
+Current version is: 0.9.10
 #+end_EXAMPLE
 
 * Introduction
