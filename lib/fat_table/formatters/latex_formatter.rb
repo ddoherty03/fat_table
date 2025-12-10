@@ -26,7 +26,8 @@ module FatTable
     end
 
     # Taken from the Rainbow gem's list of valid colors.
-    self.valid_colors = File.readlines(File.join(__dir__, 'xcolors.txt'), chomp: true)
+    color_path = File.expand_path("../../../data/xcolors.txt", __dir__)
+    self.valid_colors = File.readlines(color_path, chomp: true)
 
     # LaTeX commands to load the needed packages based on the :environement
     # option.  For now, just handles the default 'longtable' :environment.  The
