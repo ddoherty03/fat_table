@@ -67,7 +67,7 @@ module FatTable
         bgcolor: 'none',
         hms: false,
         pre_digits: 0,
-        post_digits: 0,
+        post_digits: 3,
         commas: false,
         currency: false,
         datetime_fmt: '%F %H:%M:%S',
@@ -1032,17 +1032,20 @@ module FatTable
 
       if istruct[:commas]
         # Commify the whole number part if not done already.
-        result = val.commas(istruct[:post_digits])
+        result = val.is_a?(Integer) ? val.commas(0) : val.commas(istruct[:post_digits])
       else
-        result = val.round(istruct[:post_digits]).to_s
-        match = result.match(/\.(\d+)\z/)
-        if match && (match[1]&.size&.< istruct[:post_digits])
-          # Add trailing zeros to pad out post_digits
-          n_zeros = [istruct[:post_digits] - match[1].size, 0].max
-          zeros = '0' * n_zeros
-          result += zeros
+        if val.is_a?(Integer)
+        result = val.to_s
+        else
+          result = val.round(istruct[:post_digits]).to_s
+          match = result.match(/\.(\d+)\z/)
+          if match && (match[1]&.size&.< istruct[:post_digits])
+            # Add trailing zeros to pad out post_digits
+            n_zeros = [istruct[:post_digits] - match[1].size, 0].max
+            zeros = '0' * n_zeros
+            result += zeros
+          end
         end
-        result
       end
 
       if istruct[:pre_digits].positive?
