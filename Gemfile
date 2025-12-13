@@ -19,3 +19,5 @@ gem 'rspec', '~> 3.0'
 gem 'rubocop', require: false
 gem 'rubocop-ddoherty', git: 'https://github.com/ddoherty03/rubocop-ddoherty.git', branch: 'master', require: false
 gem 'simplecov'
+
+gem "gem_docs", path: '../gem_docs'
