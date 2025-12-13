@@ -23,6 +23,18 @@ module FatTable
         Table.from_aoa(aoa).order_by(:date)
       end
 
+      it 'uses 3 decimal places in default format' do
+        tab_aoa = tab.to_aoa
+        nums = tab_aoa.compact.select { |r| r[0] != 'Ref' }.flatten.select { |s| s.match(/\A[0-9.]+\z/) }
+        expect(nums).to include('795546.200')
+        expect(nums).to include('118186.400')
+        expect(nums).to include('1.185')
+        expect(nums).to include('28.638')
+        # But not when the whole column are Integers
+        expect(nums).to include('7')
+        expect(nums).to include('16')
+      end
+
       it 'outputs table with default formatting' do
         aoa = AoaFormatter.new(tab).output
         expect(aoa.class).to eq(Array)
