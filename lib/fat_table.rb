@@ -186,8 +186,8 @@ module FatTable
   # default formatting is applies to the table's cells. If a block is given, it
   # yields an AoaFormatter to the block to which formatting instructions and
   # footers can be added by calling methods on it.
-  def self.to_aoa(table, **options)
-    fmt = AoaFormatter.new(table, **options)
+  def self.to_aoa(table, options = {})
+    fmt = AoaFormatter.new(table, options)
     yield fmt if block_given?
     fmt.output
   end
@@ -197,8 +197,8 @@ module FatTable
   # table. If no block is given, default formatting is applies to the table's
   # cells. If a block is given, it yields an AohFormatter to the block to which
   # formatting instructions and footers can be added by calling methods on it.
-  def self.to_aoh(table, **options)
-    fmt = AohFormatter.new(table, **options)
+  def self.to_aoh(table, options = {})
+    fmt = AohFormatter.new(table, options)
     yield fmt if block_given?
     fmt.output
   end
@@ -207,8 +207,8 @@ module FatTable
   # default formatting applies to the table's cells. If a block is given, it
   # yields a LaTeXFormatter to the block to which formatting instructions and
   # footers can be added by calling methods on it.
-  def self.to_latex(table, **options)
-    fmt = LaTeXFormatter.new(table, **options)
+  def self.to_latex(table, options = {})
+    fmt = LaTeXFormatter.new(table, options)
     yield fmt if block_given?
     fmt.output
   end
@@ -217,8 +217,8 @@ module FatTable
   # is given, default formatting applies to the table's cells. If a block is
   # given, it yields a OrgFormatter to the block to which formatting
   # instructions and footers can be added by calling methods on it.
-  def self.to_org(table, **options)
-    fmt = OrgFormatter.new(table, **options)
+  def self.to_org(table, options = {})
+    fmt = OrgFormatter.new(table, options)
     yield fmt if block_given?
     fmt.output
   end
@@ -227,8 +227,8 @@ module FatTable
   # table. If no block is given, default formatting applies to the table's
   # cells. If a block is given, it yields a TermFormatter to the block to which
   # formatting instructions and footers can be added by calling methods on it.
-  def self.to_term(table, **options)
-    fmt = TermFormatter.new(table, **options)
+  def self.to_term(table, options = {})
+    fmt = TermFormatter.new(table, options)
     yield fmt if block_given?
     fmt.output
   end
@@ -237,8 +237,8 @@ module FatTable
   # no block is given, default formatting applies to the table's cells. If a
   # block is given, it yields a TextFormatter to the block to which formatting
   # instructions and footers can be added by calling methods on it.
-  def self.to_text(table, **options)
-    fmt = TextFormatter.new(table, **options)
+  def self.to_text(table, options = {})
+    fmt = TextFormatter.new(table, options)
     yield fmt if block_given?
     fmt.output
   end
