@@ -213,7 +213,7 @@ module FatTable
     end
 
     # Insert a possibly calculated value for the label in the appropriate
-    # `@values` column.
+    # @values column.
     def insert_labels_in_label_col
       if group
         @values[@label_col] = []

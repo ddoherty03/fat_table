@@ -721,7 +721,7 @@ module FatTable
     # row in the table as a group boundary.  An attempt to add a boundary to
     # an empty table has no effect.  We adopt the convention that the last row
     # of the table always marks an implicit boundary even if it is not in the
-    # `@explicit_boundaries` array.  When we "mark" a boundary, we intend it to
+    # @explicit_boundaries array.  When we "mark" a boundary, we intend it to
     # be an explicit boundary, even if it marks the last row of the table.
     def mark_boundary(row_num = nil)
       return self if empty?
@@ -910,20 +910,19 @@ module FatTable
     # 2. a hash in +new_cols+ of the form +new_col: :old_col+ to rename an
     #    existing +:old_col+ column as +:new_col+, or
     #
-    # 3. a hash in +new_cols+ of the form +new_col: 'expression'+, to add a
-    #    new column +new_col+ that is computed as an arbitrary ruby expression
-    #    in which there are local variables bound to the names of existing
-    #    columns (whether selected for the output table or not) as well as any
-    #    +new_col+ defined earlier in the argument list. The expression string
-    #    can also access the instance variable `@row`, as the row number of
-    #    the row being evaluated, and `@group`, as the group number of the row
-    #    being evaluated.
+    # 3. a hash in +new_cols+ of the form +new_col: 'expression'+, to add a new
+    #    column +new_col+ that is computed as an arbitrary ruby expression in
+    #    which there are local variables bound to the names of existing columns
+    #    (whether selected for the output table or not) as well as any +new_col+
+    #    defined earlier in the argument list. The expression string can also
+    #    access the instance variable @row, as the row number of the row being
+    #    evaluated, and @group, as the group number of the row being evaluated.
     #
-    # 4. a hash in +new_cols+ with one of the special keys, `ivars: {literal
-    #    hash}`, `before_hook: '<ruby-code>'`, or `after_hook: '<ruby-code>'`
-    #    for defining custom instance variables to be used during evaluation
-    #    of parameters described in point 3 and hooks of ruby code snippets to
-    #    be evaluated before and after processing each row.
+    # 4. a hash in +new_cols+ with one of the special keys, +ivars: {literal
+    #    hash}+, +before_hook: 'ruby-code'+, or +after_hook: 'ruby-code'+ for
+    #    defining custom instance variables to be used during evaluation of
+    #    parameters described in point 3 and hooks of ruby code snippets to be
+    #    evaluated before and after processing each row.
     #
     # The bare symbol arguments +cols+ (1) must precede any hash arguments
     # +new_cols+ (2 or 3). Each expression results in a column in the resulting

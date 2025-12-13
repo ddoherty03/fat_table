@@ -6,9 +6,6 @@ require 'rdoc/task'
 
 require 'rubocop/rake_task'
 
-require "gem_docs"
-GemDocs.install
-
 RuboCop::RakeTask.new
 
 RDoc::Task.new do |rdoc|

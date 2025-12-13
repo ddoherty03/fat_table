@@ -85,6 +85,8 @@ module FatTable
     #   col.type #=> 'Numeric'
     #   col.header #=> :prices
     #   col.sum #=> 18376.75
+    #
+    # @param
     def initialize(header:, items: [], type: 'NilClass', tolerant: false)
       @raw_header = header
       @header =
