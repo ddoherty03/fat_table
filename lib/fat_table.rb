@@ -20,7 +20,8 @@ module FatTable
 
   require 'fat_table/version'
   require 'fat_table/patches'
-  require 'ext/array'
+  require 'core_ext/array'
+  require 'core_ext/numeric_string'
   require 'fat_table/evaluator'
   require 'fat_table/convert'
   require 'fat_table/column'

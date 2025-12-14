@@ -1,0 +1,140 @@
+# frozen_string_literal: true
+
+require 'debug'
+
+# This refinement contains methods that extend the String class to massage
+# strings that represent numbers, such as adding commas, pre- and
+# post-padding, etc.
+module NumericString
+  # You can control how NumericString behaves by supplying a new
+  # NumericString::Config to the config: parameter of these methods.  Calling
+  # `NumericString::Config.build` gives you the deafult configuration with
+  # whatever overrides you give it.  You can also modify an existing config
+  # with some overrides. For example:
+  #
+  # #+begin_src ruby
+  #   cfg = NumericString::Config.build(group_size: 4)
+  #   cfg2 = cfg.with(group_char: '_')
+  #
+  #   "1234567.89".add_grouping(config: cfg)
+  #   => "123,4567.89"
+  #   "1234567.89".add_grouping(config: cfg2)
+  #   => '123_4567.89'
+  # #+end_src
+  Config = Struct.new(
+    :group_char,
+    :group_size,
+    :decimal_char,
+    :currency_symbol,
+    :pre_pad_char,
+    :post_pad_char,
+    keyword_init: true
+  ) do
+    DEFAULTS = {
+      group_char: ',',
+      group_size: 3,
+      decimal_char: '.',
+      currency_symbol: '$',
+      pre_pad_char: '0',
+      post_pad_char: '0',
+    }.freeze
+
+    def self.default
+      @default ||= new(**DEFAULTS).freeze
+    end
+
+    # Build from defaults, overriding selectively
+    def self.build(**overrides)
+      new(**DEFAULTS.merge(overrides)).freeze
+    end
+
+    # Clone-with-changes (very Ruby, very nice)
+    def with(**overrides)
+      self.class.build(
+        group_char:      overrides.fetch(:group_char, group_char),
+        group_size:      overrides.fetch(:group_size, group_size),
+        decimal_char:    overrides.fetch(:decimal_char, decimal_char),
+        currency_symbol: overrides.fetch(:currency_symbol, currency_symbol),
+        pre_pad_char: overrides.fetch(:pre_pad_char, pre_pad_char),
+        post_pad_char: overrides.fetch(:post_pad_char, post_pad_char),
+      )
+    end
+  end
+
+  refine String do
+    # If self is a valid decimal number, add grouping commas to the whole
+    # part, retaining any fractional part and currency symbol undisturbed.
+    # The optional cond: parameter can contain a test to determine if the
+    # grouping ought to be performed.  If (1) self is not a valid decimal
+    # number string, (2) the whole part already contains grouping characters,
+    # or (3) cond: is falsey, return self.
+    def add_grouping(cond: true, config: Config.default)
+      return self unless cond
+      return self unless valid_num?(config:)
+
+      cur, whole, frac = cur_whole_frac(config:)
+      return self if whole.include?(config.group_char)
+
+      whole = whole.split('').reverse
+                .each_slice(config.group_size).to_a
+                .map { |a| a.reverse.join }
+                .reverse
+                .join(config.group_char)
+      cur + whole + frac
+    end
+
+    alias_method :add_commas, :add_grouping
+
+    def add_currency(cond: true, config: Config.default)
+      return self unless cond
+      return self unless valid_num?(config:)
+
+      md = match(num_re(config:))
+      return self unless md[:cur].blank?
+
+      config.currency_symbol + self
+    end
+
+    def add_pre_digits(n, cond: true, config: Config.default)
+      return self unless cond
+      return self if n <= 0
+      return self unless valid_num?(config:)
+
+      cur, whole, frac = cur_whole_frac(config:)
+      n_pads = [n - whole.delete(config.group_char).size, 0].max
+      padding = config.pre_pad_char * n_pads
+      "#{cur}#{padding}#{whole}#{frac}"
+    end
+
+    def add_post_digits(n, cond: true, config: Config.default)
+      return self unless cond
+      return self if n <= 0
+      return self unless valid_num?(config:)
+
+      cur, whole, frac = cur_whole_frac(config:)
+      n_pads = [n - (frac.size - 1), 0].max
+      padding = config.post_pad_char * n_pads
+      "#{cur}#{whole}#{frac}#{padding}"
+    end
+
+    private
+
+    def num_re(config: Config.default)
+      cur_sym = Regexp.quote(config.currency_symbol)
+      grp_char = Regexp.quote(config.group_char)
+      dec_char = Regexp.quote(config.decimal_char)
+      /\A(?<cur>#{cur_sym})?(?<whole>[0-9#{grp_char}]+)(?<frac>#{dec_char}[0-9]*)?\z/
+    end
+
+    # Return the currency, whole and fractional parts of a string with a possible
+    # decimal point attached to the frac part if present.
+    def cur_whole_frac(config: Config.default)
+      match = match(num_re(config:))
+      [match[:cur].to_s, match[:whole].to_s, match[:frac].to_s]
+    end
+
+    def valid_num?(config: Config.default)
+      match?(num_re(config:))
+    end
+  end
+end
