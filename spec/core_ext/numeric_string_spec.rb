@@ -163,8 +163,11 @@ module FatTable
         expect('45862.11'.add_post_digits(7)).to eq('45862.1100000')
       end
 
-      it 'adds nothing if number is longer than pad size' do
-        expect('45862.118654'.add_post_digits(4)).to eq('45862.118654')
+      it 'rounds the fractional part if number is shorter than frac size' do
+        expect('45862.118654'.add_post_digits(4)).to eq('45862.1187')
+        expect('45862.118644'.add_post_digits(4)).to eq('45862.1186')
+        expect('45862.118654'.add_post_digits(2)).to eq('45862.12')
+        expect('45862.118644'.add_post_digits(3)).to eq('45862.119')
       end
 
       it 'does not disturb existing group chars' do

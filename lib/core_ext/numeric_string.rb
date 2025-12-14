@@ -112,8 +112,20 @@ module NumericString
       return self unless valid_num?(config:)
 
       cur, whole, frac = cur_whole_frac(config:)
-      n_pads = [n - (frac.size - 1), 0].max
-      padding = config.post_pad_char * n_pads
+      frac_digs = frac.size - 1 # frac includes the decimal character
+      if n >= frac_digs
+        n_pads = [n - frac_digs, 0].max
+        padding = config.post_pad_char * n_pads
+      else
+        # We have to shorten the fractional part, which required rounding.
+        last_frac_dig = frac[n]
+        following_frac_dig = frac[n + 1]
+        if following_frac_dig.to_i >= 5
+          last_frac_dig = (last_frac_dig.to_i + 1).to_s
+        end
+        frac = frac[0..(n - 1)] + last_frac_dig
+        padding = ''
+      end
       "#{cur}#{whole}#{frac}#{padding}"
     end
 
