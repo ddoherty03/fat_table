@@ -15,4 +15,7 @@ end
 
 RSpec::Core::RakeTask.new(:spec)
 
+require "gem_docs"
+GemDocs.install
+
 task :default => [:spec, :rubocop]
