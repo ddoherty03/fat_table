@@ -352,7 +352,7 @@ module FatTable
           expect(fmt.format_at[:header][h][:datetime_fmt]).to eq('%F %H:%M:%S')
           expect(fmt.format_at[:header][h][:nil_text]).to eq('')
           expect(fmt.format_at[:header][h][:pre_digits]).to eq(0)
-          expect(fmt.format_at[:header][h][:post_digits]).to eq(3)
+          expect(fmt.format_at[:header][h][:post_digits]).to eq(4)
           expect(fmt.format_at[:header][h][:bold]).to be(false)
           expect(fmt.format_at[:header][h][:italic]).to be(false)
           expect(fmt.format_at[:header][h][:alignment]).to eq(:left)
@@ -377,7 +377,7 @@ module FatTable
           expect(fmt.format_at[:header][h][:datetime_fmt]).to eq('%F %H:%M:%S')
           expect(fmt.format_at[:gfooter][h][:nil_text]).to eq('')
           expect(fmt.format_at[:gfooter][h][:pre_digits]).to eq(0)
-          expect(fmt.format_at[:gfooter][h][:post_digits]).to eq(3)
+          expect(fmt.format_at[:gfooter][h][:post_digits]).to eq(4)
           expect(fmt.format_at[:gfooter][h][:italic]).to be(false)
           expect(fmt.format_at[:gfooter][h][:alignment]).to eq(:left)
           expect(fmt.format_at[:gfooter][h][:commas]).to be(false)
@@ -398,7 +398,7 @@ module FatTable
           expect(fmt.format_at[:header][h][:datetime_fmt]).to eq('%F %H:%M:%S')
           expect(fmt.format_at[:footer][h][:nil_text]).to eq('')
           expect(fmt.format_at[:footer][h][:pre_digits]).to eq(0)
-          expect(fmt.format_at[:footer][h][:post_digits]).to eq(3)
+          expect(fmt.format_at[:footer][h][:post_digits]).to eq(4)
           expect(fmt.format_at[:footer][h][:bold]).to eq(h == :date)
           expect(fmt.format_at[:footer][h][:italic]).to be(false)
           expect(fmt.format_at[:footer][h][:alignment]).to eq(:left)
@@ -413,7 +413,7 @@ module FatTable
         # Body, :price
         expect(fmt.format_at[:body][:price][:commas]).to be(true)
         expect(fmt.format_at[:body][:price][:pre_digits]).to eq(0)
-        expect(fmt.format_at[:body][:price][:post_digits]).to eq(3)
+        expect(fmt.format_at[:body][:price][:post_digits]).to eq(4)
         # Body, :shares
         expect(fmt.format_at[:body][:shares][:commas]).to be(false)
         expect(fmt.format_at[:body][:shares][:pre_digits]).to eq(0)
@@ -479,7 +479,7 @@ module FatTable
 
         it 'adds grouping commas' do
           istruct[:commas] = true
-          expect(fmt.format_cell(78546.2543688, istruct)).to eq('78,546.254')
+          expect(fmt.format_cell(78546.2543688, istruct)).to eq('78,546.2544')
         end
 
         it 'converts to HMS' do

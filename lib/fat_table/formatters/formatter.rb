@@ -67,7 +67,7 @@ module FatTable
         bgcolor: 'none',
         hms: false,
         pre_digits: 0,
-        post_digits: 3,
+        post_digits: 4,
         commas: false,
         currency: false,
         datetime_fmt: '%F %H:%M:%S',

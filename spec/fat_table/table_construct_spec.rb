@@ -261,14 +261,14 @@ module FatTable
         ORG
       end
 
-      it 'uses 3 decimal places in default format' do
+      it 'uses 4 decimal places in default format' do
         tab_aoa = Table.from_org_string(org_body).to_aoa
         nums = tab_aoa.compact.select { |r| r[0] != 'Ref' }.flatten.select { |s| s.match(/\A[0-9.]+\z/) }
-        expect(nums).to include('1.185')
-        expect(nums).to include('11.850')
-        expect(nums).to include('28.322')
-        expect(nums).to include('28.638')
-        expect(nums).to include('25.047')
+        expect(nums).to include('1.1850')
+        expect(nums).to include('11.8500')
+        expect(nums).to include('28.3224')
+        expect(nums).to include('28.6383')
+        expect(nums).to include('25.0471')
         # But not when the whole column are Integers
         expect(nums).to include('118186')
         expect(nums).to include('29')
