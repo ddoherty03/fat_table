@@ -85,6 +85,13 @@ module NumericString
 
     alias_method :add_commas, :add_grouping
 
+    # If self is a valid decimal number, add the currency symbol (per
+    # NumericString::Config.currency_symbol) to the front of the number
+    # string, retaining any grouping characters undisturbed.  The optional
+    # cond: parameter can contain a test to determine if the currency symbol
+    # ought to be pre-pended.  If (1) self is not a valid decimal number
+    # string, (2) the currency symbol is already present, or (3) cond: is
+    # falsey, return self.
     def add_currency(cond: true, config: Config.default)
       return self unless cond
       return self unless valid_num?(config:)
@@ -108,7 +115,6 @@ module NumericString
 
     def add_post_digits(n, cond: true, config: Config.default)
       return self unless cond
-      return self if n <= 0
       return self unless valid_num?(config:)
 
       cur, whole, frac = cur_whole_frac(config:)
@@ -116,6 +122,47 @@ module NumericString
       if n >= frac_digs
         n_pads = [n - frac_digs, 0].max
         padding = config.post_pad_char * n_pads
+        "#{cur}#{whole}#{frac}#{padding}"
+      elsif n.zero?
+        # Round up last digit of whole if first digit of frac >= 5
+        if frac[1].to_i >= 5
+          whole = whole[0..-2] + (whole[-1].to_i + 1).to_s
+        end
+        # No fractional part
+        frac = ''
+        padding = ''
+        "#{cur}#{whole}"
+      elsif n.negative?
+        # This calls for rounding the whole part to nearest 10^n.abs and
+        # dropping the frac part.
+        frac = ''
+        ndigs_in_whole = whole.delete(config.group_char).size
+        nplaces = [ndigs_in_whole - 1, n.abs].min
+        # Replace the right-most nplaces digs with the pre-pad character.
+        replace_count = 0
+        new_whole = +''
+        round_char = whole.delete(config.group_char)[-1]
+        rounded = false
+        whole.split('').reverse.each do |c|
+          if c == config.group_char
+            new_whole << c
+          elsif replace_count < nplaces
+            new_whole << config.pre_pad_char
+            round_char = c
+            replace_count += 1
+          elsif !rounded
+            new_whole <<
+              if round_char.to_i >= 5
+                (c.to_i + 1).to_s
+              else
+                c
+              end
+            rounded = true
+          else
+            new_whole << c
+          end
+        end
+        "#{cur}#{new_whole.reverse}"
       else
         # We have to shorten the fractional part, which required rounding.
         last_frac_dig = frac[n]
@@ -125,8 +172,8 @@ module NumericString
         end
         frac = frac[0..(n - 1)] + last_frac_dig
         padding = ''
+        "#{cur}#{whole}#{frac}#{padding}"
       end
-      "#{cur}#{whole}#{frac}#{padding}"
     end
 
     private

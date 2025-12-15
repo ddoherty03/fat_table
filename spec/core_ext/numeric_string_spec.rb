@@ -39,6 +39,11 @@ module FatTable
         it 'does nothing if not a decimal number' do
           expect('AB987EF'.add_commas).to eq('AB987EF')
         end
+
+        it 'is idempotent' do
+          expect('1234567.899'.add_commas).to eq('1234567.899'.add_commas.add_commas.add_commas)
+          expect('$1234567.899'.add_commas).to eq('$1234567.899'.add_commas.add_commas.add_commas)
+        end
       end
 
       describe 'add_grouping alias add_commas with Config' do
@@ -76,6 +81,19 @@ module FatTable
           expect('€1.234.567.899'.add_commas(config: cfg)).to eq('€1.234.567.899')
           expect('€1234567,899'.add_commas(config: cfg)).to eq('€123.4567,899')
         end
+
+        it 'is idempotent' do
+          cfg = NumericString::Config.build(
+            group_char: '.',
+            group_size: 4,
+            decimal_char: ',',
+            currency_symbol: '€',
+          )
+          expect('1234567.899'.add_commas(config: cfg))
+            .to eq('1234567.899'.add_commas(config: cfg).add_commas(config: cfg).add_commas(config: cfg))
+          expect('€1234567.899'.add_commas(config: cfg))
+            .to eq('€1234567.899'.add_commas(config: cfg).add_commas(config: cfg).add_commas(config: cfg))
+        end
       end
     end
 
@@ -103,14 +121,6 @@ module FatTable
         expect('66,548.76800'.add_currency(config: jp_cfg)).to eq('¥66,548.76800')
       end
 
-      it 'does not add currency symbol if already present' do
-        expect('$66548.88'.add_currency).to eq('$66548.88')
-        expect('$66548'.add_currency).to eq('$66548')
-        # The following only works because it is not considered a valid number
-        # under the default configuration.
-        expect('€66548'.add_currency).to eq('€66548')
-      end
-
       it 'adds a configured currency symbol to number' do
         jp_cfg = NumericString::Config.build(currency_symbol: '¥')
         expect('66548.88'.add_currency(config: jp_cfg)).to eq('¥66548.88')
@@ -127,6 +137,13 @@ module FatTable
 
       it 'does nothing if cond falsey' do
         expect('45,862.11'.add_currency(cond: 2 + 2 == 5)).to eq('45,862.11')
+      end
+
+      it 'is idempotent' do
+        expect('$66548.88'.add_currency).to eq('$66548.88'.add_currency.add_currency.add_currency)
+        jp_cfg = NumericString::Config.build(currency_symbol: '¥')
+        expect('¥66548'.add_currency(config: jp_cfg))
+          .to eq('¥66548'.add_currency(config: jp_cfg).add_currency(config: jp_cfg).add_currency(config: jp_cfg))
       end
     end
 
@@ -156,6 +173,10 @@ module FatTable
         cfg = NumericString::Config.build(pre_pad_char: 'X')
         expect('45,862.11'.add_pre_digits(10, config: cfg)).to eq('XXXXX45,862.11')
       end
+
+      it 'is idempotent' do
+        expect('45862.11'.add_pre_digits(7)).to eq('45862.11'.add_pre_digits(7).add_pre_digits(7).add_pre_digits(7))
+      end
     end
 
     describe 'add_post_digits' do
@@ -163,11 +184,23 @@ module FatTable
         expect('45862.11'.add_post_digits(7)).to eq('45862.1100000')
       end
 
+      it 'strips fractional part when number is zero' do
+        expect('45862.11'.add_post_digits(0)).to eq('45862')
+      end
+
       it 'rounds the fractional part if number is shorter than frac size' do
         expect('45862.118654'.add_post_digits(4)).to eq('45862.1187')
         expect('45862.118644'.add_post_digits(4)).to eq('45862.1186')
         expect('45862.118654'.add_post_digits(2)).to eq('45862.12')
         expect('45862.118644'.add_post_digits(3)).to eq('45862.119')
+      end
+
+      it 'rounds the whole part if number is negative' do
+        expect('45862.118654'.add_post_digits(-1)).to eq('45860')
+        expect('45862.118644'.add_post_digits(-2)).to eq('45900')
+        expect('45862.118654'.add_post_digits(-3)).to eq('46000')
+        expect('45862.118644'.add_post_digits(-4)).to eq('50000')
+        expect('45862.118644'.add_post_digits(-5)).to eq('50000')
       end
 
       it 'does not disturb existing group chars' do
@@ -178,14 +211,18 @@ module FatTable
         expect('45,862.11'.add_post_digits(10, cond: 2 + 2 == 5)).to eq('45,862.11')
       end
 
-      it 'does nothing if n digits less or equal to zero' do
-        expect('45,862.11'.add_post_digits(0)).to eq('45,862.11')
-        expect('45,862.11'.add_post_digits(-10)).to eq('45,862.11')
+      it 'rounds to whole number if n digits equal to zero' do
+        expect('45,862.81'.add_post_digits(0)).to eq('45,863')
+        expect('45,862.11'.add_post_digits(0)).to eq('45,862')
       end
 
       it 'allows the padding char to be configured' do
         cfg = NumericString::Config.build(post_pad_char: 'X')
         expect('45,862.11'.add_post_digits(10, config: cfg)).to eq('45,862.11XXXXXXXX')
+      end
+
+      it 'is idempotent' do
+        expect('45862.11'.add_post_digits(7)).to eq('45862.11'.add_post_digits(7).add_post_digits(7).add_post_digits(7))
       end
     end
 
@@ -197,7 +234,7 @@ module FatTable
                  .add_currency).to eq('$00045,862.1100000')
       end
 
-      it 'order matters: chains pre-digits, currency, and post-digits, and grouping' do
+      it 'order matters: chains post-digits, pre-digits, currency, and grouping' do
         expect('45862.11'.add_post_digits(7)
                  .add_pre_digits(8)
                  .add_currency

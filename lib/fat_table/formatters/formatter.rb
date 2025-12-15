@@ -1026,66 +1026,37 @@ module FatTable
     # above. Only device-independent formatting is done here. Device dependent
     # formatting (e.g., color) can be done in a subclass of Formatter by
     # specializing this method.
+
+    using NumericString
+
     def format_numeric(val, istruct)
       return istruct[:nil_text] if val.nil?
       return val.secs_to_hms if istruct[:hms]
 
-      if istruct[:commas]
-        # Commify the whole number part if not done already.
-        result = val.is_a?(Integer) ? val.commas(0) : val.commas(istruct[:post_digits])
+      case val
+      when Integer
+        val.to_s
+          .add_pre_digits(istruct[:pre_digits], cond: istruct[:pre_digits].positive?)
+          .add_commas(cond: istruct[:commas])
+          .add_currency(cond: istruct[:currency])
+      when Rational
+        num = val.numerator.to_s
+                .add_pre_digits(istruct[:pre_digits], cond: istruct[:pre_digits].positive?)
+                .add_commas(cond: istruct[:commas])
+                .add_currency(cond: istruct[:currency])
+        den = val.denominator.to_s
+                .add_pre_digits(istruct[:pre_digits], cond: istruct[:pre_digits].positive?)
+                .add_commas(cond: istruct[:commas])
+        "#{num}/#{den}"
+      when Float, BigDecimal
+        val.to_s
+          .add_pre_digits(istruct[:pre_digits], cond: istruct[:pre_digits].positive?)
+          .add_post_digits(istruct[:post_digits])
+          .add_commas(cond: istruct[:commas])
+          .add_currency(cond: istruct[:currency])
       else
-        if val.is_a?(Integer)
-        result = val.to_s
-        else
-          result = val.round(istruct[:post_digits]).to_s
-          match = result.match(/\.(\d+)\z/)
-          if match && (match[1]&.size&.< istruct[:post_digits])
-            # Add trailing zeros to pad out post_digits
-            n_zeros = [istruct[:post_digits] - match[1].size, 0].max
-            zeros = '0' * n_zeros
-            result += zeros
-          end
-        end
+        raise ArgumentError, "cannot apply format_numeric to #{val} of class #{val.class}"
       end
-
-      if istruct[:pre_digits].positive?
-        match = result.match(/\A([\d,]+)(\.\d+)?\z/)
-        whole_part = match[1]
-        frac_part = match[2]
-        n_zeros = [istruct[:pre_digits] - whole_part.delete(',').size, 0].max
-        result =
-          if n_zeros.positive?
-            if istruct[:commas]
-              # Insert leading zeros with commas
-              pre_comma_match = whole_part.match(/\A(\d+),/)
-              if pre_comma_match
-                n_partial_zeros = 3 - pre_comma_match[1].size
-                whole_part = "0" * n_partial_zeros + whole_part
-                n_zeros -= n_partial_zeros
-              end
-              zeros = ''
-              if n_zeros.positive?
-                zeros = "0" * n_zeros
-                if n_zeros > 3 && istruct[:commas]
-                  zeros = zeros.reverse.gsub!(/([0-9]{3})/, "\\1,").reverse
-                end
-              end
-              "#{zeros},#{whole_part}#{frac_part}"
-            else
-              # Insert leading zeros without commas
-              zeros = "0" * n_zeros
-              "#{zeros}#{whole_part}#{frac_part}"
-            end
-          else
-            "#{whole_part}#{frac_part}"
-          end
-      else
-        result
-      end
-      if istruct[:currency]
-        result = "#{FatTable.currency_symbol}#{result}"
-      end
-      result
     end
 
     # Apply non-device-dependent string formatting instructions.
