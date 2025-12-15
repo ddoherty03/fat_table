@@ -4,7 +4,7 @@
 #+LATEX_HEADER: \usepackage[utf8]{inputenc}
 #+PROPERTY: header-args:ruby :results value :colnames no :hlines yes :exports both :dir "./"
 #+PROPERTY: header-args:ruby :wrap example :session fat_table_session
-#+PROPERTY: header-args:ruby+ :prologue "load 'lib/fat_table.rb'" :eval yes
+#+PROPERTY: header-args:ruby+ :prologue "$:.unshift('./lib') unless $:.first == './lib'; require 'fat_table'" :eval yes
 #+PROPERTY: header-args:sh :exports code :eval no
 #+PROPERTY: header-args:bash :exports code :eval no
 #+STARTUP: inlineimages
