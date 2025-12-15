@@ -18,10 +18,9 @@ module FatTable
   require 'active_support/core_ext'
   require 'active_support/number_helper'
 
+  require 'core_ext'
   require 'fat_table/version'
   require 'fat_table/patches'
-  require 'core_ext/array'
-  require 'core_ext/numeric_string'
   require 'fat_table/evaluator'
   require 'fat_table/convert'
   require 'fat_table/column'
