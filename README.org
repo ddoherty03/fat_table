@@ -340,7 +340,7 @@ so it can be compiled by LaTeX.
 These commands run pdflatex on the result twice to get the table aligned
 properly.
 #+begin_src sh :results silent
-  cd examples
+  cd spec/example_files
   pdflatex quick.tex
   pdflatex quick.tex
 #+end_src
@@ -349,12 +349,13 @@ And we convert the =PDF= into a smaller image for display:
 #+begin_src sh :results verbatim
   cd spec/example_files
   pdftoppm -png quick.pdf >quick.png
-  convert quick.png -resize 600x800 quick_small.png
+  magick quick.png -resize 600x800 quick_small.png
 #+end_src
 
 #+RESULTS:
 
 [[file:spec/example_files/quick_small.png]]
+
 
 ** A Word About the Examples
 When you install the ~fat_table~ gem, you have access to a program ~ft_console~,
