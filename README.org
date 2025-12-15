@@ -2,9 +2,13 @@
 #+OPTIONS: toc:4
 #+LATEX_HEADER: \usepackage[margin=0.75in]{geometry}
 #+LATEX_HEADER: \usepackage[utf8]{inputenc}
-#+PROPERTY: header-args:ruby :colnames no :session readme :hlines yes :exports both :wrap example
-#+PROPERTY: header-args:sh :exports code
+#+PROPERTY: header-args:ruby :results value :colnames no :hlines yes :exports both :dir "./"
+#+PROPERTY: header-args:ruby :wrap example :session fat_table_session
+#+PROPERTY: header-args:ruby+ :prologue "load 'lib/fat_table.rb'" :eval yes
+#+PROPERTY: header-args:sh :exports code :eval no
+#+PROPERTY: header-args:bash :exports code :eval no
 #+STARTUP: inlineimages
+
 
 #+begin_comment
 Notes on producing this README.
@@ -30,13 +34,13 @@ The following is for org.
 Run this block before all others to ensure that we are reading the libraries
 from the source directory.
 
-#+begin_src ruby :results output
+#+begin_src ruby :results output :eval no
   puts "Current directory: #{Dir.pwd}"
   puts "Ruby LOADPATH:"
   $:.unshift("./lib") unless $:[0] == './lib'
   $:[0..10].each { |d| puts d }
   puts "..."
-  require_relative 'lib/fat_table'  # => true
+  load 'lib/fat_table.rb'  # => true
 #+end_src
 
 #+RESULTS:
@@ -45,39 +49,13 @@ Current directory: /home/ded/src/fat_table
 => nil
 Ruby LOADPATH:
 => nil
-=> ["./lib",
- "/home/ded/.rbenv/rbenv.d/exec/gem-rehash",
- "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/coderay-1.1.3/lib",
- "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/pry-0.15.2/lib",
- "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/set-1.1.2/lib",
- "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/method_source-1.1.0/lib",
- "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/forwardable-1.3.3/lib",
- "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/etc-1.4.6/lib",
- "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/extensions/x86_64-linux/3.4.0/etc-1.4.6",
- "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/prettyprint-0.2.0/lib",
- "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/pp-0.6.3/lib",
- "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/stringio-3.1.8/lib",
- "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/extensions/x86_64-linux/3.4.0/stringio-3.1.8",
- "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/strscan-3.1.5/lib",
- "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/extensions/x86_64-linux/3.4.0/strscan-3.1.5",
- "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/prism-1.6.0/lib",
- "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/extensions/x86_64-linux/3.4.0/prism-1.6.0",
- "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/io-console-0.8.1/lib",
- "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/extensions/x86_64-linux/3.4.0/io-console-0.8.1",
- "/home/ded/.rbenv/versions/3.4.1/lib/ruby/site_ruby/3.4.0",
- "/home/ded/.rbenv/versions/3.4.1/lib/ruby/site_ruby/3.4.0/x86_64-linux",
- "/home/ded/.rbenv/versions/3.4.1/lib/ruby/site_ruby",
- "/home/ded/.rbenv/versions/3.4.1/lib/ruby/vendor_ruby/3.4.0",
- "/home/ded/.rbenv/versions/3.4.1/lib/ruby/vendor_ruby/3.4.0/x86_64-linux",
- "/home/ded/.rbenv/versions/3.4.1/lib/ruby/vendor_ruby",
- "/home/ded/.rbenv/versions/3.4.1/lib/ruby/3.4.0",
- "/home/ded/.rbenv/versions/3.4.1/lib/ruby/3.4.0/x86_64-linux"]
+=> nil
 ./lib
 /home/ded/.rbenv/rbenv.d/exec/gem-rehash
 /home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/coderay-1.1.3/lib
+/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/method_source-1.1.0/lib
 /home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/pry-0.15.2/lib
 /home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/set-1.1.2/lib
-/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/method_source-1.1.0/lib
 /home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/forwardable-1.3.3/lib
 /home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/etc-1.4.6/lib
 /home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/extensions/x86_64-linux/3.4.0/etc-1.4.6
@@ -86,9 +64,9 @@ Ruby LOADPATH:
 => ["./lib",
  "/home/ded/.rbenv/rbenv.d/exec/gem-rehash",
  "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/coderay-1.1.3/lib",
+ "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/method_source-1.1.0/lib",
  "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/pry-0.15.2/lib",
  "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/set-1.1.2/lib",
- "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/method_source-1.1.0/lib",
  "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/forwardable-1.3.3/lib",
  "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/etc-1.4.6/lib",
  "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/extensions/x86_64-linux/3.4.0/etc-1.4.6",
@@ -96,6 +74,8 @@ Ruby LOADPATH:
  "/home/ded/.rbenv/versions/3.4.1/lib/ruby/gems/3.4.0/gems/pp-0.6.3/lib"]
 ...
 => nil
+lib/fat_table.rb:43: warning: already initialized constant FatTable::FORMATS
+/home/ded/src/fat_table/lib/fat_table.rb:43: warning: previous definition of FORMATS was here
 => true
 :org_babel_ruby_eoe
 #+end_example
@@ -106,6 +86,7 @@ Ruby LOADPATH:
   "Current version is: #{FatTable::VERSION}"
 #+end_src
 
+#+RESULTS:
 #+begin_EXAMPLE
 Current version is: 0.9.10
 #+end_EXAMPLE
@@ -246,15 +227,27 @@ Add this line to your application's Gemfile:
   gem 'fat_table'
 #+END_SRC
 
+#+RESULTS:
+#+begin_example
+false
+#+end_example
+
 Or, something like this in your gemspec file:
 #+begin_SRC ruby :exports code
     gem.add_runtime_dependency 'fat_table'
 #+end_SRC
 
+#+RESULTS:
+#+begin_example
+nil
+#+end_example
+
 And then execute:
 #+BEGIN_SRC sh
   $ bundle
 #+END_SRC
+
+#+RESULTS:
 
 ** Manually install
 Or install it yourself as:
@@ -262,6 +255,8 @@ Or install it yourself as:
 #+BEGIN_SRC sh
   $ gem install fat_table
 #+END_SRC
+
+#+RESULTS:
 
 ** Require
 Somewhere in your code, make sure that =FatTable= is required:
@@ -305,11 +300,11 @@ compund key, select all columns but add a column, :ref, for the row number,
 and finally re-order the columns with a final select.
 
 #+BEGIN_SRC ruby :results silent :exports code
-  table = FatTable.from_aoa(data) \
-    .where('shares > 2000') \
-    .order_by(:date, :code) \
+  table = FatTable.from_aoa(data)
+    .where('shares > 2000')
+    .order_by(:date, :code)
     .select(:date, :code, :shares,
-            :price, :ok, ref: '@row') \
+            :price, :ok, ref: '@row')
     .select(:ref, :date, :code,
             :shares, :price, :ok)
 #+END_SRC
@@ -356,42 +351,32 @@ We can format the table constructed above.
   end
 #+END_SRC
 
+#+RESULTS:
 #+begin_example
-+=========+============+======+=============+==========+====+
-|   Ref   |    Date    | Code |    Shares   |   Price  | Ok |
-+---------+------------+------+-------------+----------+----+
-|    1    | 2013-05-02 |   P  |   118,186.4 | $11.8500 |  Y |
-|    2    | 2013-05-02 |   P  |   795,546.2 |   1.1850 |  Y |
-+---------+------------+------+-------------+----------+----+
-|   Avg   |            |      |   456,866.3 |   6.5175 |    |
-+---------+------------+------+-------------+----------+----+
-|    3    | 2013-05-20 |   S  |     5,046.0 |  28.2804 |  N |
-|    4    | 2013-05-20 |   S  |    35,742.5 |  28.3224 |  Y |
-|    5    | 2013-05-20 |   S  |    14,003.5 |  28.6383 |  Y |
-+---------+------------+------+-------------+----------+----+
-|   Avg   |            |      |    18,264.0 |  28.4137 |    |
-+---------+------------+------+-------------+----------+----+
-|    6    | 2013-05-23 |   S  |     3,364.0 |  27.1083 |  Y |
-|    7    | 2013-05-23 |   S  |    16,780.5 |  25.1749 |  Y |
-|    8    | 2013-05-23 |   S  |     9,694.2 |  26.8015 |  N |
-+---------+------------+------+-------------+----------+----+
-|   Avg   |            |      |     9,946.2 |  26.3616 |    |
-+---------+------------+------+-------------+----------+----+
-|    9    | 2013-05-29 |   S  |     6,601.9 |  24.7790 |  N |
-|    10   | 2013-05-29 |   S  |     5,659.5 |  24.7464 |  Y |
-|    11   | 2013-05-29 |   S  |     6,686.0 |  24.5802 |  Y |
-+---------+------------+------+-------------+----------+----+
-|   Avg   |            |      |     6,315.8 |  24.7019 |    |
-+---------+------------+------+-------------+----------+----+
-|    12   | 2013-05-30 |   S  |     2,808.5 |  25.0471 |  Y |
-+---------+------------+------+-------------+----------+----+
-|   Avg   |            |      |     2,808.5 |  25.0471 |    |
-+---------+------------+------+-------------+----------+----+
-| Average |            |      |    85,009.9 | $23.0428 |    |
-+---------+------------+------+-------------+----------+----+
-|  Total  |            |      | 1,020,119.1 |          |    |
-+=========+============+======+=============+==========+====+
++============+======+============+=============+==========+=========+====+
+|    Date    | Code |     Raw    |    Shares   |   Price  |   Info  | Ok |
++------------+------+------------+-------------+----------+---------+----+
+| 2013-05-29 |   S  |  15700.000 |     6,601.9 | $24.7790 | ENTITY3 |  N |
+| 2013-05-02 |   P  | 118186.400 |   118,186.4 |  11.8500 | ENTITY1 |  Y |
+| 2013-05-20 |   S  |  12000.000 |     5,046.0 |  28.2804 | ENTITY3 |  N |
+| 2013-05-23 |   S  |   8000.000 |     3,364.0 |  27.1083 | ENTITY3 |  Y |
+| 2013-05-23 |   S  |  39906.000 |    16,780.5 |  25.1749 | ENTITY3 |  Y |
+| 2013-05-20 |   S  |  85000.000 |    35,742.5 |  28.3224 | ENTITY3 |  Y |
+| 2013-05-02 |   P  | 795546.200 |   795,546.2 |   1.1850 | ENTITY1 |  Y |
+| 2013-05-29 |   S  |  13459.000 |     5,659.5 |  24.7464 | ENTITY3 |  Y |
+| 2013-05-20 |   S  |  33302.000 |    14,003.5 |  28.6383 | ENTITY3 |  Y |
+| 2013-05-29 |   S  |  15900.000 |     6,686.0 |  24.5802 | ENTITY3 |  Y |
+| 2013-05-30 |   S  |   6679.000 |     2,808.5 |  25.0471 | ENTITY3 |  Y |
+| 2013-05-23 |   S  |  23054.000 |     9,694.2 |  26.8015 | ENTITY3 |  N |
++------------+------+------------+-------------+----------+---------+----+
+| Avg        |      |            |    85,009.9 |  23.0428 |         |    |
++------------+------+------------+-------------+----------+---------+----+
+| Average    |      |            |    85,009.9 | $23.0428 |         |    |
++------------+------+------------+-------------+----------+---------+----+
+| Total      |      |            | 1,020,119.1 |          |         |    |
++============+======+============+=============+==========+=========+====+
 #+end_example
+
 
 For the text format above, we were wasting our breath specifying bold styling
 since there is no way to make that happen in plain ASCII text.  But with
@@ -414,6 +399,11 @@ so it can be compiled by LaTeX.
   end
 #+END_SRC
 
+#+RESULTS:
+#+begin_example
+[[file:spec/example_files/quicktable.tex]]
+#+end_example
+
 [[file:spec/example_files/quicktable.tex]]
 
 These commands run pdflatex on the result twice to get the table aligned
@@ -430,6 +420,8 @@ And we convert the =PDF= into a smaller image for display:
   pdftoppm -png quick.pdf >quick.png
   convert quick.png -resize 600x800 quick_small.png
 #+end_src
+
+#+RESULTS:
 
 [[file:spec/example_files/quick_small.png]]
 
@@ -649,6 +641,16 @@ in org-mode time stamps.
   tab.to_text
 #+END_SRC
 
+#+RESULTS:
+#+begin_EXAMPLE
++===+===+============+===+===+
+| A | B | C          | D | E |
++---+---+------------+---+---+
+| 1 | 2 | 2017-01-21 | F |   |
+| 3 | 2 | 2016-01-21 | T |   |
++===+===+============+===+===+
+#+end_EXAMPLE
+
 #+begin_EXAMPLE
 +======+======+============+===+===+
 | A    | B    | C          | D | E |
@@ -670,6 +672,17 @@ for which no key was give are assigned ~nil~ as well:
 #+BEGIN_SRC ruby
   tab.to_text
 #+END_SRC
+
+#+RESULTS:
+#+begin_example
++===+===+============+===+===+===+
+| A | B | C          | D | E | F |
++---+---+------------+---+---+---+
+| 1 | 2 | 2017-01-21 | F |   |   |
+| 3 | 2 | 2016-01-21 | T |   |   |
+| 1 |   |            |   |   | 3 |
++===+===+============+===+===+===+
+#+end_example
 
 #+begin_EXAMPLE
 +======+======+============+===+===+=========+
@@ -694,6 +707,11 @@ columns to be created:
   tab.headers
 #+END_SRC
 
+#+RESULTS:
+#+begin_EXAMPLE
+[:a, :b, :c, :d]
+#+end_EXAMPLE
+
 #+begin_EXAMPLE
 [:a, :b, :c, :d]
 #+end_EXAMPLE
@@ -703,6 +721,16 @@ columns to be created:
   tab << { a: 3.14, b: 2.17, c: '[2016-01-21 Thu]', d: 'Y', e: nil }
   tab.to_text
 #+end_src
+
+#+RESULTS:
+#+begin_EXAMPLE
++===+===+============+===+===+
+| A | B | C          | D | E |
++---+---+------------+---+---+
+| 1 | 2 | 2017-01-21 | F |   |
+| 3 | 2 | 2016-01-21 | T |   |
++===+===+============+===+===+
+#+end_EXAMPLE
 
 #+begin_EXAMPLE
 +======+======+============+===+===+
@@ -735,6 +763,19 @@ using a keyword parameter.
   tab.to_text
 #+end_src
 
+#+RESULTS:
+#+begin_EXAMPLE
++===+===+============+===+=============+===+
+| A | B | C          | D | Zip         | E |
++---+---+------------+---+-------------+---+
+| 1 | 2 | 2017-01-21 | F | 18552       |   |
+| 3 | 2 | 2016-01-21 | T |             |   |
+|   |   |            |   | 01879--7884 |   |
+|   |   |            |   | 90210       |   |
+|   |   |            |   |             |   |
++===+===+============+===+=============+===+
+#+end_EXAMPLE
+
 #+begin_EXAMPLE
 +===+===+============+===+=============+===+
 | A | B | C          | D | Zip         | E |
@@ -762,6 +803,19 @@ exisiting items in the column are converted to strings with the #to_s method.
   tab.to_text
 #+end_src
 
+#+RESULTS:
+#+begin_EXAMPLE
++===+===+============+===+=======+===+
+| A | B | C          | D | Zip   | E |
++---+---+------------+---+-------+---+
+| 1 | 2 | 2017-01-21 | F | 18552 |   |
+| 3 | 2 | 2016-01-21 | T |       |   |
+|   |   |            |   | 01879 |   |
+|   |   |            |   | 66210 |   |
+|   |   |            |   | 90210 |   |
++===+===+============+===+=======+===+
+#+end_EXAMPLE
+
 #+begin_EXAMPLE
 +======+======+============+===+=======+===+
 | A    | B    | C          | D | Zip   | E |
@@ -785,11 +839,11 @@ followed by ~|-~. Only the first table in an ~.org~ file is read.
 For both ~.csv~ and ~.org~ files, the first row in the table is taken as the
 header row, and the headers are converted to symbols as described above.
 
-#+BEGIN_SRC ruby
-      tab1 = FatTable.from_csv_file('~/data.csv')
-      tab2 = FatTable.from_org_file('~/project.org')
+#+BEGIN_SRC ruby :results silent
+  tab1 = FatTable.from_csv_file('~/data.csv')
+  tab2 = FatTable.from_org_file('~/project.org')
 
-      csv_body = <<-EOS
+  csv_body = <<-EOS
     Ref,Date,Code,RawShares,Shares,Price,Info
     1,2006-05-02,P,5000,5000,8.6000,2006-08-09-1-I
     2,2006-05-03,P,5000,5000,8.4200,2006-08-09-1-I
@@ -799,15 +853,15 @@ header row, and the headers are converted to symbols as described above.
     6,2006-05-12,P,2000,2000,6.7400,2006-08-09-1-I
     EOS
 
-      tab3 = FatTable.from_csv_string(csv_body)
+  tab3 = FatTable.from_csv_string(csv_body)
 
-      org_body = <<-EOS
+  org_body = <<-EOS
   .* Smith Transactions
   :PROPERTIES:
   :TABLE_EXPORT_FILE: smith.csv
   :END:
 
-  #+TBLNAME: smith_tab
+  ,#+TBLNAME: smith_tab
   | Ref |       Date | Code |     Raw | Shares |    Price | Info    |
   |-----+------------+------+---------+--------+----------+---------|
   |  29 | 2013-05-02 | P    | 795,546 |  2,609 |  1.18500 | ENTITY1 |
@@ -828,7 +882,7 @@ header row, and the headers are converted to symbols as described above.
   .* Another Heading
   EOS
 
-      tab4 = FatTable.from_org_string(org_body)
+  tab4 = FatTable.from_org_string(org_body)
 #+END_SRC
 
 *** From Arrays of Arrays
@@ -858,21 +912,9 @@ ending it with a '~'.
   tab = FatTable.from_aoa(aoa).to_aoa
 #+END_SRC
 
+#+RESULTS:
 #+begin_example
-| Ref | Date       | Code |    Raw | Shares | Price | Info    | Bool |
-|-----+------------+------+--------+--------+-------+---------+------|
-|   1 | 2013-05-02 | P    | 795546 | 795546 |     1 | ENTITY1 | T    |
-|   2 | 2013-05-02 | P    | 118186 | 118186 |    12 | ENTITY1 | T    |
-|   7 | 2013-05-20 | S    |  12000 |   5046 |    28 | ENTITY3 | F    |
-|   8 | 2013-05-20 | S    |  85000 |  35743 |    28 | ENTITY3 | T    |
-|   9 | 2013-05-20 | S    |  33302 |  14003 |    29 | ENTITY3 | T    |
-|  10 | 2013-05-23 | S    |   8000 |   3364 |    27 | ENTITY3 | T    |
-|  11 | 2013-05-23 | S    |  23054 |   9694 |    27 | ENTITY3 | F    |
-|  12 | 2013-05-23 | S    |  39906 |  16780 |    25 | ENTITY3 | T    |
-|  13 | 2013-05-29 | S    |  13459 |   5660 |    25 | ENTITY3 | T    |
-|  14 | 2013-05-29 | S    |  15700 |   6602 |    25 | ENTITY3 | F    |
-|  15 | 2013-05-29 | S    |  15900 |   6686 |    25 | ENTITY3 | T    |
-|  16 | 2013-05-30 | S    |   6679 |   2809 |    25 | ENTITY3 | T    |
+nil
 #+end_example
 
 Notice that the values can either be ruby objects, such as the Integer ~85_000~,
@@ -981,6 +1023,7 @@ aoh = [
 tab = FatTable.from_aoh(aoh).to_aoa
 #+END_SRC
 
+#+RESULTS:
 #+begin_example
 | Ref  | Date       | Code | Price | Shares |
 |------+------------+------+-------+--------|
@@ -988,7 +1031,7 @@ tab = FatTable.from_aoh(aoh).to_aoa
 | T002 | 2016-11-01 | P    | 8     |    200 |
 | T003 | 2016-11-01 | P    | 8     |    800 |
 | T004 | 2016-11-01 | S    | 8     |   6811 |
-| T005 | 2025-12-04 | S    | 8     |   4000 |
+| T005 | 2025-12-13 | S    | 8     |   4000 |
 | T006 | 2016-11-01 | S    | 8     |   1000 |
 | T007 | 2016-11-01 | S    | 8     |    200 |
 | T008 | 2016-11-01 | P    | 8     |   2771 |
@@ -1016,6 +1059,8 @@ you are accessing a Postgres database, you must install the ~pg~ gem with
 $ gem install pg
 #+end_src
 
+#+RESULTS:
+
 You must first call ~FatTable.connect~ to set the database parameters to be
 used for the queries.
 
@@ -1032,42 +1077,44 @@ connection:
   tab = FatTable.from_sql('select * from trans;').to_text
 #+END_SRC
 
+#+RESULTS:
 #+begin_example
-+============+======+========+========+=======+=========+====+
-| Date       | Code | Raw    | Shares | Price | Info    | Ok |
-+------------+------+--------+--------+-------+---------+----+
-| 2013-05-29 | S    | 15700  | 6602   | 25    | ENTITY3 | F  |
-| 2013-05-02 | P    | 118186 | 118186 | 12    | ENTITY1 | T  |
-| 2013-05-20 | S    | 12000  | 5046   | 28    | ENTITY3 | F  |
-| 2013-05-23 | S    | 8000   | 3364   | 27    | ENTITY3 | T  |
-| 2013-05-23 | S    | 39906  | 16780  | 25    | ENTITY3 | T  |
-| 2013-05-20 | S    | 85000  | 35743  | 28    | ENTITY3 | T  |
-| 2013-05-02 | P    | 795546 | 795546 | 1     | ENTITY1 | T  |
-| 2013-05-29 | S    | 13459  | 5660   | 25    | ENTITY3 | T  |
-| 2013-05-20 | S    | 33302  | 14003  | 29    | ENTITY3 | T  |
-| 2013-05-29 | S    | 15900  | 6686   | 25    | ENTITY3 | T  |
-| 2013-05-30 | S    | 6679   | 2809   | 25    | ENTITY3 | T  |
-| 2013-05-23 | S    | 23054  | 9694   | 27    | ENTITY3 | F  |
-+============+======+========+========+=======+=========+====+
++============+======+============+============+========+=========+====+
+| Date       | Code | Raw        | Shares     | Price  | Info    | Ok |
++------------+------+------------+------------+--------+---------+----+
+| 2013-05-29 | S    | 15700.000  | 6601.850   | 24.779 | ENTITY3 | F  |
+| 2013-05-02 | P    | 118186.400 | 118186.400 | 11.850 | ENTITY1 | T  |
+| 2013-05-20 | S    | 12000.000  | 5046.000   | 28.280 | ENTITY3 | F  |
+| 2013-05-23 | S    | 8000.000   | 3364.000   | 27.108 | ENTITY3 | T  |
+| 2013-05-23 | S    | 39906.000  | 16780.470  | 25.175 | ENTITY3 | T  |
+| 2013-05-20 | S    | 85000.000  | 35742.500  | 28.322 | ENTITY3 | T  |
+| 2013-05-02 | P    | 795546.200 | 795546.200 | 1.185  | ENTITY1 | T  |
+| 2013-05-29 | S    | 13459.000  | 5659.510   | 24.746 | ENTITY3 | T  |
+| 2013-05-20 | S    | 33302.000  | 14003.490  | 28.638 | ENTITY3 | T  |
+| 2013-05-29 | S    | 15900.000  | 6685.950   | 24.580 | ENTITY3 | T  |
+| 2013-05-30 | S    | 6679.000   | 2808.520   | 25.047 | ENTITY3 | T  |
+| 2013-05-23 | S    | 23054.000  | 9694.210   | 26.802 | ENTITY3 | F  |
++============+======+============+============+========+=========+====+
 #+end_example
 
 The same connection can be queries multiple times:
 
 #+BEGIN_SRC ruby
-  tab = FatTable.from_sql('select * from trans where info = "ENTITY1";').to_text
+  tab = FatTable.from_sql('select * from trans where info = "ENTITY1";')
+  tab.to_text
 #+END_SRC
 
+#+RESULTS:
 #+begin_example
-+============+======+========+========+=======+=========+====+
-| Date       | Code | Raw    | Shares | Price | Info    | Ok |
-+------------+------+--------+--------+-------+---------+----+
-| 2013-05-02 | P    | 118186 | 118186 | 12    | ENTITY1 | T  |
-| 2013-05-02 | P    | 795546 | 795546 | 1     | ENTITY1 | T  |
-+============+======+========+========+=======+=========+====+
++============+======+============+============+========+=========+====+
+| Date       | Code | Raw        | Shares     | Price  | Info    | Ok |
++------------+------+------------+------------+--------+---------+----+
+| 2013-05-02 | P    | 118186.400 | 118186.400 | 11.850 | ENTITY1 | T  |
+| 2013-05-02 | P    | 795546.200 | 795546.200 | 1.185  | ENTITY1 | T  |
++============+======+============+============+========+=========+====+
 #+end_example
 
-
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :eval no
   FatTable.db = Sequel.connect('postgres://user:password@localhost/dbname')
   FatTable.db = Sequel.ado(conn_string: 'Provider=Microsoft.ACE.OLEDB.12.0;Data Source=drive:\path\filename.accdb')
 #+END_SRC
@@ -1081,14 +1128,12 @@ called again.
 
 *** Marking Groups in Input
 **** Manually
-
 At any point, you can add a boundary to a table by invokong the
 ~mark_boundary~ method.  Without an argument, it adds the boundary to the end
 of the table; with a numeric argument, ~n~, it adds the boundary after row
 ~n~.
 
 **** When Reading in Tables
-
 ~FatTable~ tables has a concept of "groups" of rows that play a role in many of
 the methods for operating on them as explained [[Groups][below]].
 
@@ -1130,7 +1175,7 @@ all the items of the table's ~:ref~ column.
 The two forms of indexing can be combined, in either order, to access
 individual cells of the table:
 
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :eval no
   tab[13]         # => Hash of the 14th row
   tab[:date]      # => Array of all Dates in the :date column
   tab[13][:date]  # => The Date in the 14th row
@@ -1140,7 +1185,7 @@ individual cells of the table:
 *** Other table attributes
 Here is a quick rundown of other table attributes that you can access:
 
-#+BEGIN_SRC ruby
+#+BEGIN_SRC ruby :eval no
   tab.headers       # => an Array of the headers in symbol form
   tab.types         # => a Hash mapping headers to column types
   tab.type(head)    # => return the type of the column for the given head
@@ -1163,16 +1208,20 @@ requires it to synthesize the type from these Ruby classes.
   tab.types
 #+end_src
 
+#+RESULTS:
 #+begin_EXAMPLE
-{:a=>"Numeric", :b=>"Numeric", :c=>"DateTime", :d=>"Boolean", :e=>"NilClass", :f=>"Numeric"}
+{date: "DateTime", code: "String", raw: "Numeric", shares: "Numeric", price: "Numeric", info: "String", ok: "Boolean"}
 #+end_EXAMPLE
 
 #+begin_src ruby :wrap EXAMPLE :results output
-  puts "Column :d says its type is '#{tab.type(:d)}' and that is a #{tab.type(:d).class}"
+  puts "Column :shares says its type is '#{tab.type(:shares)}' and that is a #{tab[:shares][0].class}"
 #+end_src
 
+#+RESULTS:
 #+begin_EXAMPLE
-Column :d says its type is 'Boolean' and that is a String
+Column :shares says its type is 'Numeric' and that is a BigDecimal
+=> nil
+:org_babel_ruby_eoe
 #+end_EXAMPLE
 
 ** Operations on Tables
@@ -1260,15 +1309,47 @@ EOS
 #+END_SRC
 
 Rendering ~tab1~ into Emacs org-mode:
-#+BEGIN_SRC ruby :wrap EXAMPLE :results silent
+#+BEGIN_SRC ruby :wrap EXAMPLE
   tab1 = FatTable.from_org_string(tab1_str)
+  tab1.to_aoa # {|f| f.format(price: '0.4', iplp: '0.4', ipqp: '0.4', shares:',') }
 #+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+nil
+#+end_EXAMPLE
+
 
 Rendering ~tab2~ into Emacs org-mode:
 
-#+BEGIN_SRC ruby :wrap EXAMPLE :results silent
+#+BEGIN_SRC ruby :wrap EXAMPLE
   tab2 = FatTable.from_org_string(tab2_str)
+  tab2.to_aoa
 #+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+| Ref  | Date       | Code | Price | G10 | QP10 | Shares |    Lp |   Qp | Iplp | Ipqp |
+|------+------------+------+-------+-----+------+--------+-------+------+------+------|
+| T003 | 2016-11-01 | P    | 8     | F   | T    |    800 |   112 |  688 | 0    | 0    |
+| T003 | 2016-11-01 | P    | 8     | F   | T    |    800 |   112 |  688 | 0    | 0    |
+| T017 | 2016-11-01 | P    | 8     | F   | T    |   1801 |  1201 |  600 | 0    | 0    |
+|------+------------+------+-------+-----+------+--------+-------+------+------+------|
+| T018 | 2016-11-01 | S    | 7     | T   | F    |   2516 |  2400 |  116 | 0    | 0    |
+| T018 | 2016-11-01 | S    | 7     | T   | F    |   2516 |  2400 |  116 | 0    | 0    |
+| T006 | 2016-11-01 | S    | 8     | F   | T    |   1000 |   143 |  857 | 0    | 0    |
+| T007 | 2016-11-01 | S    | 8     | T   | F    |    200 |    28 |  172 | 0    | 0    |
+|------+------------+------+-------+-----+------+--------+-------+------+------+------|
+| T014 | 2016-11-02 | P    | 7     | F   | T    |   5847 |   835 | 5012 | 0    | 0    |
+| T015 | 2016-11-02 | P    | 8     | F   | F    |    500 |    72 |  428 | 0    | 0    |
+| T015 | 2016-11-02 | P    | 8     | F   | F    |    500 |    72 |  428 | 0    | 0    |
+| T016 | 2016-11-02 | P    | 8     | T   | T    |    100 |    14 |   86 | 0    | 0    |
+|------+------------+------+-------+-----+------+--------+-------+------+------+------|
+| T019 | 2017-01-15 | S    | 9     | T   | F    |    300 |   175 |  125 | 0    | 0    |
+| T020 | 2017-01-19 | S    | 8     | F   | T    |    700 |   615 |   85 | 0    | 0    |
+| T021 | 2017-01-23 | P    | 7     | T   | T    |  12100 | 11050 | 1050 | 0    | 0    |
+| T021 | 2017-01-23 | P    | 7     | T   | T    |  12100 | 11050 | 1050 | 0    | 0    |
+#+end_EXAMPLE
 
 *** Select
 With the ~select~ method, you can select columns to appear in the output
@@ -1285,32 +1366,33 @@ any group boundaries present in the input table.
   tab1.select(:price, :ref, :shares).to_aoa
 #+END_SRC
 
-#+BEGIN_EXAMPLE
+#+RESULTS:
+#+begin_EXAMPLE
 | Price | Ref  | Shares |
 |-------+------+--------|
-|   7.7 | T001 |    100 |
-|  7.75 | T002 |    200 |
-|   7.5 | T003 |    800 |
-|   7.5 | T003 |    800 |
+| 7.700 | T001 |    100 |
+| 7.750 | T002 |    200 |
+| 7.500 | T003 |    800 |
+| 7.500 | T003 |    800 |
 |-------+------+--------|
-|  7.55 | T004 |   6811 |
-|   7.5 | T005 |   4000 |
-|   7.6 | T006 |   1000 |
-|   7.6 | T006 |   1000 |
-|  7.65 | T007 |    200 |
-|  7.65 | T008 |   2771 |
-|   7.6 | T009 |   9550 |
+| 7.550 | T004 |   6811 |
+| 7.500 | T005 |   4000 |
+| 7.600 | T006 |   1000 |
+| 7.600 | T006 |   1000 |
+| 7.650 | T007 |    200 |
+| 7.650 | T008 |   2771 |
+| 7.600 | T009 |   9550 |
 |-------+------+--------|
-|  7.55 | T010 |   3175 |
+| 7.550 | T010 |   3175 |
 | 7.425 | T011 |    100 |
-|  7.55 | T012 |   4700 |
-|  7.55 | T012 |   4700 |
-|  7.35 | T013 |  53100 |
+| 7.550 | T012 |   4700 |
+| 7.550 | T012 |   4700 |
+| 7.350 | T013 |  53100 |
 |-------+------+--------|
-|  7.45 | T014 |   5847 |
-|  7.75 | T015 |    500 |
-|  8.25 | T016 |    100 |
-#+END_EXAMPLE
+| 7.450 | T014 |   5847 |
+| 7.750 | T015 |    500 |
+| 8.250 | T016 |    100 |
+#+end_EXAMPLE
 
 It can be tedious to type the names of all the columns in a ~select~
 statement, so ~FatTable~ recognizes the special column name ~:omni~.  If the
@@ -1325,31 +1407,32 @@ you cannot add additional column names:
   tab1.select(:omni, cost: 'shares * price').to_aoa
 #+END_SRC
 
+#+RESULTS:
 #+begin_EXAMPLE
-| Ref  |       Date | Code | Price | G10 | QP10 | Shares |   Lp |    Qp |   Iplp |   Ipqp |     Cost |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
-| T001 | 2016-11-01 | P    |   7.7 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 |    770.0 |
-| T002 | 2016-11-01 | P    |  7.75 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 |   1550.0 |
-| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 |   6000.0 |
-| T003 | 2016-11-01 | P    |   7.5 | F   | T    |    800 |  112 |   688 | 0.2453 | 0.1924 |   6000.0 |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
-| T004 | 2016-11-01 | S    |  7.55 | T   | F    |   6811 |  966 |  5845 | 0.2453 | 0.1924 | 51423.05 |
-| T005 | 2016-11-01 | S    |   7.5 | F   | F    |   4000 |  572 |  3428 | 0.2453 | 0.1924 |  30000.0 |
-| T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 |   7600.0 |
-| T006 | 2016-11-01 | S    |   7.6 | F   | T    |   1000 |  143 |   857 | 0.2453 | 0.1924 |   7600.0 |
-| T007 | 2016-11-01 | S    |  7.65 | T   | F    |    200 |   28 |   172 | 0.2453 | 0.1924 |   1530.0 |
-| T008 | 2016-11-01 | P    |  7.65 | F   | F    |   2771 |  393 |  2378 | 0.2453 | 0.1924 | 21198.15 |
-| T009 | 2016-11-01 | P    |   7.6 | F   | F    |   9550 | 1363 |  8187 | 0.2453 | 0.1924 |  72580.0 |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
-| T010 | 2016-11-01 | P    |  7.55 | F   | T    |   3175 |  451 |  2724 | 0.2453 | 0.1924 | 23971.25 |
-| T011 | 2016-11-02 | P    | 7.425 | T   | F    |    100 |   14 |    86 | 0.2453 | 0.1924 |    742.5 |
-| T012 | 2016-11-02 | P    |  7.55 | F   | F    |   4700 |  677 |  4023 | 0.2453 | 0.1924 |  35485.0 |
-| T012 | 2016-11-02 | P    |  7.55 | F   | F    |   4700 |  677 |  4023 | 0.2453 | 0.1924 |  35485.0 |
-| T013 | 2016-11-02 | P    |  7.35 | T   | T    |  53100 | 7656 | 45444 | 0.2453 | 0.1924 | 390285.0 |
-|------+------------+------+-------+-----+------+--------+------+-------+--------+--------+----------|
-| T014 | 2016-11-02 | P    |  7.45 | F   | T    |   5847 |  835 |  5012 | 0.2453 | 0.1924 | 43560.15 |
-| T015 | 2016-11-02 | P    |  7.75 | F   | F    |    500 |   72 |   428 | 0.2453 | 0.1924 |   3875.0 |
-| T016 | 2016-11-02 | P    |  8.25 | T   | T    |    100 |   14 |    86 | 0.2453 | 0.1924 |    825.0 |
+| Ref  | Date       | Code | Price | G10 | QP10 | Shares |   Lp |    Qp |  Iplp |  Ipqp |       Cost |
+|------+------------+------+-------+-----+------+--------+------+-------+-------+-------+------------|
+| T001 | 2016-11-01 | P    | 7.700 | T   | F    |    100 |   14 |    86 | 0.245 | 0.192 |    770.000 |
+| T002 | 2016-11-01 | P    | 7.750 | T   | F    |    200 |   28 |   172 | 0.245 | 0.192 |   1550.000 |
+| T003 | 2016-11-01 | P    | 7.500 | F   | T    |    800 |  112 |   688 | 0.245 | 0.192 |   6000.000 |
+| T003 | 2016-11-01 | P    | 7.500 | F   | T    |    800 |  112 |   688 | 0.245 | 0.192 |   6000.000 |
+|------+------------+------+-------+-----+------+--------+------+-------+-------+-------+------------|
+| T004 | 2016-11-01 | S    | 7.550 | T   | F    |   6811 |  966 |  5845 | 0.245 | 0.192 |  51423.050 |
+| T005 | 2016-11-01 | S    | 7.500 | F   | F    |   4000 |  572 |  3428 | 0.245 | 0.192 |  30000.000 |
+| T006 | 2016-11-01 | S    | 7.600 | F   | T    |   1000 |  143 |   857 | 0.245 | 0.192 |   7600.000 |
+| T006 | 2016-11-01 | S    | 7.600 | F   | T    |   1000 |  143 |   857 | 0.245 | 0.192 |   7600.000 |
+| T007 | 2016-11-01 | S    | 7.650 | T   | F    |    200 |   28 |   172 | 0.245 | 0.192 |   1530.000 |
+| T008 | 2016-11-01 | P    | 7.650 | F   | F    |   2771 |  393 |  2378 | 0.245 | 0.192 |  21198.150 |
+| T009 | 2016-11-01 | P    | 7.600 | F   | F    |   9550 | 1363 |  8187 | 0.245 | 0.192 |  72580.000 |
+|------+------------+------+-------+-----+------+--------+------+-------+-------+-------+------------|
+| T010 | 2016-11-01 | P    | 7.550 | F   | T    |   3175 |  451 |  2724 | 0.245 | 0.192 |  23971.250 |
+| T011 | 2016-11-02 | P    | 7.425 | T   | F    |    100 |   14 |    86 | 0.245 | 0.192 |    742.500 |
+| T012 | 2016-11-02 | P    | 7.550 | F   | F    |   4700 |  677 |  4023 | 0.245 | 0.192 |  35485.000 |
+| T012 | 2016-11-02 | P    | 7.550 | F   | F    |   4700 |  677 |  4023 | 0.245 | 0.192 |  35485.000 |
+| T013 | 2016-11-02 | P    | 7.350 | T   | T    |  53100 | 7656 | 45444 | 0.245 | 0.192 | 390285.000 |
+|------+------------+------+-------+-----+------+--------+------+-------+-------+-------+------------|
+| T014 | 2016-11-02 | P    | 7.450 | F   | T    |   5847 |  835 |  5012 | 0.245 | 0.192 |  43560.150 |
+| T015 | 2016-11-02 | P    | 7.750 | F   | F    |    500 |   72 |   428 | 0.245 | 0.192 |   3875.000 |
+| T016 | 2016-11-02 | P    | 8.250 | T   | T    |    100 |   14 |    86 | 0.245 | 0.192 |    825.000 |
 #+end_EXAMPLE
 
 **** Copying and Renaming Existing Columns.
@@ -1364,31 +1447,32 @@ changed to ~:id~, just add an argument to define the new ~:id~ column:
       select(:id, :date, :code, :price, :shares).to_aoa
 #+END_SRC
 
+#+RESULTS:
 #+begin_EXAMPLE
-| Id   |       Date | Code | Price | Shares |
+| Id   | Date       | Code | Price | Shares |
 |------+------------+------+-------+--------|
-| T001 | 2016-11-01 | P    |   7.7 |    100 |
-| T002 | 2016-11-01 | P    |  7.75 |    200 |
-| T003 | 2016-11-01 | P    |   7.5 |    800 |
-| T003 | 2016-11-01 | P    |   7.5 |    800 |
+| T001 | 2016-11-01 | P    | 7.700 |    100 |
+| T002 | 2016-11-01 | P    | 7.750 |    200 |
+| T003 | 2016-11-01 | P    | 7.500 |    800 |
+| T003 | 2016-11-01 | P    | 7.500 |    800 |
 |------+------------+------+-------+--------|
-| T004 | 2016-11-01 | S    |  7.55 |   6811 |
-| T005 | 2016-11-01 | S    |   7.5 |   4000 |
-| T006 | 2016-11-01 | S    |   7.6 |   1000 |
-| T006 | 2016-11-01 | S    |   7.6 |   1000 |
-| T007 | 2016-11-01 | S    |  7.65 |    200 |
-| T008 | 2016-11-01 | P    |  7.65 |   2771 |
-| T009 | 2016-11-01 | P    |   7.6 |   9550 |
+| T004 | 2016-11-01 | S    | 7.550 |   6811 |
+| T005 | 2016-11-01 | S    | 7.500 |   4000 |
+| T006 | 2016-11-01 | S    | 7.600 |   1000 |
+| T006 | 2016-11-01 | S    | 7.600 |   1000 |
+| T007 | 2016-11-01 | S    | 7.650 |    200 |
+| T008 | 2016-11-01 | P    | 7.650 |   2771 |
+| T009 | 2016-11-01 | P    | 7.600 |   9550 |
 |------+------------+------+-------+--------|
-| T010 | 2016-11-01 | P    |  7.55 |   3175 |
+| T010 | 2016-11-01 | P    | 7.550 |   3175 |
 | T011 | 2016-11-02 | P    | 7.425 |    100 |
-| T012 | 2016-11-02 | P    |  7.55 |   4700 |
-| T012 | 2016-11-02 | P    |  7.55 |   4700 |
-| T013 | 2016-11-02 | P    |  7.35 |  53100 |
+| T012 | 2016-11-02 | P    | 7.550 |   4700 |
+| T012 | 2016-11-02 | P    | 7.550 |   4700 |
+| T013 | 2016-11-02 | P    | 7.350 |  53100 |
 |------+------------+------+-------+--------|
-| T014 | 2016-11-02 | P    |  7.45 |   5847 |
-| T015 | 2016-11-02 | P    |  7.75 |    500 |
-| T016 | 2016-11-02 | P    |  8.25 |    100 |
+| T014 | 2016-11-02 | P    | 7.450 |   5847 |
+| T015 | 2016-11-02 | P    | 7.750 |    500 |
+| T016 | 2016-11-02 | P    | 8.250 |    100 |
 #+end_EXAMPLE
 
 **** Adding New Computed Columns
@@ -1415,32 +1499,33 @@ new column to compute the cost of shares, we could do the following:
   tab1.select(:ref, :price, :shares, traded_on: :date, cost: 'price * shares').to_aoa
 #+END_SRC
 
-#+BEGIN_EXAMPLE
-| Ref  | Price | Shares |  Traded On |     Cost |
-|------+-------+--------+------------+----------|
-| T001 |   7.7 |    100 | 2016-11-01 |    770.0 |
-| T002 |  7.75 |    200 | 2016-11-01 |   1550.0 |
-| T003 |   7.5 |    800 | 2016-11-01 |   6000.0 |
-| T003 |   7.5 |    800 | 2016-11-01 |   6000.0 |
-|------+-------+--------+------------+----------|
-| T004 |  7.55 |   6811 | 2016-11-01 | 51423.05 |
-| T005 |   7.5 |   4000 | 2016-11-01 |  30000.0 |
-| T006 |   7.6 |   1000 | 2016-11-01 |   7600.0 |
-| T006 |   7.6 |   1000 | 2016-11-01 |   7600.0 |
-| T007 |  7.65 |    200 | 2016-11-01 |   1530.0 |
-| T008 |  7.65 |   2771 | 2016-11-01 | 21198.15 |
-| T009 |   7.6 |   9550 | 2016-11-01 |  72580.0 |
-|------+-------+--------+------------+----------|
-| T010 |  7.55 |   3175 | 2016-11-01 | 23971.25 |
-| T011 | 7.425 |    100 | 2016-11-02 |    742.5 |
-| T012 |  7.55 |   4700 | 2016-11-02 |  35485.0 |
-| T012 |  7.55 |   4700 | 2016-11-02 |  35485.0 |
-| T013 |  7.35 |  53100 | 2016-11-02 | 390285.0 |
-|------+-------+--------+------------+----------|
-| T014 |  7.45 |   5847 | 2016-11-02 | 43560.15 |
-| T015 |  7.75 |    500 | 2016-11-02 |   3875.0 |
-| T016 |  8.25 |    100 | 2016-11-02 |    825.0 |
-#+END_EXAMPLE
+#+RESULTS:
+#+begin_EXAMPLE
+| Ref  | Price | Shares | Traded On  |       Cost |
+|------+-------+--------+------------+------------|
+| T001 | 7.700 |    100 | 2016-11-01 |    770.000 |
+| T002 | 7.750 |    200 | 2016-11-01 |   1550.000 |
+| T003 | 7.500 |    800 | 2016-11-01 |   6000.000 |
+| T003 | 7.500 |    800 | 2016-11-01 |   6000.000 |
+|------+-------+--------+------------+------------|
+| T004 | 7.550 |   6811 | 2016-11-01 |  51423.050 |
+| T005 | 7.500 |   4000 | 2016-11-01 |  30000.000 |
+| T006 | 7.600 |   1000 | 2016-11-01 |   7600.000 |
+| T006 | 7.600 |   1000 | 2016-11-01 |   7600.000 |
+| T007 | 7.650 |    200 | 2016-11-01 |   1530.000 |
+| T008 | 7.650 |   2771 | 2016-11-01 |  21198.150 |
+| T009 | 7.600 |   9550 | 2016-11-01 |  72580.000 |
+|------+-------+--------+------------+------------|
+| T010 | 7.550 |   3175 | 2016-11-01 |  23971.250 |
+| T011 | 7.425 |    100 | 2016-11-02 |    742.500 |
+| T012 | 7.550 |   4700 | 2016-11-02 |  35485.000 |
+| T012 | 7.550 |   4700 | 2016-11-02 |  35485.000 |
+| T013 | 7.350 |  53100 | 2016-11-02 | 390285.000 |
+|------+-------+--------+------------+------------|
+| T014 | 7.450 |   5847 | 2016-11-02 |  43560.150 |
+| T015 | 7.750 |    500 | 2016-11-02 |   3875.000 |
+| T016 | 8.250 |    100 | 2016-11-02 |    825.000 |
+#+end_EXAMPLE
 
 The parameter ~traded_on: :date~ caused the ~:date~ column of the input table
 to be renamed ~:traded_on~, and the parameter ~cost: 'price * shares'~ created
@@ -1456,31 +1541,32 @@ second, chained call to ~select~:
     select(:ref, :traded_on, :price, :shares, :cost).to_aoa
 #+END_SRC
 
+#+RESULTS:
 #+begin_EXAMPLE
-| Ref  |  Traded On | Price | Shares |     Cost |
-|------+------------+-------+--------+----------|
-| T001 | 2016-11-01 |   7.7 |    100 |    770.0 |
-| T002 | 2016-11-01 |  7.75 |    200 |   1550.0 |
-| T003 | 2016-11-01 |   7.5 |    800 |   6000.0 |
-| T003 | 2016-11-01 |   7.5 |    800 |   6000.0 |
-|------+------------+-------+--------+----------|
-| T004 | 2016-11-01 |  7.55 |   6811 | 51423.05 |
-| T005 | 2016-11-01 |   7.5 |   4000 |  30000.0 |
-| T006 | 2016-11-01 |   7.6 |   1000 |   7600.0 |
-| T006 | 2016-11-01 |   7.6 |   1000 |   7600.0 |
-| T007 | 2016-11-01 |  7.65 |    200 |   1530.0 |
-| T008 | 2016-11-01 |  7.65 |   2771 | 21198.15 |
-| T009 | 2016-11-01 |   7.6 |   9550 |  72580.0 |
-|------+------------+-------+--------+----------|
-| T010 | 2016-11-01 |  7.55 |   3175 | 23971.25 |
-| T011 | 2016-11-02 | 7.425 |    100 |    742.5 |
-| T012 | 2016-11-02 |  7.55 |   4700 |  35485.0 |
-| T012 | 2016-11-02 |  7.55 |   4700 |  35485.0 |
-| T013 | 2016-11-02 |  7.35 |  53100 | 390285.0 |
-|------+------------+-------+--------+----------|
-| T014 | 2016-11-02 |  7.45 |   5847 | 43560.15 |
-| T015 | 2016-11-02 |  7.75 |    500 |   3875.0 |
-| T016 | 2016-11-02 |  8.25 |    100 |    825.0 |
+| Ref  | Traded On  | Price | Shares |       Cost |
+|------+------------+-------+--------+------------|
+| T001 | 2016-11-01 | 7.700 |    100 |    770.000 |
+| T002 | 2016-11-01 | 7.750 |    200 |   1550.000 |
+| T003 | 2016-11-01 | 7.500 |    800 |   6000.000 |
+| T003 | 2016-11-01 | 7.500 |    800 |   6000.000 |
+|------+------------+-------+--------+------------|
+| T004 | 2016-11-01 | 7.550 |   6811 |  51423.050 |
+| T005 | 2016-11-01 | 7.500 |   4000 |  30000.000 |
+| T006 | 2016-11-01 | 7.600 |   1000 |   7600.000 |
+| T006 | 2016-11-01 | 7.600 |   1000 |   7600.000 |
+| T007 | 2016-11-01 | 7.650 |    200 |   1530.000 |
+| T008 | 2016-11-01 | 7.650 |   2771 |  21198.150 |
+| T009 | 2016-11-01 | 7.600 |   9550 |  72580.000 |
+|------+------------+-------+--------+------------|
+| T010 | 2016-11-01 | 7.550 |   3175 |  23971.250 |
+| T011 | 2016-11-02 | 7.425 |    100 |    742.500 |
+| T012 | 2016-11-02 | 7.550 |   4700 |  35485.000 |
+| T012 | 2016-11-02 | 7.550 |   4700 |  35485.000 |
+| T013 | 2016-11-02 | 7.350 |  53100 | 390285.000 |
+|------+------------+-------+--------+------------|
+| T014 | 2016-11-02 | 7.450 |   5847 |  43560.150 |
+| T015 | 2016-11-02 | 7.750 |    500 |   3875.000 |
+| T016 | 2016-11-02 | 8.250 |    100 |    825.000 |
 #+end_EXAMPLE
 
 **** Adding Constant Strings and Other Types in select
@@ -1495,31 +1581,32 @@ evaluation and insert the remainder of the string in the named column.
     select(:ref, :traded_on, :price, :shares, :cost).to_aoa
 #+END_SRC
 
+#+RESULTS:
 #+begin_example
 | Ref  | Traded On  | Price | Shares | Cost                 |
 |------+------------+-------+--------+----------------------|
-| T001 | 2016-11-01 | 8     |    100 | the price of freedom |
-| T002 | 2016-11-01 | 8     |    200 | the price of freedom |
-| T003 | 2016-11-01 | 8     |    800 | the price of freedom |
-| T003 | 2016-11-01 | 8     |    800 | the price of freedom |
+| T001 | 2016-11-01 | 7.700 |    100 | the price of freedom |
+| T002 | 2016-11-01 | 7.750 |    200 | the price of freedom |
+| T003 | 2016-11-01 | 7.500 |    800 | the price of freedom |
+| T003 | 2016-11-01 | 7.500 |    800 | the price of freedom |
 |------+------------+-------+--------+----------------------|
-| T004 | 2016-11-01 | 8     |   6811 | the price of freedom |
-| T005 | 2016-11-01 | 8     |   4000 | the price of freedom |
-| T006 | 2016-11-01 | 8     |   1000 | the price of freedom |
-| T006 | 2016-11-01 | 8     |   1000 | the price of freedom |
-| T007 | 2016-11-01 | 8     |    200 | the price of freedom |
-| T008 | 2016-11-01 | 8     |   2771 | the price of freedom |
-| T009 | 2016-11-01 | 8     |   9550 | the price of freedom |
+| T004 | 2016-11-01 | 7.550 |   6811 | the price of freedom |
+| T005 | 2016-11-01 | 7.500 |   4000 | the price of freedom |
+| T006 | 2016-11-01 | 7.600 |   1000 | the price of freedom |
+| T006 | 2016-11-01 | 7.600 |   1000 | the price of freedom |
+| T007 | 2016-11-01 | 7.650 |    200 | the price of freedom |
+| T008 | 2016-11-01 | 7.650 |   2771 | the price of freedom |
+| T009 | 2016-11-01 | 7.600 |   9550 | the price of freedom |
 |------+------------+-------+--------+----------------------|
-| T010 | 2016-11-01 | 8     |   3175 | the price of freedom |
-| T011 | 2016-11-02 | 7     |    100 | the price of freedom |
-| T012 | 2016-11-02 | 8     |   4700 | the price of freedom |
-| T012 | 2016-11-02 | 8     |   4700 | the price of freedom |
-| T013 | 2016-11-02 | 7     |  53100 | the price of freedom |
+| T010 | 2016-11-01 | 7.550 |   3175 | the price of freedom |
+| T011 | 2016-11-02 | 7.425 |    100 | the price of freedom |
+| T012 | 2016-11-02 | 7.550 |   4700 | the price of freedom |
+| T012 | 2016-11-02 | 7.550 |   4700 | the price of freedom |
+| T013 | 2016-11-02 | 7.350 |  53100 | the price of freedom |
 |------+------------+-------+--------+----------------------|
-| T014 | 2016-11-02 | 7     |   5847 | the price of freedom |
-| T015 | 2016-11-02 | 8     |    500 | the price of freedom |
-| T016 | 2016-11-02 | 8     |    100 | the price of freedom |
+| T014 | 2016-11-02 | 7.450 |   5847 | the price of freedom |
+| T015 | 2016-11-02 | 7.750 |    500 | the price of freedom |
+| T016 | 2016-11-02 | 8.250 |    100 | the price of freedom |
 #+end_example
 
 This sets the ~:cost~ column to the string constant 'the price of freedom' for
@@ -1533,31 +1620,32 @@ You can set a column to a constant of any of the acceptable types, ~Numeric~,
     select(:ref, :traded_on, :price, :shares, :cost, :today).to_aoa
 #+END_SRC
 
+#+RESULTS:
 #+begin_example
-| Ref  | Traded On  | Price | Shares | Cost | Today      |
-|------+------------+-------+--------+------+------------|
-| T001 | 2016-11-01 | 8     |    100 | 3    | 2025-12-04 |
-| T002 | 2016-11-01 | 8     |    200 | 3    | 2025-12-04 |
-| T003 | 2016-11-01 | 8     |    800 | 3    | 2025-12-04 |
-| T003 | 2016-11-01 | 8     |    800 | 3    | 2025-12-04 |
-|------+------------+-------+--------+------+------------|
-| T004 | 2016-11-01 | 8     |   6811 | 3    | 2025-12-04 |
-| T005 | 2016-11-01 | 8     |   4000 | 3    | 2025-12-04 |
-| T006 | 2016-11-01 | 8     |   1000 | 3    | 2025-12-04 |
-| T006 | 2016-11-01 | 8     |   1000 | 3    | 2025-12-04 |
-| T007 | 2016-11-01 | 8     |    200 | 3    | 2025-12-04 |
-| T008 | 2016-11-01 | 8     |   2771 | 3    | 2025-12-04 |
-| T009 | 2016-11-01 | 8     |   9550 | 3    | 2025-12-04 |
-|------+------------+-------+--------+------+------------|
-| T010 | 2016-11-01 | 8     |   3175 | 3    | 2025-12-04 |
-| T011 | 2016-11-02 | 7     |    100 | 3    | 2025-12-04 |
-| T012 | 2016-11-02 | 8     |   4700 | 3    | 2025-12-04 |
-| T012 | 2016-11-02 | 8     |   4700 | 3    | 2025-12-04 |
-| T013 | 2016-11-02 | 7     |  53100 | 3    | 2025-12-04 |
-|------+------------+-------+--------+------+------------|
-| T014 | 2016-11-02 | 7     |   5847 | 3    | 2025-12-04 |
-| T015 | 2016-11-02 | 8     |    500 | 3    | 2025-12-04 |
-| T016 | 2016-11-02 | 8     |    100 | 3    | 2025-12-04 |
+| Ref  | Traded On  | Price | Shares |  Cost | Today      |
+|------+------------+-------+--------+-------+------------|
+| T001 | 2016-11-01 | 7.700 |    100 | 3.142 | 2025-12-13 |
+| T002 | 2016-11-01 | 7.750 |    200 | 3.142 | 2025-12-13 |
+| T003 | 2016-11-01 | 7.500 |    800 | 3.142 | 2025-12-13 |
+| T003 | 2016-11-01 | 7.500 |    800 | 3.142 | 2025-12-13 |
+|------+------------+-------+--------+-------+------------|
+| T004 | 2016-11-01 | 7.550 |   6811 | 3.142 | 2025-12-13 |
+| T005 | 2016-11-01 | 7.500 |   4000 | 3.142 | 2025-12-13 |
+| T006 | 2016-11-01 | 7.600 |   1000 | 3.142 | 2025-12-13 |
+| T006 | 2016-11-01 | 7.600 |   1000 | 3.142 | 2025-12-13 |
+| T007 | 2016-11-01 | 7.650 |    200 | 3.142 | 2025-12-13 |
+| T008 | 2016-11-01 | 7.650 |   2771 | 3.142 | 2025-12-13 |
+| T009 | 2016-11-01 | 7.600 |   9550 | 3.142 | 2025-12-13 |
+|------+------------+-------+--------+-------+------------|
+| T010 | 2016-11-01 | 7.550 |   3175 | 3.142 | 2025-12-13 |
+| T011 | 2016-11-02 | 7.425 |    100 | 3.142 | 2025-12-13 |
+| T012 | 2016-11-02 | 7.550 |   4700 | 3.142 | 2025-12-13 |
+| T012 | 2016-11-02 | 7.550 |   4700 | 3.142 | 2025-12-13 |
+| T013 | 2016-11-02 | 7.350 |  53100 | 3.142 | 2025-12-13 |
+|------+------------+-------+--------+-------+------------|
+| T014 | 2016-11-02 | 7.450 |   5847 | 3.142 | 2025-12-13 |
+| T015 | 2016-11-02 | 7.750 |    500 | 3.142 | 2025-12-13 |
+| T016 | 2016-11-02 | 8.250 |    100 | 3.142 | 2025-12-13 |
 #+end_example
 
 **** Custom Instance Variables and Hooks
@@ -1582,17 +1670,18 @@ following example uses the ~ivars:~ and ~before_hook:~ parameters to keep track
 of the running cost of shares, then formats the table.
 
 #+BEGIN_SRC ruby :wrap EXAMPLE
-  tab = tab1.select(:ref, :price, :shares, traded_on: :date, \
-              cost: 'price * shares', cumulative: '@total_cost', \
-              ivars: { total_cost: 0 }, \
+  tab = tab1.select(:ref, :price, :shares, traded_on: :date,
+              cost: 'price * shares', cumulative: '@total_cost',
+              ivars: { total_cost: 0 },
               before_hook: '@total_cost += price * shares')
   FatTable.to_aoa(tab) do |f|
     f.format(price: '0.4', shares: '0.0,', cost: '0.2,', cumulative: '0.2,')
   end
 #+END_SRC
 
-#+BEGIN_EXAMPLE
-| Ref  |  Price | Shares |  Traded On |       Cost | Cumulative |
+#+RESULTS:
+#+begin_EXAMPLE
+| Ref  |  Price | Shares | Traded On  |       Cost | Cumulative |
 |------+--------+--------+------------+------------+------------|
 | T001 | 7.7000 |    100 | 2016-11-01 |     770.00 |     770.00 |
 | T002 | 7.7500 |    200 | 2016-11-01 |   1,550.00 |   2,320.00 |
@@ -1616,7 +1705,7 @@ of the running cost of shares, then formats the table.
 | T014 | 7.4500 |  5,847 | 2016-11-02 |  43,560.15 | 735,780.10 |
 | T015 | 7.7500 |    500 | 2016-11-02 |   3,875.00 | 739,655.10 |
 | T016 | 8.2500 |    100 | 2016-11-02 |     825.00 | 740,480.10 |
-#+END_EXAMPLE
+#+end_EXAMPLE
 
 **** Argument Order and Boundaries
 Notice that ~select~ can take any number of arguments but all the symbol
@@ -1642,17 +1731,20 @@ Here we select only those even-numbered rows where either of the two boolean
 fields is true:
 
 #+BEGIN_SRC ruby
-    tab1.where('@row.even? && (g10 || qp10)').to_aoa
+  tab1.where('@row.even? && (g10 || qp10)').to_term
 #+END_SRC
 
+#+RESULTS:
 #+begin_example
-| Ref  | Date       | Code | Price | G10 | QP10 | Shares |   Lp |    Qp | Iplp | Ipqp |
-|------+------------+------+-------+-----+------+--------+------+-------+------+------|
-| T002 | 2016-11-01 | P    | 8     | T   | F    |    200 |   28 |   172 | 0    | 0    |
-| T003 | 2016-11-01 | P    | 8     | F   | T    |    800 |  112 |   688 | 0    | 0    |
-| T006 | 2016-11-01 | S    | 8     | F   | T    |   1000 |  143 |   857 | 0    | 0    |
-| T010 | 2016-11-01 | P    | 8     | F   | T    |   3175 |  451 |  2724 | 0    | 0    |
-| T013 | 2016-11-02 | P    | 7     | T   | T    |  53100 | 7656 | 45444 | 0    | 0    |
+╒══════╤════════════╤══════╤═══════╤═════╤══════╤════════╤══════╤═══════╤══════╤══════╕
+│ Ref  │ Date       │ Code │ Price │ G10 │ QP10 │ Shares │ Lp   │ Qp    │ Iplp │ Ipqp │
+├──────┼────────────┼──────┼───────┼─────┼──────┼────────┼──────┼───────┼──────┼──────┤
+│ T002 │ 2016-11-01 │ P    │ 8     │ T   │ F    │ 200    │ 28   │ 172   │ 0    │ 0    │
+│ T003 │ 2016-11-01 │ P    │ 8     │ F   │ T    │ 800    │ 112  │ 688   │ 0    │ 0    │
+│ T006 │ 2016-11-01 │ S    │ 8     │ F   │ T    │ 1000   │ 143  │ 857   │ 0    │ 0    │
+│ T010 │ 2016-11-01 │ P    │ 8     │ F   │ T    │ 3175   │ 451  │ 2724  │ 0    │ 0    │
+│ T013 │ 2016-11-02 │ P    │ 7     │ T   │ T    │ 53100  │ 7656 │ 45444 │ 0    │ 0    │
+╘══════╧════════════╧══════╧═══════╧═════╧══════╧════════╧══════╧═══════╧══════╧══════╛
 #+end_example
 
 *** Order_by
@@ -1670,6 +1762,7 @@ Let's sort our table first by ~:code~, then in reverse order of ~:date~.
   tab1.order_by(:code, :date!).to_aoa
 #+END_SRC
 
+#+RESULTS:
 #+begin_example
 | Ref  | Date       | Code | Price | G10 | QP10 | Shares |   Lp |    Qp | Iplp | Ipqp |
 |------+------------+------+-------+-----+------+--------+------+-------+------+------|
@@ -1712,6 +1805,46 @@ row, and the table is sorted as with ~order_by~ on that column.
 #+BEGIN_SRC ruby
   tab1.order_with('price * shares').to_aoa
 #+END_SRC
+
+#+RESULTS:
+#+begin_example
+| Ref  | Date       | Code | Price | G10 | QP10 | Shares |   Lp |    Qp | Iplp | Ipqp | Sort Key |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T011 | 2016-11-02 | P    | 7     | T   | F    |    100 |   14 |    86 | 0    | 0    |      743 |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T001 | 2016-11-01 | P    | 8     | T   | F    |    100 |   14 |    86 | 0    | 0    |      770 |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T016 | 2016-11-02 | P    | 8     | T   | T    |    100 |   14 |    86 | 0    | 0    |      825 |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T007 | 2016-11-01 | S    | 8     | T   | F    |    200 |   28 |   172 | 0    | 0    |     1530 |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T002 | 2016-11-01 | P    | 8     | T   | F    |    200 |   28 |   172 | 0    | 0    |     1550 |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T015 | 2016-11-02 | P    | 8     | F   | F    |    500 |   72 |   428 | 0    | 0    |     3875 |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T003 | 2016-11-01 | P    | 8     | F   | T    |    800 |  112 |   688 | 0    | 0    |     6000 |
+| T003 | 2016-11-01 | P    | 8     | F   | T    |    800 |  112 |   688 | 0    | 0    |     6000 |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T006 | 2016-11-01 | S    | 8     | F   | T    |   1000 |  143 |   857 | 0    | 0    |     7600 |
+| T006 | 2016-11-01 | S    | 8     | F   | T    |   1000 |  143 |   857 | 0    | 0    |     7600 |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T008 | 2016-11-01 | P    | 8     | F   | F    |   2771 |  393 |  2378 | 0    | 0    |    21198 |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T010 | 2016-11-01 | P    | 8     | F   | T    |   3175 |  451 |  2724 | 0    | 0    |    23971 |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T005 | 2016-11-01 | S    | 8     | F   | F    |   4000 |  572 |  3428 | 0    | 0    |    30000 |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T012 | 2016-11-02 | P    | 8     | F   | F    |   4700 |  677 |  4023 | 0    | 0    |    35485 |
+| T012 | 2016-11-02 | P    | 8     | F   | F    |   4700 |  677 |  4023 | 0    | 0    |    35485 |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T014 | 2016-11-02 | P    | 7     | F   | T    |   5847 |  835 |  5012 | 0    | 0    |    43560 |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T004 | 2016-11-01 | S    | 8     | T   | F    |   6811 |  966 |  5845 | 0    | 0    |    51423 |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T009 | 2016-11-01 | P    | 8     | F   | F    |   9550 | 1363 |  8187 | 0    | 0    |    72580 |
+|------+------------+------+-------+-----+------+--------+------+-------+------+------+----------|
+| T013 | 2016-11-02 | P    | 7     | T   | T    |  53100 | 7656 | 45444 | 0    | 0    |   390285 |
+#+end_example
 
 #+begin_example
 | Ref  | Date       | Code | Price | G10 | QP10 | Shares |   Lp |    Qp | Iplp | Ipqp | Sort Key |
@@ -1772,6 +1905,10 @@ group:
                 qp10: :all?) \
     .to_aoa { |f| f.format(avg_price: '0.5R') }
 #+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+#+end_EXAMPLE
 
 #+BEGIN_EXAMPLE
 | Code |       Date | Avg Price | Sum Shares | Sum Lp | Sum Qp | All QP10 |
@@ -1935,6 +2072,20 @@ Here is ~tab_a~:
   tab_a.to_aoa
 #+end_src
 
+#+RESULTS:
+#+begin_example
+| Id | Name  | Age | Address    | Salary | Join Date  |
+|----+-------+-----+------------+--------+------------|
+| 1  | Paul  |  32 | California |  20000 | 2001-07-13 |
+| 3  | Teddy |  23 | Norway     |  20000 | 2007-12-13 |
+| 4  | Mark  |  25 | Rich-Mond  |  65000 | 2007-12-13 |
+| 5  | David |  27 | Texas      |  85000 | 2007-12-13 |
+| 2  | Allen |  25 | Texas      |        | 2005-07-13 |
+| 8  | Paul  |  24 | Houston    |  20000 | 2005-07-13 |
+| 9  | James |  44 | Norway     |   5000 | 2005-07-13 |
+| 10 | James |  45 | Texas      |   5000 |            |
+#+end_example
+
 #+begin_example
 | Id | Name  | Age | Address    | Salary | Join Date  |
 |----+-------+-----+------------+--------+------------|
@@ -1954,6 +2105,15 @@ And ~tab_b~:
   tab_b.to_aoa
 #+end_src
 
+#+RESULTS:
+#+begin_example
+| Id | Dept        | Emp Id |
+|----+-------------+--------|
+| 1  | IT Billing  | 1      |
+| 2  | Engineering | 2      |
+| 3  | Finance     | 7      |
+#+end_example
+
 #+begin_example
 | Id | Dept        | Emp Id |
 |----+-------------+--------|
@@ -1970,6 +2130,15 @@ two tables.
 #+BEGIN_SRC ruby :wrap EXAMPLE
   tab_a.join(tab_b).to_aoa
 #+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+| Id | Name  | Age | Address    | Salary | Join Date  | Dept        | Emp Id |
+|----+-------+-----+------------+--------+------------+-------------+--------|
+| 1  | Paul  |  32 | California |  20000 | 2001-07-13 | IT Billing  | 1      |
+| 3  | Teddy |  23 | Norway     |  20000 | 2007-12-13 | Finance     | 7      |
+| 2  | Allen |  25 | Texas      |        | 2005-07-13 | Engineering | 2      |
+#+end_EXAMPLE
 
 #+BEGIN_EXAMPLE
 | Id | Name  | Age | Address    | Salary |  Join Date | Dept        | Emp Id |
@@ -1988,6 +2157,14 @@ suffixes:
   tab_a.join(tab_b, :id_a, :emp_id_b).to_aoa
 #+END_SRC
 
+#+RESULTS:
+#+begin_EXAMPLE
+| Id | Name  | Age | Address    | Salary | Join Date  | Id B | Dept        |
+|----+-------+-----+------------+--------+------------+------+-------------|
+| 1  | Paul  |  32 | California |  20000 | 2001-07-13 | 1    | IT Billing  |
+| 2  | Allen |  25 | Texas      |        | 2005-07-13 | 2    | Engineering |
+#+end_EXAMPLE
+
 #+BEGIN_EXAMPLE
 | Id | Name  | Age | Address    | Salary |  Join Date | Id B | Dept        |
 |----+-------+-----+------------+--------+------------+------+-------------|
@@ -2003,6 +2180,14 @@ should be treated as local variables:
   tab_a.join(tab_b, 'id_a == emp_id_b').to_aoa
 #+END_SRC
 
+#+RESULTS:
+#+begin_EXAMPLE
+| Id | Name  | Age | Address    | Salary | Join Date  | Id B | Dept        | Emp Id |
+|----+-------+-----+------------+--------+------------+------+-------------+--------|
+| 1  | Paul  |  32 | California |  20000 | 2001-07-13 | 1    | IT Billing  | 1      |
+| 2  | Allen |  25 | Texas      |        | 2005-07-13 | 2    | Engineering | 2      |
+#+end_EXAMPLE
+
 #+BEGIN_EXAMPLE
 | Id | Name  | Age | Address    | Salary |  Join Date | Id B | Dept        | Emp Id |
 |----+-------+-----+------------+--------+------------+------+-------------+--------|
@@ -2017,6 +2202,20 @@ the matching columns of ~tab_b~ and augmented with nils where there is no match:
 #+BEGIN_SRC ruby :wrap EXAMPLE
   tab_a.left_join(tab_b, 'id_a == emp_id_b').to_aoa
 #+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+| Id | Name  | Age | Address    | Salary | Join Date  | Id B | Dept        | Emp Id |
+|----+-------+-----+------------+--------+------------+------+-------------+--------|
+| 1  | Paul  |  32 | California |  20000 | 2001-07-13 | 1    | IT Billing  | 1      |
+| 3  | Teddy |  23 | Norway     |  20000 | 2007-12-13 |      |             |        |
+| 4  | Mark  |  25 | Rich-Mond  |  65000 | 2007-12-13 |      |             |        |
+| 5  | David |  27 | Texas      |  85000 | 2007-12-13 |      |             |        |
+| 2  | Allen |  25 | Texas      |        | 2005-07-13 | 2    | Engineering | 2      |
+| 8  | Paul  |  24 | Houston    |  20000 | 2005-07-13 |      |             |        |
+| 9  | James |  44 | Norway     |   5000 | 2005-07-13 |      |             |        |
+| 10 | James |  45 | Texas      |   5000 |            |      |             |        |
+#+end_EXAMPLE
 
 #+BEGIN_EXAMPLE
 | Id | Name  | Age | Address    | Salary |  Join Date | Id B | Dept        | Emp Id |
@@ -2039,6 +2238,15 @@ match:
   tab_a.right_join(tab_b, 'id_a == emp_id_b').to_aoa
 #+END_SRC
 
+#+RESULTS:
+#+begin_EXAMPLE
+| Id | Name  | Age | Address    | Salary | Join Date  | Id B | Dept        | Emp Id |
+|----+-------+-----+------------+--------+------------+------+-------------+--------|
+| 1  | Paul  |  32 | California |  20000 | 2001-07-13 | 1    | IT Billing  | 1      |
+| 2  | Allen |  25 | Texas      |        | 2005-07-13 | 2    | Engineering | 2      |
+|    |       |     |            |        |            | 3    | Finance     | 7      |
+#+end_EXAMPLE
+
 #+BEGIN_EXAMPLE
 | Id | Name  | Age | Address    | Salary |  Join Date | Id B | Dept        | Emp Id |
 |----+-------+-----+------------+--------+------------+------+-------------+--------|
@@ -2055,6 +2263,21 @@ table where the join expression is satisfied and augmented with nils otherwise.
 #+BEGIN_SRC ruby :wrap EXAMPLE
   tab_a.full_join(tab_b, 'id_a == emp_id_b').to_aoa
 #+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+| Id | Name  | Age | Address    | Salary | Join Date  | Id B | Dept        | Emp Id |
+|----+-------+-----+------------+--------+------------+------+-------------+--------|
+| 1  | Paul  |  32 | California |  20000 | 2001-07-13 | 1    | IT Billing  | 1      |
+| 3  | Teddy |  23 | Norway     |  20000 | 2007-12-13 |      |             |        |
+| 4  | Mark  |  25 | Rich-Mond  |  65000 | 2007-12-13 |      |             |        |
+| 5  | David |  27 | Texas      |  85000 | 2007-12-13 |      |             |        |
+| 2  | Allen |  25 | Texas      |        | 2005-07-13 | 2    | Engineering | 2      |
+| 8  | Paul  |  24 | Houston    |  20000 | 2005-07-13 |      |             |        |
+| 9  | James |  44 | Norway     |   5000 | 2005-07-13 |      |             |        |
+| 10 | James |  45 | Texas      |   5000 |            |      |             |        |
+|    |       |     |            |        |            | 3    | Finance     | 7      |
+#+end_EXAMPLE
 
 #+BEGIN_EXAMPLE
 | Id | Name  | Age | Address    | Salary |  Join Date | Id B | Dept        | Emp Id |
@@ -2079,6 +2302,36 @@ So be careful lest you consume all your computer's memory.
 #+BEGIN_SRC ruby :wrap EXAMPLE
   tab_a.cross_join(tab_b).to_aoa
 #+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+| Id | Name  | Age | Address    | Salary | Join Date  | Id B | Dept        | Emp Id |
+|----+-------+-----+------------+--------+------------+------+-------------+--------|
+| 1  | Paul  |  32 | California |  20000 | 2001-07-13 | 1    | IT Billing  | 1      |
+| 1  | Paul  |  32 | California |  20000 | 2001-07-13 | 2    | Engineering | 2      |
+| 1  | Paul  |  32 | California |  20000 | 2001-07-13 | 3    | Finance     | 7      |
+| 3  | Teddy |  23 | Norway     |  20000 | 2007-12-13 | 1    | IT Billing  | 1      |
+| 3  | Teddy |  23 | Norway     |  20000 | 2007-12-13 | 2    | Engineering | 2      |
+| 3  | Teddy |  23 | Norway     |  20000 | 2007-12-13 | 3    | Finance     | 7      |
+| 4  | Mark  |  25 | Rich-Mond  |  65000 | 2007-12-13 | 1    | IT Billing  | 1      |
+| 4  | Mark  |  25 | Rich-Mond  |  65000 | 2007-12-13 | 2    | Engineering | 2      |
+| 4  | Mark  |  25 | Rich-Mond  |  65000 | 2007-12-13 | 3    | Finance     | 7      |
+| 5  | David |  27 | Texas      |  85000 | 2007-12-13 | 1    | IT Billing  | 1      |
+| 5  | David |  27 | Texas      |  85000 | 2007-12-13 | 2    | Engineering | 2      |
+| 5  | David |  27 | Texas      |  85000 | 2007-12-13 | 3    | Finance     | 7      |
+| 2  | Allen |  25 | Texas      |        | 2005-07-13 | 1    | IT Billing  | 1      |
+| 2  | Allen |  25 | Texas      |        | 2005-07-13 | 2    | Engineering | 2      |
+| 2  | Allen |  25 | Texas      |        | 2005-07-13 | 3    | Finance     | 7      |
+| 8  | Paul  |  24 | Houston    |  20000 | 2005-07-13 | 1    | IT Billing  | 1      |
+| 8  | Paul  |  24 | Houston    |  20000 | 2005-07-13 | 2    | Engineering | 2      |
+| 8  | Paul  |  24 | Houston    |  20000 | 2005-07-13 | 3    | Finance     | 7      |
+| 9  | James |  44 | Norway     |   5000 | 2005-07-13 | 1    | IT Billing  | 1      |
+| 9  | James |  44 | Norway     |   5000 | 2005-07-13 | 2    | Engineering | 2      |
+| 9  | James |  44 | Norway     |   5000 | 2005-07-13 | 3    | Finance     | 7      |
+| 10 | James |  45 | Texas      |   5000 |            | 1    | IT Billing  | 1      |
+| 10 | James |  45 | Texas      |   5000 |            | 2    | Engineering | 2      |
+| 10 | James |  45 | Texas      |   5000 |            | 3    | Finance     | 7      |
+#+end_EXAMPLE
 
 #+BEGIN_EXAMPLE
 | Id | Name  | Age | Address    | Salary |  Join Date | Id B | Dept        | Emp Id |
@@ -2123,6 +2376,11 @@ set operations on duplicates and groups.
   tab1.to_aoa
 #+END_SRC
 
+#+RESULTS:
+#+begin_EXAMPLE
+nil
+#+end_EXAMPLE
+
 #+BEGIN_EXAMPLE
 | Ref  |       Date | Code | Price | G10 | QP10 | Shares |   Lp |    Qp |   Iplp |   Ipqp |
 |------+------------+------+-------+-----+------+--------+------+-------+--------+--------|
@@ -2153,6 +2411,30 @@ set operations on duplicates and groups.
 #+BEGIN_SRC ruby :wrap EXAMPLE
   tab2.to_aoa
 #+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+| Ref  | Date       | Code | Price | G10 | QP10 | Shares |    Lp |   Qp | Iplp | Ipqp |
+|------+------------+------+-------+-----+------+--------+-------+------+------+------|
+| T003 | 2016-11-01 | P    | 8     | F   | T    |    800 |   112 |  688 | 0    | 0    |
+| T003 | 2016-11-01 | P    | 8     | F   | T    |    800 |   112 |  688 | 0    | 0    |
+| T017 | 2016-11-01 | P    | 8     | F   | T    |   1801 |  1201 |  600 | 0    | 0    |
+|------+------------+------+-------+-----+------+--------+-------+------+------+------|
+| T018 | 2016-11-01 | S    | 7     | T   | F    |   2516 |  2400 |  116 | 0    | 0    |
+| T018 | 2016-11-01 | S    | 7     | T   | F    |   2516 |  2400 |  116 | 0    | 0    |
+| T006 | 2016-11-01 | S    | 8     | F   | T    |   1000 |   143 |  857 | 0    | 0    |
+| T007 | 2016-11-01 | S    | 8     | T   | F    |    200 |    28 |  172 | 0    | 0    |
+|------+------------+------+-------+-----+------+--------+-------+------+------+------|
+| T014 | 2016-11-02 | P    | 7     | F   | T    |   5847 |   835 | 5012 | 0    | 0    |
+| T015 | 2016-11-02 | P    | 8     | F   | F    |    500 |    72 |  428 | 0    | 0    |
+| T015 | 2016-11-02 | P    | 8     | F   | F    |    500 |    72 |  428 | 0    | 0    |
+| T016 | 2016-11-02 | P    | 8     | T   | T    |    100 |    14 |   86 | 0    | 0    |
+|------+------------+------+-------+-----+------+--------+-------+------+------+------|
+| T019 | 2017-01-15 | S    | 9     | T   | F    |    300 |   175 |  125 | 0    | 0    |
+| T020 | 2017-01-19 | S    | 8     | F   | T    |    700 |   615 |   85 | 0    | 0    |
+| T021 | 2017-01-23 | P    | 7     | T   | T    |  12100 | 11050 | 1050 | 0    | 0    |
+| T021 | 2017-01-23 | P    | 7     | T   | T    |  12100 | 11050 | 1050 | 0    | 0    |
+#+end_EXAMPLE
 
 #+BEGIN_EXAMPLE
 | Ref  |       Date | Code | Price | G10 | QP10 | Shares |    Lp |   Qp |   Iplp |   Ipqp |
@@ -2192,6 +2474,11 @@ group boundary between the rows of the two input tables.
  tab1.union(tab2).to_aoa
 #+END_SRC
 
+#+RESULTS:
+#+begin_EXAMPLE
+nil
+#+end_EXAMPLE
+
 #+BEGIN_EXAMPLE
 | Ref  |       Date | Code | Price | G10 | QP10 | Shares |    Lp |    Qp |   Iplp |   Ipqp |
 |------+------------+------+-------+-----+------+--------+-------+-------+--------+--------|
@@ -2221,6 +2508,11 @@ group boundary between the rows of the two input tables.
 #+BEGIN_SRC ruby :wrap EXAMPLE
  tab1.union_all(tab2).to_aoa
 #+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+nil
+#+end_EXAMPLE
 
 #+BEGIN_EXAMPLE
 | Ref  |       Date | Code | Price | G10 | QP10 | Shares |    Lp |    Qp |   Iplp |   Ipqp |
@@ -2276,6 +2568,11 @@ eliminating any duplicate rows in the result.
  tab1.intersect(tab2).to_aoa
 #+END_SRC
 
+#+RESULTS:
+#+begin_EXAMPLE
+nil
+#+end_EXAMPLE
+
 #+BEGIN_EXAMPLE
 | Ref  |       Date | Code | Price | G10 | QP10 | Shares |  Lp |   Qp |   Iplp |   Ipqp |
 |------+------------+------+-------+-----+------+--------+-----+------+--------+--------|
@@ -2294,6 +2591,11 @@ duplicates in the second table do not appear.
 #+BEGIN_SRC ruby :wrap EXAMPLE
  tab1.intersect_all(tab2).to_aoa
 #+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+nil
+#+end_EXAMPLE
 
 #+BEGIN_EXAMPLE
 | Ref  |       Date | Code | Price | G10 | QP10 | Shares |  Lp |   Qp |   Iplp |   Ipqp |
@@ -2316,6 +2618,11 @@ operation matters.
  tab2.intersect_all(tab1).to_aoa
 #+END_SRC
 
+#+RESULTS:
+#+begin_EXAMPLE
+nil
+#+end_EXAMPLE
+
 #+BEGIN_EXAMPLE
 | Ref  |       Date | Code | Price | G10 | QP10 | Shares |  Lp |   Qp |   Iplp |   Ipqp |
 |------+------------+------+-------+-----+------+--------+-----+------+--------+--------|
@@ -2336,6 +2643,11 @@ another table, that is, compute the set difference between the tables.
 #+BEGIN_SRC ruby :wrap EXAMPLE
  tab1.except(tab2).to_aoa
 #+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+nil
+#+end_EXAMPLE
 
 #+BEGIN_EXAMPLE
 | Ref  |       Date | Code | Price | G10 | QP10 | Shares |   Lp |    Qp |   Iplp |   Ipqp |
@@ -2359,6 +2671,11 @@ computed by ~except~.
  tab2.except(tab1).to_aoa
 #+END_SRC
 
+#+RESULTS:
+#+begin_EXAMPLE
+nil
+#+end_EXAMPLE
+
 #+BEGIN_EXAMPLE
 | Ref  |       Date | Code | Price | G10 | QP10 | Shares |    Lp |   Qp |   Iplp |   Ipqp |
 |------+------------+------+-------+-----+------+--------+-------+------+--------+--------|
@@ -2375,6 +2692,11 @@ receiver table, but not those in the second, argument table.
 #+BEGIN_SRC ruby :wrap EXAMPLE
  tab1.except_all(tab2).to_aoa
 #+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+nil
+#+end_EXAMPLE
 
 #+BEGIN_EXAMPLE
 | Ref  |       Date | Code | Price | G10 | QP10 | Shares |   Lp |    Qp |   Iplp |   Ipqp |
@@ -2398,6 +2720,11 @@ And, of course, the order of operands matters here as well.
  tab2.except_all(tab1).to_aoa
 #+END_SRC
 
+#+RESULTS:
+#+begin_EXAMPLE
+nil
+#+end_EXAMPLE
+
 #+BEGIN_EXAMPLE
 | Ref  |       Date | Code | Price | G10 | QP10 | Shares |    Lp |   Qp |   Iplp |   Ipqp |
 |------+------------+------+-------+-----+------+--------+-------+------+--------+--------|
@@ -2418,6 +2745,11 @@ the input table are lost.
 #+BEGIN_SRC ruby :wrap EXAMPLE
  tab1.uniq.to_aoa
 #+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+nil
+#+end_EXAMPLE
 
 #+BEGIN_EXAMPLE
 | Ref  |       Date | Code | Price | G10 | QP10 | Shares |   Lp |    Qp |   Iplp |   Ipqp |
@@ -2448,6 +2780,11 @@ the only operations that mutate their receiver tables.
 #+BEGIN_SRC ruby :wrap EXAMPLE
  tab1.degroup!.to_aoa
 #+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+nil
+#+end_EXAMPLE
 
 #+BEGIN_EXAMPLE
 | Ref  |       Date | Code | Price | G10 | QP10 | Shares |   Lp |    Qp |   Iplp |   Ipqp |
@@ -2523,6 +2860,22 @@ forth are ignored.
   tab_a.to_text
 #+end_SRC
 
+#+RESULTS:
+#+begin_EXAMPLE
++====+=======+=====+============+========+============+
+| Id | Name  | Age | Address    | Salary | Join Date  |
++----+-------+-----+------------+--------+------------+
+| 1  | Paul  | 32  | California | 20000  | 2001-07-13 |
+| 3  | Teddy | 23  | Norway     | 20000  | 2007-12-13 |
+| 4  | Mark  | 25  | Rich-Mond  | 65000  | 2007-12-13 |
+| 5  | David | 27  | Texas      | 85000  | 2007-12-13 |
+| 2  | Allen | 25  | Texas      |        | 2005-07-13 |
+| 8  | Paul  | 24  | Houston    | 20000  | 2005-07-13 |
+| 9  | James | 44  | Norway     | 5000   | 2005-07-13 |
+| 10 | James | 45  | Texas      | 5000   |            |
++====+=======+=====+============+========+============+
+#+end_EXAMPLE
+
 #+BEGIN_EXAMPLE
 +====+=======+=====+============+========+============+
 | Id | Name  | Age | Address    | Salary | Join Date  |
@@ -2551,6 +2904,22 @@ it may be better to use the =to_aoa= formatter shown below.
   tab_a.to_org
 #+end_SRC
 
+#+RESULTS:
+#+begin_EXAMPLE
+|----+-------+-----+------------+--------+------------------|
+| Id | Name  | Age | Address    | Salary | Join Date        |
+|----+-------+-----+------------+--------+------------------|
+| 1  | Paul  | 32  | California | 20000  | [2001-07-13 Fri] |
+| 3  | Teddy | 23  | Norway     | 20000  | [2007-12-13 Thu] |
+| 4  | Mark  | 25  | Rich-Mond  | 65000  | [2007-12-13 Thu] |
+| 5  | David | 27  | Texas      | 85000  | [2007-12-13 Thu] |
+| 2  | Allen | 25  | Texas      |        | [2005-07-13 Wed] |
+| 8  | Paul  | 24  | Houston    | 20000  | [2005-07-13 Wed] |
+| 9  | James | 44  | Norway     | 5000   | [2005-07-13 Wed] |
+| 10 | James | 45  | Texas      | 5000   |                  |
+|----+-------+-----+------------+--------+------------------|
+#+end_EXAMPLE
+
 #+begin_EXAMPLE
 |----+-------+-----+------------+--------+--------------|
 | Id | Name  | Age | Address    | Salary | Join Date    |
@@ -2576,6 +2945,22 @@ extent the device supports it.
   tab_a.to_term
 #+end_SRC
 
+#+RESULTS:
+#+begin_EXAMPLE
+╒════╤═══════╤═════╤════════════╤════════╤════════════╕
+│ Id │ Name  │ Age │ Address    │ Salary │ Join Date  │
+├────┼───────┼─────┼────────────┼────────┼────────────┤
+│ 1  │ Paul  │ 32  │ California │ 20000  │ 2001-07-13 │
+│ 3  │ Teddy │ 23  │ Norway     │ 20000  │ 2007-12-13 │
+│ 4  │ Mark  │ 25  │ Rich-Mond  │ 65000  │ 2007-12-13 │
+│ 5  │ David │ 27  │ Texas      │ 85000  │ 2007-12-13 │
+│ 2  │ Allen │ 25  │ Texas      │        │ 2005-07-13 │
+│ 8  │ Paul  │ 24  │ Houston    │ 20000  │ 2005-07-13 │
+│ 9  │ James │ 44  │ Norway     │ 5000   │ 2005-07-13 │
+│ 10 │ James │ 45  │ Texas      │ 5000   │            │
+╘════╧═══════╧═════╧════════════╧════════╧════════════╛
+#+end_EXAMPLE
+
 #+begin_EXAMPLE
 ╒════╤═══════╤═════╤════════════╤════════╤════════════╕
 │ Id │ Name  │ Age │ Address    │ Salary │ Join Date  │
@@ -2600,6 +2985,25 @@ as color and text styles to the full extent of LaTeX's formatting prowess.
   tab_b.to_latex
 #+end_SRC
 
+#+RESULTS:
+#+begin_EXAMPLE
+\begin{longtable}{lll}
+Id&
+Dept&
+Emp Id\\
+\endhead
+1&
+IT Billing&
+1\\
+2&
+Engineering&
+2\\
+3&
+Finance&
+7\\
+\end{longtable}
+#+end_EXAMPLE
+
 #+begin_EXAMPLE
 \begin{longtable}{lll}
 Id&
@@ -2623,6 +3027,15 @@ Finance&
   tab_b.to_aoa
 #+end_SRC
 
+#+RESULTS:
+#+begin_EXAMPLE
+| Id | Dept        | Emp Id |
+|----+-------------+--------|
+| 1  | IT Billing  | 1      |
+| 2  | Engineering | 2      |
+| 3  | Finance     | 7      |
+#+end_EXAMPLE
+
 #+begin_EXAMPLE
 [["Id", "Dept", "Emp Id"], nil, ["1", "IT Billing", "1"], ["2", "Engineering", "2"],
   ["3", "Finance", "7"]]
@@ -2632,6 +3045,13 @@ Finance&
 #+begin_SRC ruby :wrap EXAMPLE
   tab_b.to_aoh
 #+end_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+| id: | 1 | dept: | IT Billing  | emp_id: | 1 |
+| id: | 2 | dept: | Engineering | emp_id: | 2 |
+| id: | 3 | dept: | Finance     | emp_id: | 7 |
+#+end_EXAMPLE
 
 #+begin_EXAMPLE
 [{:id=>"1", :dept=>"IT Billing", :emp_id=>"1"}, {:id=>"2", :dept=>"Engineering", :emp_id=>"2"},
@@ -2775,6 +3195,22 @@ to three digits with zeros on the left (the '3.0' part) and to be centered
   end
 #+END_SRC
 
+#+RESULTS:
+#+begin_example
++=====+=======+=====+============+========+============+
+|  Id |  Name | Age |   Address  | Salary |  Join Date |
++-----+-------+-----+------------+--------+------------+
+| 001 |  Paul |  32 | California | 20,000 | 2001-07-13 |
+| 003 | Teddy |  23 |     Norway | 20,000 | 2007-12-13 |
+| 004 |  Mark |  25 |  Rich-Mond | 65,000 | 2007-12-13 |
+| 005 | David |  27 |      Texas | 85,000 | 2007-12-13 |
+| 002 | Allen |  25 |      Texas |        | 2005-07-13 |
+| 008 |  Paul |  24 |    Houston | 20,000 | 2005-07-13 |
+| 009 | James |  44 |     Norway |  5,000 | 2005-07-13 |
+| 010 | James |  45 |      Texas |  5,000 |            |
++=====+=======+=====+============+========+============+
+#+end_example
+
 #+begin_example
 +=====+=======+=====+============+========+============+
 |  Id |  Name | Age |   Address  | Salary |  Join Date |
@@ -2864,6 +3300,22 @@ type.
     f.format(string: 'R', id: '3.0C', nil: 'Cn[-]', salary: 'n[N/A]')
   end
 #+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
++=====+=======+=====+============+========+============+
+|  Id |  Name | Age |    Address | Salary |  Join Date |
++-----+-------+-----+------------+--------+------------+
+| 001 |  Paul |  32 | California |  20000 | 2001-07-13 |
+| 003 | Teddy |  23 |     Norway |  20000 | 2007-12-13 |
+| 004 |  Mark |  25 |  Rich-Mond |  65000 | 2007-12-13 |
+| 005 | David |  27 |      Texas |  85000 | 2007-12-13 |
+| 002 | Allen |  25 |      Texas |   N/A  | 2005-07-13 |
+| 008 |  Paul |  24 |    Houston |  20000 | 2005-07-13 |
+| 009 | James |  44 |     Norway |  5000  | 2005-07-13 |
+| 010 | James |  45 |      Texas |  5000  |      -     |
++=====+=======+=====+============+========+============+
+#+end_EXAMPLE
 
 #+BEGIN_EXAMPLE
 +=====+=======+=====+============+========+============+
@@ -2957,12 +3409,22 @@ include the most recent year from the date column:
   temp: :avg)
 #+end_src
 
+#+RESULTS:
+#+begin_example
+nil
+#+end_example
+
 In the case of a group footer, the lambda or proc may take either one or two parameters.
 If it takes one, the parameter is simply the 0-based number of the group:
 
 #+begin_src ruby
   fmtr.gfoot(label: -> (k) { "Group #{(k+1).to_roman} Average" }, temp: :avg)
 #+end_src
+
+#+RESULTS:
+#+begin_example
+nil
+#+end_example
 
 This would format the label with a roman numeral (assuming you defined a
 method to do so) for the group number.
@@ -2974,6 +3436,11 @@ non-group footers:
     fmtr.gfoot(label: -> (k, f) { "Year #{f.column(:date, k).max.year} Group #{(k+1).to_roman} Average" },
                temp: :avg)
 #+end_src
+
+#+RESULTS:
+#+begin_example
+nil
+#+end_example
 
 This would add the group's year to label, assuming the :date column of the
 footer's table had the same year for each item in the group.
@@ -3051,6 +3518,20 @@ As a reminder, here is the table, ~tab_a~ defined earlier:
   tab_a.to_aoa
 #+END_SRC
 
+#+RESULTS:
+#+begin_EXAMPLE
+| Id | Name  | Age | Address    | Salary | Join Date  |
+|----+-------+-----+------------+--------+------------|
+| 1  | Paul  |  32 | California |  20000 | 2001-07-13 |
+| 3  | Teddy |  23 | Norway     |  20000 | 2007-12-13 |
+| 4  | Mark  |  25 | Rich-Mond  |  65000 | 2007-12-13 |
+| 5  | David |  27 | Texas      |  85000 | 2007-12-13 |
+| 2  | Allen |  25 | Texas      |        | 2005-07-13 |
+| 8  | Paul  |  24 | Houston    |  20000 | 2005-07-13 |
+| 9  | James |  44 | Norway     |   5000 | 2005-07-13 |
+| 10 | James |  45 | Texas      |   5000 |            |
+#+end_EXAMPLE
+
 #+begin_EXAMPLE
 | Id | Name  | Age | Address    | Salary |  Join Date |
 |----+-------+-----+------------+--------+------------|
@@ -3077,6 +3558,26 @@ date.
     f.footer('Tally', age: :count)
   end
 #+END_SRC
+
+#+RESULTS:
+#+begin_example
++=========+=======+=====+============+========+=============+
+| Id      | Name  | Age | Address    | Salary | Join Date   |
++---------+-------+-----+------------+--------+-------------+
+|       1 | Paul  |  32 | California | 20,000 | 13-JUL-2001 |
+|       3 | Teddy |  23 | Norway     | 20,000 | 13-DEC-2007 |
+|       4 | Mark  |  25 | Rich-Mond  | 65,000 | 13-DEC-2007 |
+|       5 | David |  27 | Texas      | 85,000 | 13-DEC-2007 |
+|       2 | Allen |  25 | Texas      |        | 13-JUL-2005 |
+|       8 | Paul  |  24 | Houston    | 20,000 | 13-JUL-2005 |
+|       9 | James |  44 | Norway     |  5,000 | 13-JUL-2005 |
+|      10 | James |  45 | Texas      |  5,000 |             |
++---------+-------+-----+------------+--------+-------------+
+| Average |       |  31 |            | 31,429 | 29-DEC-2005 |
++---------+-------+-----+------------+--------+-------------+
+|   Tally |       |   8 |            |        |             |
++=========+=======+=====+============+========+=============+
+#+end_example
 
 #+begin_EXAMPLE
 +=========+=======+=====+============+========+=============+
@@ -3119,6 +3620,32 @@ footer.
   end
 #+END_SRC
 
+#+RESULTS:
+#+begin_example
++=============+=======+=====+============+========+====================+
+| Id          | Name  | Age | Address    | Salary | Join Date          |
++-------------+-------+-----+------------+--------+--------------------+
+|           1 | Paul  |  32 | California | 20,000 | 13-JUL-2001        |
+|           3 | Teddy |  23 | Norway     | 20,000 | 13-DEC-2007        |
+|           4 | Mark  |  25 | Rich-Mond  | 65,000 | 13-DEC-2007        |
+|           5 | David |  27 | Texas      | 85,000 | 13-DEC-2007        |
+|           2 | Allen |  25 | Texas      |        | 13-JUL-2005        |
+|           8 | Paul  |  24 | Houston    | 20,000 | 13-JUL-2005        |
+|           9 | James |  44 | Norway     |  5,000 | 13-JUL-2005        |
+|          10 | James |  45 | Texas      |  5,000 |                    |
++-------------+-------+-----+------------+--------+--------------------+
+|     Average |       |  31 |            | 31,429 | 29-DEC-2005        |
++-------------+-------+-----+------------+--------+--------------------+
+|       Tally |       |   8 |            |        |                    |
++-------------+-------+-----+------------+--------+--------------------+
+|         Pay |       |     |            |        | We have 1 grp      |
++-------------+-------+-----+------------+--------+--------------------+
+| Group count |       |     |            |        | We have 1 grp      |
++-------------+-------+-----+------------+--------+--------------------+
+|     Comment |       |     |            |        | We're overspending |
++=============+=======+=====+============+========+====================+
+#+end_example
+
 #+begin_example
 +=============+=======+=====+============+========+====================+
 | Id          | Name  | Age | Address    | Salary | Join Date          |
@@ -3157,6 +3684,26 @@ column.
   end
 #+END_SRC
 
+#+RESULTS:
+#+begin_EXAMPLE
++=============+=======+=====+============+========+=============+
+| Id          | Name  | Age | Address    | Salary | Join Date   |
++-------------+-------+-----+------------+--------+-------------+
+|           1 | Paul  |  32 | California | 20,000 | 13-JUL-2001 |
+|           3 | Teddy |  23 | Norway     | 20,000 | 13-DEC-2007 |
+|           4 | Mark  |  25 | Rich-Mond  | 65,000 | 13-DEC-2007 |
+|           5 | David |  27 | Texas      | 85,000 | 13-DEC-2007 |
+|           2 | Allen |  25 | Texas      |        | 13-JUL-2005 |
+|           8 | Paul  |  24 | Houston    | 20,000 | 13-JUL-2005 |
+|           9 | James |  44 | Norway     |  5,000 | 13-JUL-2005 |
+|          10 | James |  45 | Texas      |  5,000 |             |
++-------------+-------+-----+------------+--------+-------------+
+|     Average |       |  31 |            | 31,429 | 29-DEC-2005 |
++-------------+-------+-----+------------+--------+-------------+
+| Report Date |       |   8 |            |        | 12-DEC-2025 |
++=============+=======+=====+============+========+=============+
+#+end_EXAMPLE
+
 #+begin_EXAMPLE
 +=============+=======+=====+============+========+=============+
 | Id          | Name  | Age | Address    | Salary | Join Date   |
@@ -3185,6 +3732,26 @@ But it can be any type.  Here we pick a lottery winner from the employee ids.
     f.format(numeric: '0.0R,', datetime: 'd[%v]D[%v]')
   end
 #+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
++================+=======+=====+============+========+=============+
+| Id             | Name  | Age | Address    | Salary | Join Date   |
++----------------+-------+-----+------------+--------+-------------+
+|              1 | Paul  |  32 | California | 20,000 | 13-JUL-2001 |
+|              3 | Teddy |  23 | Norway     | 20,000 | 13-DEC-2007 |
+|              4 | Mark  |  25 | Rich-Mond  | 65,000 | 13-DEC-2007 |
+|              5 | David |  27 | Texas      | 85,000 | 13-DEC-2007 |
+|              2 | Allen |  25 | Texas      |        | 13-JUL-2005 |
+|              8 | Paul  |  24 | Houston    | 20,000 | 13-JUL-2005 |
+|              9 | James |  44 | Norway     |  5,000 | 13-JUL-2005 |
+|             10 | James |  45 | Texas      |  5,000 |             |
++----------------+-------+-----+------------+--------+-------------+
+|        Average |       |  31 |            | 31,429 | 29-DEC-2005 |
++----------------+-------+-----+------------+--------+-------------+
+| Lottery Winner |       |   8 |            |        | 4           |
++================+=======+=====+============+========+=============+
+#+end_EXAMPLE
 
 #+begin_EXAMPLE
 +================+=======+=====+============+========+=============+
@@ -3234,6 +3801,26 @@ Compute the summ of the squares if the items in the ~:age~ column:
   end
 #+END_SRC
 
+#+RESULTS:
+#+begin_EXAMPLE
++=========+=======+=====+============+========+=============+
+| Id      | Name  | Age | Address    | Salary | Join Date   |
++---------+-------+-----+------------+--------+-------------+
+|       1 | Paul  |  32 | California | 20,000 | 13-JUL-2001 |
+|       3 | Teddy |  23 | Norway     | 20,000 | 13-DEC-2007 |
+|       4 | Mark  |  25 | Rich-Mond  | 65,000 | 13-DEC-2007 |
+|       5 | David |  27 | Texas      | 85,000 | 13-DEC-2007 |
+|       2 | Allen |  25 | Texas      |        | 13-JUL-2005 |
+|       8 | Paul  |  24 | Houston    | 20,000 | 13-JUL-2005 |
+|       9 | James |  44 | Norway     |  5,000 | 13-JUL-2005 |
+|      10 | James |  45 | Texas      |  5,000 |             |
++---------+-------+-----+------------+--------+-------------+
+| Average |       |  31 |            | 31,429 | 29-DEC-2005 |
++---------+-------+-----+------------+--------+-------------+
+|     SSQ |       |  90 |            |        |             |
++=========+=======+=====+============+========+=============+
+#+end_EXAMPLE
+
 #+begin_EXAMPLE
 +=========+=======+=====+============+========+=============+
 | Id      | Name  | Age | Address    | Salary | Join Date   |
@@ -3263,6 +3850,37 @@ summ of the squares if the ages in each group:
     f.footer('Total SSQ', age: ->(c, f) { sa = c.items.map {|x| x * x}.sum; Math.sqrt(sa) })
   end
 #+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
++===========+=======+=====+============+========+=============+==========+
+| Id        | Name  | Age | Address    | Salary | Join Date   | Sort Key |
++-----------+-------+-----+------------+--------+-------------+----------+
+|        10 | James |  45 | Texas      |  5,000 |             |          |
++-----------+-------+-----+------------+--------+-------------+----------+
+| Group SSQ |       |  45 |            |        |             |          |
++-----------+-------+-----+------------+--------+-------------+----------+
+|         1 | Paul  |  32 | California | 20,000 | 13-JUL-2001 | 2001     |
++-----------+-------+-----+------------+--------+-------------+----------+
+| Group SSQ |       |  32 |            |        |             |          |
++-----------+-------+-----+------------+--------+-------------+----------+
+|         2 | Allen |  25 | Texas      |        | 13-JUL-2005 | 2005     |
+|         8 | Paul  |  24 | Houston    | 20,000 | 13-JUL-2005 | 2005     |
+|         9 | James |  44 | Norway     |  5,000 | 13-JUL-2005 | 2005     |
++-----------+-------+-----+------------+--------+-------------+----------+
+| Group SSQ |       |  56 |            |        |             |          |
++-----------+-------+-----+------------+--------+-------------+----------+
+|         3 | Teddy |  23 | Norway     | 20,000 | 13-DEC-2007 | 2007     |
+|         4 | Mark  |  25 | Rich-Mond  | 65,000 | 13-DEC-2007 | 2007     |
+|         5 | David |  27 | Texas      | 85,000 | 13-DEC-2007 | 2007     |
++-----------+-------+-----+------------+--------+-------------+----------+
+| Group SSQ |       |  43 |            |        |             |          |
++-----------+-------+-----+------------+--------+-------------+----------+
+|   Average |       |  31 |            | 31,429 | 29-DEC-2005 |          |
++-----------+-------+-----+------------+--------+-------------+----------+
+| Total SSQ |       |  90 |            |        |             |          |
++===========+=======+=====+============+========+=============+==========+
+#+end_EXAMPLE
 
 #+begin_EXAMPLE
 +===========+=======+=====+============+========+=============+==========+
@@ -3310,6 +3928,20 @@ the ~output~ method on the ~XXXFormatter~.
   FatTable::AoaFormatter.new(tab_a).output
 #+END_SRC
 
+#+RESULTS:
+#+begin_EXAMPLE
+| Id | Name  | Age | Address    | Salary | Join Date  |
+|----+-------+-----+------------+--------+------------|
+| 1  | Paul  |  32 | California |  20000 | 2001-07-13 |
+| 3  | Teddy |  23 | Norway     |  20000 | 2007-12-13 |
+| 4  | Mark  |  25 | Rich-Mond  |  65000 | 2007-12-13 |
+| 5  | David |  27 | Texas      |  85000 | 2007-12-13 |
+| 2  | Allen |  25 | Texas      |        | 2005-07-13 |
+| 8  | Paul  |  24 | Houston    |  20000 | 2005-07-13 |
+| 9  | James |  44 | Norway     |   5000 | 2005-07-13 |
+| 10 | James |  45 | Texas      |   5000 |            |
+#+end_EXAMPLE
+
 #+BEGIN_EXAMPLE
 | Id | Name  | Age | Address    | Salary |  Join Date |
 |----+-------+-----+------------+--------+------------|
@@ -3331,6 +3963,20 @@ you can call methods on it to affect the formatting of the output:
     f.format(numeric: '0.0,R', id: '3.0C')
   end.output
 #+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+|  Id | Name  | Age | Address    | Salary | Join Date  |
+|-----+-------+-----+------------+--------+------------|
+| 001 | Paul  |  32 | California | 20,000 | 2001-07-13 |
+| 003 | Teddy |  23 | Norway     | 20,000 | 2007-12-13 |
+| 004 | Mark  |  25 | Rich-Mond  | 65,000 | 2007-12-13 |
+| 005 | David |  27 | Texas      | 85,000 | 2007-12-13 |
+| 002 | Allen |  25 | Texas      |        | 2005-07-13 |
+| 008 | Paul  |  24 | Houston    | 20,000 | 2005-07-13 |
+| 009 | James |  44 | Norway     |  5,000 | 2005-07-13 |
+| 010 | James |  45 | Texas      |  5,000 |            |
+#+end_EXAMPLE
 
 #+BEGIN_EXAMPLE
 |  Id | Name  | Age | Address    | Salary |  Join Date |
@@ -3355,6 +4001,11 @@ Without a block, they apply the default formatting to the table and call the
   FatTable.to_aoa(tab_a)
 #+END_SRC
 
+#+RESULTS:
+#+begin_EXAMPLE
+nil
+#+end_EXAMPLE
+
 #+BEGIN_EXAMPLE
 | Id | Name  | Age | Address    | Salary |  Join Date |
 |----+-------+-----+------------+--------+------------|
@@ -3378,6 +4029,11 @@ automatically after the block:
   end
 #+END_SRC
 
+#+RESULTS:
+#+begin_EXAMPLE
+nil
+#+end_EXAMPLE
+
 #+BEGIN_EXAMPLE
 |  Id | Name  | Age | Address    | Salary |  Join Date |
 |-----+-------+-----+------------+--------+------------|
@@ -3398,6 +4054,20 @@ Finally, as in many of the examples, you can call methods such as ~to_aoa~,
 #+BEGIN_SRC ruby :wrap EXAMPLE
   tab_a.to_aoa
 #+END_SRC
+
+#+RESULTS:
+#+begin_EXAMPLE
+| Id | Name  | Age | Address    | Salary | Join Date  |
+|----+-------+-----+------------+--------+------------|
+| 1  | Paul  |  32 | California |  20000 | 2001-07-13 |
+| 3  | Teddy |  23 | Norway     |  20000 | 2007-12-13 |
+| 4  | Mark  |  25 | Rich-Mond  |  65000 | 2007-12-13 |
+| 5  | David |  27 | Texas      |  85000 | 2007-12-13 |
+| 2  | Allen |  25 | Texas      |        | 2005-07-13 |
+| 8  | Paul  |  24 | Houston    |  20000 | 2005-07-13 |
+| 9  | James |  44 | Norway     |   5000 | 2005-07-13 |
+| 10 | James |  45 | Texas      |   5000 |            |
+#+end_EXAMPLE
 
 #+BEGIN_EXAMPLE
 | Id | Name  | Age | Address    | Salary |  Join Date |
