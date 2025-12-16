@@ -10,17 +10,22 @@
 #+STARTUP: inlineimages
 
 
-[[https://github.com/ddoherty03/fat_table/actions/workflows/ruby-with-dbs.yml][https://github.com/ddoherty03/fat_table/actions/workflows/ruby-with-dbs.yml/badge.svg?branch=master]]
+[[https://github.com/ddoherty03/fat_table/actions/workflows/ruby-with-dbs.yml][# https://github.com/ddoherty03/fat_table/actions/workflows/ruby-with-dbs.yml/badge.svg?branch=master]]
+
+#+BEGIN_EXPORT markdown
+[![CI](https://github.com/ddoherty03/fat_table/actions/workflows/ruby-with-dbs.yml/badge.svg)](
+https://github.com/ddoherty03/fat_table/actions/workflows/ruby-with-dbs.yml
+)
+#+END_EXPORT
 
 * Version
 #+begin_src ruby
-  require_relative 'lib/fat_table'
   "Current version is: #{FatTable::VERSION}"
 #+end_src
 
 #+RESULTS:
 #+begin_example
-Current version is: 0.9.10
+Current version is: 0.10.0
 #+end_example
 
 * Introduction
