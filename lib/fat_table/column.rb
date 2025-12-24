@@ -86,7 +86,11 @@ module FatTable
     #   col.header #=> :prices
     #   col.sum #=> 18376.75
     #
-    # @param
+    # @param header [String, Symbol] the name of the column header
+    # @param items [Array<String>, Array<DateTime>, Array<Numeric>, Array<Boolean>] the initial data items in column
+    # @param type [String] the column type: 'String', 'Numeric', 'DateTime', 'Boolean', or 'NilClass'
+    # @param tolerant [Boolean] whether the column accepts unconvertable items not of its type as Strings
+    # @return [Column] the new Column
     def initialize(header:, items: [], type: 'NilClass', tolerant: false)
       @raw_header = header
       @header =
