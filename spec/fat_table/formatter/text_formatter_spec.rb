@@ -129,7 +129,7 @@ module FatTable
       end
     end
 
-        describe 'Module level formatter' do
+    describe 'Module level formatter' do
       let(:tab) do
         aoa = [
           %w[Ref Date Code Raw Shares Price Info Bool],

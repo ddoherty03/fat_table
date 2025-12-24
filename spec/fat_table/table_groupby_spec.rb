@@ -22,7 +22,7 @@ module FatTable
         Table.from_aoa(aoa)
       end
 
-      let(:tab1)        do
+      let(:tab1) do
         tab1_str = <<-EOS
             | Ref  | Date             | Code |  Price | G10 | QP10 | Shares |   LP |    QP |   IPLP |   IPQP |
             |------+------------------+------+--------+-----+------+--------+------+-------+--------+--------|
@@ -48,7 +48,7 @@ module FatTable
             | T014 | [2016-11-02 Wed] | P    | 7.4500 | F   | T    |   5847 |  835 |  5012 | 0.2453 | 0.1924 |
             | T015 | [2016-11-02 Wed] | P    | 7.7500 | F   | F    |    500 |   72 |   428 | 0.2453 | 0.1924 |
             | T016 | [2016-11-02 Wed] | P    | 8.2500 | T   | T    |    100 |   14 |    86 | 0.2453 | 0.1924 |
-          EOS
+        EOS
         FatTable.from_org_string(tab1_str)
       end
 
@@ -62,13 +62,13 @@ module FatTable
           bool: :all?,
         )
         expect(tab2.headers).to eq([
-                                     :date,
-                                     :code,
-                                     :sum_shares,
-                                     :avg_price,
-                                     :range_ref,
-                                     :all_bool,
-                                   ])
+          :date,
+          :code,
+          :sum_shares,
+          :avg_price,
+          :range_ref,
+          :all_bool,
+        ])
         expect(tab2[0][:sum_shares]).to eq(913732.6)
         expect(tab2[1][:sum_shares]).to eq(54791.99)
         expect(tab2[0][:avg_price]).to eq(6.5175)
@@ -76,18 +76,24 @@ module FatTable
       end
 
       it 'can perform README example' do
-        org_tab = tab1.group_by(:code, :date, price: :avg,
-                      shares: :sum, lp: :sum, qp: :sum,
-                      qp10: :all?) \
+        org_tab = tab1.group_by(
+          :code,
+          :date,
+          price: :avg,
+                                shares: :sum,
+          lp: :sum,
+          qp: :sum,
+                                qp10: :all?,
+        )
                     .to_org { |f| f.format(avg_price: '0.5R') }
         expected_org = <<~ORG
-         |------+------------------+-----------+------------+--------+--------+----------|
-         | Code | Date             | Avg Price | Sum Shares | Sum Lp | Sum Qp | All QP10 |
-         |------+------------------+-----------+------------+--------+--------+----------|
-         | P    | [2016-11-01 Tue] |   7.60714 | 17396      | 2473   | 14923  | F        |
-         | P    | [2016-11-02 Wed] |   7.61786 | 69047      | 9945   | 59102  | F        |
-         | S    | [2016-11-01 Tue] |   7.58000 | 13011      | 1852   | 11159  | F        |
-         |------+------------------+-----------+------------+--------+--------+----------|
+          |------+------------------+-----------+------------+--------+--------+----------|
+          | Code | Date             | Avg Price | Sum Shares | Sum Lp | Sum Qp | All QP10 |
+          |------+------------------+-----------+------------+--------+--------+----------|
+          | P    | [2016-11-01 Tue] |   7.60714 | 17396      | 2473   | 14923  | F        |
+          | P    | [2016-11-02 Wed] |   7.61786 | 69047      | 9945   | 59102  | F        |
+          | S    | [2016-11-01 Tue] |   7.58000 | 13011      | 1852   | 11159  | F        |
+          |------+------------------+-----------+------------+--------+--------+----------|
         ORG
         expect(org_tab).to eq(expected_org)
       end

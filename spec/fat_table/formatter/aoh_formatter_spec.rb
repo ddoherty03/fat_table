@@ -100,7 +100,7 @@ module FatTable
         end
         expect(tab_aoh).to be_an(Array)
         expect(tab_aoh.first).to be_an(Hash)
-        expect(tab_aoh.first.values).to all(be_a_kind_of(String))
+        expect(tab_aoh.first.values).to all(be_a(String))
       end
     end
   end

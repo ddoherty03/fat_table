@@ -304,18 +304,18 @@ module FatTable
       it 'is able to set element formats' do
         fmt = described_class.new(tab)
                 .format_for(:header,
-                  string: 'Uc[red]',
-                  ref: 'uc[blue.aquamarine]')
+                            string: 'Uc[red]',
+                            ref: 'uc[blue.aquamarine]')
                 .format_for(:gfooter, string: 'B')
                 .format_for(:footer, datetime: 'Bd[%Y]')
                 .format_for(:body,
-                  numeric: ',0.2',
-                  shares: '0.4',
-                  ref: 'B',
-                  price: '$,',
-                  bool: '  c[white.green, red.white] b[  Yippers, Nah Sir]',
-                  datetime: 'd[%Y]D[%v]',
-                  nil: 'n[  Nothing to see here   ]')
+                            numeric: ',0.2',
+                            shares: '0.4',
+                            ref: 'B',
+                            price: '$,',
+                            bool: '  c[white.green, red.white] b[  Yippers, Nah Sir]',
+                            datetime: 'd[%Y]D[%v]',
+                            nil: 'n[  Nothing to see here   ]')
         # Header color
         expect(fmt.format_at[:header][:ref][:color]).to eq('blue')
         expect(fmt.format_at[:header][:ref][:bgcolor]).to eq('aquamarine')

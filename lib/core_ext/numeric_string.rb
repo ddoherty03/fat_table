@@ -28,7 +28,7 @@ module NumericString
     :currency_symbol,
     :pre_pad_char,
     :post_pad_char,
-    keyword_init: true
+    keyword_init: true,
   ) do
     DEFAULTS = {
       group_char: ',',
@@ -129,13 +129,10 @@ module NumericString
           whole = whole[0..-2] + (whole[-1].to_i + 1).to_s
         end
         # No fractional part
-        frac = ''
-        padding = ''
         "#{cur}#{whole}"
       elsif n.negative?
         # This calls for rounding the whole part to nearest 10^n.abs and
         # dropping the frac part.
-        frac = ''
         ndigs_in_whole = whole.delete(config.group_char).size
         nplaces = [ndigs_in_whole - 1, n.abs].min
         # Replace the right-most nplaces digs with the pre-pad character.
@@ -143,7 +140,7 @@ module NumericString
         new_whole = +''
         round_char = whole.delete(config.group_char)[-1]
         rounded = false
-        whole.split('').reverse.each do |c|
+        whole.split('').reverse_each do |c|
           if c == config.group_char
             new_whole << c
           elsif replace_count < nplaces
