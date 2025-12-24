@@ -1,5 +1,4 @@
---no-private lib/**/*.rb
---markup=markdown
---main=md/README.md
--
-md/README.md
+--markup markdown
+--output-dir doc
+--readme README.md
+lib/**/*.rb

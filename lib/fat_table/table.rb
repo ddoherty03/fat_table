@@ -721,7 +721,7 @@ module FatTable
     # row in the table as a group boundary.  An attempt to add a boundary to
     # an empty table has no effect.  We adopt the convention that the last row
     # of the table always marks an implicit boundary even if it is not in the
-    # @explicit_boundaries array.  When we "mark" a boundary, we intend it to
+    # `@explicit_boundaries` array.  When we "mark" a boundary, we intend it to
     # be an explicit boundary, even if it marks the last row of the table.
     def mark_boundary(row_num = nil)
       return self if empty?
@@ -918,8 +918,8 @@ module FatTable
     #    access the instance variable @row, as the row number of the row being
     #    evaluated, and @group, as the group number of the row being evaluated.
     #
-    # 4. a hash in +new_cols+ with one of the special keys, +ivars: {literal
-    #    hash}+, +before_hook: 'ruby-code'+, or +after_hook: 'ruby-code'+ for
+    # 4. a hash in +new_cols+ with one of the special keys, `+ivars: {literal
+    #    hash}+`, +before_hook: 'ruby-code'+, or +after_hook: 'ruby-code'+ for
     #    defining custom instance variables to be used during evaluation of
     #    parameters described in point 3 and hooks of ruby code snippets to be
     #    evaluated before and after processing each row.
