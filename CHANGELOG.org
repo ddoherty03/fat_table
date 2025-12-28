@@ -1,0 +1,145 @@
+* COMMENT CHANGELOG tips:
+1. Don't dump your git change logs into this file, write them yourself.
+2. Keep entries short and user-focused,
+3. Use non-technical language, but do speak in the vocabulary of your gem.
+4. Don't document changes only of interest to the programmers, just those the
+   user would find useful.
+5. Give each heading a version number and an inactive date (C-c ! is useful here).
+
+* Version 1.0.0 [2025-12-28 Sun]
+- Bug fixes.
+- Numeric default post-digits changed from 0 to 4 so BigDecimal can be
+  distinguished from Integers.
+- README more readable with above fix.
+- Documentation improvements.
+- CHANGELOG added.
+
+* Version 0.9.9 [2025-03-19 Wed]
+- bug fixes
+
+
+- No notable changes.
+
+* Version 0.9.8 [2024-12-31 Tue]
+- bug fixes
+
+
+- No notable changes.
+
+* Version 0.9.7 [2024-12-26 Thu]
+- bug fixes
+
+- No notable changes
+
+* Version 0.9.5 [2023-11-07 Tue]
+- Raise FatTable::NoTable exception when no table can be formed from the
+  input.
+- Ingore org rows with the wrong number of columns.
+
+* Version 0.9.3 [2023-05-24 Wed]
+- Bug fixes
+
+* Version 0.9.2 [2023-05-22 Mon]
+- Bug fixes
+
+* Version 0.9.1 [2023-05-22 Mon]
+- Bug fixes
+
+* Version 0.9.0 [2023-05-22 Mon]
+- Bug fixes
+
+* Version 0.8.0 [2023-04-20 Thu]
+- Changed the API to allow explicit column typing and tolerance designation
+  with keyword args such as =head1: 'num~'= to make =head1= column be typed as
+  numeric (the =num= part) but tolerant (the =~=)
+
+* Version 0.7.0 [2023-04-02 Sun]
+- Bug fixes
+
+* Version 0.6.6 [2023-01-09 Mon]
+- Changed the default number of post-decimal digits to 0 for Numeric,
+
+* Version 0.6.3 [2022-06-04 Sat]
+- Allow select to set new column to a constant,
+- Allow select string expression to signal literal string with a leading
+  colon, since string constants are now allowed; otherwise eval the string.
+- Added day-of-week to org-formatted dates just like =org-mode=
+
+* Version 0.6.2 [2022-05-24 Tue]
+- Bug fixes
+
+* Version 0.6.1 [2022-03-26 Sat]
+- Fixed bug in dynamic labels in footers,
+
+* Version 0.6.0 [2022-03-26 Sat]
+- Added dynamic labels in footers,
+
+* Version 0.5.5 [2022-03-25 Fri]
+- Better handling of aggregates for all-nil columns
+
+* Version 0.5.4 [2022-01-27 Thu]
+- Aggregate function filter out all type-incompatible elements, not just nils,
+  since tolerant columns may have such elements,
+- Make header-based formatting a higher priority than type-based formatting,
+
+* Version 0.5.3 [2022-01-24 Mon]
+- Added support for "tolerant" column types that allow non-coercable strings
+  in non-String columns,
+
+
+* Version 0.5.2 [2022-01-22 Sat]
+- documentation only
+
+* Version 0.5.1 [2022-01-21 Fri]
+- changed =rng= column aggregate to =range= and return =Range(min, max)=
+- Added new methods for forming table footers based on aggregates,
+- Allow lambdas as group aggregate functions,
+- Improved handling of nils in aggregate and =order_by=,
+- Added an =order_with= method for ordering by expression,
+- Bug fixes and performance improvements,
+- Added special symbol =:omni= in =select= as short-hand for all columns,
+
+* Version 0.4.2 [2022-01-06 Thu]
+- bug fixes only
+
+* Version 0.4.0 [2022-01-02 Sun]
+- bug fixes only
+
+* Version 0.3.4 [2022-01-01 Sat]
+- minor bug fix only
+
+* Version 0.3.3 [2022-01-01 Sat]
+- Added date format 'Tue, 01 Nov 2016' to be parsed as a Date.
+
+* Version 0.3.1 [2020-12-13 Sun]
+- documentation only
+
+* Version 0.3.0 [2020-06-10 Wed]
+- gem dependency changes only
+
+* Version 0.2.11 [2019-12-29 Sun]
+- bug fixes only
+
+* Version 0.2.9 [2019-04-04 Thu]
+- documentation fixes only
+
+* Version 0.2.8 [2018-08-28 Tue]
+- No notable changes
+
+* Version 0.2.7 [2017-12-29 Fri]
+- Minor bug fixes and performance improvements
+
+* Version 0.2.6 [2017-10-27 Fri]
+- Added recognition of American-style dates
+- Allows + or negative signs before numbers
+- Added =ivars= that can be set in =before_hook= and =after_hook=
+- Allowed American-order date 'mm-dd-yyyy' to be parsed
+
+* Version 0.2.4 [2017-05-23 Tue]
+- Added instance variables to ft_console
+
+* Version 0.2.3 [2017-05-08 Mon]
+- No notable changes
+
+* Version 0.2.2 [2017-05-08 Mon]
+- Initial release
