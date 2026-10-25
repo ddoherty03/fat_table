@@ -9,6 +9,11 @@
 #+PROPERTY: header-args:sh :exports code :eval no
 #+PROPERTY: header-args:bash :exports code :eval no
 
+# gem_docs:version begin
+Version: 1.0.0
+# gem_docs:version end
+
+
 
 #+BEGIN_EXPORT markdown
 [![CI](https://github.com/ddoherty03/fat_table/actions/workflows/ruby-with-dbs.yml/badge.svg)](
@@ -134,7 +139,7 @@ org-mode buffer as an org-table, ready for processing by other code blocks.
       - [[#boolean][Boolean]]
       - [[#nilclass][NilClass]]
     - [[#the-format-and-format_for-methods][The ~format~ and ~format_for~ methods]]
-      - [[#table-locations][Table Locations]]
+      - [[#locations-within-a-table][Locations within a Table]]
       - [[#location-priority][Location priority]]
       - [[#type-and-column-priority][Type and Column priority]]
     - [[#footers][Footers]]
@@ -173,7 +178,7 @@ Or, something like this in your gemspec file:
 
 #+RESULTS:
 #+begin_example
-false
+#<ArgumentError: wrong number of arguments (given 0, expected 1+)>
 #+end_example
 
 And then execute:
@@ -310,7 +315,6 @@ We can format the table constructed above.
 | Total      |      |             | 1,020,119.1 |          |         |    |
 +============+======+=============+=============+==========+=========+====+
 #+end_example
-
 
 For the text format above, we were wasting our breath specifying bold styling
 since there is no way to make that happen in plain ASCII text.  But with
@@ -453,7 +457,6 @@ no value) or be capable of being coerced to the column's type. Otherwise,
 ~FatTable~ raises an ~IncompatibleTypeError~ exception.
 
 *** Type Keywords Arguments
-
 All of the table constructors allow you to set the type for a column in
 advance by adding keyword arguments to the end of the contructor arguments
 where the keyword is a header symbol and the value is a string designating one
@@ -587,15 +590,6 @@ in org-mode time stamps.
 +========+========+============+===+===+
 #+end_example
 
-#+begin_EXAMPLE
-+======+======+============+===+===+
-| A    | B    | C          | D | E |
-+------+------+------------+---+---+
-| 1    | 2    | 2017-01-21 | F |   |
-| 3.14 | 2.17 | 2016-01-21 | T |   |
-+======+======+============+===+===+
-#+end_EXAMPLE
-
 You can continue to add rows to the table:
 #+BEGIN_SRC ruby :results silent
   tab << { 'F' => '335:113', a: Rational(3, 5) }
@@ -620,19 +614,7 @@ for which no key was give are assigned ~nil~ as well:
 +========+========+============+===+===+=========+
 #+end_example
 
-#+begin_EXAMPLE
-+======+======+============+===+===+=========+
-| A    | B    | C          | D | E | F       |
-+------+------+------------+---+---+---------+
-| 1    | 2    | 2017-01-21 | F |   |         |
-| 3.14 | 2.17 | 2016-01-21 | T |   |         |
-+------+------+------------+---+---+---------+
-| 3/5  |      |            |   |   | 335/113 |
-+======+======+============+===+===+=========+
-#+end_EXAMPLE
-
 **** With Headers
-
 Alternatively, you can specify the headers at the outset, in which case,
 headers in added rows that do not match any of the initial headers cause new
 columns to be created:
@@ -647,10 +629,6 @@ columns to be created:
 #+begin_example
 [:a, :b, :c, :d]
 #+end_example
-
-#+begin_EXAMPLE
-[:a, :b, :c, :d]
-#+end_EXAMPLE
 
 #+begin_src ruby
   tab << { a: 1, b: 2, c: "<2017-01-21>", d: 'f', e: '' }
@@ -667,18 +645,6 @@ columns to be created:
 | 3.1400 | 2.1700 | 2016-01-21 | T |   |
 +========+========+============+===+===+
 #+end_example
-
-#+begin_EXAMPLE
-+======+======+============+===+===+
-| A    | B    | C          | D | E |
-+------+------+------------+---+---+
-| 1    | 2    | 2017-01-21 | F |   |
-| 3.14 | 2.17 | 2016-01-21 | T |   |
-+------+------+------------+---+---+
-| 1    | 2    | 2017-01-21 | F |   |
-| 3.14 | 2.17 | 2016-01-21 | T |   |
-+======+======+============+===+===+
-#+end_EXAMPLE
 
 **** Forcing String Type
 
@@ -712,18 +678,6 @@ using a keyword parameter.
 +========+========+============+===+=============+===+
 #+end_example
 
-#+begin_EXAMPLE
-+===+===+============+===+=============+===+
-| A | B | C          | D | Zip         | E |
-+---+---+------------+---+-------------+---+
-| 1 | 2 | 2017-01-21 | F | 18552       |   |
-| 3 | 2 | 2016-01-21 | T |             |   |
-|   |   |            |   | 01879--7884 |   |
-|   |   |            |   | 90210       |   |
-|   |   |            |   |             |   |
-+===+===+============+===+=============+===+
-#+end_EXAMPLE
-
 In addition, at any time after creating a table, you can force the String type
 on any number of columns with the ~force_string!~ method.  When you do so, all
 exisiting items in the column are converted to strings with the #to_s method.
@@ -751,18 +705,6 @@ exisiting items in the column are converted to strings with the #to_s method.
 |        |        |            |   | 90210 |   |
 +========+========+============+===+=======+===+
 #+end_example
-
-#+begin_EXAMPLE
-+======+======+============+===+=======+===+
-| A    | B    | C          | D | Zip   | E |
-+------+------+------------+---+-------+---+
-| 1    | 2    | 2017-01-21 | F | 18552 |   |
-| 3.14 | 2.17 | 2016-01-21 | T |       |   |
-|      |      |            |   | 01879 |   |
-|      |      |            |   | 66210 |   |
-|      |      |            |   | 90210 |   |
-+======+======+============+===+=======+===+
-#+end_EXAMPLE
 
 *** From CSV or Org Mode files or strings
 Tables can also be read from ~.csv~ files or files containing ~org-mode~
@@ -980,7 +922,7 @@ tab = FatTable.from_aoh(aoh).to_aoa
 | T002 | 2016-11-01 | P    | 7.7500 |    200 |
 | T003 | 2016-11-01 | P    | 7.5000 |    800 |
 | T004 | 2016-11-01 | S    | 7.5500 |   6811 |
-| T005 | 2025-12-28 | S    | 7.5000 |   4000 |
+| T005 | 2026-10-25 | S    | 7.5000 |   4000 |
 | T006 | 2016-11-01 | S    | 7.6000 |   1000 |
 | T007 | 2016-11-01 | S    | 7.6500 |    200 |
 | T008 | 2016-11-01 | P    | 7.6500 |   2771 |
@@ -1168,10 +1110,7 @@ requires it to synthesize the type from these Ruby classes.
 
 #+RESULTS:
 #+begin_example
-=> false
 Column :shares says its type is 'Numeric' and that is a BigDecimal
-=> nil
-:org_babel_ruby_eoe
 #+end_example
 
 ** Operations on Tables
@@ -1180,12 +1119,12 @@ them. The operations provided by ~FatTable~ are the subject of this section.
 Before getting into the operations, though, there are a couple of issues that
 cut across all or many of the operations.
 
-First, tables are by and large immutable objects. Each operation creates a new
-table without affecting the input tables. The only exceptions are the
-~degroup!~ operation, which mutates the receiver table by removing its group
-boundaries, and ~force_string!~ (explained above at [[*Forcing String Type][Forcing String Type]]),
-which forces columns to have the String type despite what the automatic typing
-rules determine.
+First, tables are by-and-large immutable objects: each operation creates
+a new table without affecting the input tables. The only exceptions are
+the ~degroup!~ operation, which mutates the receiver table by removing
+its group boundaries, and ~force_string!~ (explained above at [[*Forcing String Type][Forcing
+String Type]]), which forces columns to have the String type despite what
+the automatic typing rules determine.
 
 Second, because each operation returns a ~FatTable::Table~ object, the
 operations are chainable.
@@ -1196,9 +1135,9 @@ operations result in marking group boundaries in the result table, others
 remove group boundaries that may have existed in the input table. Operations
 that either create or remove groups will be noted below.
 
-Finally, the operations are for the most part patterned on SQL table operations,
-but when expressions play a role, you write them using ruby syntax rather than
-SQL.
+Finally, the operations are, for the most part, patterned on SQL table
+operations, but when expressions play a role, you write them using ruby
+syntax rather than SQL.
 
 *** Example Input Tables
 For illustration purposes assume that the following tables are read into ruby
@@ -1597,28 +1536,28 @@ You can set a column to a constant of any of the acceptable types, ~Numeric~,
 #+begin_example
 | Ref  | Traded On  |  Price | Shares |   Cost | Today      |
 |------+------------+--------+--------+--------+------------|
-| T001 | 2016-11-01 | 7.7000 |    100 | 3.1416 | 2025-12-28 |
-| T002 | 2016-11-01 | 7.7500 |    200 | 3.1416 | 2025-12-28 |
-| T003 | 2016-11-01 | 7.5000 |    800 | 3.1416 | 2025-12-28 |
-| T003 | 2016-11-01 | 7.5000 |    800 | 3.1416 | 2025-12-28 |
+| T001 | 2016-11-01 | 7.7000 |    100 | 3.1416 | 2026-10-25 |
+| T002 | 2016-11-01 | 7.7500 |    200 | 3.1416 | 2026-10-25 |
+| T003 | 2016-11-01 | 7.5000 |    800 | 3.1416 | 2026-10-25 |
+| T003 | 2016-11-01 | 7.5000 |    800 | 3.1416 | 2026-10-25 |
 |------+------------+--------+--------+--------+------------|
-| T004 | 2016-11-01 | 7.5500 |   6811 | 3.1416 | 2025-12-28 |
-| T005 | 2016-11-01 | 7.5000 |   4000 | 3.1416 | 2025-12-28 |
-| T006 | 2016-11-01 | 7.6000 |   1000 | 3.1416 | 2025-12-28 |
-| T006 | 2016-11-01 | 7.6000 |   1000 | 3.1416 | 2025-12-28 |
-| T007 | 2016-11-01 | 7.6500 |    200 | 3.1416 | 2025-12-28 |
-| T008 | 2016-11-01 | 7.6500 |   2771 | 3.1416 | 2025-12-28 |
-| T009 | 2016-11-01 | 7.6000 |   9550 | 3.1416 | 2025-12-28 |
+| T004 | 2016-11-01 | 7.5500 |   6811 | 3.1416 | 2026-10-25 |
+| T005 | 2016-11-01 | 7.5000 |   4000 | 3.1416 | 2026-10-25 |
+| T006 | 2016-11-01 | 7.6000 |   1000 | 3.1416 | 2026-10-25 |
+| T006 | 2016-11-01 | 7.6000 |   1000 | 3.1416 | 2026-10-25 |
+| T007 | 2016-11-01 | 7.6500 |    200 | 3.1416 | 2026-10-25 |
+| T008 | 2016-11-01 | 7.6500 |   2771 | 3.1416 | 2026-10-25 |
+| T009 | 2016-11-01 | 7.6000 |   9550 | 3.1416 | 2026-10-25 |
 |------+------------+--------+--------+--------+------------|
-| T010 | 2016-11-01 | 7.5500 |   3175 | 3.1416 | 2025-12-28 |
-| T011 | 2016-11-02 | 7.4250 |    100 | 3.1416 | 2025-12-28 |
-| T012 | 2016-11-02 | 7.5500 |   4700 | 3.1416 | 2025-12-28 |
-| T012 | 2016-11-02 | 7.5500 |   4700 | 3.1416 | 2025-12-28 |
-| T013 | 2016-11-02 | 7.3500 |  53100 | 3.1416 | 2025-12-28 |
+| T010 | 2016-11-01 | 7.5500 |   3175 | 3.1416 | 2026-10-25 |
+| T011 | 2016-11-02 | 7.4250 |    100 | 3.1416 | 2026-10-25 |
+| T012 | 2016-11-02 | 7.5500 |   4700 | 3.1416 | 2026-10-25 |
+| T012 | 2016-11-02 | 7.5500 |   4700 | 3.1416 | 2026-10-25 |
+| T013 | 2016-11-02 | 7.3500 |  53100 | 3.1416 | 2026-10-25 |
 |------+------------+--------+--------+--------+------------|
-| T014 | 2016-11-02 | 7.4500 |   5847 | 3.1416 | 2025-12-28 |
-| T015 | 2016-11-02 | 7.7500 |    500 | 3.1416 | 2025-12-28 |
-| T016 | 2016-11-02 | 8.2500 |    100 | 3.1416 | 2025-12-28 |
+| T014 | 2016-11-02 | 7.4500 |   5847 | 3.1416 | 2026-10-25 |
+| T015 | 2016-11-02 | 7.7500 |    500 | 3.1416 | 2026-10-25 |
+| T016 | 2016-11-02 | 8.2500 |    100 | 3.1416 | 2026-10-25 |
 #+end_example
 
 **** Custom Instance Variables and Hooks
@@ -2577,7 +2516,6 @@ but ruby data structures, and for them, things such as alignment are irrelevant.
 
 *** Available Formatter Output Targets
 **** Output Media
-
 ~FatTable~ supports the following output targets for its tables:
 
 - Text :: form the table with ACSII characters,
@@ -2625,13 +2563,15 @@ forth are ignored.
 #+end_example
 
 ***** To Org
-This formatter is designed to format tables in a manner consistent with the
-way tables are drawn within Emacs Org Mode.  It also uses nothing by ASCII
-characters to draw the table, but, the intersections of lines are represented
-by a ~|~ character.  Embelishments such as color, bold, and so forth are
-ignored.  When working in Org Mode, note that Emacs will convert an Array of
-Arrays into an Org Mode table, so when constructing tables programmatically,
-it may be better to use the =to_aoa= formatter shown below.
+This formatter is designed to format tables in a manner consistent with
+the way tables are drawn within Emacs Org Mode.  It also uses nothing by
+ASCII characters to draw the table, but, the outer border lines are
+represented by a ~|~ character rather than ~+~; inner intersections of
+lines are still represented as ~+~ as for text.  Embelishments such as
+color, bold, and so forth are ignored.  When working in Org Mode, note
+that Emacs will convert an Array of Arrays into an Org Mode table, so
+when constructing tables programmatically, it may be better to use the
+=to_aoa= formatter shown below.
 
 #+begin_SRC ruby
   tab_a.to_org
@@ -2681,7 +2621,7 @@ extent the device supports it.
 
 ***** To LaTeX
 This formatter outputs a table in the form suitable for inclusion in a LaTeX
-document using the ~logtable~ package.  Natualy it allows embelishments such
+document using the ~longtable~ package.  Natualy it allows embelishments such
 as color and text styles to the full extent of LaTeX's formatting prowess.
 
 #+begin_SRC ruby
@@ -2733,7 +2673,7 @@ directives as strings in which letters and other characters signify what
 formatting applies.  For example, we may apply the formatting directive 'R,$'
 to numbers in a certain part of the table.  Each of those characters, and in
 some cases a whole substring, is a single directive.  They can appear in any
-order, so '$R,' and ',$R' are equivalent.
+order, so =$R=, and =,$R= are equivalent.
 
 Here is a list of all the formatting directives that apply to each cell type:
 
@@ -2742,24 +2682,24 @@ For a string element, or any an element of any type (since these are applied
 after the element has been converted to a String), the following instructions
 are valid.
 
-- u :: convert the element to all lowercase [default false],
-- U :: convert the element to all uppercase [default false],
-- t :: title case the element, that is, upcase the initial letter in
+- =u= :: convert the element to all lowercase [default false],
+- =U= :: convert the element to all uppercase [default false],
+- =t= :: title case the element, that is, upcase the initial letter in
     each word and lower case the other letters [default false],
-- B ~B :: make the element bold, or turn off bold [default ~B]
-- I ~I :: make the element italic, or turn off italic [default ~I]
-- R :: align the element on the right of the column [default off]
-- L :: align the element on the left of the column [default on]
-- C :: align the element in the center of the column [default off]
-- c[<color_spec>] :: render the element in the given color; the <color_spec>
+- =B=, =~B= :: make the element bold, or turn off bold [default =~B=]
+- =I=, =~I= :: make the element italic, or turn off italic [default =~I=]
+- =R= :: align the element on the right of the column [default off]
+- =L= :: align the element on the left of the column [default on]
+- =C= :: align the element in the center of the column [default off]
+- =c[<color_spec>]= :: render the element in the given color; the =<color_spec>=
   can have the form fgcolor, fgcolor.bgcolor, or .bgcolor, to set the
   foreground or background colors respectively, and each of those can be an
   ANSI or X11 color name in addition to the special color, 'none', which keeps
   the output's default color [default none].
-- _ ~_ :: underline the element, or turn off underline [default off]
-- * ~* :: cause the element to blink, or turn off blink [default off]
+- =_= :: underline the element, or turn off underline [default off]
+- =*= :: cause the element to blink, or turn off blink [default off]
 
-For example, the directive 'tCc[red.yellow]' would title-case the element,
+For example, the directive '=tCc[red.yellow]=' would title-case the element,
 center it, and color it red on a yellow background. The directives that are
 boolean have negating forms so that, for example, if bold is turned on for all
 columns of a given type, it can be countermanded in formatting directives for
@@ -2769,66 +2709,69 @@ particular columns.
 For a numeric element, all the instructions valid for string are available, in
 addition to the following:
 
-- , ~, :: insert grouping commas, or do not insert grouping commas [default
-  ~,],
-- $ ~$ :: format the number as currency according to the locale, or not
-  [default ~$],
-- m.n :: include at least m digits before the decimal point, padding on the
+- =,=,  =~,= :: insert grouping commas, or do not insert grouping commas (default
+  =~,=),
+- =$=, =~$= :: format the number as currency according to the locale, or not
+  (default =~$=),
+- =m.n= :: include at least m digits before the decimal point, padding on the
   left with zeroes as needed, and round the number to the n decimal places and
   include n digits after the decimal point, padding on the right with zeroes
   as needed.  If n is negative, the value will be rounded to the left of the
   decimal point: e.g., if n is -2, the number will be rounded to the nearest
-  hundred, if -3, to the nearest thousand, etc. [default 0.0]
-- H :: convert the number (assumed to be in units of seconds) to ~HH:MM:SS.ss~
+  hundred, if -3, to the nearest thousand, etc. (default =0.0=)
+- =H= :: convert the number (assumed to be in units of seconds) to ~HH:MM:SS.ss~
   form. So a column that is the result of subtracting two :datetime forms will
   result in a :numeric expressed as seconds and can be displayed in hours,
   minutes, and seconds with this formatting instruction.  If this directive is
-  included, all other numeric directives will be ignored. [default off]
+  included, all other numeric directives will be ignored. (default off)
 
-For example, the directive 'R5.0c[blue]' would right-align the numeric
+For example, the directive =R5.0c[blue]= would right-align the numeric
 element, pad it on the left with zeros, and color it blue.
 
 **** DateTime
 For a ~DateTime~, all the instructions valid for string are available, in
 addition to the following:
 
-- d[fmt] :: apply the format to a ~Date~ or a ~DateTime~ that is a whole day,
+- =d[fmt]= :: apply the format to a ~Date~ or a ~DateTime~ that is a whole day,
   that is that has no or zero hour, minute, and second components, where fmt
   is a valid format string for ~Date#strftime~, otherwise, the datetime will
-  be formatted as an ISO 8601 string, YYYY-MM-DD.
-- D[fmt] :: apply the format to a datetime that has at least a non-zero hour
-  component where fmt is a valid format string for Date#strftime, otherwise,
-  the datetime will be formatted as an ISO 8601 string, YYYY-MM-DD HH:MM:SS.
+  be formatted as an ISO 8601 string, =YYYY-MM-DD=.
+- =D[fmt]= :: apply the format to a datetime that has at least a
+  non-zero hour component where fmt is a valid format string for
+  ~Date#strftime~, otherwise, the datetime will be formatted as an ISO
+  8601 string, =YYYY-MM-DD HH:MM:SS=.
 
-For example, 'c[pink]d[%b %-d, %Y]C', would format a date element like 'Sep
-22, 1957', center it, and color it pink.
+For example, =c[pink]d[%b %-d, %Y]C=, would format a date element like
+=Sep 22, 1957=, center it, and color it pink.
 
 **** Boolean
 
 For a boolean cell, all the instructions valid for string are available, in
 addition to the following:
 
-- Y :: print true as ~Y~ and false as ~N~,
-- T :: print true as ~T~ and false as ~F~ [this is the default],
-- X :: print true as ~X~ and false as an empty string '',
-- b[xxx,yyy] :: print true as the string given as ~xxx~ and false as the string
-     given as ~yyy~,
-- c[tcolor,fcolor] :: color a true element with ~tcolor~ and a false element
-     with ~fcolor~. Each of the colors may be specified in the same manner as
-     colors for strings described above.
+- =Y= :: print true as ~Y~ and false as ~N~,
+- =T= :: print true as ~T~ and false as ~F~ (this is the default),
+- =X= :: print true as ~X~ and false as an empty string =""=,
+- =b[<xxx>,<yyy>]= :: print true as the arbitrary string given as
+  ~<xxx>~ and false as the arbitrary string given as ~<yyy>~,
+- =c[<tcolor>,<fcolor>]= :: color a true element with ~<tcolor>~ and a
+  false element with ~<fcolor>~. Each of the colors may be specified in
+  the same manner as colors for strings described above.
 
-For example, the directive 'b[Yeppers,Nope]c[green.pink,red.pink]' would
-render a true boolean as ~Yeppers~ colored green on pink and render a false
-boolean as ~Nope~ colored red on pink. See [[https://www.youtube.com/watch?v=oLdFFD8II8U][Yeppers]] for additional information.
+For example, the directive =b[Yeppers,Nope]c[green.pink,red.pink]=
+would render a true boolean as ~Yeppers~ colored green on pink and
+render a false boolean as ~Nope~ colored red on pink. See [[https://www.youtube.com/watch?v=oLdFFD8II8U][Yeppers]] for
+additional information.
 
 **** NilClass
 By default, ~nil~ elements are rendered as blank cells, but you can make them
 visible with the following, and in that case, all the formatting instructions
 valid for strings are also available:
 
-- n[niltext] :: render a ~nil~ item with the given niltext [default ''].
+- =n[<niltext>]= :: render a =nil= item with the given arbitrary string
+  =<niltext>= (default =""=).
 
-For example, you might want to use 'n[-]Cc[purple]' to make nils visible as a
+For example, you might want to use =n[-]Cc[purple]= to make =nil=s visible as a
 centered purple hyphen.
 
 *** The ~format~ and ~format_for~ methods
@@ -2893,19 +2836,19 @@ be right-aligned, but the headers are unaffected by it.  The ~format_for~ the
 All the other cells in the table, namely the cells in the ~:join_date~ column,
 had the default formatting applied.
 
-**** Table Locations
+**** Locations within a Table
 In the ~format_for~ formatting method, the first argument names a "location."
 The table is divided into several locations for which separate formatting
 directives may be given. These locations are identified by the following
 symbols:
 
-- :header :: the first row of the output table containing the headers,
-- :footer :: all rows of the table's footers,
-- :gfooter :: all rows of the table's group footers,
-- :body :: all the data rows of the table, that is, those that are neither part
-     of the header, footers, or gfooters,
-- :bfirst :: the first row of the table's body, and
-- :gfirst :: the first row in each group in the table's body.
+- =:header= :: the first row of the output table containing the headers,
+- =:footer= :: all rows of the table's footers,
+- =:gfooter= :: all rows of the table's group footers,
+- =:body= :: all the data rows of the table, that is, those that are neither part
+     of the header, footers, or group footers,
+- =:bfirst= :: the first row of the table's body, and
+- =:gfirst= :: the first row in each group in the table's body.
 
 **** Location priority
 Formatting for any given cell depends on its location in the table. The
@@ -2979,11 +2922,10 @@ but not for other nils, such as in the last row of the ~:join_date~ column.
 *** Footers
 **** Adding Footers
 You can call the ~foot~, ~gfoot~, ~footer,~ or ~gfooter~, methods on
-~Formatter~ objects to add footers and group footers. Note that all of these
-methods return a ~Footer~ object that can be accessed to extract the computed
-values.  All of these methods return the ~FatTable::Footer~ object so
-constructed. It can be used to access the values and other attributes of the
-footer computed. Their signatures are:
+~Formatter~ objects to add footers and group footers.  All of these
+methods return the ~FatTable::Footer~ object so constructed. It can be
+used to access the values and other attributes of the footer
+computed. Their signatures are:
 
 - ~foot(label: label, label_col: nil, **agg_cols)~ :: where ~label~ is a label
   to be placed in the column with header ~label_col~, or, if ommitted, in the
@@ -3074,20 +3016,21 @@ When adding a footer with the above methods, you can specify an aggregator for
 each column named in the ~agg_cols~ parameter.  There are several candidates
 for what you can use for an aggregator:
 
-- Symbol :: one of the following built-in aggregators: :first, :last, :range,
-  :sum, :count, :min, :max, :avg, :var, :pvar, :dev, :pdev, :any?, :all?,
-  :none?, and :one?.
+- Symbol :: one of the following built-in aggregators: ~:first~,
+  ~:last~, ~:range~, ~:sum~, ~:count~, ~:min~, ~:max~, ~:avg~, ~:var~,
+  ~:pvar~, ~:dev~, ~:pdev~, ~:any?~, ~:all?~, ~:none?~, and ~:one?~.
   + The symbols ending in a question mark are valid only for boolean columns;
-  + :count, :first, and :last work with any column type,
-  + :min, :max, and :range work with all types except boolean;
-  + :sum, works only with numeric columns, and
-  + :avg, :var, :dev, :pvar, and :pdev work with numeric or datetime columns.
-    In the case of datetime columns, these aggrgators convert the dates to
-    julian date numbers, perform the calculation, then convert the result back
-    to a datetime object.
-    Apart from the built-in aggregators, you could define your own by opening the
-    FatTable::Column class and adding a suitable instance method.  In that
-    case, the symbol could also refer to the method you defined.
+  + ~:count~, ~:first~, and ~:last~ work with any column type,
+  + ~:min~, ~:max~, and ~:range~ work with all types except boolean;
+  + ~:sum~, works only with numeric columns, and
+  + ~:avg~, ~:var~, ~:dev~, ~:pvar~, and ~:pdev~ work with numeric or
+    datetime columns.  In the case of datetime columns, these
+    aggregators convert the dates to julian date numbers, perform the
+    calculation, then convert the result back to a datetime object.
+    Apart from the built-in aggregators, you could define your own by
+    opening the ~FatTable::Column~ class and adding a suitable instance
+    method.  In that case, the symbol could also refer to the method you
+    defined.
 - String :: using a string as an aggrgegator can result in:
   + the string being converted to an object matching the type of the column
     (for example, using '$1,888' in a numeric column puts the constant number
@@ -3096,9 +3039,9 @@ for what you can use for an aggregator:
   + if the string cannot be parsed as a valid object matching the column's
     type, it is placed literally in the footer field (for example, using
     '(estimated)' can be used to add additional information to the footer)
-- Ruby object :: you can put a number in a numeric footer field, a DateTime
-  object in a datetime footer field, or a true or false in a boolean footer
-  field;
+- Ruby object :: you can put a ~Numeric~ in a numeric footer field, a
+  ~Date~ or ~DateTime~ object in a datetime footer field, or a true or
+  false in a boolean footer field;
 - A Lambda :: finally, you can provide a lambda for performing arbitrary
   calculations and placing the result in the footer field.  The number of
   arguments the lambda takes can vary:
@@ -3267,7 +3210,7 @@ column.
 +-------------+-------+-----+------------+--------+-------------+
 |     Average |       |  31 |            | 31,429 | 29-DEC-2005 |
 +-------------+-------+-----+------------+--------+-------------+
-| Report Date |       |   8 |            |        | 28-DEC-2025 |
+| Report Date |       |   8 |            |        | 25-OCT-2026 |
 +=============+=======+=====+============+========+=============+
 #+end_example
 
@@ -3297,7 +3240,7 @@ But it can be any type.  Here we pick a lottery winner from the employee ids.
 +----------------+-------+-----+------------+--------+-------------+
 |        Average |       |  31 |            | 31,429 | 29-DEC-2005 |
 +----------------+-------+-----+------------+--------+-------------+
-| Lottery Winner |       |   8 |            |        | 9           |
+| Lottery Winner |       |   8 |            |        | 1           |
 +================+=======+=====+============+========+=============+
 #+end_example
 

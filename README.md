@@ -1,55 +1,57 @@
-- [Version](#org5334859)
-- [Introduction](#orgb65aad9)
-- [Installation](#org17c4677)
-  - [Using in a gem](#org8a17717)
-  - [Manually install](#org530598c)
-  - [Require](#org57aae27)
-- [Usage](#orgf09f39e)
-  - [Quick Start](#orge842ad0)
-  - [A Word About the Examples](#org763a25b)
-  - [Anatomy of a Table](#orga84269a)
-    - [Columns](#org9e64593)
-    - [Type Keywords Arguments](#org390f785)
-    - [Headers](#orgb4b83f3)
-    - [Groups](#orgc73107b)
-  - [Constructing Tables](#orgb1c6fef)
-    - [Empty Tables](#orgdf8f1e2)
-    - [From CSV or Org Mode files or strings](#org97b4744)
-    - [From Arrays of Arrays](#org8fddae3)
-    - [From Arrays of Hashes](#org2079ffb)
-    - [From SQL queries](#org1f3b4b6)
-    - [Marking Groups in Input](#org4f6203d)
-  - [Accessing Parts of Tables](#orge15c95e)
-    - [Rows](#org298a474)
-    - [Columns](#org5782179)
-    - [Cells](#org326ae38)
-    - [Other table attributes](#orgc525931)
-  - [Operations on Tables](#orgf11c014)
-    - [Example Input Tables](#org4a978ae)
-    - [Select](#org3f88455)
-    - [Where](#orgb70a9cb)
-    - [Order\_by](#org54a98c1)
-    - [Order\_with](#org6562f48)
-    - [Group\_by](#orgbd3e61e)
-    - [Join](#orgebcd7d8)
-    - [Set Operations](#org654f7a8)
-    - [Uniq (aka Distinct)](#orgd68c265)
-    - [Remove groups with degroup!](#org8b63b11)
-  - [Formatting Tables](#org767e09e)
-    - [Available Formatter Output Targets](#org945b4a7)
-    - [Formatting Directives](#orga5d8638)
-    - [The `format` and `format_for` methods](#org11bef41)
-    - [Footers](#org53ea8ff)
-    - [Invoking Formatters](#org102d235)
-- [Development](#orga37c582)
-- [Contributing](#org6d38bff)
+- [Version](#org618d032)
+- [Introduction](#org7186eb3)
+- [Installation](#org35f0be6)
+  - [Using in a gem](#org6a560ce)
+  - [Manually install](#org0371ff7)
+  - [Require](#org6638c4d)
+- [Usage](#org1cb1329)
+  - [Quick Start](#orge7258ea)
+  - [A Word About the Examples](#orgf9ebc2b)
+  - [Anatomy of a Table](#org5413ffe)
+    - [Columns](#org38467a2)
+    - [Type Keywords Arguments](#org1b1cfac)
+    - [Headers](#orgae74992)
+    - [Groups](#org75225e7)
+  - [Constructing Tables](#orgd0c4b4f)
+    - [Empty Tables](#org2753de0)
+    - [From CSV or Org Mode files or strings](#orgf1c4cd8)
+    - [From Arrays of Arrays](#orgb71cd46)
+    - [From Arrays of Hashes](#org02f7c60)
+    - [From SQL queries](#org73f304e)
+    - [Marking Groups in Input](#org50bc52f)
+  - [Accessing Parts of Tables](#orgd24b88d)
+    - [Rows](#org83f280d)
+    - [Columns](#orgaba7811)
+    - [Cells](#orge8409c5)
+    - [Other table attributes](#org59899a2)
+  - [Operations on Tables](#org2ec6a2b)
+    - [Example Input Tables](#org431358b)
+    - [Select](#org03a4790)
+    - [Where](#org39d4ba2)
+    - [Order\_by](#orgcdbb9c1)
+    - [Order\_with](#org42f5f3b)
+    - [Group\_by](#orgafd702c)
+    - [Join](#org8011899)
+    - [Set Operations](#orga4ab702)
+    - [Uniq (aka Distinct)](#orgfa42487)
+    - [Remove groups with degroup!](#orgc9ae228)
+  - [Formatting Tables](#org256a6f1)
+    - [Available Formatter Output Targets](#org5acfb50)
+    - [Formatting Directives](#org6089a7c)
+    - [The `format` and `format_for` methods](#orga50773a)
+    - [Footers](#org42c08e8)
+    - [Invoking Formatters](#orgf528cbb)
+- [Development](#org951054d)
+- [Contributing](#org0f0d08d)
+
+Version: 1.0.0
 
 [![CI](https://github.com/ddoherty03/fat_table/actions/workflows/ruby-with-dbs.yml/badge.svg)](
 https://github.com/ddoherty03/fat_table/actions/workflows/ruby-with-dbs.yml
 )
 
 
-<a id="org5334859"></a>
+<a id="org618d032"></a>
 
 # Version
 
@@ -62,7 +64,7 @@ Current version is: 1.0.0
 ```
 
 
-<a id="orgb65aad9"></a>
+<a id="org7186eb3"></a>
 
 # Introduction
 
@@ -73,12 +75,12 @@ Furthermore, `FatTable` provides methods for formatting tables and producing out
 `FatTable` can be used to perform operations on data that are naturally best conceived of as tables, which in my experience is quite often. It can also serve as a foundation for providing reporting functions where flexibility about the output medium can be useful. Finally `FatTable` can be used within Emacs `org-mode` files in code blocks targeting the Ruby language. Org mode tables are presented to a ruby code block as an array of arrays, so `FatTable` can read them in with its `.from_aoa` constructor. A `FatTable` table output as an array of arrays with its `.to_aoa` output function will be rendered in an org-mode buffer as an org-table, ready for processing by other code blocks.
 
 
-<a id="org17c4677"></a>
+<a id="org35f0be6"></a>
 
 # Installation
 
 
-<a id="org8a17717"></a>
+<a id="org6a560ce"></a>
 
 ## Using in a gem
 
@@ -99,7 +101,7 @@ gem.add_runtime_dependency 'fat_table'
 ```
 
 ```
-false
+#<ArgumentError: wrong number of arguments (given 0, expected 1+)>
 ```
 
 And then execute:
@@ -109,7 +111,7 @@ $ bundle
 ```
 
 
-<a id="org530598c"></a>
+<a id="org0371ff7"></a>
 
 ## Manually install
 
@@ -120,7 +122,7 @@ $ gem install fat_table
 ```
 
 
-<a id="org57aae27"></a>
+<a id="org6638c4d"></a>
 
 ## Require
 
@@ -131,12 +133,12 @@ require 'fat_table'
 ```
 
 
-<a id="orgf09f39e"></a>
+<a id="org1cb1329"></a>
 
 # Usage
 
 
-<a id="orge842ad0"></a>
+<a id="orge7258ea"></a>
 
 ## Quick Start
 
@@ -277,7 +279,7 @@ magick quick.png -resize 600x800 quick_small.png
 ![img](spec/example_files/quick_small.png)
 
 
-<a id="org763a25b"></a>
+<a id="orgf9ebc2b"></a>
 
 ## A Word About the Examples
 
@@ -340,12 +342,12 @@ locals: _  __  _dir_  _ex_  _file_  _in_  _out_  _pry_  lib  str  version
 If you use `puts table.to_term`, you can see the effect of the color formatting directives.
 
 
-<a id="orga84269a"></a>
+<a id="org5413ffe"></a>
 
 ## Anatomy of a Table
 
 
-<a id="org9e64593"></a>
+<a id="org38467a2"></a>
 
 ### Columns
 
@@ -360,7 +362,7 @@ If you use `puts table.to_term`, you can see the effect of the color formatting 
 By default, when a `Table` is constructed from an external source, all `Columns` start out having a type of `NilClass`, that is, their type is as yet undetermined. When a string or object is added to a `Column` and it can be converted into one of the permissible types, it fixes the type of the column, and all further items added to the `Column` must either be `nil` (indicating no value) or be capable of being coerced to the column's type. Otherwise, `FatTable` raises an `IncompatibleTypeError` exception.
 
 
-<a id="org390f785"></a>
+<a id="org1b1cfac"></a>
 
 ### Type Keywords Arguments
 
@@ -389,7 +391,7 @@ Items of input must be either one of the permissible ruby objects or strings. If
 -   **NilClass:** Until the input contains a non-blank string that can be parsed as one of the other types, it has this type, meaning that the type is still open. A column comprised completely of blank strings or `nils` will retain the `NilClass` type.
 
 
-<a id="orgb4b83f3"></a>
+<a id="orgae74992"></a>
 
 ### Headers
 
@@ -407,19 +409,19 @@ If no sensible headers can be discerned from the input, headers of the form `:co
 You should avoid the use of the column names `:omni` and `:sort_key` because they have special meanings in the `select` and `order_with` commands, respectively.
 
 
-<a id="orgc73107b"></a>
+<a id="org75225e7"></a>
 
 ### Groups
 
 The rows of a `FatTable` table can be divided into groups, either from markers in the input or as a result of certain operations. There is only one level of grouping, so `FatTable` has no concept of sub-groups. Groups can be shown on output with rules or "hlines" that underline the last row in each group, and you can decorate the output with group footers that summarize the rows in each group.
 
 
-<a id="orgb1c6fef"></a>
+<a id="orgd0c4b4f"></a>
 
 ## Constructing Tables
 
 
-<a id="orgdf8f1e2"></a>
+<a id="org2753de0"></a>
 
 ### Empty Tables
 
@@ -449,15 +451,6 @@ The rows of a `FatTable` table can be divided into groups, either from markers i
     +========+========+============+===+===+
     ```
     
-    ```
-    +======+======+============+===+===+
-    | A    | B    | C          | D | E |
-    +------+------+------------+---+---+
-    | 1    | 2    | 2017-01-21 | F |   |
-    | 3.14 | 2.17 | 2016-01-21 | T |   |
-    +======+======+============+===+===+
-    ```
-    
     You can continue to add rows to the table:
     
     ```ruby
@@ -479,17 +472,6 @@ The rows of a `FatTable` table can be divided into groups, either from markers i
     | 3/5    |        |            |   |   | 335/113 |
     +========+========+============+===+===+=========+
     ```
-    
-    ```
-    +======+======+============+===+===+=========+
-    | A    | B    | C          | D | E | F       |
-    +------+------+------------+---+---+---------+
-    | 1    | 2    | 2017-01-21 | F |   |         |
-    | 3.14 | 2.17 | 2016-01-21 | T |   |         |
-    +------+------+------------+---+---+---------+
-    | 3/5  |      |            |   |   | 335/113 |
-    +======+======+============+===+===+=========+
-    ```
 
 2.  With Headers
 
@@ -499,10 +481,6 @@ The rows of a `FatTable` table can be divided into groups, either from markers i
     require 'fat_table'
     tab = FatTable.new(:a, 'b', 'C', :d)
     tab.headers
-    ```
-    
-    ```
-    [:a, :b, :c, :d]
     ```
     
     ```
@@ -522,18 +500,6 @@ The rows of a `FatTable` table can be divided into groups, either from markers i
     | 1      | 2      | 2017-01-21 | F |   |
     | 3.1400 | 2.1700 | 2016-01-21 | T |   |
     +========+========+============+===+===+
-    ```
-    
-    ```
-    +======+======+============+===+===+
-    | A    | B    | C          | D | E |
-    +------+------+------------+---+---+
-    | 1    | 2    | 2017-01-21 | F |   |
-    | 3.14 | 2.17 | 2016-01-21 | T |   |
-    +------+------+------------+---+---+
-    | 1    | 2    | 2017-01-21 | F |   |
-    | 3.14 | 2.17 | 2016-01-21 | T |   |
-    +======+======+============+===+===+
     ```
 
 3.  Forcing String Type
@@ -563,18 +529,6 @@ The rows of a `FatTable` table can be divided into groups, either from markers i
     +========+========+============+===+=============+===+
     ```
     
-    ```
-    +===+===+============+===+=============+===+
-    | A | B | C          | D | Zip         | E |
-    +---+---+------------+---+-------------+---+
-    | 1 | 2 | 2017-01-21 | F | 18552       |   |
-    | 3 | 2 | 2016-01-21 | T |             |   |
-    |   |   |            |   | 01879--7884 |   |
-    |   |   |            |   | 90210       |   |
-    |   |   |            |   |             |   |
-    +===+===+============+===+=============+===+
-    ```
-    
     In addition, at any time after creating a table, you can force the String type on any number of columns with the `force_string!` method. When you do so, all exisiting items in the column are converted to strings with the #to\_s method.
     
     ```ruby
@@ -599,21 +553,9 @@ The rows of a `FatTable` table can be divided into groups, either from markers i
     |        |        |            |   | 90210 |   |
     +========+========+============+===+=======+===+
     ```
-    
-    ```
-    +======+======+============+===+=======+===+
-    | A    | B    | C          | D | Zip   | E |
-    +------+------+------------+---+-------+---+
-    | 1    | 2    | 2017-01-21 | F | 18552 |   |
-    | 3.14 | 2.17 | 2016-01-21 | T |       |   |
-    |      |      |            |   | 01879 |   |
-    |      |      |            |   | 66210 |   |
-    |      |      |            |   | 90210 |   |
-    +======+======+============+===+=======+===+
-    ```
 
 
-<a id="org97b4744"></a>
+<a id="orgf1c4cd8"></a>
 
 ### From CSV or Org Mode files or strings
 
@@ -670,7 +612,7 @@ tab4 = FatTable.from_org_string(org_body)
 ```
 
 
-<a id="org8fddae3"></a>
+<a id="orgb71cd46"></a>
 
 ### From Arrays of Arrays
 
@@ -771,7 +713,7 @@ tab4 = FatTable.from_org_string(org_body)
     4.  `FatTable` passes back to org-mode an array of arrays using the `.to_aoa` method. In an `org-mode` buffer, these are rendered as tables. We'll often apply `.to_aoa` at the end of example blocks in this `README` to render the results as a table inside this file. As we'll see below, `.to_aoa` can also take a block to which formatting and footer directives can be attached.
 
 
-<a id="org2079ffb"></a>
+<a id="org02f7c60"></a>
 
 ### From Arrays of Hashes
 
@@ -808,7 +750,7 @@ tab = FatTable.from_aoh(aoh).to_aoa
 | T002 | 2016-11-01 | P    | 7.7500 |    200 |
 | T003 | 2016-11-01 | P    | 7.5000 |    800 |
 | T004 | 2016-11-01 | S    | 7.5500 |   6811 |
-| T005 | 2025-12-28 | S    | 7.5000 |   4000 |
+| T005 | 2026-10-25 | S    | 7.5000 |   4000 |
 | T006 | 2016-11-01 | S    | 7.6000 |   1000 |
 | T007 | 2016-11-01 | S    | 7.6500 |    200 |
 | T008 | 2016-11-01 | P    | 7.6500 |   2771 |
@@ -825,7 +767,7 @@ tab = FatTable.from_aoh(aoh).to_aoa
 Notice, again, that the values can either be ruby objects, such as `Date.today`, or strings that can be parsed into one of the permissible column types.
 
 
-<a id="org1f3b4b6"></a>
+<a id="org73f304e"></a>
 
 ### From SQL queries
 
@@ -891,7 +833,7 @@ Consult `Sequel's` documentation for details on its connection methods. <http://
 The `.connect` function need only be called once, and the database handle it creates will be used for all subsequent `.from_sql` calls until `.connect` is called again.
 
 
-<a id="org4f6203d"></a>
+<a id="org50bc52f"></a>
 
 ### Marking Groups in Input
 
@@ -901,21 +843,21 @@ The `.connect` function need only be called once, and the database handle it cre
 
 2.  When Reading in Tables
 
-    `FatTable` tables has a concept of "groups" of rows that play a role in many of the methods for operating on them as explained [below](#orgc73107b).
+    `FatTable` tables has a concept of "groups" of rows that play a role in many of the methods for operating on them as explained [below](#org75225e7).
     
     The `.from_aoa` and `.from_aoh` functions take an optional keyword parameter `hlines:` that, if set to `true`, causes them to mark group boundaries in the table wherever a row Array (for `.from_aoa`) or Hash (for `.from_aoh`) is followed by a `nil`. Each boundary means that the rows above it and after the header or prior group boundary all belong to a group. By default `hlines` is false for both functions so neither expects hlines in its input.
     
-    In the case of `.from_aoa`, if `hlines:` is set true, the input must also include a `nil` in the second element of the outer array to indicate that the first row is to be used as headers. Otherwise, it will synthesize headers of the form `:col_1`, `:col_2`, &#x2026; `:col_n`.
+    In the case of `.from_aoa`, if `hlines:` is set true, the input must also include a `nil` in the second element of the outer array to indicate that the first row is to be used as headers. Otherwise, it will synthesize headers of the form `:col_1`, `:col_2`, &hellip; `:col_n`.
     
     In org mode table text passed to `.from_org_file` and `.from_org_string`, you *must* mark the header row by following it with an hrule and you *may* mark group boundaries with an hrule. In org mode tables, hlines are table rows beginning with something like `|---`. The `.from_org_...` functions always recognizes hlines in the input, so it takes no `hlines:` keyword parameter.
 
 
-<a id="orge15c95e"></a>
+<a id="orgd24b88d"></a>
 
 ## Accessing Parts of Tables
 
 
-<a id="org298a474"></a>
+<a id="org83f280d"></a>
 
 ### Rows
 
@@ -924,14 +866,14 @@ A `FatTable` table is an Enumerable, yielding each row of the table as a Hash ke
 You can also use indexing to access a row of the table by number. Using an integer index returns a Hash of the given row. Thus, `tab[20]` returns the 21st data row of the table, while `tab[0]` returns the first row and tab[-1] returns the last row.
 
 
-<a id="org5782179"></a>
+<a id="orgaba7811"></a>
 
 ### Columns
 
 If the index provided to `[]` is a string or a symbol, it returns an Array of the items of the column with that header. Thus, `tab[:ref]` returns an Array of all the items of the table's `:ref` column.
 
 
-<a id="org326ae38"></a>
+<a id="orge8409c5"></a>
 
 ### Cells
 
@@ -945,7 +887,7 @@ tab[:date][13]  # => The Date in the 14th row; indexes can be in either order.
 ```
 
 
-<a id="orgc525931"></a>
+<a id="org59899a2"></a>
 
 ### Other table attributes
 
@@ -978,29 +920,26 @@ puts "Column :shares says its type is '#{tab.type(:shares)}' and that is a #{tab
 ```
 
 ```
-=> false
 Column :shares says its type is 'Numeric' and that is a BigDecimal
-=> nil
-:org_babel_ruby_eoe
 ```
 
 
-<a id="orgf11c014"></a>
+<a id="org2ec6a2b"></a>
 
 ## Operations on Tables
 
 Once you have one or more tables, you will likely want to perform operations on them. The operations provided by `FatTable` are the subject of this section. Before getting into the operations, though, there are a couple of issues that cut across all or many of the operations.
 
-First, tables are by and large immutable objects. Each operation creates a new table without affecting the input tables. The only exceptions are the `degroup!` operation, which mutates the receiver table by removing its group boundaries, and `force_string!` (explained above at [Forcing String Type](#orgfb642e6)), which forces columns to have the String type despite what the automatic typing rules determine.
+First, tables are by-and-large immutable objects: each operation creates a new table without affecting the input tables. The only exceptions are the `degroup!` operation, which mutates the receiver table by removing its group boundaries, and `force_string!` (explained above at [Forcing String Type](#org554fa9f)), which forces columns to have the String type despite what the automatic typing rules determine.
 
 Second, because each operation returns a `FatTable::Table` object, the operations are chainable.
 
 Third, `FatTable::Table` objects can have "groups" of rows within the table. These can be decorated with hlines and group footers on output. Some operations result in marking group boundaries in the result table, others remove group boundaries that may have existed in the input table. Operations that either create or remove groups will be noted below.
 
-Finally, the operations are for the most part patterned on SQL table operations, but when expressions play a role, you write them using ruby syntax rather than SQL.
+Finally, the operations are, for the most part, patterned on SQL table operations, but when expressions play a role, you write them using ruby syntax rather than SQL.
 
 
-<a id="org4a978ae"></a>
+<a id="org431358b"></a>
 
 ### Example Input Tables
 
@@ -1123,7 +1062,7 @@ tab2.to_aoa
 ```
 
 
-<a id="org3f88455"></a>
+<a id="org03a4790"></a>
 
 ### Select
 
@@ -1356,28 +1295,28 @@ With the `select` method, you can select columns to appear in the output table, 
     ```
     | Ref  | Traded On  |  Price | Shares |   Cost | Today      |
     |------+------------+--------+--------+--------+------------|
-    | T001 | 2016-11-01 | 7.7000 |    100 | 3.1416 | 2025-12-28 |
-    | T002 | 2016-11-01 | 7.7500 |    200 | 3.1416 | 2025-12-28 |
-    | T003 | 2016-11-01 | 7.5000 |    800 | 3.1416 | 2025-12-28 |
-    | T003 | 2016-11-01 | 7.5000 |    800 | 3.1416 | 2025-12-28 |
+    | T001 | 2016-11-01 | 7.7000 |    100 | 3.1416 | 2026-10-25 |
+    | T002 | 2016-11-01 | 7.7500 |    200 | 3.1416 | 2026-10-25 |
+    | T003 | 2016-11-01 | 7.5000 |    800 | 3.1416 | 2026-10-25 |
+    | T003 | 2016-11-01 | 7.5000 |    800 | 3.1416 | 2026-10-25 |
     |------+------------+--------+--------+--------+------------|
-    | T004 | 2016-11-01 | 7.5500 |   6811 | 3.1416 | 2025-12-28 |
-    | T005 | 2016-11-01 | 7.5000 |   4000 | 3.1416 | 2025-12-28 |
-    | T006 | 2016-11-01 | 7.6000 |   1000 | 3.1416 | 2025-12-28 |
-    | T006 | 2016-11-01 | 7.6000 |   1000 | 3.1416 | 2025-12-28 |
-    | T007 | 2016-11-01 | 7.6500 |    200 | 3.1416 | 2025-12-28 |
-    | T008 | 2016-11-01 | 7.6500 |   2771 | 3.1416 | 2025-12-28 |
-    | T009 | 2016-11-01 | 7.6000 |   9550 | 3.1416 | 2025-12-28 |
+    | T004 | 2016-11-01 | 7.5500 |   6811 | 3.1416 | 2026-10-25 |
+    | T005 | 2016-11-01 | 7.5000 |   4000 | 3.1416 | 2026-10-25 |
+    | T006 | 2016-11-01 | 7.6000 |   1000 | 3.1416 | 2026-10-25 |
+    | T006 | 2016-11-01 | 7.6000 |   1000 | 3.1416 | 2026-10-25 |
+    | T007 | 2016-11-01 | 7.6500 |    200 | 3.1416 | 2026-10-25 |
+    | T008 | 2016-11-01 | 7.6500 |   2771 | 3.1416 | 2026-10-25 |
+    | T009 | 2016-11-01 | 7.6000 |   9550 | 3.1416 | 2026-10-25 |
     |------+------------+--------+--------+--------+------------|
-    | T010 | 2016-11-01 | 7.5500 |   3175 | 3.1416 | 2025-12-28 |
-    | T011 | 2016-11-02 | 7.4250 |    100 | 3.1416 | 2025-12-28 |
-    | T012 | 2016-11-02 | 7.5500 |   4700 | 3.1416 | 2025-12-28 |
-    | T012 | 2016-11-02 | 7.5500 |   4700 | 3.1416 | 2025-12-28 |
-    | T013 | 2016-11-02 | 7.3500 |  53100 | 3.1416 | 2025-12-28 |
+    | T010 | 2016-11-01 | 7.5500 |   3175 | 3.1416 | 2026-10-25 |
+    | T011 | 2016-11-02 | 7.4250 |    100 | 3.1416 | 2026-10-25 |
+    | T012 | 2016-11-02 | 7.5500 |   4700 | 3.1416 | 2026-10-25 |
+    | T012 | 2016-11-02 | 7.5500 |   4700 | 3.1416 | 2026-10-25 |
+    | T013 | 2016-11-02 | 7.3500 |  53100 | 3.1416 | 2026-10-25 |
     |------+------------+--------+--------+--------+------------|
-    | T014 | 2016-11-02 | 7.4500 |   5847 | 3.1416 | 2025-12-28 |
-    | T015 | 2016-11-02 | 7.7500 |    500 | 3.1416 | 2025-12-28 |
-    | T016 | 2016-11-02 | 8.2500 |    100 | 3.1416 | 2025-12-28 |
+    | T014 | 2016-11-02 | 7.4500 |   5847 | 3.1416 | 2026-10-25 |
+    | T015 | 2016-11-02 | 7.7500 |    500 | 3.1416 | 2026-10-25 |
+    | T016 | 2016-11-02 | 8.2500 |    100 | 3.1416 | 2026-10-25 |
     ```
 
 5.  Custom Instance Variables and Hooks
@@ -1434,7 +1373,7 @@ With the `select` method, you can select columns to appear in the output table, 
     As the example illustrates, `.select` transmits any group boundaries in its input table to the result table.
 
 
-<a id="orgb70a9cb"></a>
+<a id="org39d4ba2"></a>
 
 ### Where
 
@@ -1461,7 +1400,7 @@ tab1.where('@row.even? && (g10 || qp10)').to_term
 ```
 
 
-<a id="org54a98c1"></a>
+<a id="orgcdbb9c1"></a>
 
 ### Order\_by
 
@@ -1502,11 +1441,11 @@ tab1.order_by(:code, :date!).to_aoa
 The interesting thing about `order_by` is that, while it ignores groups in its input, it adds group boundaries in the output table at those rows where the sort keys change. Thus, in each group, `:code` and `:date` are the same, and when either changes, `order_by` inserts a group boundary.
 
 
-<a id="org6562f48"></a>
+<a id="org42f5f3b"></a>
 
 ### Order\_with
 
-The `order_with` method is a convenient combination of `select` and `order_by`. It takes a single string expression as an argument to serve as a sort key&#x2014;one that would be valid as a select expression&#x2014;but with an optional trailing `!` to indicate reverse sort. The resulting table has an additional column called `:sort_key` with the expression evaluated for each row, and the table is sorted as with `order_by` on that column.
+The `order_with` method is a convenient combination of `select` and `order_by`. It takes a single string expression as an argument to serve as a sort key&mdash;one that would be valid as a select expression&mdash;but with an optional trailing `!` to indicate reverse sort. The resulting table has an additional column called `:sort_key` with the expression evaluated for each row, and the table is sorted as with `order_by` on that column.
 
 ```ruby
 tab1.order_with('price * shares').to_aoa
@@ -1552,7 +1491,7 @@ tab1.order_with('price * shares').to_aoa
 ```
 
 
-<a id="orgbd3e61e"></a>
+<a id="orgafd702c"></a>
 
 ### Group\_by
 
@@ -1600,7 +1539,7 @@ Here is a list of all the aggregate methods available. If the description restri
 Perhaps surprisingly, the `group_by` method ignores any groups in its input and results in no group boundaries in the output since each group formed by the implicit `order_by` on the grouping columns is collapsed into a single row.
 
 
-<a id="orgebcd7d8"></a>
+<a id="org8011899"></a>
 
 ### Join
 
@@ -1825,7 +1764,7 @@ Perhaps surprisingly, the `group_by` method ignores any groups in its input and 
         ```
 
 
-<a id="org654f7a8"></a>
+<a id="orga4ab702"></a>
 
 ### Set Operations
 
@@ -2110,7 +2049,7 @@ tab2.to_aoa
     ```
 
 
-<a id="orgd68c265"></a>
+<a id="orgfa42487"></a>
 
 ### Uniq (aka Distinct)
 
@@ -2142,7 +2081,7 @@ tab1.uniq.to_aoa
 ```
 
 
-<a id="org8b63b11"></a>
+<a id="orgc9ae228"></a>
 
 ### Remove groups with degroup!
 
@@ -2177,7 +2116,7 @@ tab1.degroup!.to_aoa
 ```
 
 
-<a id="org767e09e"></a>
+<a id="org256a6f1"></a>
 
 ## Formatting Tables
 
@@ -2188,7 +2127,7 @@ In addition, you can add any number of footers to a table, which appear at the e
 If the target output medium does not support a formatting directive or the directive does not make sense, it is simply ignored. For example, you can output an `org-mode` table as a String, and since `org-mode` does not support colors, any color directives are ignored. Some of the output targets are not strings, but ruby data structures, and for them, things such as alignment are irrelevant.
 
 
-<a id="org945b4a7"></a>
+<a id="org5acfb50"></a>
 
 ### Available Formatter Output Targets
 
@@ -2232,7 +2171,7 @@ If the target output medium does not support a formatting directive or the direc
     
     2.  To Org
     
-        This formatter is designed to format tables in a manner consistent with the way tables are drawn within Emacs Org Mode. It also uses nothing by ASCII characters to draw the table, but, the intersections of lines are represented by a `|` character. Embelishments such as color, bold, and so forth are ignored. When working in Org Mode, note that Emacs will convert an Array of Arrays into an Org Mode table, so when constructing tables programmatically, it may be better to use the `to_aoa` formatter shown below.
+        This formatter is designed to format tables in a manner consistent with the way tables are drawn within Emacs Org Mode. It also uses nothing by ASCII characters to draw the table, but, the outer border lines are represented by a `|` character rather than `+`; inner intersections of lines are still represented as `+` as for text. Embelishments such as color, bold, and so forth are ignored. When working in Org Mode, note that Emacs will convert an Array of Arrays into an Org Mode table, so when constructing tables programmatically, it may be better to use the `to_aoa` formatter shown below.
         
         ```ruby
         tab_a.to_org
@@ -2278,7 +2217,7 @@ If the target output medium does not support a formatting directive or the direc
     
     4.  To LaTeX
     
-        This formatter outputs a table in the form suitable for inclusion in a LaTeX document using the `logtable` package. Natualy it allows embelishments such as color and text styles to the full extent of LaTeX's formatting prowess.
+        This formatter outputs a table in the form suitable for inclusion in a LaTeX document using the `longtable` package. Natualy it allows embelishments such as color and text styles to the full extent of LaTeX's formatting prowess.
         
         ```ruby
         tab_b.to_latex
@@ -2323,11 +2262,11 @@ If the target output medium does not support a formatting directive or the direc
         ```
 
 
-<a id="orga5d8638"></a>
+<a id="org6089a7c"></a>
 
 ### Formatting Directives
 
-The formatting methods explained in the next section all take formatting directives as strings in which letters and other characters signify what formatting applies. For example, we may apply the formatting directive 'R,$' to numbers in a certain part of the table. Each of those characters, and in some cases a whole substring, is a single directive. They can appear in any order, so '$R,' and ',$R' are equivalent.
+The formatting methods explained in the next section all take formatting directives as strings in which letters and other characters signify what formatting applies. For example, we may apply the formatting directive 'R,$' to numbers in a certain part of the table. Each of those characters, and in some cases a whole substring, is a single directive. They can appear in any order, so `$R`, and `,$R` are equivalent.
 
 Here is a list of all the formatting directives that apply to each cell type:
 
@@ -2335,68 +2274,68 @@ Here is a list of all the formatting directives that apply to each cell type:
 
     For a string element, or any an element of any type (since these are applied after the element has been converted to a String), the following instructions are valid.
     
-    -   **u:** convert the element to all lowercase [default false],
-    -   **U:** convert the element to all uppercase [default false],
-    -   **t:** title case the element, that is, upcase the initial letter in each word and lower case the other letters [default false],
-    -   **B ~B:** make the element bold, or turn off bold [default ~B]
-    -   **I ~I:** make the element italic, or turn off italic [default ~I]
-    -   **R:** align the element on the right of the column [default off]
-    -   **L:** align the element on the left of the column [default on]
-    -   **C:** align the element in the center of the column [default off]
-    -   **c[<color\_spec>]:** render the element in the given color; the <color\_spec> can have the form fgcolor, fgcolor.bgcolor, or .bgcolor, to set the foreground or background colors respectively, and each of those can be an ANSI or X11 color name in addition to the special color, 'none', which keeps the output's default color [default none].
-    -   **\_ ~\_:** underline the element, or turn off underline [default off]
-    -   **\* ~\*:** cause the element to blink, or turn off blink [default off]
+    -   **`u`:** convert the element to all lowercase [default false],
+    -   **`U`:** convert the element to all uppercase [default false],
+    -   **`t`:** title case the element, that is, upcase the initial letter in each word and lower case the other letters [default false],
+    -   **`B`, `~B`:** make the element bold, or turn off bold [default =~B=]
+    -   **`I`, `~I`:** make the element italic, or turn off italic [default =~I=]
+    -   **`R`:** align the element on the right of the column [default off]
+    -   **`L`:** align the element on the left of the column [default on]
+    -   **`C`:** align the element in the center of the column [default off]
+    -   **`c[<color_spec>]`:** render the element in the given color; the `<color_spec>` can have the form fgcolor, fgcolor.bgcolor, or .bgcolor, to set the foreground or background colors respectively, and each of those can be an ANSI or X11 color name in addition to the special color, 'none', which keeps the output's default color [default none].
+    -   **`_`:** underline the element, or turn off underline [default off]
+    -   **`*`:** cause the element to blink, or turn off blink [default off]
     
-    For example, the directive 'tCc[red.yellow]' would title-case the element, center it, and color it red on a yellow background. The directives that are boolean have negating forms so that, for example, if bold is turned on for all columns of a given type, it can be countermanded in formatting directives for particular columns.
+    For example, the directive '`tCc[red.yellow]`' would title-case the element, center it, and color it red on a yellow background. The directives that are boolean have negating forms so that, for example, if bold is turned on for all columns of a given type, it can be countermanded in formatting directives for particular columns.
 
 2.  Numeric
 
     For a numeric element, all the instructions valid for string are available, in addition to the following:
     
-    -   **, ~,:** insert grouping commas, or do not insert grouping commas [default ~,],
-    -   **$ ~$:** format the number as currency according to the locale, or not [default ~$],
-    -   **m.n:** include at least m digits before the decimal point, padding on the left with zeroes as needed, and round the number to the n decimal places and include n digits after the decimal point, padding on the right with zeroes as needed. If n is negative, the value will be rounded to the left of the decimal point: e.g., if n is -2, the number will be rounded to the nearest hundred, if -3, to the nearest thousand, etc. [default 0.0]
-    -   **H:** convert the number (assumed to be in units of seconds) to `HH:MM:SS.ss` form. So a column that is the result of subtracting two :datetime forms will result in a :numeric expressed as seconds and can be displayed in hours, minutes, and seconds with this formatting instruction. If this directive is included, all other numeric directives will be ignored. [default off]
+    -   **`,`,  `~,`:** insert grouping commas, or do not insert grouping commas (default `~,`),
+    -   **`$`, `~$`:** format the number as currency according to the locale, or not (default `~$`),
+    -   **`m.n`:** include at least m digits before the decimal point, padding on the left with zeroes as needed, and round the number to the n decimal places and include n digits after the decimal point, padding on the right with zeroes as needed. If n is negative, the value will be rounded to the left of the decimal point: e.g., if n is -2, the number will be rounded to the nearest hundred, if -3, to the nearest thousand, etc. (default `0.0`)
+    -   **`H`:** convert the number (assumed to be in units of seconds) to `HH:MM:SS.ss` form. So a column that is the result of subtracting two :datetime forms will result in a :numeric expressed as seconds and can be displayed in hours, minutes, and seconds with this formatting instruction. If this directive is included, all other numeric directives will be ignored. (default off)
     
-    For example, the directive 'R5.0c[blue]' would right-align the numeric element, pad it on the left with zeros, and color it blue.
+    For example, the directive `R5.0c[blue]` would right-align the numeric element, pad it on the left with zeros, and color it blue.
 
 3.  DateTime
 
     For a `DateTime`, all the instructions valid for string are available, in addition to the following:
     
-    -   **d[fmt]:** apply the format to a `Date` or a `DateTime` that is a whole day, that is that has no or zero hour, minute, and second components, where fmt is a valid format string for `Date#strftime`, otherwise, the datetime will be formatted as an ISO 8601 string, YYYY-MM-DD.
-    -   **D[fmt]:** apply the format to a datetime that has at least a non-zero hour component where fmt is a valid format string for Date#strftime, otherwise, the datetime will be formatted as an ISO 8601 string, YYYY-MM-DD HH:MM:SS.
+    -   **`d[fmt]`:** apply the format to a `Date` or a `DateTime` that is a whole day, that is that has no or zero hour, minute, and second components, where fmt is a valid format string for `Date#strftime`, otherwise, the datetime will be formatted as an ISO 8601 string, `YYYY-MM-DD`.
+    -   **`D[fmt]`:** apply the format to a datetime that has at least a non-zero hour component where fmt is a valid format string for `Date#strftime`, otherwise, the datetime will be formatted as an ISO 8601 string, `YYYY-MM-DD HH:MM:SS`.
     
-    For example, 'c[pink]d[%b %-d, %Y]C', would format a date element like 'Sep 22, 1957', center it, and color it pink.
+    For example, `c[pink]d[%b %-d, %Y]C`, would format a date element like `Sep 22, 1957`, center it, and color it pink.
 
 4.  Boolean
 
     For a boolean cell, all the instructions valid for string are available, in addition to the following:
     
-    -   **Y:** print true as `Y` and false as `N`,
-    -   **T:** print true as `T` and false as `F` [this is the default],
-    -   **X:** print true as `X` and false as an empty string '',
-    -   **b[xxx,yyy]:** print true as the string given as `xxx` and false as the string given as `yyy`,
-    -   **c[tcolor,fcolor]:** color a true element with `tcolor` and a false element with `fcolor`. Each of the colors may be specified in the same manner as colors for strings described above.
+    -   **`Y`:** print true as `Y` and false as `N`,
+    -   **`T`:** print true as `T` and false as `F` (this is the default),
+    -   **`X`:** print true as `X` and false as an empty string `""`,
+    -   **`b[<xxx>,<yyy>]`:** print true as the arbitrary string given as `<xxx>` and false as the arbitrary string given as `<yyy>`,
+    -   **`c[<tcolor>,<fcolor>]`:** color a true element with `<tcolor>` and a false element with `<fcolor>`. Each of the colors may be specified in the same manner as colors for strings described above.
     
-    For example, the directive 'b[Yeppers,Nope]c[green.pink,red.pink]' would render a true boolean as `Yeppers` colored green on pink and render a false boolean as `Nope` colored red on pink. See [Yeppers](https://www.youtube.com/watch?v=oLdFFD8II8U) for additional information.
+    For example, the directive `b[Yeppers,Nope]c[green.pink,red.pink]` would render a true boolean as `Yeppers` colored green on pink and render a false boolean as `Nope` colored red on pink. See [Yeppers](https://www.youtube.com/watch?v=oLdFFD8II8U) for additional information.
 
 5.  NilClass
 
     By default, `nil` elements are rendered as blank cells, but you can make them visible with the following, and in that case, all the formatting instructions valid for strings are also available:
     
-    -   **n[niltext]:** render a `nil` item with the given niltext [default ''].
+    -   **`n[<niltext>]`:** render a `nil` item with the given arbitrary string `<niltext>` (default `""`).
     
-    For example, you might want to use 'n[-]Cc[purple]' to make nils visible as a centered purple hyphen.
+    For example, you might want to use `n[-]Cc[purple]` to make =nil=s visible as a centered purple hyphen.
 
 
-<a id="org11bef41"></a>
+<a id="orga50773a"></a>
 
 ### The `format` and `format_for` methods
 
 Formatters take only two kinds of methods, those that attach footers to a table, which are discussed in the next section, and those that specify formatting for table cells, which are the subject of this section.
 
-To set formatting directives for all locations in a table at once, use the `format` method; to set formatting directives for a particular location in the table, use the `format_for` method, giving the location as the first parameter. See below at [Table Locations](#org810c2fb) for an explanation of all the locations available.
+To set formatting directives for all locations in a table at once, use the `format` method; to set formatting directives for a particular location in the table, use the `format_for` method, giving the location as the first parameter. See below at for an explanation of all the locations available.
 
 Other than that first parameter, the two methods take the same types of parameters. The remaining parameters are hash-like parameters that use either a column name or a type as the key and a string with the formatting directives to apply as the value. If a key represents neither a column name nor a valid type, it is silently ignored. The following example says to set the formatting for all locations in the table and to format all numeric fields as strings that are rounded to whole numbers (the '0.0' part), that are right-aligned (the 'R' part), and have grouping commas inserted (the ',' part). But the `:id` column is numeric, and the second parameter overrides the formatting for numerics in general and calls for the `:id` column to be padded to three digits with zeros on the left (the '3.0' part) and to be centered (the 'C' part).
 
@@ -2430,16 +2369,16 @@ But the `format_for` methods affected two "locations": the "body" and the "heade
 
 All the other cells in the table, namely the cells in the `:join_date` column, had the default formatting applied.
 
-1.  Table Locations
+1.  Locations within a Table
 
     In the `format_for` formatting method, the first argument names a "location." The table is divided into several locations for which separate formatting directives may be given. These locations are identified by the following symbols:
     
-    -   **:header:** the first row of the output table containing the headers,
-    -   **:footer:** all rows of the table's footers,
-    -   **:gfooter:** all rows of the table's group footers,
-    -   **:body:** all the data rows of the table, that is, those that are neither part of the header, footers, or gfooters,
-    -   **:bfirst:** the first row of the table's body, and
-    -   **:gfirst:** the first row in each group in the table's body.
+    -   **`:header`:** the first row of the output table containing the headers,
+    -   **`:footer`:** all rows of the table's footers,
+    -   **`:gfooter`:** all rows of the table's group footers,
+    -   **`:body`:** all the data rows of the table, that is, those that are neither part of the header, footers, or group footers,
+    -   **`:bfirst`:** the first row of the table's body, and
+    -   **`:gfirst`:** the first row in each group in the table's body.
 
 2.  Location priority
 
@@ -2489,13 +2428,13 @@ All the other cells in the table, namely the cells in the `:join_date` column, h
     The `string: 'R'` directive causes all the cells to be right-aligned except `:id` which specifies centering for the `:id` column only. The `n[N/A]` directive for specifies how nil are displayed in the numeric column, `:salary`, but not for other nils, such as in the last row of the `:join_date` column.
 
 
-<a id="org53ea8ff"></a>
+<a id="org42c08e8"></a>
 
 ### Footers
 
 1.  Adding Footers
 
-    You can call the `foot`, `gfoot`, `footer,` or `gfooter`, methods on `Formatter` objects to add footers and group footers. Note that all of these methods return a `Footer` object that can be accessed to extract the computed values. All of these methods return the `FatTable::Footer` object so constructed. It can be used to access the values and other attributes of the footer computed. Their signatures are:
+    You can call the `foot`, `gfoot`, `footer,` or `gfooter`, methods on `Formatter` objects to add footers and group footers. All of these methods return the `FatTable::Footer` object so constructed. It can be used to access the values and other attributes of the footer computed. Their signatures are:
     
     -   **`foot(label: label, label_col: nil, **agg_cols)`:** where `label` is a label to be placed in the column with header `label_col`, or, if ommitted, in the first cell of the footer (unless that column is named as one of the `agg_cols`, in which case the label is ignored), and `**agg_cols` is zero or more hash-like parameters with a column symbol as a key and a valid aggregate as the value. This causes a table-wide header to be added at the bottom of the table applying `agg`, to the `agg_cols`. A table can have any number of footers attached, and they will appear at the bottom of the output table in the order they are given.
     
@@ -2546,16 +2485,16 @@ All the other cells in the table, namely the cells in the `:join_date` column, h
 
     When adding a footer with the above methods, you can specify an aggregator for each column named in the `agg_cols` parameter. There are several candidates for what you can use for an aggregator:
     
-    -   **Symbol:** one of the following built-in aggregators: :first, :last, :range, :sum, :count, :min, :max, :avg, :var, :pvar, :dev, :pdev, :any?, :all?, :none?, and :one?.
+    -   **Symbol:** one of the following built-in aggregators: `:first`, `:last`, `:range`, `:sum`, `:count`, `:min`, `:max`, `:avg`, `:var`, `:pvar`, `:dev`, `:pdev`, `:any?`, `:all?`, `:none?`, and `:one?`.
         -   The symbols ending in a question mark are valid only for boolean columns;
-        -   :count, :first, and :last work with any column type,
-        -   :min, :max, and :range work with all types except boolean;
-        -   :sum, works only with numeric columns, and
-        -   :avg, :var, :dev, :pvar, and :pdev work with numeric or datetime columns. In the case of datetime columns, these aggrgators convert the dates to julian date numbers, perform the calculation, then convert the result back to a datetime object. Apart from the built-in aggregators, you could define your own by opening the FatTable::Column class and adding a suitable instance method. In that case, the symbol could also refer to the method you defined.
+        -   `:count`, `:first`, and `:last` work with any column type,
+        -   `:min`, `:max`, and `:range` work with all types except boolean;
+        -   `:sum`, works only with numeric columns, and
+        -   `:avg`, `:var`, `:dev`, `:pvar`, and `:pdev` work with numeric or datetime columns. In the case of datetime columns, these aggregators convert the dates to julian date numbers, perform the calculation, then convert the result back to a datetime object. Apart from the built-in aggregators, you could define your own by opening the `FatTable::Column` class and adding a suitable instance method. In that case, the symbol could also refer to the method you defined.
     -   **String:** using a string as an aggrgegator can result in:
         -   the string being converted to an object matching the type of the column (for example, using '$1,888' in a numeric column puts the constant number 1888 in the footer field, using '1957-09-22' puts the fixed date in the field, etc.)
         -   if the string cannot be parsed as a valid object matching the column's type, it is placed literally in the footer field (for example, using '(estimated)' can be used to add additional information to the footer)
-    -   **Ruby object:** you can put a number in a numeric footer field, a DateTime object in a datetime footer field, or a true or false in a boolean footer field;
+    -   **Ruby object:** you can put a `Numeric` in a numeric footer field, a `Date` or `DateTime` object in a datetime footer field, or a true or false in a boolean footer field;
     -   **A Lambda:** finally, you can provide a lambda for performing arbitrary calculations and placing the result in the footer field. The number of arguments the lambda takes can vary:
         -   If the lambda is used in an ordinary footer column, it can take 0, 1, or 2 arguments: (1) the first argument, if given, will be set to the FatTable::Column object for that column and (2) the second argument, if given, will be set to the Footer object itself.
         -   If the lambda is used in a group footer column, it can 0, 1, 2, or 3 arguments: (1) the first argument, if given, will be set to the group's 0-based index number, (2) the second argument, if given, will be set to a FatTable::Column object consisting of those items in the group's column, and (3) the third argument, if given, will be set to the Footer object itself.
@@ -2695,7 +2634,7 @@ All the other cells in the table, namely the cells in the `:join_date` column, h
         +-------------+-------+-----+------------+--------+-------------+
         |     Average |       |  31 |            | 31,429 | 29-DEC-2005 |
         +-------------+-------+-----+------------+--------+-------------+
-        | Report Date |       |   8 |            |        | 28-DEC-2025 |
+        | Report Date |       |   8 |            |        | 25-OCT-2026 |
         +=============+=======+=====+============+========+=============+
         ```
         
@@ -2725,7 +2664,7 @@ All the other cells in the table, namely the cells in the `:join_date` column, h
         +----------------+-------+-----+------------+--------+-------------+
         |        Average |       |  31 |            | 31,429 | 29-DEC-2005 |
         +----------------+-------+-----+------------+--------+-------------+
-        | Lottery Winner |       |   8 |            |        | 9           |
+        | Lottery Winner |       |   8 |            |        | 1           |
         +================+=======+=====+============+========+=============+
         ```
     
@@ -2809,7 +2748,7 @@ All the other cells in the table, namely the cells in the `:join_date` column, h
         ```
 
 
-<a id="org102d235"></a>
+<a id="orgf528cbb"></a>
 
 ### Invoking Formatters
 
@@ -2945,7 +2884,7 @@ As the examples show, one way to invoke the formatting methods is simply to call
     ```
 
 
-<a id="orga37c582"></a>
+<a id="org951054d"></a>
 
 # Development
 
@@ -2954,7 +2893,7 @@ After checking out the repo, run \`bin/setup\` to install dependencies. Then, ru
 To install this gem onto your local machine, run \`bundle exec rake install\`.
 
 
-<a id="org6d38bff"></a>
+<a id="org0f0d08d"></a>
 
 # Contributing
 
