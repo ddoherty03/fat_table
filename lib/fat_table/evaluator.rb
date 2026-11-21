@@ -51,13 +51,12 @@ module FatTable
     # when a string gets into an otherwise numeric column because the column
     # is set to tolerant.
     #
-    # rubocop:disable  Security/Eval
+    # rubocop:disable-next  Security/Eval
     def evaluate(expr = '', locals: {})
       eval(expr, local_vars(binding, locals))
     rescue NoMethodError, TypeError
       nil
     end
-    # rubocop:enable  Security/Eval
 
     private
 

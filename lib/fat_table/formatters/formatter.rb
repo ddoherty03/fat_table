@@ -1208,9 +1208,8 @@ module FatTable
       # If this Formatter targets a ruby data structure (e.g., AoaFormatter), we
       # eval the string to get the object.
       #
-      # rubocop:disable Security/Eval
+      # rubocop:disable-next Security/Eval
       evaluate? ? eval(result) : result
-      # rubocop:enable Security/Eval
     end
 
     private

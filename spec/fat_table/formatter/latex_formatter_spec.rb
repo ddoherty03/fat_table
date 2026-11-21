@@ -84,17 +84,18 @@ module FatTable
       end
 
       it 'outputs valid LaTeX with default formatting' do
-        tmp = File.open("#{__dir__}/../../tmp/example1.tex", 'w')
-        ltx = LaTeXFormatter.new(tab, document: true).output
-        result = false
-        Dir.chdir(File.dirname(tmp.path)) do
-          tmp << ltx
-          tmp.flush
-          result = system("#{ltxcmd} #{tmp.path} >latex.err 2>&1")
-          result &&= system("#{ltxcmd} #{tmp.path} >>latex.err 2>&1")
+        File.open("#{__dir__}/../../tmp/example1.tex", 'w') do |tmp|
+          ltx = LaTeXFormatter.new(tab, document: true).output
+          result = false
+          Dir.chdir(File.dirname(tmp.path)) do
+            tmp << ltx
+            tmp.flush
+            result = system("#{ltxcmd} #{tmp.path} >latex.err 2>&1")
+            result &&= system("#{ltxcmd} #{tmp.path} >>latex.err 2>&1")
+          end
+          expect(ltx.class).to eq(String)
+          expect(result).to be true
         end
-        expect(ltx.class).to eq(String)
-        expect(result).to be true
       end
 
       it 'is able to set format and output LaTeX with block' do
@@ -134,15 +135,16 @@ module FatTable
         expect(ltx).to match(/\bGroup Total\b/)
         expect(ltx).to match(/\bGrp Std Dev\b/)
         expect(ltx).to match(/\\textcolor{Tomato1}{\\bfseries{\\itshape{Std Dev}}/)
-        tmp = File.open("#{__dir__}/../../tmp/example2.tex", 'w')
-        result = false
-        Dir.chdir(File.dirname(tmp.path)) do
-          tmp << ltx
-          tmp.flush
-          result = system("#{ltxcmd} #{tmp.path} >/dev/null 2>&1")
-          result &&= system("#{ltxcmd} #{tmp.path} >/dev/null 2>&1")
+        File.open("#{__dir__}/../../tmp/example2.tex", 'w') do |tmp|
+          result = false
+          Dir.chdir(File.dirname(tmp.path)) do
+            tmp << ltx
+            tmp.flush
+            result = system("#{ltxcmd} #{tmp.path} >/dev/null 2>&1")
+            result &&= system("#{ltxcmd} #{tmp.path} >/dev/null 2>&1")
+          end
+          expect(result).to be true
         end
-        expect(result).to be true
       end
     end
 

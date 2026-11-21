@@ -536,11 +536,11 @@ module FatTable
             .to eq [:code, :date, :info, :price, :raw, :ref, :shares]
           expect(tab.column(:ref).type).to eq('Numeric')
           expect(tab.column(:raw).type).to eq('Numeric')
-          expect(tab[:ref].select { |i| i.is_a?(String) }).not_to be_empty
-          expect(tab[:raw].select { |i| i.is_a?(String) }).not_to be_empty
-          expect(tab[:date].select { |i| i.is_a?(String) }).to be_empty
-          expect(tab[:price].select { |i| i.is_a?(String) }).to be_empty
-          expect(tab[:shares].select { |i| i.is_a?(String) }).to be_empty
+          expect(tab[:ref].grep(String)).not_to be_empty
+          expect(tab[:raw].grep(String)).not_to be_empty
+          expect(tab[:date].grep(String)).to be_empty
+          expect(tab[:price].grep(String)).to be_empty
+          expect(tab[:shares].grep(String)).to be_empty
         end
 
         it 'creates from an Org string with groups' do
@@ -557,11 +557,11 @@ module FatTable
           expect(sub_cols[3].size).to eq(3)
           expect(tab.column(:ref).type).to eq('Numeric')
           expect(tab.column(:raw).type).to eq('Numeric')
-          expect(tab[:ref].select { |i| i.is_a?(String) }).not_to be_empty
-          expect(tab[:raw].select { |i| i.is_a?(String) }).not_to be_empty
-          expect(tab[:date].select { |i| i.is_a?(String) }).to be_empty
-          expect(tab[:price].select { |i| i.is_a?(String) }).to be_empty
-          expect(tab[:shares].select { |i| i.is_a?(String) }).to be_empty
+          expect(tab[:ref].grep(String)).not_to be_empty
+          expect(tab[:raw].grep(String)).not_to be_empty
+          expect(tab[:date].grep(String)).to be_empty
+          expect(tab[:price].grep(String)).to be_empty
+          expect(tab[:shares].grep(String)).to be_empty
         end
 
         it 'creates from an Org file' do
