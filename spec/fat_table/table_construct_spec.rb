@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'fileutils'
+require 'tempfile'
 
 # Specs to test the building of Table from various inputs.
 module FatTable
@@ -212,8 +213,11 @@ module FatTable
       # end
 
       it 'creates a Table from a CSV file' do
-        File.write('/tmp/junk.csv', csv_body)
-        tab = Table.from_csv_file('/tmp/junk.csv')
+        tab = Tempfile.create(['fat_table', '.csv']) do |file|
+          file.write(csv_body)
+          file.close
+          Table.from_csv_file(file.path)
+        end
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to be > 10
         expect(tab.headers.sort)
@@ -298,8 +302,11 @@ module FatTable
       end
 
       it 'creates from an Org file' do
-        File.write('/tmp/junk.org', org_body)
-        tab = Table.from_org_file('/tmp/junk.org')
+        tab = Tempfile.create(['fat_table', '.org']) do |file|
+          file.write(org_body)
+          file.close
+          Table.from_org_file(file.path)
+        end
         expect(tab.class).to eq(Table)
         expect(tab.rows.size).to be > 10
         expect(tab.rows[0].keys.sort)
@@ -565,8 +572,11 @@ module FatTable
         end
 
         it 'creates from an Org file' do
-          File.write('/tmp/junk.org', org_body)
-          tab = Table.from_org_file('/tmp/junk.org', ref: '~', raw: '~', shares: '~')
+          tab = Tempfile.create(['fat_table', '.org']) do |file|
+            file.write(org_body)
+            file.close
+            Table.from_org_file(file.path, ref: '~', raw: '~', shares: '~')
+          end
           expect(tab.class).to eq(Table)
           expect(tab.rows.size).to be > 10
           expect(tab.rows[0].keys.sort)

@@ -162,7 +162,7 @@ module FatTable
         it 'lambda converts incompatible types to inspect strings' do
           foot = Footer.new(tab, label: 'Summary', label_col: :s)
           foot.add_value(:a, ->(_c, f) { f.table })
-          expect(foot[:a]).to match(/FatTable::Table/)
+          expect(foot[:a]).to include('FatTable::Table')
         end
       end
 
@@ -462,10 +462,10 @@ module FatTable
 
         it 'lambda converts incompatible types to inspect strings' do
           foot.add_value(:shares, ->(_k, _c, f) { f.table })
-          expect(foot[:shares][0]).to match(/FatTable::Table/)
-          expect(foot[:shares][1]).to match(/FatTable::Table/)
-          expect(foot[:shares][2]).to match(/FatTable::Table/)
-          expect(foot[:shares][3]).to match(/FatTable::Table/)
+          expect(foot[:shares][0]).to include('FatTable::Table')
+          expect(foot[:shares][1]).to include('FatTable::Table')
+          expect(foot[:shares][2]).to include('FatTable::Table')
+          expect(foot[:shares][3]).to include('FatTable::Table')
         end
       end
     end

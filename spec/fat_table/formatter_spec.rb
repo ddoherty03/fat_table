@@ -25,7 +25,7 @@ module FatTable
       it 'produces just headers on an empty table with headers' do
         empty_tab = Table.new(:a, :b, :c, :d)
         out = empty_tab.to_text
-        expect(out).to match(/\| A \| B \|/)
+        expect(out).to include('| A | B |')
         expect(out.split("\n").size).to eq(3)
       end
 
@@ -36,7 +36,7 @@ module FatTable
           f.sum_gfooter(:d)
         end
         expect(out).to match(/\| A *\| B \|/)
-        expect(out).to match(/\| Total \|/)
+        expect(out).to match('| Total |')
         expect(out.split("\n").size).to eq(5)
       end
 

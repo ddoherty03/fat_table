@@ -201,8 +201,8 @@ module FatTable
           tab << r
         end
         out = tab.to_term { |f| f.format_for(:body, numeric: 'C,0.1') }
-        expect(out).to match(/11.9/)
-        expect(out).to match(/118186\.4/)
+        expect(out).to include('11.9')
+        expect(out).to include('118186.4')
       end
     end
 

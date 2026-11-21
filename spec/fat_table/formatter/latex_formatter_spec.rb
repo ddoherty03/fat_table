@@ -83,7 +83,7 @@ module FatTable
         }.to raise_error(/invalid color 'Yeller'/)
       end
 
-      it 'outputs valid LaTeX with default formatting' do
+      it 'outputs valid LaTeX with default formatting', :latex do
         File.open("#{__dir__}/../../tmp/example1.tex", 'w') do |tmp|
           ltx = LaTeXFormatter.new(tab, document: true).output
           result = false
@@ -98,7 +98,7 @@ module FatTable
         end
       end
 
-      it 'is able to set format and output LaTeX with block' do
+      it 'is able to set format and output LaTeX with block', :latex do
         fmt = LaTeXFormatter.new(tab, document: true) do |f|
           f.format(
             ref: '5.0',
@@ -183,7 +183,7 @@ module FatTable
           f.format(price: '0.4', shares: '0.0,', cost: '0.2,', cumulative: '0.2,')
         end
         expect(tab_latex).to be_an(String)
-        expect(tab_latex).to match(/longtable/)
+        expect(tab_latex).to include('longtable')
       end
     end
   end
