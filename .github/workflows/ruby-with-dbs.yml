@@ -65,7 +65,7 @@ jobs:
           bundler-cache: true
 
       - name: Show lint versions
-        run: bundle exec rubocop --version --verbose
+        run: bundle exec rubocop --verbose
 
       - name: List installed gems
         run: |
