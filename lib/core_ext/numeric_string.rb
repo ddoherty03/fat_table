@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'debug'
-
 # This refinement contains methods that extend the String class to massage
 # strings that represent numbers, such as adding commas, pre- and
 # post-padding, etc.

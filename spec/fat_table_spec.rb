@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+require 'open3'
+require 'rbconfig'
+
 RSpec.describe FatTable do
   it 'has a version number' do
     expect(FatTable::VERSION).not_to be_nil
@@ -161,5 +164,17 @@ RSpec.describe FatTable do
       +===============+============+======+==============+=========+======+
     EOT
     expect(txt).to eq(expected)
+  end
+
+  it 'does not activate a debugger when loaded by an application' do
+    output, error, status = Open3.capture3(
+      RbConfig.ruby,
+      '-Ilib',
+      '-rfat_table',
+      '-e',
+      'abort "debugger activated" if defined?(DEBUGGER__); puts "loaded"',
+    )
+    expect(status.success?).to be(true), error
+    expect(output).to include('loaded')
   end
 end
