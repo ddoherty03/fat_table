@@ -134,7 +134,7 @@ module FatTable
         expect(ltx).to match(/\bZMPEF1\b/)
         expect(ltx).to match(/\bGroup Total\b/)
         expect(ltx).to match(/\bGrp Std Dev\b/)
-        expect(ltx).to match(/\\textcolor{Tomato1}{\\bfseries{\\itshape{Std Dev}}/)
+        expect(ltx).to include('\textcolor{Tomato1}{\bfseries{\itshape{Std Dev}}')
         File.open("#{__dir__}/../../tmp/example2.tex", 'w') do |tmp|
           result = false
           Dir.chdir(File.dirname(tmp.path)) do
