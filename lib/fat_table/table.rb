@@ -821,6 +821,7 @@ module FatTable
     # Return a new Table sorting the rows of this Table on the possibly multiple
     # keys given in +sort_heads+ as an Array of Symbols. Append a ! to the
     # symbol name to indicate reverse sorting on that column.
+    # Rows with equal sort keys retain their original order in either direction.
     #
     #   tab.order_by(:ref, :date) => sorted table
     #   tab.order_by(:date!) => reverse sort on :date
@@ -830,7 +831,7 @@ module FatTable
     def order_by(*sort_heads)
       # Sort the rows in order and add to new_rows.
       key_hash = partition_sort_keys(sort_heads)
-      new_rows = rows.sort do |r1, r2|
+      new_rows = rows.each_with_index.sort { |(r1, index1), (r2, index2)|
         # Set the sort keys based on direction
         key1 = []
         key2 = []
@@ -850,8 +851,9 @@ module FatTable
         # If there are any nils, <=> will return nil, and we have to use the
         # special comparison method, compare_with_nils, instead.
         result = (key1 <=> key2)
-        result.nil? ? compare_with_nils(key1, key2) : result
-      end
+        result = compare_with_nils(key1, key2) if result.nil?
+        result.zero? ? index1 <=> index2 : result
+      }.map(&:first)
 
       # Add the new_rows to the table, but mark a group boundary at the points
       # where the sort key changes value.  NB: I use self.class.new here

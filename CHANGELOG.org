@@ -6,6 +6,9 @@
    user would find useful.
 5. Give each heading a version number and an inactive date (C-c ! is useful here).
 
+* Version 1.1.0 [2026-11-23 Mon]
+- ~order_by~ and ~order_with~ now implement stable sorting.
+
 * Version 1.0.1 [2026-11-21 Sat]
 - Eliminate loading of debug which interferes with Windows use.
 

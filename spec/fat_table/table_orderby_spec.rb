@@ -35,6 +35,51 @@ module FatTable
       end
     end
 
+    describe 'stable order_by' do
+      let(:tab) do
+        Table.from_aoh([
+          { ref: 'first', category: 'b', rank: 2 },
+          { ref: 'second', category: 'a', rank: nil },
+          { ref: 'third', category: 'b', rank: 2 },
+          { ref: 'fourth', category: 'a', rank: 1 },
+          { ref: 'fifth', category: 'a', rank: nil },
+          { ref: 'sixth', category: 'b', rank: 1 },
+        ])
+      end
+
+      it 'preserves input order within tied keys without changing the source' do
+        sorted = tab.order_by(:category)
+
+        expect(sorted[:ref]).to eq(%w[second fourth fifth first third sixth])
+        expect(sorted.boundaries).to eq([2, 5])
+        expect(tab[:ref]).to eq(%w[first second third fourth fifth sixth])
+      end
+
+      it 'preserves input order within descending tied keys' do
+        sorted = tab.order_by(:category!)
+
+        expect(sorted[:ref]).to eq(%w[first third sixth second fourth fifth])
+        expect(sorted.boundaries).to eq([2, 5])
+      end
+
+      it 'preserves nil and non-nil ties in both directions' do
+        ascending = tab.order_by(:rank)
+        descending = tab.order_by(:rank!)
+
+        expect(ascending[:ref]).to eq(%w[second fifth fourth sixth first third])
+        expect(descending[:ref]).to eq(%w[first third fourth sixth second fifth])
+        expect(ascending.boundaries).to eq([1, 3, 5])
+        expect(descending.boundaries).to eq([1, 3, 5])
+      end
+
+      it 'uses all requested keys before breaking ties for mixed directions' do
+        sorted = tab.order_by(:category, :rank!)
+
+        expect(sorted[:ref]).to eq(%w[fourth second fifth first third sixth])
+        expect(sorted.boundaries).to eq([0, 2, 4, 5])
+      end
+    end
+
     describe 'order_by with nils' do
       let!(:tab) do
         aoh = [
