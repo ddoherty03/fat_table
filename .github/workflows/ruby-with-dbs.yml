@@ -42,7 +42,7 @@ jobs:
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install system packages
         # Needed for compiling Ruby gems and SQLite/Postgres native extensions
@@ -150,7 +150,7 @@ jobs:
         os: [macos-latest, windows-latest]
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
