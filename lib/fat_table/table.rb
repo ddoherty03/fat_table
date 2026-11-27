@@ -1014,12 +1014,14 @@ module FatTable
         end
       result = empty_dup(result_cols)
       normalize_boundaries
+      group_boundaries = boundaries
+      group_index = 0
 
       rows.each_with_index do |old_row, old_k|
         # Set the group number in the before hook and run the hook with the
         # local variables set to the row before the new row is evaluated.
-        grp = row_index_to_group_index(old_k)
-        ev.update_ivars(row: old_k + 1, group: grp)
+        group_index += 1 while old_k > group_boundaries[group_index]
+        ev.update_ivars(row: old_k + 1, group: group_index + 1)
         ev.eval_before_hook(locals: old_row)
         # Compute the new row.
         new_row = {}
@@ -1086,9 +1088,11 @@ module FatTable
       expr = expr.to_s
       result = empty_dup
       ev = Evaluator.new(ivars: { row: 0, group: 0 })
+      group_boundaries = boundaries
+      group_index = 0
       rows.each_with_index do |row, k|
-        grp = row_index_to_group_index(k)
-        ev.update_ivars(row: k + 1, group: grp)
+        group_index += 1 while k > group_boundaries[group_index]
+        ev.update_ivars(row: k + 1, group: group_index + 1)
         ev.eval_before_hook(locals: row)
         result << row if ev.evaluate(expr, locals: row)
         ev.eval_after_hook(locals: row)
