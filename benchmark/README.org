@@ -33,6 +33,61 @@
   changes the transformation workload; a value greater than BENCH_ROWS gives
   a single implicit group.
 
+* Join baseline
+  Run the separate join workload with a row count per input table:
+
+  #+begin_src sh
+    scripts/benchmark --joins
+    scripts/benchmark 100 --joins
+    BENCH_ROWS=200 bundle exec ruby -Ilib benchmark/joins.rb
+  #+end_src
+
+  Join mode defaults to 200 rows per input. The last command emits raw JSON
+  samples and output digests. Both tables have two columns, duplicate keys
+  (two rows per key), and approximately half their key ranges overlap.
+  The benchmark covers natural inner, symbol-based inner, and natural full
+  outer joins. It checks complete output rows and ordering against independently
+  constructed expected results after warmup and every measured run.
+  Setup, validation, output extraction, and hashing are outside timing;
+  construction of the joined table is included.
+
+  Baseline: Ruby 3.4.1, library revision =add96a3=, 2026-11-27. Three samples
+  after warmup, medians below. Raw 200-row results are saved in
+  =joins-baseline-200.jsonl= for later digest and allocation comparisons.
+
+  | Operation     | 100 rows (ms) | 200 rows (ms) | 200-row allocations | Output rows (200) |
+  |---------------+---------------+---------------+---------------------+-------------------|
+  | natural_inner |        77.114 |       308.065 |             1629228 |               200 |
+  | symbol_inner  |        75.238 |       299.941 |             1629232 |               200 |
+  | natural_full  |        78.467 |       309.386 |             1685852 |               400 |
+
+  Doubling both inputs approximately quadruples elapsed time in this workload.
+  The baseline implementation compared every pair of rows. These synthetic
+  results do not measure real byr joins.
+
+** Indexed equality joins [2026-11-27 Fri]
+   Natural and symbol-based equality joins now index right-hand rows by join
+   keys, preserving their original order within each bucket. Arbitrary string
+   conditions, cross joins, and unsupported key classes retain the evaluator
+   path. Integer/decimal keys and Date/DateTime keys are normalized for hashing;
+   candidate matches are still checked with Ruby's ==.
+
+   Same 200-row workload and Ruby 3.4.1, three samples after warmup:
+
+   | Operation     | Before (ms) | After (ms) | Speedup | Before allocations | After allocations |
+   |---------------+-------------+------------+---------+--------------------+-------------------|
+   | natural_inner |     308.065 |      2.801 |  110.0x |            1629228 |             30140 |
+   | symbol_inner  |     299.941 |      2.807 |  106.9x |            1629232 |             30145 |
+   | natural_full  |     309.386 |      7.938 |   39.0x |            1685852 |             86764 |
+
+   All output digests match the saved baseline. Raw samples are in
+   =joins-indexed-200.jsonl=. At 1,000 rows per input, median times were
+   14.551 ms, 14.774 ms, and 40.178 ms respectively. These measurements show
+   approximately linear growth for this workload; duplicate-heavy joins can
+   still produce quadratic output. The index adds memory proportional to input
+   rows and key width. Rational and other unusual Numeric keys fall back to
+   the original path to preserve their comparison semantics.
+
 * Initial measurements [2026-11-27 Fri]
   Local Ruby 3.4.1, 4,000 rows, three measured runs after warmup. Baseline
   measured before the optimizations branch edits. All result digests matched.

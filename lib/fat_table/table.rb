@@ -1289,15 +1289,24 @@ module FatTable
         build_join_expression(exps, other, join_type)
       ev = Evaluator.new
       result = empty_dup
+      self_rows = rows
       other_rows = other.rows
+      key_columns = join_key_columns(exps, other, join_type)
+      join_index = build_join_index(key_columns, self_rows, other_rows)
+      all_indices = (0...other_rows.size).to_a unless join_index
       other_row_matches = Array.new(other_rows.size, false)
-      rows.each do |self_row|
+      self_rows.each_with_index do |self_row, row_index|
         self_row_matched = false
-        other_rows.each_with_index do |other_row, k|
-          # Same as other_row, but with keys that are common with self and equal
-          # in value, removed, so the output table need not repeat them.
-          locals = build_locals_hash(row_a: self_row, row_b: other_row)
-          matches = ev.evaluate(join_exp, locals: locals)
+        candidates = join_index ? join_index[1].fetch(join_index[0][row_index], []) : all_indices
+        candidates.each do |k|
+          other_row = other_rows[k]
+          matches =
+            if join_index
+              key_columns.all? { |a, b| self_row[a] == other_row[b] }
+            else
+              locals = build_locals_hash(row_a: self_row, row_b: other_row)
+              ev.evaluate(join_exp, locals: locals)
+            end
           next unless matches
 
           self_row_matched = other_row_matches[k] = true
@@ -1357,6 +1366,69 @@ module FatTable
     end
 
     private
+
+    # Only index explicit equality conditions. The expression builder above
+    # remains responsible for validation and output-column selection.
+    def join_key_columns(exps, other, type)
+      return if type == :cross || exps.any? { |exp| !exp.is_a?(Symbol) }
+      return (headers & other.headers).map { |head| [head, head] } if exps.empty?
+
+      pairs = []
+      pending = nil
+      exps.each do |exp|
+        match = /\A(.*)_([ab])\z/.match(exp.to_s.clean)
+        if match
+          head = match[1].to_sym
+          side = match[2]
+          if pending
+            return nil if pending[1] == side
+
+            pairs << (side == 'b' ? [pending[0], head] : [head, pending[0]])
+            pending = nil
+          else
+            pending = [head, side]
+          end
+        else
+          return nil if pending
+
+          pairs << [exp, exp]
+        end
+      end
+      pairs unless pending
+    end
+
+    # Hash equality is stricter than == for mixed numbers and dates. Normalize
+    # supported built-in values, then recheck == on candidate rows (notably NaN).
+    # Unusual Numeric objects and subclasses retain the original evaluator path.
+    def join_hash_key(row, heads)
+      heads.map do |head|
+        value = row[head]
+        if value.instance_of?(Integer)
+          value.to_r
+        elsif value.instance_of?(BigDecimal)
+          value.finite? ? value.to_r : value.to_s
+        elsif value.instance_of?(Date) || value.instance_of?(DateTime)
+          value.ajd
+        elsif [NilClass, TrueClass, FalseClass, String].include?(value.class)
+          value
+        else
+          return nil
+        end
+      end
+    end
+
+    def build_join_index(key_columns, self_rows, other_rows)
+      return unless key_columns
+
+      left_heads, right_heads = key_columns.transpose
+      left_keys = self_rows.map { |row| join_hash_key(row, left_heads) }
+      right_keys = other_rows.map { |row| join_hash_key(row, right_heads) }
+      return if left_keys.any?(&:nil?) || right_keys.any?(&:nil?)
+
+      index = {}
+      right_keys.each_with_index { |key, k| (index[key] ||= []) << k }
+      [left_keys, index]
+    end
 
     # Return an output row appropriate to the given join type, including all the
     # keys of row_a, the non-common keys of row_b for an :inner join, or all the
