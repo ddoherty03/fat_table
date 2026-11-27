@@ -1,0 +1,51 @@
+#+TITLE: FatTable performance checks
+
+* Transformations and rendering
+  Run from the repository root:
+
+  #+begin_src sh
+    scripts/benchmark
+    scripts/benchmark 10000
+    BENCH_GROUP_SIZE=100 scripts/benchmark 1000
+  #+end_src
+
+  The optional positional argument is the row count (default: 4000).
+  The wrapper can also be invoked by absolute path from another directory.
+
+  The script warms each operation, then records three elapsed-time and
+  allocated-object samples. Input construction and result hashing are outside
+  the timed portion. The table shows median, minimum, and maximum times in
+  milliseconds, plus median allocated-object counts.
+
+  For raw JSON samples and full result digests, run:
+
+  #+begin_src sh
+    BENCH_ROWS=10000 bundle exec ruby -Ilib benchmark/transform_and_render.rb
+  #+end_src
+
+  Digests allow comparing the same workload across revisions on the same
+  Ruby version. Compare medians;
+  timings vary with hardware, Ruby, dependencies, and system load.
+
+  This is a synthetic three-column workload, not a representative byr report.
+  By default each input row is its own group for select/where, exercising
+  group lookup heavily. Rendering uses an ungrouped table. BENCH_GROUP_SIZE
+  changes the transformation workload; a value greater than BENCH_ROWS gives
+  a single implicit group.
+
+* Initial measurements [2026-11-27 Fri]
+  Local Ruby 3.4.1, 4,000 rows, three measured runs after warmup. Baseline
+  measured before the optimizations branch edits. All result digests matched.
+
+  | Operation              | Before (s) | After (s) | Speedup |
+  |------------------------+------------+-----------+---------|
+  | select with group expr |     0.2727 |    0.0733 |   3.72x |
+  | where with group expr  |     0.2387 |    0.0427 |   5.59x |
+  | text rendering         |     0.0979 |    0.0158 |   6.20x |
+
+  Changes measured: a forward group cursor in select/where instead of a
+  fresh boundary scan per row; appending report fragments to an owned mutable
+  string instead of copying the accumulated output at every append.
+
+  These figures illustrate the targeted workloads, not general application
+  speedups. Profile actual byr reports before choosing subsequent changes.
