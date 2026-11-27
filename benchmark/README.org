@@ -4,9 +4,9 @@
   Run from the repository root:
 
   #+begin_src sh
-    scripts/benchmark
-    scripts/benchmark 10000
-    BENCH_GROUP_SIZE=100 scripts/benchmark 1000
+    scripts/benchmark-formatting
+    scripts/benchmark-formatting 10000
+    BENCH_GROUP_SIZE=100 scripts/benchmark-formatting 1000
   #+end_src
 
   The optional positional argument is the row count (default: 4000).
@@ -37,12 +37,12 @@
   Run the separate join workload with a row count per input table:
 
   #+begin_src sh
-    scripts/benchmark --joins
-    scripts/benchmark 100 --joins
+    scripts/benchmark-joins
+    scripts/benchmark-joins 100
     BENCH_ROWS=200 bundle exec ruby -Ilib benchmark/joins.rb
   #+end_src
 
-  Join mode defaults to 200 rows per input. The last command emits raw JSON
+  The join script defaults to 200 rows per input. The last command emits raw JSON
   samples and output digests. Both tables have two columns, duplicate keys
   (two rows per key), and approximately half their key ranges overlap.
   The benchmark covers natural inner, symbol-based inner, and natural full
@@ -87,6 +87,39 @@
    still produce quadratic output. The index adds memory proportional to input
    rows and key width. Rational and other unusual Numeric keys fall back to
    the original path to preserve their comparison semantics.
+
+* Prepared sort keys [2026-11-27 Fri]
+  Run the sorting workload separately:
+
+  #+begin_src sh
+    scripts/benchmark-sort 4000
+    BENCH_ROWS=4000 bundle exec ruby -Ilib benchmark/sort.rb
+  #+end_src
+
+  Uses a deterministic shuffle of five-column rows with repeated numeric keys,
+  strings, dates, and boolean/nil keys. Measures complete table operations,
+  including result construction and group boundaries. Expression sorting also
+  includes evaluating the expression and creating its additional column.
+  Input construction and output hashing are excluded. Each operation warms up
+  once before three measured samples; figures below are medians on Ruby 3.4.1.
+
+  | Operation       | Before (ms) | After (ms) | Speedup | Before allocations | After allocations |
+  |-----------------+-------------+------------+---------+--------------------+-------------------|
+  | numeric_sort    |     126.079 |    108.639 |   1.16x |            1311377 |           1170820 |
+  | mixed_sort      |     167.943 |    116.713 |   1.44x |            1320598 |           1188567 |
+  | expression_sort |     385.534 |    378.773 |   1.02x |            3909540 |           3766689 |
+
+  Baseline library revision: =7ba2e42=. Raw results are saved in
+  =sort-baseline-4000.jsonl= and =sort-prepared-4000.jsonl=. Digests of headers,
+  complete rows, and group boundaries match for every operation. The small
+  expression-sort timing difference may be normal run-to-run variation.
+
+  Comparison keys and boolean normalization are now prepared once per row;
+  grouping reuses the original unnormalized keys. This reduces temporary
+  allocations during comparisons but retains key arrays for the duration of
+  the sort, using memory proportional to rows times key count. Stable ties,
+  mixed directions, and nil ordering are preserved. These are synthetic
+  results, not measurements of a byr report.
 
 * Initial measurements [2026-11-27 Fri]
   Local Ruby 3.4.1, 4,000 rows, three measured runs after warmup. Baseline
