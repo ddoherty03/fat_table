@@ -150,6 +150,42 @@
   backfilling, and missing values still use the existing paths. There is no
   persistent column cache to invalidate when the table changes.
 
+* Column append fast paths [2026-11-27 Fri]
+  Run the isolated column workload:
+
+  #+begin_src sh
+    scripts/benchmark-column 10000
+    BENCH_ROWS=10000 bundle exec ruby -Ilib benchmark/column.rb
+  #+end_src
+
+  The default is 10,000 values. Each operation builds a fresh column with an
+  established type, using prebuilt values. Numeric input alternates integers
+  and BigDecimals; tolerant numeric input alternates integers and an
+  unparseable string. Setup and output hashing are excluded. Column creation
+  and all appends are included. Medians of three samples after warmup on
+  Ruby 3.4.1, baseline revision =8cf529d=:
+
+  | Operation        | Before (ms) | After (ms) | Speedup |
+  |------------------+-------------+------------+---------|
+  | native_numeric   |       1.559 |      0.737 |   2.12x |
+  | strings          |       1.685 |      0.629 |   2.68x |
+  | native_dates     |       1.450 |      0.546 |   2.66x |
+  | native_booleans  |       1.517 |      0.611 |   2.48x |
+  | tolerant_numeric |      13.473 |      7.839 |   1.72x |
+
+  Output digests include column type and all items and match the baseline.
+  Raw samples are in =column-baseline-10000.jsonl= and
+  =column-fast-10000.jsonl=. Native-value cases allocate four objects in each
+  measured run before and after; their gains come from reduced dispatch and
+  type checks. Tolerant numeric allocations fall from 90,006 to 65,006 as
+  ordinary failed conversions no longer raise and re-raise exceptions.
+
+  Established string columns skip redundant type inference; compatible native
+  numeric, date, and boolean values skip conversion. Floats still promote to
+  BigDecimal, open columns still infer their type, and strict conversion errors
+  retain their messages. These short isolated measurements do not imply the
+  same speedups for complete table operations or byr reports.
+
 * Initial measurements [2026-11-27 Fri]
   Local Ruby 3.4.1, 4,000 rows, three measured runs after warmup. Baseline
   measured before the optimizations branch edits. All result digests matched.
