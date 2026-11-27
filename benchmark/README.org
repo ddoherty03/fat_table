@@ -121,6 +121,35 @@
   mixed directions, and nil ordering are preserved. These are synthetic
   results, not measurements of a byr report.
 
+* Direct column insertion [2026-11-27 Fri]
+  Run row insertion at three table widths:
+
+  #+begin_src sh
+    scripts/benchmark-insertion 1000
+    BENCH_ROWS=1000 bundle exec ruby -Ilib benchmark/insertion.rb
+  #+end_src
+
+  The default is 1,000 rows. Input hashes contain integer values and are built
+  before timing. Each measured operation constructs a fresh table and inserts
+  all rows with add_row. Output extraction and hashing are excluded. The three
+  widths exercise column lookup costs; string parsing and real byr workloads
+  will have different proportions of conversion and lookup work.
+
+  Ruby 3.4.1, baseline revision =8a4a3e8=; medians of three samples after warmup:
+
+  | Columns | Before (ms) | After (ms) | Speedup | Before allocations | After allocations |
+  |---------+-------------+------------+---------+--------------------+-------------------|
+  |       4 |      18.391 |      5.630 |   3.27x |             200169 |             57169 |
+  |      16 |     181.886 |     23.577 |   7.71x |            2030625 |            213625 |
+  |      64 |    2468.338 |     92.086 |  26.80x |           28073449 |            840449 |
+
+  Raw samples are in =insertion-baseline-1000.jsonl= and
+  =insertion-direct-1000.jsonl=. All digests of headers, rows, and boundaries
+  match. add_row now traverses destination columns directly, eliminating a
+  linear column-name search for each cell. Column conversion, new-column
+  backfilling, and missing values still use the existing paths. There is no
+  persistent column cache to invalidate when the table changes.
+
 * Initial measurements [2026-11-27 Fri]
   Local Ruby 3.4.1, 4,000 rows, three measured runs after warmup. Baseline
   measured before the optimizations branch edits. All result digests matched.

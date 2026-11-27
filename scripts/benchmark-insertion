@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ $# -eq 1 && ( $1 == --help || $1 == -h ) ]]; then
+  echo "Usage: $0 [ROWS] (default: 1000)"
+  exit 0
+fi
+
+rows=${1:-1000}
+if [[ $# -gt 1 || ! $rows =~ ^[1-9][0-9]*$ ]]; then
+  echo "Usage: $0 [ROWS] — ROWS must be a positive integer" >&2
+  exit 1
+fi
+
+cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
+export BENCH_ROWS=$rows
+exec bundle exec ruby -Ilib benchmark/insertion.rb --text
