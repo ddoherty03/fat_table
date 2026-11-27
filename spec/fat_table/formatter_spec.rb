@@ -21,6 +21,22 @@ module FatTable
       Table.from_aoa(aoa)
     end
 
+    it 'owns its output buffer without modifying fragments or previous results' do
+      table = Table.from_aoh([{ value: 'example' }])
+      formatter = TextFormatter.new(table)
+      prefix = +'prefix'
+      allow(formatter).to receive(:pre_table).and_return(prefix)
+
+      first = formatter.output
+      snapshot = first.dup
+      second = formatter.output
+
+      expect(prefix).to eq('prefix')
+      expect(first).to eq(snapshot)
+      expect(second).to eq(snapshot)
+      expect(second).not_to equal(first)
+    end
+
     describe 'empty table' do
       it 'produces just headers on an empty table with headers' do
         empty_tab = Table.new(:a, :b, :c, :d)

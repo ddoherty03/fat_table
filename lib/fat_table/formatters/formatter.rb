@@ -1174,36 +1174,36 @@ module FatTable
       # any event, the result is a single string (or ruby object if eval is true
       # for the Formatter) representing the table in the syntax of the output
       # target.
-      result = ''
-      result += pre_table
+      result = +''
+      result << pre_table
       if include_header_row?
-        result += pre_header(widths)
-        result += pre_row
+        result << pre_header(widths)
+        result << pre_row
         cells = []
         formatted_headers.each_pair do |h, (_v, fmt_v)|
           cells << pre_cell(h) + quote_cell(fmt_v) + post_cell
         end
-        result += cells.join(inter_cell)
-        result += post_row
-        result += post_header(widths)
+        result << cells.join(inter_cell)
+        result << post_row
+        result << post_header(widths)
       end
       new_rows.each do |loc_row|
         if loc_row.nil?
-          result += hline(widths)
+          result << hline(widths)
           next
         end
 
         _loc, row = *loc_row
-        result += pre_row
+        result << pre_row
         cells = []
         row.each_pair do |h, (_v, fmt_v)|
           cells << pre_cell(h) + quote_cell(fmt_v) + post_cell
         end
-        result += cells.join(inter_cell)
-        result += post_row
+        result << cells.join(inter_cell)
+        result << post_row
       end
-      result += post_footers(widths)
-      result += post_table
+      result << post_footers(widths)
+      result << post_table
 
       # If this Formatter targets a ruby data structure (e.g., AoaFormatter), we
       # eval the string to get the object.
