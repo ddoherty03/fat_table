@@ -89,6 +89,47 @@ module FatTable
     end
 
     describe 'add_row' do
+      it 'keeps column order and backfills new columns when input keys change' do
+        tab = Table.new(:first, :second)
+        tab.add_row({ 'Second' => 20, 'First' => 10 })
+        tab.add_row({ 'New Column' => 30, 'Second' => 40 })
+        tab.add_row({})
+
+        expect(tab.headers).to eq([:first, :second, :new_column])
+        expect(tab.rows).to eq([
+          { first: 10, second: 20, new_column: nil },
+          { first: nil, second: 40, new_column: 30 },
+          { first: nil, second: nil, new_column: nil },
+        ])
+      end
+
+      it 'uses columns added between insertions' do
+        tab = Table.new(:amount)
+        tab.add_row({ amount: 10 })
+        tab.add_column(Column.new(header: :label, items: ['earlier']))
+        result = tab.add_row({ label: 'later', amount: 20 })
+
+        expect(result).to equal(tab)
+        expect(tab.rows).to eq([{ amount: 10, label: 'earlier' }, { amount: 20, label: 'later' }])
+      end
+
+      it 'retains declared conversions, decimal precision, and tolerant values' do
+        tab = Table.new(amount: 'num', date: 'date', active: 'bool', note: 'num~')
+        tab.add_row({ amount: '123456789.123456789', date: '2026-01-02', active: 'false', note: '12.5' })
+        tab.add_row({ amount: '0.000000001', date: nil, active: 'true', note: 'unknown' })
+
+        expect(tab[:amount]).to eq([BigDecimal('123456789.123456789'), BigDecimal('0.000000001')])
+        expect(tab[:date]).to eq([Date.new(2026, 1, 2), nil])
+        expect(tab[:active]).to eq([false, true])
+        expect(tab[:note]).to eq([BigDecimal('12.5'), 'unknown'])
+      end
+
+      it 'still rejects values incompatible with a strict column' do
+        tab = Table.new(amount: 'num')
+
+        expect { tab.add_row({ amount: 'unknown' }) }.to raise_error(IncompatibleTypeError)
+      end
+
       context 'with full rows' do
         it 'builds table correctly' do
           rows = [

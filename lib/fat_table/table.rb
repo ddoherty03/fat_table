@@ -1634,9 +1634,9 @@ module FatTable
         items = Array.new(size, nil)
         columns << Column.new(header: h, items: items, tolerant: tolerant_col?(h))
       end
-      headers.each do |h|
-        # NB: This adds a nil if h is not in row.
-        column(h) << row[h]
+      columns.each do |col|
+        # Visit destination columns directly; missing keys still append nil.
+        col << row[col.header]
       end
       self
     end
