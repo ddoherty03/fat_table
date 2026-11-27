@@ -1,5 +1,30 @@
 #+TITLE: FatTable performance checks
 
+* Compare saved results
+  Display all recorded before/after pairs without rerunning benchmarks:
+
+  #+begin_src sh
+    scripts/benchmark-compare
+  #+end_src
+
+  Compare a particular pair, including newly recorded JSONL results:
+
+  #+begin_src sh
+    scripts/benchmark-compare benchmark/column-baseline-10000.jsonl benchmark/column-fast-10000.jsonl
+  #+end_src
+
+  The command reports median times, speedup, median allocations, allocation
+  reduction, and whether all output digests match. It rejects different
+  operation names or workload metadata (including row counts and Ruby versions)
+  and exits nonzero if output digests differ. Explicit paths are relative to
+  the calling directory; the default pairs work from any directory.
+
+  These are historical measurements of each individual optimization, not a
+  fresh run of the current checkout or a cumulative before/after comparison.
+  The formatting/group-lookup pair includes the original raw measurements
+  recovered from the initial benchmark run.
+  Committing these scripts and data preserves the comparisons after merging.
+
 * Transformations and rendering
   Run from the repository root:
 
@@ -189,12 +214,21 @@
 * Initial measurements [2026-11-27 Fri]
   Local Ruby 3.4.1, 4,000 rows, three measured runs after warmup. Baseline
   measured before the optimizations branch edits. All result digests matched.
+  Original raw samples are preserved in =formatting-baseline-4000.jsonl= and
+  =formatting-buffer-4000.jsonl= and included in =scripts/benchmark-compare=.
+  Both runs used the same original harness with Benchmark.realtime, one group
+  per row for transformations, and ungrouped rendering. Input construction was
+  outside timing. These older files omit Ruby and group-size metadata.
 
   | Operation              | Before (s) | After (s) | Speedup |
   |------------------------+------------+-----------+---------|
-  | select with group expr |     0.2727 |    0.0733 |   3.72x |
-  | where with group expr  |     0.2387 |    0.0427 |   5.59x |
-  | text rendering         |     0.0979 |    0.0158 |   6.20x |
+  | select with group expr |     0.2727 |    0.0724 |   3.77x |
+  | where with group expr  |     0.2387 |    0.0451 |   5.30x |
+  | text rendering         |     0.0979 |    0.0156 |   6.28x |
+
+  This table now uses the recovered original before/after samples. The prior
+  summary used a follow-up run of the maintained harness for its after values,
+  which gave the slightly different 3.72x, 5.59x, and 6.20x figures.
 
   Changes measured: a forward group cursor in select/where instead of a
   fresh boundary scan per row; appending report fragments to an owned mutable

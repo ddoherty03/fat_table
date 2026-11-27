@@ -1,0 +1,105 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'json'
+
+def read_results(path)
+  results = File.foreach(path).reject { |line| line.strip.empty? }.map { |line| JSON.parse(line) }
+  names = results.map { |result| result.fetch('name') }
+  raise ArgumentError, "#{path}: empty results or duplicate operation names" if names.empty? || names.uniq != names
+
+  results.to_h { |result| [result.fetch('name'), result] }
+end
+
+def median(values)
+  sorted = values.sort
+  middle = sorted.size / 2
+  sorted.size.odd? ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2.0
+end
+
+def measurements(result)
+  samples = result.fetch('samples')
+  raise ArgumentError, 'samples must not be empty' if samples.empty?
+
+  samples.each do |sample|
+    seconds = sample.fetch('seconds')
+    allocations = sample.fetch('allocations')
+    unless seconds.is_a?(Numeric) && seconds.positive? && allocations.is_a?(Numeric) && allocations >= 0
+      raise ArgumentError, 'samples must have positive times and nonnegative allocations'
+    end
+    raise ArgumentError, 'samples must have output digests' unless sample.fetch('digest').is_a?(String)
+  end
+  [median(samples.map { |sample| sample['seconds'] }), median(samples.map { |sample| sample['allocations'] })]
+end
+
+def compare_results(before_path, after_path)
+  before = read_results(before_path)
+  after = read_results(after_path)
+  raise ArgumentError, 'operation names differ between files' unless before.keys.sort == after.keys.sort
+
+  puts "\n#{File.basename(before_path)} → #{File.basename(after_path)}"
+  printf "%-22s %11s %11s %9s %14s %14s %10s %8s\n",
+         'Operation',
+         'Before ms',
+         'After ms',
+         'Speedup',
+         'Alloc before',
+         'Alloc after',
+         'Alloc drop',
+         'Output'
+  matched = true
+  before.each do |name, old|
+    current = after.fetch(name)
+    unless old.reject { |key, _| key == 'samples' } == current.reject { |key, _| key == 'samples' }
+      raise ArgumentError, "#{name}: workload metadata differs (including row count or Ruby version)"
+    end
+
+    old_time, old_alloc = measurements(old)
+    new_time, new_alloc = measurements(current)
+    digests = (old['samples'] + current['samples']).map { |sample| sample['digest'] }.uniq
+    same_output = digests.size == 1
+    matched &&= same_output
+    allocation_drop = old_alloc.zero? ? 'n/a' : format('%.1f%%', 100 * (1 - new_alloc.to_f / old_alloc))
+    printf "%-22s %11.3f %11.3f %8.2fx %14s %14s %10s %8s\n",
+           name,
+           old_time * 1000,
+           new_time * 1000,
+           old_time / new_time,
+           old_alloc,
+           new_alloc,
+           allocation_drop,
+           same_output ? 'match' : 'DIFF'
+  end
+  matched
+end
+
+usage = "Usage: #{File.basename($PROGRAM_NAME)} [BEFORE.jsonl AFTER.jsonl]"
+if ARGV == ['--help'] || ARGV == ['-h']
+  puts usage
+  puts 'With no arguments, compare all recorded baseline/optimized pairs in benchmark/.'
+  exit
+end
+abort usage unless ARGV.empty? || ARGV.size == 2
+
+pairs =
+  if ARGV.empty?
+    directory = File.expand_path('../benchmark', __dir__)
+    [
+      ['formatting-baseline-4000.jsonl', 'formatting-buffer-4000.jsonl'],
+      ['joins-baseline-200.jsonl', 'joins-indexed-200.jsonl'],
+      ['sort-baseline-4000.jsonl', 'sort-prepared-4000.jsonl'],
+      ['insertion-baseline-1000.jsonl', 'insertion-direct-1000.jsonl'],
+      ['column-baseline-10000.jsonl', 'column-fast-10000.jsonl'],
+    ].map { |pair| pair.map { |file| File.join(directory, file) } }
+  else
+    [ARGV]
+  end
+
+begin
+  puts 'Recorded benchmark comparison (medians; no benchmarks are run).'
+  outcomes = pairs.map { |before, after| compare_results(before, after) }
+  puts "\nSpeedup = before / after. Negative allocation drop means more allocations."
+  exit(outcomes.all? ? 0 : 1)
+rescue ArgumentError, KeyError, TypeError, JSON::ParserError, SystemCallError => e
+  abort "Comparison failed: #{e.message}"
+end
