@@ -6,6 +6,14 @@
    user would find useful.
 5. Give each heading a version number and an inactive date (C-c ! is useful here).
 
+* Version 1.1.1 [2026-11-27 Fri]
+- Faster report formatting, especially for long tables.
+- Faster natural and symbol-based equality joins.
+- Faster sorting and grouped ~select~ and ~where~ operations.
+- Faster row insertion, especially for wide tables, and more efficient
+  handling of column values.
+- Existing ordering, grouping, and numeric precision are preserved.
+
 * Version 1.1.0 [2026-11-23 Mon]
 - ~order_by~ and ~order_with~ now implement stable sorting.
 

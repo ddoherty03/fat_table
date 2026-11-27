@@ -1,57 +1,69 @@
-- [Version 1.1.0 <span class="timestamp-wrapper"><span class="timestamp">[2026-11-23 Mon]</span></span>](#org89de037)
-- [Version 1.0.1 <span class="timestamp-wrapper"><span class="timestamp">[2026-11-21 Sat]</span></span>](#org8d448cc)
-- [Version 1.0.0 <span class="timestamp-wrapper"><span class="timestamp">[2025-12-28 Sun]</span></span>](#org612a60c)
-- [Version 0.9.9 <span class="timestamp-wrapper"><span class="timestamp">[2025-03-19 Wed]</span></span>](#orgafb1ef4)
-- [Version 0.9.8 <span class="timestamp-wrapper"><span class="timestamp">[2024-12-31 Tue]</span></span>](#org0ee20c8)
-- [Version 0.9.7 <span class="timestamp-wrapper"><span class="timestamp">[2024-12-26 Thu]</span></span>](#orgd38a089)
-- [Version 0.9.5 <span class="timestamp-wrapper"><span class="timestamp">[2023-11-07 Tue]</span></span>](#orgd1a6e4a)
-- [Version 0.9.3 <span class="timestamp-wrapper"><span class="timestamp">[2023-05-24 Wed]</span></span>](#orgbbf659f)
-- [Version 0.9.2 <span class="timestamp-wrapper"><span class="timestamp">[2023-05-22 Mon]</span></span>](#org71e893c)
-- [Version 0.9.1 <span class="timestamp-wrapper"><span class="timestamp">[2023-05-22 Mon]</span></span>](#org1bd50b1)
-- [Version 0.9.0 <span class="timestamp-wrapper"><span class="timestamp">[2023-05-22 Mon]</span></span>](#orgd502dc0)
-- [Version 0.8.0 <span class="timestamp-wrapper"><span class="timestamp">[2023-04-20 Thu]</span></span>](#org1b6a32d)
-- [Version 0.7.0 <span class="timestamp-wrapper"><span class="timestamp">[2023-04-02 Sun]</span></span>](#orgdb5d2fe)
-- [Version 0.6.6 <span class="timestamp-wrapper"><span class="timestamp">[2023-01-09 Mon]</span></span>](#orgf14c5a7)
-- [Version 0.6.3 <span class="timestamp-wrapper"><span class="timestamp">[2022-06-04 Sat]</span></span>](#orgde9afb6)
-- [Version 0.6.2 <span class="timestamp-wrapper"><span class="timestamp">[2022-05-24 Tue]</span></span>](#org4af07c9)
-- [Version 0.6.1 <span class="timestamp-wrapper"><span class="timestamp">[2022-03-26 Sat]</span></span>](#orgdfb3a98)
-- [Version 0.6.0 <span class="timestamp-wrapper"><span class="timestamp">[2022-03-26 Sat]</span></span>](#org0954f36)
-- [Version 0.5.5 <span class="timestamp-wrapper"><span class="timestamp">[2022-03-25 Fri]</span></span>](#org27e31f2)
-- [Version 0.5.4 <span class="timestamp-wrapper"><span class="timestamp">[2022-01-27 Thu]</span></span>](#org97a842a)
-- [Version 0.5.3 <span class="timestamp-wrapper"><span class="timestamp">[2022-01-24 Mon]</span></span>](#orge1002d7)
-- [Version 0.5.2 <span class="timestamp-wrapper"><span class="timestamp">[2022-01-22 Sat]</span></span>](#org2eccba3)
-- [Version 0.5.1 <span class="timestamp-wrapper"><span class="timestamp">[2022-01-21 Fri]</span></span>](#org31d68b7)
-- [Version 0.4.2 <span class="timestamp-wrapper"><span class="timestamp">[2022-01-06 Thu]</span></span>](#org9af6b5a)
-- [Version 0.4.0 <span class="timestamp-wrapper"><span class="timestamp">[2022-01-02 Sun]</span></span>](#org8f46953)
-- [Version 0.3.4 <span class="timestamp-wrapper"><span class="timestamp">[2022-01-01 Sat]</span></span>](#org83508cd)
-- [Version 0.3.3 <span class="timestamp-wrapper"><span class="timestamp">[2022-01-01 Sat]</span></span>](#org38d8493)
-- [Version 0.3.1 <span class="timestamp-wrapper"><span class="timestamp">[2020-12-13 Sun]</span></span>](#orge6a6426)
-- [Version 0.3.0 <span class="timestamp-wrapper"><span class="timestamp">[2020-06-10 Wed]</span></span>](#org2676eb8)
-- [Version 0.2.11 <span class="timestamp-wrapper"><span class="timestamp">[2019-12-29 Sun]</span></span>](#orgfe92f9e)
-- [Version 0.2.9 <span class="timestamp-wrapper"><span class="timestamp">[2019-04-04 Thu]</span></span>](#orgdd5903e)
-- [Version 0.2.8 <span class="timestamp-wrapper"><span class="timestamp">[2018-08-28 Tue]</span></span>](#org0c9ef1a)
-- [Version 0.2.7 <span class="timestamp-wrapper"><span class="timestamp">[2017-12-29 Fri]</span></span>](#orgfd954d8)
-- [Version 0.2.6 <span class="timestamp-wrapper"><span class="timestamp">[2017-10-27 Fri]</span></span>](#org3fb2f79)
-- [Version 0.2.4 <span class="timestamp-wrapper"><span class="timestamp">[2017-05-23 Tue]</span></span>](#orga98309a)
-- [Version 0.2.3 <span class="timestamp-wrapper"><span class="timestamp">[2017-05-08 Mon]</span></span>](#org9eb4da5)
-- [Version 0.2.2 <span class="timestamp-wrapper"><span class="timestamp">[2017-05-08 Mon]</span></span>](#org635f10b)
+- [Version 1.1.1 <span class="timestamp-wrapper"><span class="timestamp">[2026-11-27 Fri]</span></span>](#org6a38a16)
+- [Version 1.1.0 <span class="timestamp-wrapper"><span class="timestamp">[2026-11-23 Mon]</span></span>](#org51297db)
+- [Version 1.0.1 <span class="timestamp-wrapper"><span class="timestamp">[2026-11-21 Sat]</span></span>](#org07e1332)
+- [Version 1.0.0 <span class="timestamp-wrapper"><span class="timestamp">[2025-12-28 Sun]</span></span>](#orgde7ad59)
+- [Version 0.9.9 <span class="timestamp-wrapper"><span class="timestamp">[2025-03-19 Wed]</span></span>](#org23684a4)
+- [Version 0.9.8 <span class="timestamp-wrapper"><span class="timestamp">[2024-12-31 Tue]</span></span>](#org1308011)
+- [Version 0.9.7 <span class="timestamp-wrapper"><span class="timestamp">[2024-12-26 Thu]</span></span>](#orgc5ff6d7)
+- [Version 0.9.5 <span class="timestamp-wrapper"><span class="timestamp">[2023-11-07 Tue]</span></span>](#orgc20f7b4)
+- [Version 0.9.3 <span class="timestamp-wrapper"><span class="timestamp">[2023-05-24 Wed]</span></span>](#org8bd5491)
+- [Version 0.9.2 <span class="timestamp-wrapper"><span class="timestamp">[2023-05-22 Mon]</span></span>](#org259e6ba)
+- [Version 0.9.1 <span class="timestamp-wrapper"><span class="timestamp">[2023-05-22 Mon]</span></span>](#org85a9031)
+- [Version 0.9.0 <span class="timestamp-wrapper"><span class="timestamp">[2023-05-22 Mon]</span></span>](#orgbae2528)
+- [Version 0.8.0 <span class="timestamp-wrapper"><span class="timestamp">[2023-04-20 Thu]</span></span>](#org80b935c)
+- [Version 0.7.0 <span class="timestamp-wrapper"><span class="timestamp">[2023-04-02 Sun]</span></span>](#orgf31a238)
+- [Version 0.6.6 <span class="timestamp-wrapper"><span class="timestamp">[2023-01-09 Mon]</span></span>](#org5e104a2)
+- [Version 0.6.3 <span class="timestamp-wrapper"><span class="timestamp">[2022-06-04 Sat]</span></span>](#org1a479c2)
+- [Version 0.6.2 <span class="timestamp-wrapper"><span class="timestamp">[2022-05-24 Tue]</span></span>](#org85d2aaa)
+- [Version 0.6.1 <span class="timestamp-wrapper"><span class="timestamp">[2022-03-26 Sat]</span></span>](#orgc980888)
+- [Version 0.6.0 <span class="timestamp-wrapper"><span class="timestamp">[2022-03-26 Sat]</span></span>](#org1ad3032)
+- [Version 0.5.5 <span class="timestamp-wrapper"><span class="timestamp">[2022-03-25 Fri]</span></span>](#orgbacb0ad)
+- [Version 0.5.4 <span class="timestamp-wrapper"><span class="timestamp">[2022-01-27 Thu]</span></span>](#org376df0c)
+- [Version 0.5.3 <span class="timestamp-wrapper"><span class="timestamp">[2022-01-24 Mon]</span></span>](#org6bab4e7)
+- [Version 0.5.2 <span class="timestamp-wrapper"><span class="timestamp">[2022-01-22 Sat]</span></span>](#org779aee6)
+- [Version 0.5.1 <span class="timestamp-wrapper"><span class="timestamp">[2022-01-21 Fri]</span></span>](#org29c7473)
+- [Version 0.4.2 <span class="timestamp-wrapper"><span class="timestamp">[2022-01-06 Thu]</span></span>](#org520acaa)
+- [Version 0.4.0 <span class="timestamp-wrapper"><span class="timestamp">[2022-01-02 Sun]</span></span>](#orgf1930f0)
+- [Version 0.3.4 <span class="timestamp-wrapper"><span class="timestamp">[2022-01-01 Sat]</span></span>](#orgefe8a18)
+- [Version 0.3.3 <span class="timestamp-wrapper"><span class="timestamp">[2022-01-01 Sat]</span></span>](#org1f68e8b)
+- [Version 0.3.1 <span class="timestamp-wrapper"><span class="timestamp">[2020-12-13 Sun]</span></span>](#orgd990727)
+- [Version 0.3.0 <span class="timestamp-wrapper"><span class="timestamp">[2020-06-10 Wed]</span></span>](#orgeab0105)
+- [Version 0.2.11 <span class="timestamp-wrapper"><span class="timestamp">[2019-12-29 Sun]</span></span>](#orge5bcc42)
+- [Version 0.2.9 <span class="timestamp-wrapper"><span class="timestamp">[2019-04-04 Thu]</span></span>](#org4b9f276)
+- [Version 0.2.8 <span class="timestamp-wrapper"><span class="timestamp">[2018-08-28 Tue]</span></span>](#orgccd4e3c)
+- [Version 0.2.7 <span class="timestamp-wrapper"><span class="timestamp">[2017-12-29 Fri]</span></span>](#orgfa6b25c)
+- [Version 0.2.6 <span class="timestamp-wrapper"><span class="timestamp">[2017-10-27 Fri]</span></span>](#orge932853)
+- [Version 0.2.4 <span class="timestamp-wrapper"><span class="timestamp">[2017-05-23 Tue]</span></span>](#org5f1aa2f)
+- [Version 0.2.3 <span class="timestamp-wrapper"><span class="timestamp">[2017-05-08 Mon]</span></span>](#org581370f)
+- [Version 0.2.2 <span class="timestamp-wrapper"><span class="timestamp">[2017-05-08 Mon]</span></span>](#org19d5cf6)
 
 
-<a id="org89de037"></a>
+<a id="org6a38a16"></a>
+
+# Version 1.1.1 <span class="timestamp-wrapper"><span class="timestamp">[2026-11-27 Fri]</span></span>
+
+-   Faster report formatting, especially for long tables.
+-   Faster natural and symbol-based equality joins.
+-   Faster sorting and grouped `select` and `where` operations.
+-   Faster row insertion, especially for wide tables, and more efficient handling of column values.
+-   Existing ordering, grouping, and numeric precision are preserved.
+
+
+<a id="org51297db"></a>
 
 # Version 1.1.0 <span class="timestamp-wrapper"><span class="timestamp">[2026-11-23 Mon]</span></span>
 
 -   `order_by` and `order_with` now implement stable sorting.
 
 
-<a id="org8d448cc"></a>
+<a id="org07e1332"></a>
 
 # Version 1.0.1 <span class="timestamp-wrapper"><span class="timestamp">[2026-11-21 Sat]</span></span>
 
 -   Eliminate loading of debug which interferes with Windows use.
 
 
-<a id="org612a60c"></a>
+<a id="orgde7ad59"></a>
 
 # Version 1.0.0 <span class="timestamp-wrapper"><span class="timestamp">[2025-12-28 Sun]</span></span>
 
@@ -62,7 +74,7 @@
 -   CHANGELOG added.
 
 
-<a id="orgafb1ef4"></a>
+<a id="org23684a4"></a>
 
 # Version 0.9.9 <span class="timestamp-wrapper"><span class="timestamp">[2025-03-19 Wed]</span></span>
 
@@ -71,7 +83,7 @@
 -   No notable changes.
 
 
-<a id="org0ee20c8"></a>
+<a id="org1308011"></a>
 
 # Version 0.9.8 <span class="timestamp-wrapper"><span class="timestamp">[2024-12-31 Tue]</span></span>
 
@@ -80,7 +92,7 @@
 -   No notable changes.
 
 
-<a id="orgd38a089"></a>
+<a id="orgc5ff6d7"></a>
 
 # Version 0.9.7 <span class="timestamp-wrapper"><span class="timestamp">[2024-12-26 Thu]</span></span>
 
@@ -89,7 +101,7 @@
 -   No notable changes
 
 
-<a id="orgd1a6e4a"></a>
+<a id="orgc20f7b4"></a>
 
 # Version 0.9.5 <span class="timestamp-wrapper"><span class="timestamp">[2023-11-07 Tue]</span></span>
 
@@ -97,56 +109,56 @@
 -   Ingore org rows with the wrong number of columns.
 
 
-<a id="orgbbf659f"></a>
+<a id="org8bd5491"></a>
 
 # Version 0.9.3 <span class="timestamp-wrapper"><span class="timestamp">[2023-05-24 Wed]</span></span>
 
 -   Bug fixes
 
 
-<a id="org71e893c"></a>
+<a id="org259e6ba"></a>
 
 # Version 0.9.2 <span class="timestamp-wrapper"><span class="timestamp">[2023-05-22 Mon]</span></span>
 
 -   Bug fixes
 
 
-<a id="org1bd50b1"></a>
+<a id="org85a9031"></a>
 
 # Version 0.9.1 <span class="timestamp-wrapper"><span class="timestamp">[2023-05-22 Mon]</span></span>
 
 -   Bug fixes
 
 
-<a id="orgd502dc0"></a>
+<a id="orgbae2528"></a>
 
 # Version 0.9.0 <span class="timestamp-wrapper"><span class="timestamp">[2023-05-22 Mon]</span></span>
 
 -   Bug fixes
 
 
-<a id="org1b6a32d"></a>
+<a id="org80b935c"></a>
 
 # Version 0.8.0 <span class="timestamp-wrapper"><span class="timestamp">[2023-04-20 Thu]</span></span>
 
 -   Changed the API to allow explicit column typing and tolerance designation with keyword args such as `head1: 'num~'` to make `head1` column be typed as numeric (the `num` part) but tolerant (the `~`)
 
 
-<a id="orgdb5d2fe"></a>
+<a id="orgf31a238"></a>
 
 # Version 0.7.0 <span class="timestamp-wrapper"><span class="timestamp">[2023-04-02 Sun]</span></span>
 
 -   Bug fixes
 
 
-<a id="orgf14c5a7"></a>
+<a id="org5e104a2"></a>
 
 # Version 0.6.6 <span class="timestamp-wrapper"><span class="timestamp">[2023-01-09 Mon]</span></span>
 
 -   Changed the default number of post-decimal digits to 0 for Numeric,
 
 
-<a id="orgde9afb6"></a>
+<a id="org1a479c2"></a>
 
 # Version 0.6.3 <span class="timestamp-wrapper"><span class="timestamp">[2022-06-04 Sat]</span></span>
 
@@ -155,35 +167,35 @@
 -   Added day-of-week to org-formatted dates just like `org-mode`
 
 
-<a id="org4af07c9"></a>
+<a id="org85d2aaa"></a>
 
 # Version 0.6.2 <span class="timestamp-wrapper"><span class="timestamp">[2022-05-24 Tue]</span></span>
 
 -   Bug fixes
 
 
-<a id="orgdfb3a98"></a>
+<a id="orgc980888"></a>
 
 # Version 0.6.1 <span class="timestamp-wrapper"><span class="timestamp">[2022-03-26 Sat]</span></span>
 
 -   Fixed bug in dynamic labels in footers,
 
 
-<a id="org0954f36"></a>
+<a id="org1ad3032"></a>
 
 # Version 0.6.0 <span class="timestamp-wrapper"><span class="timestamp">[2022-03-26 Sat]</span></span>
 
 -   Added dynamic labels in footers,
 
 
-<a id="org27e31f2"></a>
+<a id="orgbacb0ad"></a>
 
 # Version 0.5.5 <span class="timestamp-wrapper"><span class="timestamp">[2022-03-25 Fri]</span></span>
 
 -   Better handling of aggregates for all-nil columns
 
 
-<a id="org97a842a"></a>
+<a id="org376df0c"></a>
 
 # Version 0.5.4 <span class="timestamp-wrapper"><span class="timestamp">[2022-01-27 Thu]</span></span>
 
@@ -191,21 +203,21 @@
 -   Make header-based formatting a higher priority than type-based formatting,
 
 
-<a id="orge1002d7"></a>
+<a id="org6bab4e7"></a>
 
 # Version 0.5.3 <span class="timestamp-wrapper"><span class="timestamp">[2022-01-24 Mon]</span></span>
 
 -   Added support for "tolerant" column types that allow non-coercable strings in non-String columns,
 
 
-<a id="org2eccba3"></a>
+<a id="org779aee6"></a>
 
 # Version 0.5.2 <span class="timestamp-wrapper"><span class="timestamp">[2022-01-22 Sat]</span></span>
 
 -   documentation only
 
 
-<a id="org31d68b7"></a>
+<a id="org29c7473"></a>
 
 # Version 0.5.1 <span class="timestamp-wrapper"><span class="timestamp">[2022-01-21 Fri]</span></span>
 
@@ -218,77 +230,77 @@
 -   Added special symbol `:omni` in `select` as short-hand for all columns,
 
 
-<a id="org9af6b5a"></a>
+<a id="org520acaa"></a>
 
 # Version 0.4.2 <span class="timestamp-wrapper"><span class="timestamp">[2022-01-06 Thu]</span></span>
 
 -   bug fixes only
 
 
-<a id="org8f46953"></a>
+<a id="orgf1930f0"></a>
 
 # Version 0.4.0 <span class="timestamp-wrapper"><span class="timestamp">[2022-01-02 Sun]</span></span>
 
 -   bug fixes only
 
 
-<a id="org83508cd"></a>
+<a id="orgefe8a18"></a>
 
 # Version 0.3.4 <span class="timestamp-wrapper"><span class="timestamp">[2022-01-01 Sat]</span></span>
 
 -   minor bug fix only
 
 
-<a id="org38d8493"></a>
+<a id="org1f68e8b"></a>
 
 # Version 0.3.3 <span class="timestamp-wrapper"><span class="timestamp">[2022-01-01 Sat]</span></span>
 
 -   Added date format 'Tue, 01 Nov 2016' to be parsed as a Date.
 
 
-<a id="orge6a6426"></a>
+<a id="orgd990727"></a>
 
 # Version 0.3.1 <span class="timestamp-wrapper"><span class="timestamp">[2020-12-13 Sun]</span></span>
 
 -   documentation only
 
 
-<a id="org2676eb8"></a>
+<a id="orgeab0105"></a>
 
 # Version 0.3.0 <span class="timestamp-wrapper"><span class="timestamp">[2020-06-10 Wed]</span></span>
 
 -   gem dependency changes only
 
 
-<a id="orgfe92f9e"></a>
+<a id="orge5bcc42"></a>
 
 # Version 0.2.11 <span class="timestamp-wrapper"><span class="timestamp">[2019-12-29 Sun]</span></span>
 
 -   bug fixes only
 
 
-<a id="orgdd5903e"></a>
+<a id="org4b9f276"></a>
 
 # Version 0.2.9 <span class="timestamp-wrapper"><span class="timestamp">[2019-04-04 Thu]</span></span>
 
 -   documentation fixes only
 
 
-<a id="org0c9ef1a"></a>
+<a id="orgccd4e3c"></a>
 
 # Version 0.2.8 <span class="timestamp-wrapper"><span class="timestamp">[2018-08-28 Tue]</span></span>
 
 -   No notable changes
 
 
-<a id="orgfd954d8"></a>
+<a id="orgfa6b25c"></a>
 
 # Version 0.2.7 <span class="timestamp-wrapper"><span class="timestamp">[2017-12-29 Fri]</span></span>
 
 -   Minor bug fixes and performance improvements
 
 
-<a id="org3fb2f79"></a>
+<a id="orge932853"></a>
 
 # Version 0.2.6 <span class="timestamp-wrapper"><span class="timestamp">[2017-10-27 Fri]</span></span>
 
@@ -298,21 +310,21 @@
 -   Allowed American-order date 'mm-dd-yyyy' to be parsed
 
 
-<a id="orga98309a"></a>
+<a id="org5f1aa2f"></a>
 
 # Version 0.2.4 <span class="timestamp-wrapper"><span class="timestamp">[2017-05-23 Tue]</span></span>
 
 -   Added instance variables to ft\_console
 
 
-<a id="org9eb4da5"></a>
+<a id="org581370f"></a>
 
 # Version 0.2.3 <span class="timestamp-wrapper"><span class="timestamp">[2017-05-08 Mon]</span></span>
 
 -   No notable changes
 
 
-<a id="org635f10b"></a>
+<a id="org19d5cf6"></a>
 
 # Version 0.2.2 <span class="timestamp-wrapper"><span class="timestamp">[2017-05-08 Mon]</span></span>
 
