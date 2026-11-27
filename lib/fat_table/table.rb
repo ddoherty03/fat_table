@@ -829,33 +829,20 @@ module FatTable
     # After sorting, the output Table will have group boundaries added after
     # each row where the sort key changes.
     def order_by(*sort_heads)
-      # Sort the rows in order and add to new_rows.
+      # Prepare raw grouping keys and normalized comparison keys once per row.
       key_hash = partition_sort_keys(sort_heads)
-      new_rows = rows.each_with_index.sort { |(r1, index1), (r2, index2)|
-        # Set the sort keys based on direction
-        key1 = []
-        key2 = []
-        key_hash.each_pair do |h, dir|
-          if dir == :forward
-            key1 << r1[h]
-            key2 << r2[h]
-          else
-            key1 << r2[h]
-            key2 << r1[h]
-          end
-        end
-        # Make any booleans comparable with <=>
-        key1 = key1.map_booleans
-        key2 = key2.map_booleans
-
-        # If there are any nils, <=> will return nil, and we have to use the
-        # special comparison method, compare_with_nils, instead.
-        result = (key1 <=> key2)
-        result = compare_with_nils(key1, key2) if result.nil?
+      heads = key_hash.keys
+      directions = key_hash.values
+      prepared_rows = rows.each_with_index.map do |row, index|
+        key = row.fetch_values(*heads)
+        [row, index, key, key.map_booleans]
+      end
+      prepared_rows.sort! do |(_, index1, _, key1), (_, index2, _, key2)|
+        result = compare_prepared_sort_keys(key1, key2, directions)
         result.zero? ? index1 <=> index2 : result
-      }.map(&:first)
+      end
 
-      # Add the new_rows to the table, but mark a group boundary at the points
+      # Add the sorted rows to the table, but mark a group boundary at the points
       # where the sort key changes value.  NB: I use self.class.new here
       # rather than Table.new because if this class is inherited, I want the
       # new_tab to be an instance of the subclass.  With Table.new, this
@@ -863,9 +850,8 @@ module FatTable
       # the subclass.
       new_tab = empty_dup
       last_key = nil
-      new_rows.each_with_index do |nrow, k|
+      prepared_rows.each_with_index do |(nrow, _, key, _), k|
         new_tab << nrow
-        key = nrow.fetch_values(*key_hash.keys)
         new_tab.mark_boundary(k - 1) if last_key && key != last_key
         last_key = key
       end
@@ -1863,6 +1849,20 @@ module FatTable
         end
       end
       result
+    end
+
+    # Keys are normalized once per row. Swap operands for descending columns,
+    # retaining the nil/tolerant-value comparison rules and original tie order.
+    def compare_prepared_sort_keys(key1, key2, directions)
+      key1.each_index do |i|
+        a = key1[i]
+        b = key2[i]
+        a, b = b, a if directions[i] == :reverse
+        result = a.equal?(b) ? 0 : a <=> b
+        result = compare_with_nils([a], [b]) if result.nil?
+        return result unless result == 0
+      end
+      0
     end
 
     # The <=> operator cannot handle nils without some help.  Treat a nil as

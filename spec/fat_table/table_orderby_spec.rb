@@ -78,6 +78,59 @@ module FatTable
         expect(sorted[:ref]).to eq(%w[fourth second fifth first third sixth])
         expect(sorted.boundaries).to eq([0, 2, 4, 5])
       end
+
+      it 'preserves boolean and nil ties with descending secondary keys' do
+        source = Table.from_aoh([
+          { ref: 'first', active: true, rank: 1 },
+          { ref: 'second', active: false, rank: 2 },
+          { ref: 'third', active: nil, rank: 2 },
+          { ref: 'fourth', active: true, rank: 1 },
+          { ref: 'fifth', active: false, rank: 3 },
+          { ref: 'sixth', active: nil, rank: 2 },
+        ])
+        ascending = source.order_by(:active, :rank!)
+        descending = source.order_by(:active!, :rank)
+
+        expect(ascending[:ref]).to eq(%w[third sixth fifth second first fourth])
+        expect(ascending.boundaries).to eq([1, 2, 3, 5])
+        expect(descending[:ref]).to eq(%w[first fourth second fifth third sixth])
+        expect(descending.boundaries).to eq([1, 2, 3, 5])
+      end
+
+      it 'preserves tied expression results and their group boundaries' do
+        sorted = tab.order_with('category!')
+
+        expect(sorted[:ref]).to eq(%w[first third sixth second fourth fifth])
+        expect(sorted[:sort_key]).to eq(%w[b b b a a a])
+        expect(sorted.boundaries).to eq([2, 5])
+      end
+
+      it 'handles empty, single-row, and keyless sorts' do
+        empty = tab.empty_dup.order_by(:category, :rank!)
+        single = Table.from_aoh([{ ref: 'only', active: false }]).order_by(:active!)
+        keyless = tab.order_by
+
+        expect(empty.headers).to eq(tab.headers)
+        expect(empty.rows).to be_empty
+        expect(empty.boundaries).to be_empty
+        expect(single.rows).to eq([{ ref: 'only', active: false }])
+        expect(single.boundaries).to eq([0])
+        expect(keyless.rows).to eq(tab.rows)
+        expect(keyless.boundaries).to eq([5])
+      end
+
+      it 'keeps decimal ties stable and uses later date keys in mixed directions' do
+        source = Table.from_aoh([
+          { ref: 'first', amount: BigDecimal('2.0'), date: Date.new(2026, 1, 1) },
+          { ref: 'second', amount: 2, date: Date.new(2026, 1, 2) },
+          { ref: 'third', amount: 2, date: Date.new(2026, 1, 1) },
+        ])
+        sorted = source.order_by(:amount, :date!)
+
+        expect(sorted[:ref]).to eq(%w[second first third])
+        expect(sorted.boundaries).to eq([0, 2])
+        expect(source[:ref]).to eq(%w[first second third])
+      end
     end
 
     describe 'order_by with nils' do
