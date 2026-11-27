@@ -38,6 +38,8 @@ module FatTable
         else
           new_val = convert_to_boolean(val)
           if new_val.nil?
+            return convert_to_string(val) if tolerant
+
             raise IncompatibleTypeError
           end
 
@@ -49,6 +51,8 @@ module FatTable
         else
           new_val = convert_to_date_time(val)
           if new_val.nil?
+            return convert_to_string(val) if tolerant
+
             raise IncompatibleTypeError
           end
 
@@ -60,6 +64,8 @@ module FatTable
         else
           new_val = convert_to_numeric(val)
           if new_val.nil?
+            return convert_to_string(val) if tolerant
+
             raise IncompatibleTypeError
           end
 

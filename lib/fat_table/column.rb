@@ -457,8 +457,8 @@ module FatTable
     # Append +itm+ to end of the Column after converting it to the Column's
     # type. If the Column's type is still open, i.e. NilClass, attempt to fix
     # the Column's type based on the type of +itm+ as with Column.new.  If its
-    # a tolerant column, respond to type errors by converting the column to a
-    # String type.
+    # a tolerant column, store incompatible values as strings while retaining
+    # the Column's declared type.
     def <<(itm)
       items << convert_and_set_type(itm)
     rescue IncompatibleTypeError => ex
@@ -484,13 +484,27 @@ module FatTable
     private
 
     def convert_and_set_type(val)
+      # Established columns can accept compatible native values directly.
+      # Floats still need promotion to BigDecimal, and open columns still infer
+      # their type through the normal conversion path.
+      case type
+      when 'String'
+        return val.nil? ? nil : Convert.convert_to_string(val)
+      when 'Numeric'
+        return val if val.is_a?(Numeric) && !val.is_a?(Float)
+      when 'DateTime'
+        return val if val.is_a?(Date)
+      when 'Boolean'
+        return val if val.equal?(true) || val.equal?(false)
+      end
+
       begin
         new_val = Convert.convert_to_type(val, type, tolerant: tolerant?)
       rescue IncompatibleTypeError
         err_msg = "attempt to add '#{val}' to column '#{header}' already typed as #{type}"
         raise IncompatibleTypeError, err_msg
       end
-      if new_val && (type == 'NilClass' || type == 'String')
+      if new_val && type == 'NilClass'
         @type =
           if [true, false].include?(new_val)
             'Boolean'

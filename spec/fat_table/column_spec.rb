@@ -2,6 +2,75 @@
 
 module FatTable
   RSpec.describe 'Column' do
+    describe 'appending to established columns' do
+      it 'preserves exact native numbers and promotes floats to decimals' do
+        decimal = BigDecimal('123456789.123456789')
+        rational = Rational(2, 3)
+        col = Column.new(header: :value, type: 'Numeric', items: [decimal, rational, 12, 0.125, nil, ' '])
+
+        expect(col.items).to eq([decimal, rational, 12, BigDecimal('0.125'), nil, nil])
+        expect(col[0]).to equal(decimal)
+        expect(col[1]).to equal(rational)
+        expect(col[3]).to be_a(BigDecimal)
+      end
+
+      it 'keeps strings as strings, including blanks and boolean-looking text' do
+        text = +'false'
+        col = Column.new(header: :value, type: 'String', items: [text, '', ' ', nil, 12, false])
+
+        expect(col.type).to eq('String')
+        expect(col.items).to eq(['false', '', ' ', nil, '12', 'false'])
+        expect(col[0]).to equal(text)
+      end
+
+      it 'preserves dates and datetimes while still converting times and date strings' do
+        date = Date.new(2026, 1, 2)
+        datetime = DateTime.new(2026, 1, 2, 12, 30, 0, '+02:00')
+        time = Time.utc(2026, 1, 3, 12)
+        col = Column.new(header: :value, type: 'DateTime', items: [date, datetime, time, '2026-01-04', nil])
+
+        expect(col.items).to eq([date, datetime, time.to_datetime, Date.new(2026, 1, 4), nil])
+        expect(col[0]).to equal(date)
+        expect(col[1]).to equal(datetime)
+      end
+
+      it 'keeps false distinct from missing values' do
+        col = Column.new(header: :value, type: 'Boolean', items: [false, true, nil, '', 'no', 'yes'])
+
+        expect(col.items).to eq([false, true, nil, nil, false, true])
+      end
+
+      ['Numeric', 'DateTime', 'Boolean'].each do |type|
+        it "retains #{type} tolerance and strict error messages" do
+          tolerant = Column.new(header: :value, type: type, tolerant: true)
+          tolerant << 'unknown'
+          tolerant << nil
+          tolerant << ' '
+          strict = Column.new(header: :value, type: type)
+
+          expect(tolerant.items).to eq(['unknown', nil, nil])
+          expect(tolerant.type).to eq(type)
+          expect { strict << 'unknown' }.to raise_error(
+            IncompatibleTypeError,
+            "attempt to add 'unknown' to column 'value' already typed as #{type}",
+          )
+          expect(strict.items).to be_empty
+        end
+      end
+
+      it 'still infers open columns and returns the items array from append' do
+        col = Column.new(header: :value)
+        col << nil
+        col << ' '
+        expect(col.type).to eq('NilClass')
+
+        result = col << '12.5'
+        expect(col.type).to eq('Numeric')
+        expect(result).to equal(col.items)
+        expect(col.items).to eq([nil, nil, BigDecimal('12.5')])
+      end
+    end
+
     describe 'initialization of boolean' do
       it 'initializes a good boolean column without trailing nils' do
         items = [nil, 't', 'true', 'False', 'nO', 'y', 'Y', 'yEs']
