@@ -169,6 +169,8 @@ RSpec.describe FatTable do
   it 'does not activate a debugger when loaded by an application' do
     output, error, status = Open3.capture3(
       RbConfig.ruby,
+      # Command-line requires run before the Bundler setup inherited in RUBYOPT.
+      '-rbundler/setup',
       '-Ilib',
       '-rfat_table',
       '-e',
